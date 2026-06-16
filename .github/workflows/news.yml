@@ -1,0 +1,39 @@
+name: Coletar notícias (Lastro)
+
+# Executa a cada 20 minutos. Mantém o Supabase ativo (evita pausa de 7 dias)
+# e o repositório ativo (evita desativação de 60 dias).
+on:
+  schedule:
+    - cron: '*/20 * * * *'   # a cada 20 min (UTC)
+  workflow_dispatch:          # permite rodar manualmente pelo painel do GitHub
+
+# Evita execuções sobrepostas
+concurrency:
+  group: news-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependências
+        working-directory: backend
+        run: npm ci || npm install
+
+      - name: Coletar notícias
+        working-directory: backend
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npm run fetch

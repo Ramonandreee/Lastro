@@ -1,0 +1,16 @@
+{
+  "name": "lastro-news-fetcher",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Coletor de notícias do Lastro: RSS de portais BR + Fatos Relevantes da CVM, com gravação no Supabase.",
+  "scripts": {
+    "fetch": "node scripts/fetch-news.mjs"
+  },
+  "dependencies": {
+    "rss-parser": "^3.13.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
