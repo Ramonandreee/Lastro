@@ -67,6 +67,27 @@ export default async function handler(req, res) {
   const symbols = parse(q.symbols).slice(0, 40);
   const coins = parse(q.crypto).slice(0, 20);
 
+  // modo diagnóstico: mostra a resposta CRUA da brapi (status + body) sem vazar o token.
+  // uso: /api/quotes?debug=1&crypto=BTC&symbols=PETR4  (remover depois)
+  if (q.debug) {
+    const coin = coins[0] || 'BTC';
+    const sym = symbols[0] || 'PETR4';
+    res.setHeader('Cache-Control', 'no-store');
+    try {
+      const rc = await fetch(`${BRAPI}/v2/crypto?coin=${encodeURIComponent(coin)}&currency=BRL&token=${encodeURIComponent(token)}`);
+      const rcBody = await rc.text();
+      const rs = await fetch(`${BRAPI}/quote/${encodeURIComponent(sym)}?token=${encodeURIComponent(token)}`);
+      const rsBody = await rs.text();
+      return res.status(200).json({
+        debug: true,
+        crypto: { url: `/api/v2/crypto?coin=${coin}&currency=BRL`, status: rc.status, body: rcBody.slice(0, 600) },
+        stock: { url: `/api/quote/${sym}`, status: rs.status, body: rsBody.slice(0, 600) },
+      });
+    } catch (e) {
+      return res.status(200).json({ debug: true, error: String((e && e.message) || e) });
+    }
+  }
+
   try {
     const [results, crypto] = await Promise.all([
       mapLimit(symbols, 4, (s) => oneStock(s, token)),

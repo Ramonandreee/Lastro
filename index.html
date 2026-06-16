@@ -1991,9 +1991,10 @@ function afterRender(v, soft){
     if(!soft) askAI(true);
   }
   if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)){ renderAssets(v); }
-  // busca cotações ao vivo da tela atual, sob demanda (proxy /api/quotes).
+  // atualiza cotações/selo da tela atual, sob demanda (proxy /api/quotes).
+  // telas sem ativos brapi só ajustam o selo p/ "Demonstração" (refreshQuotes trata).
   // soft=true vem do próprio softRefreshView pós-cotação → não rebuscar (evita loop)
-  if(!soft && ['painel','fiis','acoes','bdrs','etfs','cripto','carteira'].includes(v)){ refreshQuotes(); }
+  if(!soft){ refreshQuotes(); }
   if(v==='carteira'){ initAlloc(); if(!soft) diagnose(); }
   if(v==='comparador'){ initComparador(); }
   if(v==='screener'){ runScreener(); }
@@ -2283,7 +2284,13 @@ function softRefreshView(){
 
 async function refreshQuotes(manual){
   const { b3, crypto } = screenSymbols();
-  if(!b3.length && !crypto.length) return;   // tela sem cotações: mantém o selo atual
+  if(!b3.length && !crypto.length){
+    // tela sem cotações na brapi (ex.: Stocks EUA, telas de ferramentas):
+    // mostra "Demonstração" (dados estáticos), nunca "Offline" (que parece erro)
+    LIVE.lastError = null;
+    setDataStatus('demo', 'Demonstração');
+    return;
+  }
   setDataStatus('loading', 'Atualizando…');
   try{
     const qs = new URLSearchParams();
