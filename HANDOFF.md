@@ -65,8 +65,10 @@ Já feito:
 - [x] Proxy de IA (Vercel)
 
 Próximos passos (a decidir prioridade):
-- [ ] Subir o projeto para o repositório GitHub (primeiro commit)
-- [ ] Conectar cotações ao vivo (brapi.dev) substituindo os arrays estáticos, com fallback
+- [x] Subir o projeto para o repositório GitHub (primeiro commit)
+- [x] Conectar cotações ao vivo (brapi.dev) substituindo os arrays estáticos, com fallback
+      → preço e variação de Ações/FIIs/BDRs/ETFs + cripto. Token em config.js (BRAPI_TOKEN);
+        sem token cai em modo Demonstração. Indicador de status no topbar. Fundamentos seguem estáticos.
 - [ ] Configurar Supabase (rodar schema.sql) e secrets do GitHub para ativar as notícias reais
 - [ ] Deploy do front (GoDaddy ou Vercel) + domínio
 - [ ] Deploy do proxy de IA na Vercel

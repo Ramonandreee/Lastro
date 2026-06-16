@@ -112,6 +112,24 @@ No `index.html`, troque a URL de `https://api.anthropic.com/v1/messages` para `/
 
 Para integração B3 oficial (carteira sincronizada), avaliar **Pluggy**, **Belvo** ou **B3/CERC** via parceria.
 
+### Cotações ao vivo (já implementado)
+
+O `index.html` busca cotações reais da **brapi.dev** e atualiza preço (`px`) e
+variação (`var`) das telas de Ações, FIIs, BDRs e ETFs, além das criptomoedas.
+Funciona assim:
+
+1. Pegue um token gratuito em [brapi.dev](https://brapi.dev) e coloque em
+   `config.js → BRAPI_TOKEN`. **Sem token**, o app segue em modo *Demonstração*
+   usando os dados estáticos (fallback silencioso).
+2. O indicador no topo (`Ao vivo · HH:MM` / `Demonstração` / `Offline · em cache`)
+   mostra a fonte atual; clicar nele força uma atualização.
+3. O polling roda a cada `REFRESH_MS` (config.js, mín. 30s), pausando quando a
+   aba fica em segundo plano para economizar requisições. As cotações são
+   buscadas em lotes de 10 tickers para respeitar o limite do plano gratuito.
+
+> Fundamentos (P/VP, ROE, DY, vacância) seguem estáticos por enquanto — exigem
+> fonte de dados dedicada. A integração ao vivo cobre **preço e variação**.
+
 ---
 
 ## 6. App mobile — React Native (iOS + Android)
