@@ -34,11 +34,28 @@ async function oneStock(symbol, token) {
   return { symbol: q.symbol || symbol, price: q.regularMarketPrice, change: q.regularMarketChangePercent ?? null };
 }
 
-async function oneCrypto(coin, token) {
-  const d = await fetchJson(`${BRAPI}/v2/crypto?coin=${encodeURIComponent(coin)}&currency=BRL&token=${encodeURIComponent(token)}`);
-  const q = d && d.coins && d.coins[0];
-  if (!q || typeof q.regularMarketPrice !== 'number') return null;
-  return { symbol: String(q.coin || coin).toUpperCase(), price: q.regularMarketPrice, change: q.regularMarketChangePercent ?? null };
+/* Cripto: brapi free NÃO inclui cripto (FEATURE_NOT_AVAILABLE). Usamos o
+   CoinGecko — grátis, sem token e com todas as moedas numa única requisição. */
+const COINGECKO_IDS = {
+  BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', BNB: 'binancecoin',
+  XRP: 'ripple', ADA: 'cardano', DOGE: 'dogecoin', AVAX: 'avalanche-2',
+};
+
+async function fetchCrypto(coins) {
+  const wanted = coins.map((c) => c.toUpperCase()).filter((c) => COINGECKO_IDS[c]);
+  if (!wanted.length) return [];
+  const ids = [...new Set(wanted.map((c) => COINGECKO_IDS[c]))];
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=brl&include_24hr_change=true`;
+  const d = await fetchJson(url);
+  if (!d) return [];
+  const out = [];
+  for (const tk of wanted) {
+    const row = d[COINGECKO_IDS[tk]];
+    if (row && typeof row.brl === 'number') {
+      out.push({ symbol: tk, price: row.brl, change: typeof row.brl_24h_change === 'number' ? row.brl_24h_change : null });
+    }
+  }
+  return out;
 }
 
 // executa fn sobre items com no máximo `limit` em paralelo
@@ -57,45 +74,20 @@ async function mapLimit(items, limit, fn) {
 
 export default async function handler(req, res) {
   const token = process.env.BRAPI_TOKEN || '';
-  if (!token) {
-    res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ results: [], crypto: [], note: 'BRAPI_TOKEN ausente no servidor' });
-  }
-
   const q = req.query || {};
   const parse = (s) => String(s || '').split(',').map((x) => x.trim()).filter(Boolean);
   const symbols = parse(q.symbols).slice(0, 40);
   const coins = parse(q.crypto).slice(0, 20);
 
-  // modo diagnóstico: mostra a resposta CRUA da brapi (status + body) sem vazar o token.
-  // uso: /api/quotes?debug=1&crypto=BTC&symbols=PETR4  (remover depois)
-  if (q.debug) {
-    const coin = coins[0] || 'BTC';
-    const sym = symbols[0] || 'PETR4';
-    res.setHeader('Cache-Control', 'no-store');
-    try {
-      const rc = await fetch(`${BRAPI}/v2/crypto?coin=${encodeURIComponent(coin)}&currency=BRL&token=${encodeURIComponent(token)}`);
-      const rcBody = await rc.text();
-      const rs = await fetch(`${BRAPI}/quote/${encodeURIComponent(sym)}?token=${encodeURIComponent(token)}`);
-      const rsBody = await rs.text();
-      return res.status(200).json({
-        debug: true,
-        crypto: { url: `/api/v2/crypto?coin=${coin}&currency=BRL`, status: rc.status, body: rcBody.slice(0, 600) },
-        stock: { url: `/api/quote/${sym}`, status: rs.status, body: rsBody.slice(0, 600) },
-      });
-    } catch (e) {
-      return res.status(200).json({ debug: true, error: String((e && e.message) || e) });
-    }
-  }
-
   try {
     const [results, crypto] = await Promise.all([
-      mapLimit(symbols, 4, (s) => oneStock(s, token)),
-      mapLimit(coins, 4, (c) => oneCrypto(c, token)),
+      // B3 (brapi) exige token; cripto (CoinGecko) é grátis e independe do token
+      token ? mapLimit(symbols, 4, (s) => oneStock(s, token)) : Promise.resolve([]),
+      fetchCrypto(coins),
     ]);
     // cache na borda: 10 min "fresco" + serve obsoleto enquanto revalida
     res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=1800');
-    return res.status(200).json({ results, crypto });
+    return res.status(200).json({ results, crypto, ...(token ? {} : { note: 'BRAPI_TOKEN ausente: B3 indisponível' }) });
   } catch (e) {
     res.setHeader('Cache-Control', 'no-store');
     return res.status(502).json({ error: 'falha ao consultar brapi', detail: String((e && e.message) || e) });
