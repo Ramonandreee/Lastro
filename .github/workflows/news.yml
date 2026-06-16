@@ -2,6 +2,7 @@ name: Coletar notícias (Lastro)
 
 # Executa a cada 20 minutos. Mantém o Supabase ativo (evita pausa de 7 dias)
 # e o repositório ativo (evita desativação de 60 dias).
+# (re-registro apos verificacao de e-mail da conta)
 on:
   schedule:
     - cron: '*/20 * * * *'   # a cada 20 min (UTC)
