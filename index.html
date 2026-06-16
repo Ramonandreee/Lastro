@@ -1989,6 +1989,8 @@ function afterRender(v){
     askAI(true);
   }
   if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)){ renderAssets(v); }
+  // busca cotações ao vivo da tela atual, sob demanda (proxy /api/quotes)
+  if(['painel','fiis','acoes','bdrs','etfs','cripto','carteira'].includes(v)){ refreshQuotes(); }
   if(v==='carteira'){ initAlloc(); diagnose(); }
   if(v==='comparador'){ initComparador(); }
   if(v==='screener'){ runScreener(); }
@@ -2199,12 +2201,13 @@ document.addEventListener('keydown', e=>{
    ══════════════════════════════════════════════════════════ */
 const LIVE = { on:false, ts:null, fails:0, timer:null, lastError:null };
 
-function brapiToken(){
-  const t = (window.LASTRO_CONFIG && window.LASTRO_CONFIG.BRAPI_TOKEN) || '';
-  return (t && t !== 'SEU_TOKEN_BRAPI') ? t : '';
+/* Cotações ao vivo via proxy /api/quotes (brapi server-side: 1 ativo/req + cache).
+   Busca só os ativos da TELA ATUAL, sob demanda — respeita o limite do plano free. */
+function quotesEndpoint(){
+  return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.QUOTES_ENDPOINT) || '/api/quotes';
 }
 
-/* índice ticker → objeto(s) do dataset, para atualização O(1) */
+/* índice ticker → objeto(s) do dataset (B3), para atualização O(1) */
 function liveIndex(){
   const idx = new Map();
   [FIIS, ACOES, BDRS, ETFS].forEach(arr => arr.forEach(a => {
@@ -2214,45 +2217,35 @@ function liveIndex(){
   return idx;
 }
 
-function chunk(arr, n){
-  const out = [];
-  for(let i=0;i<arr.length;i+=n) out.push(arr.slice(i,i+n));
-  return out;
-}
-
-async function fetchB3Quotes(token){
-  const idx = liveIndex();
-  const tickers = [...idx.keys()];
-  if(!tickers.length) return 0;
-  let updated = 0;
-  // lotes pequenos para respeitar limites do plano gratuito da brapi
-  for(const group of chunk(tickers, 10)){
-    const url = `https://brapi.dev/api/quote/${group.join(',')}?token=${encodeURIComponent(token)}`;
-    const r = await fetch(url);
-    if(!r.ok){ const body = await r.text().catch(()=> ''); throw new Error(`brapi quote ${r.status}: ${body.slice(0,160)}`); }
-    const data = await r.json();
-    (data.results||[]).forEach(q => {
-      const px = q.regularMarketPrice, vr = q.regularMarketChangePercent;
-      if(typeof px !== 'number') return;
-      (idx.get(q.symbol)||[]).forEach(a => { a.px = px; if(typeof vr==='number') a.var = vr; a.live = true; });
-      updated++;
-    });
+/* tickers da tela atual que têm cotação na brapi (B3 + cripto) */
+function screenSymbols(){
+  const b3 = new Set(), crypto = new Set();
+  const add = (arr)=> arr.forEach(a => b3.add(a.tk));
+  switch(currentView){
+    case 'fiis':  add(FIIS); break;
+    case 'acoes': add(ACOES); break;
+    case 'bdrs':  add(BDRS); break;
+    case 'etfs':  add(ETFS); break;
+    case 'cripto': CRIPTO.forEach(c=> crypto.add(c.tk)); break;
+    case 'painel':
+    case 'carteira': CARTEIRA.forEach(c=> b3.add(c.tk)); break;
+    // 'stocks' (EUA) e demais telas não têm cotação na brapi
   }
-  return updated;
+  return { b3:[...b3], crypto:[...crypto] };
 }
 
-async function fetchCrypto(token){
-  const coins = CRIPTO.map(c=>c.tk).join(',');
-  const url = `https://brapi.dev/api/v2/crypto?coin=${coins}&currency=BRL${token?`&token=${encodeURIComponent(token)}`:''}`;
-  const r = await fetch(url);
-  if(!r.ok){ const body = await r.text().catch(()=> ''); throw new Error(`brapi crypto ${r.status}: ${body.slice(0,160)}`); }
-  const data = await r.json();
+/* aplica o retorno do proxy {results, crypto} nos arrays em memória */
+function applyQuotes(data){
   let updated = 0;
-  (data.coins||[]).forEach(q => {
-    const c = CRIPTO.find(x=>x.tk===String(q.coin||'').toUpperCase());
-    if(!c) return;
-    if(typeof q.regularMarketPrice === 'number'){ c.px = q.regularMarketPrice; c.live = true; updated++; }
-    if(typeof q.regularMarketChangePercent === 'number') c.v24 = q.regularMarketChangePercent;
+  const idx = liveIndex();
+  (data.results||[]).forEach(q => {
+    const arr = idx.get(q.symbol); if(!arr) return;
+    arr.forEach(a => { a.px = q.price; if(typeof q.change==='number') a.var = q.change; a.live = true; });
+    updated++;
+  });
+  (data.crypto||[]).forEach(q => {
+    const c = CRIPTO.find(x=> x.tk === q.symbol); if(!c) return;
+    c.px = q.price; if(typeof q.change==='number') c.v24 = q.change; c.live = true; updated++;
   });
   return updated;
 }
@@ -2286,29 +2279,27 @@ function softRefreshView(){
 }
 
 async function refreshQuotes(manual){
-  const token = brapiToken();
+  const { b3, crypto } = screenSymbols();
+  if(!b3.length && !crypto.length) return;   // tela sem cotações: mantém o selo atual
   setDataStatus('loading', 'Atualizando…');
   try{
-    // cripto funciona sem token; B3 exige token
-    const tasks = [ fetchCrypto(token).catch(e=>{ throw e; }) ];
-    if(token) tasks.unshift(fetchB3Quotes(token));
-    const results = await Promise.allSettled(tasks);
-    const updated = results.reduce((s,r)=> s + (r.status==='fulfilled' ? (r.value||0) : 0), 0);
-    const errs = results.filter(r=> r.status==='rejected').map(r=> String(r.reason && r.reason.message || r.reason));
-    if(errs.length) console.warn('[Lastro] cotações brapi:', ...errs);
-
+    const qs = new URLSearchParams();
+    if(b3.length) qs.set('symbols', b3.join(','));
+    if(crypto.length) qs.set('crypto', crypto.join(','));
+    const r = await fetch(`${quotesEndpoint()}?${qs.toString()}`);
+    if(!r.ok){ const body = await r.text().catch(()=> ''); throw new Error(`quotes ${r.status}: ${body.slice(0,160)}`); }
+    const data = await r.json();
+    const updated = applyQuotes(data);
     if(updated > 0){
       LIVE.on = true; LIVE.ts = new Date(); LIVE.fails = 0; LIVE.lastError = null;
       setDataStatus('live', `Ao vivo · ${LIVE.ts.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);
       softRefreshView();
       if(manual===true) toast('Cotações atualizadas');
-    } else if(!token){
-      LIVE.lastError = 'BRAPI_TOKEN ausente';
-      setDataStatus('demo', 'Demonstração');
-      if(manual===true) toast('Configure BRAPI_TOKEN para cotações ao vivo');
     } else {
-      // token presente mas nenhuma cotação veio: propaga o erro real da brapi
-      throw new Error(errs[0] || 'brapi não retornou cotações');
+      LIVE.lastError = (data && data.note) || 'sem cotações para esta tela';
+      console.warn('[Lastro] cotações:', LIVE.lastError);
+      setDataStatus(LIVE.on ? 'stale' : 'demo', LIVE.on ? 'Offline · em cache' : 'Demonstração');
+      if(manual===true) toast(`Cotações: ${LIVE.lastError}`);
     }
   }catch(e){
     LIVE.fails++; LIVE.lastError = String(e && e.message || e);
@@ -2318,24 +2309,8 @@ async function refreshQuotes(manual){
   }
 }
 
-function liveInterval(){
-  const ms = (window.LASTRO_CONFIG && window.LASTRO_CONFIG.REFRESH_MS) || 60000;
-  return Math.max(ms, 30000);
-}
-function startLiveQuotes(){
-  if(LIVE.timer) clearInterval(LIVE.timer);
-  refreshQuotes();
-  LIVE.timer = setInterval(refreshQuotes, liveInterval());
-}
-// pausa o polling quando a aba não está visível (economia de requisições)
-document.addEventListener('visibilitychange', ()=>{
-  if(document.hidden){ if(LIVE.timer){ clearInterval(LIVE.timer); LIVE.timer=null; } }
-  else if(!LIVE.timer){ startLiveQuotes(); }
-});
-
 /* INIT */
-render('painel');
-startLiveQuotes();
+render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
 </script>
 </body>
 </html>
