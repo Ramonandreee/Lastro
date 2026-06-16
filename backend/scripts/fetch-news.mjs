@@ -18,6 +18,45 @@
 
 import Parser from 'rss-parser';
 import crypto from 'node:crypto';
+import { Agent } from 'undici';
+
+/* ────────────────────────────────────────────────────────────
+   Fetch resiliente: retry com backoff + timeout + log da causa.
+   Para servidores gov.br (CVM) com cadeia TLS problemática, faz
+   fallback para uma conexão tolerante APENAS nessa requisição —
+   não afeta Supabase/Anthropic. Dado público, risco aceitável.
+   ──────────────────────────────────────────────────────────── */
+let _insecureDispatcher = null;
+const insecureDispatcher = () =>
+  (_insecureDispatcher ??= new Agent({ connect: { rejectUnauthorized: false } }));
+
+async function robustFetch(url, { timeoutMs = 20000, tries = 3, allowInsecureTLS = false } = {}) {
+  let lastErr;
+  for (let attempt = 1; attempt <= tries; attempt++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { headers: { 'User-Agent': 'LastroBot/1.0' }, signal: ctrl.signal });
+      clearTimeout(timer);
+      return res;
+    } catch (e) {
+      clearTimeout(timer);
+      lastErr = e;
+      const cause = e?.cause?.code || e?.cause?.message || e?.message || String(e);
+      console.warn(`  ↻ tentativa ${attempt}/${tries} falhou (${cause})`);
+      // erro de certificado → tenta uma vez com TLS tolerante
+      if (allowInsecureTLS && /CERT|SELF_SIGNED|UNABLE_TO_VERIFY|leaf|SSL/i.test(String(cause))) {
+        try {
+          const res = await fetch(url, { headers: { 'User-Agent': 'LastroBot/1.0' }, dispatcher: insecureDispatcher() });
+          console.warn('  ⚠ CVM: conexão TLS tolerante usada (cadeia de certificado do servidor gov)');
+          return res;
+        } catch (e2) { lastErr = e2; }
+      }
+      if (attempt < tries) await new Promise(r => setTimeout(r, attempt * 2000));
+    }
+  }
+  throw lastErr;
+}
 
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SERVICE_KEY   = process.env.SUPABASE_SERVICE_KEY;
@@ -108,7 +147,7 @@ function parseCsvLine(line) {
 async function fetchCVM() {
   const items = [];
   try {
-    const res = await fetch(CVM_URL, { headers: { 'User-Agent': 'LastroBot/1.0' } });
+    const res = await robustFetch(CVM_URL, { timeoutMs: 25000, tries: 3, allowInsecureTLS: true });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const buf = Buffer.from(await res.arrayBuffer());
     const text = buf.toString('latin1'); // CVM usa ISO-8859-1
