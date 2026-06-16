@@ -1,62 +1,25 @@
 /**
  * ════════════════════════════════════════════════════════════
- * LASTRO · Fetcher de Notícias
+ * LASTRO · Fetcher de Notícias (renda variável)
  * ────────────────────────────────────────────────────────────
- * Busca notícias de duas fontes gratuitas:
- *   1. RSS de portais financeiros brasileiros
- *   2. Fatos Relevantes oficiais da CVM (dados abertos)
- * Classifica (tag + ticker), deduplica e grava no Supabase.
+ * Busca manchetes de portais financeiros brasileiros (RSS), mantém
+ * APENAS o que é relevante para renda variável (ações, FIIs, BDRs,
+ * ETFs, cripto, macro/mercado) — descarta esporte, política geral,
+ * entretenimento, finanças pessoais etc. Classifica (tag/ticker),
+ * deduplica e grava no Supabase. Também limpa do banco o que ficou
+ * fora do escopo.
  *
- * Rodado pelo GitHub Actions a cada ~20 min (ver .github/workflows/news.yml).
+ * Rodado pelo GitHub Actions a cada ~20 min (.github/workflows/news.yml).
  *
  * Variáveis de ambiente necessárias:
  *   SUPABASE_URL              - https://xxxx.supabase.co
- *   SUPABASE_SERVICE_KEY      - service_role key (ignora RLS; NUNCA exponha no front)
+ *   SUPABASE_SERVICE_KEY      - service/secret key (ignora RLS; NUNCA no front)
  *   ANTHROPIC_API_KEY         - (opcional) para o resumo do dia por IA
  * ════════════════════════════════════════════════════════════
  */
 
 import Parser from 'rss-parser';
 import crypto from 'node:crypto';
-import { Agent } from 'undici';
-
-/* ────────────────────────────────────────────────────────────
-   Fetch resiliente: retry com backoff + timeout + log da causa.
-   Para servidores gov.br (CVM) com cadeia TLS problemática, faz
-   fallback para uma conexão tolerante APENAS nessa requisição —
-   não afeta Supabase/Anthropic. Dado público, risco aceitável.
-   ──────────────────────────────────────────────────────────── */
-let _insecureDispatcher = null;
-const insecureDispatcher = () =>
-  (_insecureDispatcher ??= new Agent({ connect: { rejectUnauthorized: false } }));
-
-async function robustFetch(url, { timeoutMs = 20000, tries = 3, allowInsecureTLS = false } = {}) {
-  let lastErr;
-  for (let attempt = 1; attempt <= tries; attempt++) {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-    try {
-      const res = await fetch(url, { headers: { 'User-Agent': 'LastroBot/1.0' }, signal: ctrl.signal });
-      clearTimeout(timer);
-      return res;
-    } catch (e) {
-      clearTimeout(timer);
-      lastErr = e;
-      const cause = e?.cause?.code || e?.cause?.message || e?.message || String(e);
-      console.warn(`  ↻ tentativa ${attempt}/${tries} falhou (${cause})`);
-      // erro de certificado → tenta uma vez com TLS tolerante
-      if (allowInsecureTLS && /CERT|SELF_SIGNED|UNABLE_TO_VERIFY|leaf|SSL/i.test(String(cause))) {
-        try {
-          const res = await fetch(url, { headers: { 'User-Agent': 'LastroBot/1.0' }, dispatcher: insecureDispatcher() });
-          console.warn('  ⚠ CVM: conexão TLS tolerante usada (cadeia de certificado do servidor gov)');
-          return res;
-        } catch (e2) { lastErr = e2; }
-      }
-      if (attempt < tries) await new Promise(r => setTimeout(r, attempt * 2000));
-    }
-  }
-  throw lastErr;
-}
 
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SERVICE_KEY   = process.env.SUPABASE_SERVICE_KEY;
@@ -71,19 +34,14 @@ const parser = new Parser({ timeout: 15000, headers: { 'User-Agent': 'LastroBot/
 
 /* ─── Fontes RSS (portais BR) ─────────────────────────── */
 const RSS_SOURCES = [
-  { name: 'InfoMoney',   url: 'https://www.infomoney.com.br/feed/',            tag: null },
-  { name: 'Money Times', url: 'https://www.moneytimes.com.br/feed/',           tag: null },
-  { name: 'Suno',        url: 'https://www.suno.com.br/noticias/feed/',        tag: null },
+  { name: 'InfoMoney',   url: 'https://www.infomoney.com.br/feed/',     tag: null },
+  { name: 'Money Times', url: 'https://www.moneytimes.com.br/feed/',    tag: null },
+  { name: 'Suno',        url: 'https://www.suno.com.br/noticias/feed/', tag: null },
   // adicione outros feeds aqui conforme necessário
 ];
 
-/* ─── CVM: Fatos Relevantes (dados abertos) ───────────── */
-// CSV diário do IPE (Informações Periódicas e Eventuais). Semicolon-delimited, ISO-8859-1.
-const CVM_YEAR = new Date().getFullYear();
-const CVM_URL  = `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS/IPE_CIA_ABERTA_${CVM_YEAR}.csv`;
-
 /* ════════════════════════════════════════════════════════════
-   CLASSIFICAÇÃO (heurística rápida, sem custo)
+   CLASSIFICAÇÃO + RELEVÂNCIA (heurística rápida, sem custo)
    ════════════════════════════════════════════════════════════ */
 const TICKER_RE = /\b([A-Z]{4}(?:3|4|5|6|11|34|35|39))\b/;
 
@@ -98,25 +56,44 @@ function detectTag(text) {
   if (ticker && /11$/.test(ticker))                                                return 'FIIs';
   if (/\b(fii|fiis|fundo imobili|aluguel|laje|galp[aã]o|shopping|vac[aâ]ncia|cri\b)/.test(t)) return 'FIIs';
   if (/\b(bitcoin|cripto|ethereum|blockchain|token|solana|btc|eth|halving)\b/.test(t)) return 'Cripto';
-  if (/\b(nasdaq|wall street|nyse|s&p|dow jones|fed\b|eua\b|estados unidos|treasury)\b/.test(t)) return 'Stocks';
-  if (/\b(bdr|bdrs)\b/.test(t))                                                    return 'BDRs';
+  if (/\b(nasdaq|wall street|nyse|s&p|dow jones|fed\b|treasury)\b/.test(t))         return 'Stocks';
+  if (/\b(bdr|bdrs)\b/.test(t))                                                     return 'BDRs';
   if (/\b(dividendo|dividendos|provento|proventos|jcp|rendimento|a[cç][aã]o|a[cç][oõ]es|balan[cç]o|lucro|preju[ií]zo|resultado|guidance)\b/.test(t)) return 'Ações';
   return 'Mercado';
 }
 
+/* Só passa o que pode influenciar ativos de renda variável.
+   Precisa casar com algum termo de mercado/economia OU citar um ticker. */
+const RELEVANT_RE = new RegExp([
+  'a[cç][aã]o|a[cç][oõ]es|bolsa|\\bb3\\b|bovespa|ibovespa|\\bibov\\b|preg[aã]o|\\bíndice\\b|\\bindice\\b|\\bifix\\b',
+  'dividendo|provento|\\bjcp\\b|\\bfii\\b|fiis|fundo imobili|\\betf\\b|\\bbdr\\b|\\bipo\\b|follow.?on|recompra|oferta p[uú]blica|subscri[cç][aã]o',
+  'balan[cç]o|lucro|preju[ií]zo|receita|ebitda|guidance|trimestr|margem|endividamento|\\broe\\b|payout|\\bp/l\\b|\\bp/vp\\b',
+  'selic|copom|\\bjuros\\b|infla[cç][aã]o|\\bipca\\b|\\bigp\\b|\\bpib\\b|c[aâ]mbio|d[oó]lar|\\beuro\\b|\\bfed\\b|banco central|tesouro|renda fixa|renda vari[aá]vel|\\bcdi\\b|arcabou[cç]o|reforma tribut',
+  'petr[oó]leo|petrobras|min[eé]rio|commodit|safra|\\bbanco\\b|bancos|seguradora|saneamento|incorporadora|\\bvarejo\\b',
+  'bitcoin|ethereum|\\bcripto\\b|blockchain|\\bbtc\\b|\\beth\\b|halving|stablecoin|\\bcrypto\\b',
+  'nasdaq|wall street|s&p ?500|dow jones|\\bnyse\\b|treasury|mercado financeiro|investidor',
+].join('|'), 'i');
+
+function isRelevant(text) {
+  const t = String(text || '');
+  return RELEVANT_RE.test(t) || !!detectTicker(t);
+}
+
 const hashOf = s => crypto.createHash('sha1').update(s).digest('hex').slice(0, 16);
+const chunk = (arr, n) => { const o = []; for (let i = 0; i < arr.length; i += n) o.push(arr.slice(i, i + n)); return o; };
 
 /* ════════════════════════════════════════════════════════════
-   FETCH: RSS
+   FETCH: RSS (com filtro de relevância)
    ════════════════════════════════════════════════════════════ */
 async function fetchRSS() {
   const items = [];
   for (const src of RSS_SOURCES) {
     try {
       const feed = await parser.parseURL(src.url);
-      for (const it of (feed.items || []).slice(0, 15)) {
+      let kept = 0;
+      for (const it of (feed.items || []).slice(0, 25)) {
         const title = (it.title || '').trim();
-        if (!title) continue;
+        if (!title || !isRelevant(title)) continue;   // descarta o que não é renda variável
         items.push({
           hash: hashOf(title + src.name),
           title,
@@ -127,74 +104,12 @@ async function fetchRSS() {
           is_official: false,
           published_at: it.isoDate || it.pubDate || new Date().toISOString(),
         });
+        kept++;
       }
-      console.log(`✓ ${src.name}: ${feed.items?.length || 0} itens`);
+      console.log(`✓ ${src.name}: ${kept} relevantes (de ${feed.items?.length || 0})`);
     } catch (e) {
       console.warn(`⚠ Falha em ${src.name}: ${e.message}`);
     }
-  }
-  return items;
-}
-
-/* ════════════════════════════════════════════════════════════
-   FETCH: CVM Fatos Relevantes
-   ════════════════════════════════════════════════════════════ */
-function parseCsvLine(line) {
-  // CSV simples da CVM é semicolon-delimited e sem aspas internas problemáticas
-  return line.split(';');
-}
-
-async function fetchCVM() {
-  const items = [];
-  try {
-    // OBS: dados.cvm.gov.br costuma bloquear IPs fora do Brasil (ETIMEDOUT a partir
-    // dos runners do GitHub, hospedados na Azure EUA/Europa). Por isso usamos poucas
-    // tentativas e timeout curto — não adianta insistir num geobloqueio. Para coletar
-    // a CVM de fato, rode esta etapa de uma origem no Brasil (ver README-backend.md).
-    const res = await robustFetch(CVM_URL, { timeoutMs: 10000, tries: 2, allowInsecureTLS: true });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const buf = Buffer.from(await res.arrayBuffer());
-    const text = buf.toString('latin1'); // CVM usa ISO-8859-1
-    const lines = text.split('\n').filter(Boolean);
-    if (lines.length < 2) return items;
-
-    const header = parseCsvLine(lines[0]).map(h => h.trim());
-    const col = name => header.indexOf(name);
-    const iNome = col('Nome_Companhia');
-    const iCat  = col('Categoria');
-    const iTipo = col('Tipo');
-    const iAss  = col('Assunto');
-    const iData = col('Data_Entrega');
-    const iLink = col('Link_Download');
-
-    const cutoff = Date.now() - 1000 * 60 * 60 * 48; // últimas 48h
-
-    for (let i = 1; i < lines.length; i++) {
-      const c = parseCsvLine(lines[i]);
-      const categoria = (c[iCat] || '').trim();
-      if (!/Fato Relevante|Comunicado ao Mercado/i.test(categoria)) continue;
-
-      const data = (c[iData] || '').trim();
-      const ts = Date.parse(data);
-      if (!isNaN(ts) && ts < cutoff) continue; // só recentes
-
-      const empresa = (c[iNome] || '').trim();
-      const assunto = (c[iAss] || c[iTipo] || categoria).trim();
-      const title = `${empresa}: ${assunto || categoria}`;
-      items.push({
-        hash: hashOf(title + (data || '')),
-        title: title.slice(0, 280),
-        url: (c[iLink] || '').trim() || null,
-        source: 'CVM · Fato Relevante',
-        tag: detectTag(title) === 'Mercado' ? 'Ações' : detectTag(title),
-        ticker: detectTicker(empresa),
-        is_official: true,
-        published_at: !isNaN(ts) ? new Date(ts).toISOString() : new Date().toISOString(),
-      });
-    }
-    console.log(`✓ CVM: ${items.length} fatos relevantes recentes`);
-  } catch (e) {
-    console.warn(`⚠ Falha na CVM: ${e.message}`);
   }
   return items;
 }
@@ -204,7 +119,6 @@ async function fetchCVM() {
    ════════════════════════════════════════════════════════════ */
 async function upsertNews(items) {
   if (!items.length) return 0;
-  // dedupe local por hash
   const seen = new Set();
   const unique = items.filter(i => !seen.has(i.hash) && seen.add(i.hash));
 
@@ -223,6 +137,32 @@ async function upsertNews(items) {
     return 0;
   }
   return unique.length;
+}
+
+/* Remove do banco notícias fora do escopo de renda variável (limpa o legado). */
+async function cleanupIrrelevant() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/news?select=id,title&order=published_at.desc&limit=500`, {
+      headers: { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}` },
+    });
+    if (!r.ok) return 0;
+    const rows = await r.json();
+    const ids = (Array.isArray(rows) ? rows : []).filter(row => !isRelevant(row.title)).map(row => row.id);
+    if (!ids.length) return 0;
+    let removed = 0;
+    for (const group of chunk(ids, 100)) {
+      const del = await fetch(`${SUPABASE_URL}/rest/v1/news?id=in.(${group.join(',')})`, {
+        method: 'DELETE',
+        headers: { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}`, 'Prefer': 'return=minimal' },
+      });
+      if (del.ok) removed += group.length;
+      else console.warn('⚠ Falha ao remover lote:', del.status);
+    }
+    return removed;
+  } catch (e) {
+    console.warn('⚠ Falha na limpeza:', e.message);
+    return 0;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -271,10 +211,11 @@ async function generateSummary(items) {
    ════════════════════════════════════════════════════════════ */
 (async () => {
   console.log('▶ Lastro news fetcher —', new Date().toISOString());
-  const [rss, cvm] = await Promise.all([fetchRSS(), fetchCVM()]);
-  const all = [...cvm, ...rss]; // CVM (oficial) primeiro
-  const n = await upsertNews(all);
-  console.log(`✓ ${n} notícias gravadas/atualizadas`);
-  await generateSummary(all);
+  const rss = await fetchRSS();
+  const n = await upsertNews(rss);
+  console.log(`✓ ${n} notícias relevantes gravadas/atualizadas`);
+  const removed = await cleanupIrrelevant();
+  if (removed) console.log(`🧹 ${removed} notícias fora de escopo removidas do banco`);
+  await generateSummary(rss);
   console.log('■ Concluído');
 })();
