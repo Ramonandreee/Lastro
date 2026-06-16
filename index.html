@@ -2197,7 +2197,7 @@ document.addEventListener('keydown', e=>{
    para os dados de demonstração estáticos. Token (grátis) opcional
    em config.js → BRAPI_TOKEN. Sem token, segue em modo demonstração.
    ══════════════════════════════════════════════════════════ */
-const LIVE = { on:false, ts:null, fails:0, timer:null };
+const LIVE = { on:false, ts:null, fails:0, timer:null, lastError:null };
 
 function brapiToken(){
   const t = (window.LASTRO_CONFIG && window.LASTRO_CONFIG.BRAPI_TOKEN) || '';
@@ -2229,7 +2229,7 @@ async function fetchB3Quotes(token){
   for(const group of chunk(tickers, 10)){
     const url = `https://brapi.dev/api/quote/${group.join(',')}?token=${encodeURIComponent(token)}`;
     const r = await fetch(url);
-    if(!r.ok) throw new Error('brapi quote '+r.status);
+    if(!r.ok){ const body = await r.text().catch(()=> ''); throw new Error(`brapi quote ${r.status}: ${body.slice(0,160)}`); }
     const data = await r.json();
     (data.results||[]).forEach(q => {
       const px = q.regularMarketPrice, vr = q.regularMarketChangePercent;
@@ -2245,7 +2245,7 @@ async function fetchCrypto(token){
   const coins = CRIPTO.map(c=>c.tk).join(',');
   const url = `https://brapi.dev/api/v2/crypto?coin=${coins}&currency=BRL${token?`&token=${encodeURIComponent(token)}`:''}`;
   const r = await fetch(url);
-  if(!r.ok) throw new Error('brapi crypto '+r.status);
+  if(!r.ok){ const body = await r.text().catch(()=> ''); throw new Error(`brapi crypto ${r.status}: ${body.slice(0,160)}`); }
   const data = await r.json();
   let updated = 0;
   (data.coins||[]).forEach(q => {
@@ -2263,7 +2263,13 @@ function setDataStatus(state, label){
   el.classList.remove('demo','live','stale','loading');
   el.classList.add(state);
   if(lb) lb.textContent = label;
-  if(LIVE.ts) el.title = `Última atualização: ${LIVE.ts.toLocaleTimeString('pt-BR')} — clique para atualizar`;
+  if((state==='demo' || state==='stale') && LIVE.lastError){
+    el.title = `Cotações ao vivo indisponíveis — ${LIVE.lastError} (clique para tentar de novo)`;
+  } else if(LIVE.ts){
+    el.title = `Última atualização: ${LIVE.ts.toLocaleTimeString('pt-BR')} — clique para atualizar`;
+  } else {
+    el.title = 'Clique para atualizar as cotações';
+  }
 }
 
 /* re-render preservando inputs em foco */
@@ -2288,24 +2294,27 @@ async function refreshQuotes(manual){
     if(token) tasks.unshift(fetchB3Quotes(token));
     const results = await Promise.allSettled(tasks);
     const updated = results.reduce((s,r)=> s + (r.status==='fulfilled' ? (r.value||0) : 0), 0);
-    const anyErr  = results.some(r=> r.status==='rejected');
+    const errs = results.filter(r=> r.status==='rejected').map(r=> String(r.reason && r.reason.message || r.reason));
+    if(errs.length) console.warn('[Lastro] cotações brapi:', ...errs);
 
     if(updated > 0){
-      LIVE.on = true; LIVE.ts = new Date(); LIVE.fails = 0;
+      LIVE.on = true; LIVE.ts = new Date(); LIVE.fails = 0; LIVE.lastError = null;
       setDataStatus('live', `Ao vivo · ${LIVE.ts.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);
       softRefreshView();
       if(manual===true) toast('Cotações atualizadas');
     } else if(!token){
+      LIVE.lastError = 'BRAPI_TOKEN ausente';
       setDataStatus('demo', 'Demonstração');
-      if(manual===true) toast('Configure BRAPI_TOKEN no config.js para cotações ao vivo');
+      if(manual===true) toast('Configure BRAPI_TOKEN para cotações ao vivo');
     } else {
-      throw new Error('sem dados');
+      // token presente mas nenhuma cotação veio: propaga o erro real da brapi
+      throw new Error(errs[0] || 'brapi não retornou cotações');
     }
-    if(anyErr && updated>0) LIVE.fails++;
   }catch(e){
-    LIVE.fails++;
+    LIVE.fails++; LIVE.lastError = String(e && e.message || e);
+    console.warn('[Lastro] falha nas cotações:', LIVE.lastError);
     setDataStatus(LIVE.on ? 'stale' : 'demo', LIVE.on ? 'Offline · em cache' : 'Demonstração');
-    if(manual===true) toast(LIVE.on ? 'Sem conexão — exibindo último valor' : 'Falha ao buscar cotações');
+    if(manual===true) toast(LIVE.on ? 'Sem conexão — exibindo último valor' : `Cotações: ${LIVE.lastError}`);
   }
 }
 
