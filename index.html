@@ -1268,7 +1268,7 @@ function nav(v, el){
   window.scrollTo({top:0, behavior:'instant'});
 }
 
-function render(v){
+function render(v, soft){
   const c = $('#content');
   if(v==='painel')       c.innerHTML = viewPainel();
   else if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)) c.innerHTML = viewAssets(v);
@@ -1280,7 +1280,7 @@ function render(v){
   else if(v==='noticias')    c.innerHTML = viewNoticias();
   else if(v==='simulador')   c.innerHTML = viewSimulador();
   else if(v==='score')       c.innerHTML = viewScore();
-  afterRender(v);
+  afterRender(v, soft);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1976,22 +1976,25 @@ let newsTimer = null;
 const HAS_CHART = typeof Chart !== 'undefined';
 function destroyCharts(){ Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}}); charts={}; }
 
-function afterRender(v){
+function afterRender(v, soft){
   destroyCharts();
   if(newsTimer){ clearInterval(newsTimer); newsTimer = null; }   // pausa o feed ao sair de Notícias
   if(v==='painel'){
     const p = portfolioStats();
-    animateNum($('#heroVal'), Math.floor(p.atual), {dec:0});
+    // em soft refresh (atualização de cotações) define direto, sem re-animar do zero
+    if(soft) $('#heroVal').textContent = Math.floor(p.atual).toLocaleString('pt-BR');
+    else animateNum($('#heroVal'), Math.floor(p.atual), {dec:0});
     const base = p.atual/1000;
     const sparkData = [base*0.905, base*0.918, base*0.93, base*0.922, base*0.945, base*0.958, base*0.951, base*0.972, base*0.986, base];
     $('#heroSpark').innerHTML = spark(sparkData, 420, 56, 'var(--brand)', true).replace('width="420"','width="100%"').replace('viewBox="0 0 420 56"','viewBox="0 0 420 56" preserveAspectRatio="none"');
     initIbov();
-    askAI(true);
+    if(!soft) askAI(true);
   }
   if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)){ renderAssets(v); }
-  // busca cotações ao vivo da tela atual, sob demanda (proxy /api/quotes)
-  if(['painel','fiis','acoes','bdrs','etfs','cripto','carteira'].includes(v)){ refreshQuotes(); }
-  if(v==='carteira'){ initAlloc(); diagnose(); }
+  // busca cotações ao vivo da tela atual, sob demanda (proxy /api/quotes).
+  // soft=true vem do próprio softRefreshView pós-cotação → não rebuscar (evita loop)
+  if(!soft && ['painel','fiis','acoes','bdrs','etfs','cripto','carteira'].includes(v)){ refreshQuotes(); }
+  if(v==='carteira'){ initAlloc(); if(!soft) diagnose(); }
   if(v==='comparador'){ initComparador(); }
   if(v==='screener'){ runScreener(); }
   if(v==='noticias'){
@@ -2274,7 +2277,7 @@ function softRefreshView(){
     if(typing) return;            // não recriar a tabela enquanto o usuário digita/filtra
     renderAssets(v);
   } else if(['painel','carteira','score'].includes(v) && !typing){
-    render(v);
+    render(v, true);             // soft: re-renderiza sem re-disparar buscas (evita loop)
   }
 }
 
