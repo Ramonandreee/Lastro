@@ -77,6 +77,40 @@ O `index.html` é **autossuficiente** — abre em qualquer navegador. Charts via
 
 ---
 
+## 3.5. Deploy na Vercel (recomendado) ⭐
+
+A forma mais simples de subir **front + proxy de IA + config seguro** de uma vez,
+no plano gratuito. Já existe `vercel.json` configurado no repositório.
+
+**Como funciona:**
+- O front (`index.html`) é servido como estático.
+- `api/ai.js` é o proxy serverless da Anthropic (a chave fica só no servidor).
+- `api/config.js` gera o `config.js` a partir das variáveis de ambiente — assim
+  **nenhuma chave é versionada** e o front recebe a config real em produção
+  (o `vercel.json` faz o rewrite de `/config.js` → `/api/config`).
+- As funções rodam na região **São Paulo (`gru1`)** — menor latência para o BR.
+
+**Passos:**
+1. Acesse [vercel.com](https://vercel.com) → **Add New → Project** → importe o repositório `Lastro`.
+2. Em **Settings → Environment Variables**, defina:
+
+   | Variável | Valor | Exposta ao navegador? |
+   |---|---|---|
+   | `ANTHROPIC_API_KEY` | `sk-ant-...` | **Não** (só o proxy `/api/ai` usa) |
+   | `SUPABASE_URL` | `https://xxxx.supabase.co` | Sim (público) |
+   | `SUPABASE_ANON_KEY` | `sb_publishable_...` | Sim (público, RLS protege) |
+   | `BRAPI_TOKEN` | token da brapi.dev | Sim (já é client-side) |
+   | `REFRESH_MS` / `NEWS_REFRESH_MS` | *(opcional)* | Sim |
+
+3. **Deploy**. Pronto: `https://seu-projeto.vercel.app` no ar, com IA e dados ao vivo.
+4. Domínio próprio: **Settings → Domains** → adicione seu domínio e ajuste o DNS.
+
+> **CVM via `gru1`:** como as funções rodam em São Paulo, dá para mover a coleta dos
+> Fatos Relevantes da CVM (hoje geobloqueada no GitHub Actions) para um **Vercel Cron**
+> que roda um endpoint na `gru1`. Ver `backend/README-backend.md`.
+
+---
+
 ## 4. Segurança da API — OBRIGATÓRIO em produção
 
 ⚠️ **Nunca** exponha a chave da Anthropic no HTML público. Crie um **proxy serverless**.

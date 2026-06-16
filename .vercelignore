@@ -1,0 +1,7 @@
+# Não enviar para o deploy da Vercel (front é estático + funções em /api)
+backend/
+.github/
+node_modules/
+HANDOFF.md
+README.md
+*.log

@@ -1,5 +1,5 @@
 # Chaves e segredos — nunca versionar
-config.js
+/config.js
 .env
 .env.*
 !.env.example

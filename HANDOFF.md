@@ -69,9 +69,12 @@ Próximos passos (a decidir prioridade):
 - [x] Conectar cotações ao vivo (brapi.dev) substituindo os arrays estáticos, com fallback
       → preço e variação de Ações/FIIs/BDRs/ETFs + cripto. Token em config.js (BRAPI_TOKEN);
         sem token cai em modo Demonstração. Indicador de status no topbar. Fundamentos seguem estáticos.
-- [ ] Configurar Supabase (rodar schema.sql) e secrets do GitHub para ativar as notícias reais
-- [ ] Deploy do front (GoDaddy ou Vercel) + domínio
-- [ ] Deploy do proxy de IA na Vercel
+- [x] Configurar Supabase (rodar schema.sql) e secrets do GitHub para ativar as notícias reais
+      → Supabase no ar, schema rodado, chaves novas (publishable + secret), cron coletando RSS.
+        CVM geobloqueada nos runners do GitHub (ETIMEDOUT) — tratada e documentada; resolver via origem BR.
+- [~] Deploy na Vercel (front + proxy IA + config seguro) — PREPARADO, falta o passo final do usuário
+      → vercel.json (região gru1), api/config.js gera config.js das env vars (nada de chave no git),
+        rewrite /config.js→/api/config. Falta: importar repo na Vercel e definir env vars. Ver README §3.5.
 - [ ] Autenticação + carteira em nuvem (Supabase Auth)
 - [ ] App mobile React Native (reaproveitar Score e lógica)
 - [ ] Billing/planos (Free/Pro)
