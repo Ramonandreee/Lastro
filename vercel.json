@@ -2,8 +2,13 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["gru1"],
   "functions": {
-    "api/*.js": { "memory": 256, "maxDuration": 15 }
+    "api/cron/cvm.js": { "memory": 512, "maxDuration": 60 },
+    "api/ai.js": { "memory": 256, "maxDuration": 15 },
+    "api/config.js": { "memory": 128, "maxDuration": 5 }
   },
+  "crons": [
+    { "path": "/api/cron/cvm", "schedule": "0 21 * * *" }
+  ],
   "rewrites": [
     { "source": "/config.js", "destination": "/api/config" }
   ],
