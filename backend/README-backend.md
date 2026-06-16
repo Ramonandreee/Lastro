@@ -44,7 +44,9 @@ Fatos Relevantes oficiais — CVM (dados abertos)   ┘
    - `ANTHROPIC_API_KEY`     (opcional — habilita o resumo do dia)
 3. O workflow `.github/workflows/news.yml` já está pronto. Ele roda a cada 20 min e pode ser disparado manualmente em **Actions → Coletar notícias → Run workflow**.
 
-> Para gerar o `package-lock.json` (usado no cache): rode `cd backend && npm install` uma vez e suba o arquivo.
+> O `backend/package-lock.json` já está versionado (necessário para o cache do
+> `setup-node` e para o `npm ci`). Se alterar dependências, rode
+> `cd backend && npm install` e suba o lockfile atualizado.
 
 ## Passo 3 — Ligar o front ao feed
 
@@ -53,7 +55,10 @@ No `config.js`, preencha:
 SUPABASE_URL: 'https://xxxx.supabase.co',
 SUPABASE_ANON_KEY: 'sua-anon-key',
 ```
-Pronto. A aba **Notícias** passa a ler do Supabase. Sem essas chaves, ela usa o feed estático de demonstração (o selo mostra "Demonstração" em vez de "LIVE").
+Pronto. A aba **Notícias** passa a ler do Supabase e se atualiza sozinha a cada
+`NEWS_REFRESH_MS` (config.js) enquanto estiver aberta. O selo no topo do feed
+mostra **"Atualizado há X min"** quando há dados ao vivo, **"Demonstração"** sem
+as chaves (usa o feed estático) e **"Feed offline"** se a API falhar.
 
 ---
 

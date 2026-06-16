@@ -1882,6 +1882,16 @@ function viewRecomendadas(){
    ══════════════════════════════════════════════════════════ */
 const NEWS_TAG_CLS = { 'Ações':'chip-blue','FIIs':'chip-gold','Mercado':'chip-neu','Stocks':'chip-up','Cripto':'chip-gold','BDRs':'chip-blue' };
 
+// escapa conteúdo externo (RSS/CVM) antes de injetar no DOM
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// abre a notícia (link externo) ou o ticker — sem interpolar URL não-confiável em onclick
+function openNews(el){
+  const url = el.getAttribute('data-url'), tk = el.getAttribute('data-tk');
+  if(url) window.open(url, '_blank', 'noopener,noreferrer');
+  else if(tk) quickView(tk);
+}
+
 // tempo relativo a partir de uma data ISO
 function timeAgo(iso){
   if(!iso) return '';
@@ -1900,11 +1910,11 @@ function newsItemHTML(n){
   const tk  = n.ticker || n.tk || null;
   const tm  = n.published_at ? timeAgo(n.published_at) : (n.t || '');
   const oficial = n.is_official ? `<span class="chip chip-up" style="font-size:10px"><i class="fa-solid fa-certificate" style="font-size:9px"></i> Oficial</span>` : '';
-  const click = n.url ? `onclick="window.open('${n.url}','_blank')"` : (tk?`onclick="quickView('${tk}')"`:'');
-  return `<div class="news-item" ${click} style="${n.url?'cursor:pointer':''}">
-    <div class="news-meta"><span class="chip ${NEWS_TAG_CLS[tag]||'chip-neu'}">${tag}</span>${oficial}<span class="news-src">${src}</span><span class="news-time">${tm}</span></div>
-    <div class="news-title">${tt}</div>
-    ${tk?`<div class="news-ticker"><i class="fa-solid fa-tag"></i> ${tk}</div>`:''}
+  const clickable = (n.url || tk) ? `onclick="openNews(this)" style="cursor:pointer"` : '';
+  return `<div class="news-item" data-url="${esc(n.url||'')}" data-tk="${esc(tk||'')}" ${clickable}>
+    <div class="news-meta"><span class="chip ${NEWS_TAG_CLS[tag]||'chip-neu'}">${esc(tag)}</span>${oficial}<span class="news-src">${esc(src)}</span><span class="news-time">${esc(tm)}</span></div>
+    <div class="news-title">${esc(tt)}</div>
+    ${tk?`<div class="news-ticker"><i class="fa-solid fa-tag"></i> ${esc(tk)}</div>`:''}
   </div>`;
 }
 
@@ -1962,11 +1972,13 @@ async function loadNewsFeed(){
    AFTER RENDER — charts & animations
    ══════════════════════════════════════════════════════════ */
 let charts = {};
+let newsTimer = null;
 const HAS_CHART = typeof Chart !== 'undefined';
 function destroyCharts(){ Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}}); charts={}; }
 
 function afterRender(v){
   destroyCharts();
+  if(newsTimer){ clearInterval(newsTimer); newsTimer = null; }   // pausa o feed ao sair de Notícias
   if(v==='painel'){
     const p = portfolioStats();
     animateNum($('#heroVal'), Math.floor(p.atual), {dec:0});
@@ -1982,9 +1994,15 @@ function afterRender(v){
   if(v==='screener'){ runScreener(); }
   if(v==='noticias'){
     loadNewsFeed();
-    // resumo IA local como fallback caso o Supabase não esteja configurado
+    // auto-refresh do feed enquanto a aba estiver aberta (Supabase)
     const cfg = window.LASTRO_CONFIG||{};
-    if(!cfg.SUPABASE_URL) callAI('Faça um resumo de 2 frases do dia no mercado brasileiro de renda variável, considerando: Ibovespa em máxima, Petrobras com dividendos extras, FIIs de papel atrativos com Selic 14,5%.', $('#newsAI'));
+    if(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY){
+      const nms = Math.max(cfg.NEWS_REFRESH_MS || 300000, 60000);
+      newsTimer = setInterval(()=>{ if(currentView==='noticias') loadNewsFeed(); }, nms);
+    } else {
+      // resumo IA local como fallback caso o Supabase não esteja configurado
+      callAI('Faça um resumo de 2 frases do dia no mercado brasileiro de renda variável, considerando: Ibovespa em máxima, Petrobras com dividendos extras, FIIs de papel atrativos com Selic 14,5%.', $('#newsAI'));
+    }
   }
   if(v==='simulador'){ runSim(); }
   if(v==='score'){ animateGauges(); }
