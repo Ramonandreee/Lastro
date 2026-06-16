@@ -147,7 +147,11 @@ function parseCsvLine(line) {
 async function fetchCVM() {
   const items = [];
   try {
-    const res = await robustFetch(CVM_URL, { timeoutMs: 25000, tries: 3, allowInsecureTLS: true });
+    // OBS: dados.cvm.gov.br costuma bloquear IPs fora do Brasil (ETIMEDOUT a partir
+    // dos runners do GitHub, hospedados na Azure EUA/Europa). Por isso usamos poucas
+    // tentativas e timeout curto — não adianta insistir num geobloqueio. Para coletar
+    // a CVM de fato, rode esta etapa de uma origem no Brasil (ver README-backend.md).
+    const res = await robustFetch(CVM_URL, { timeoutMs: 10000, tries: 2, allowInsecureTLS: true });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const buf = Buffer.from(await res.arrayBuffer());
     const text = buf.toString('latin1'); // CVM usa ISO-8859-1

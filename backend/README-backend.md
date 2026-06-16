@@ -81,6 +81,7 @@ SUPABASE_URL=... SUPABASE_SERVICE_KEY=... ANTHROPIC_API_KEY=... npm run fetch
 | Anthropic (opcional) | Resumo do dia + (futuro) classificação avançada | Por uso |
 
 - **CVM**: o arquivo `IPE_CIA_ABERTA_<ano>.csv` é atualizado diariamente em `dados.cvm.gov.br`. Confirme a URL no portal caso a estrutura mude.
+  - ⚠️ **Geobloqueio:** o `dados.cvm.gov.br` bloqueia IPs fora do Brasil — a coleta da CVM falha com `ETIMEDOUT` nos runners do GitHub Actions (hospedados na Azure EUA/Europa). Os portais RSS cobrem o feed normalmente; apenas os **Fatos Relevantes oficiais** ficam de fora nesse cenário. O coletor já trata isso de forma resiliente (poucas tentativas, timeout curto, falha silenciosa). **Para habilitar a CVM**, rode essa etapa de uma origem no Brasil — por exemplo, uma **função serverless na região de São Paulo (Vercel `gru1`)** disparada por cron, ou um pequeno proxy hospedado no BR que o coletor consome.
 - **RSS**: adicione/remova feeds editando `RSS_SOURCES` no `fetch-news.mjs`. Nem todo portal mantém o caminho `/feed/`.
 - **Direitos autorais**: o feed exibe **título + link para a fonte** — não reproduz o texto integral. Sempre direcione o clique ao portal original.
 - **Classificação**: hoje é heurística (rápida e sem custo). A função de IA pode ser estendida para classificar tag/ticker com mais precisão se desejar.
