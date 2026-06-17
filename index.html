@@ -1069,7 +1069,20 @@ input[type=range]::-moz-range-thumb {
 .ds-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:12px; flex-wrap:wrap; }
 .dt-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
 @media (max-width:880px){ .dt-grid{ grid-template-columns:1fr; } .about-grid{ grid-template-columns:1fr; } }
-@media (max-width:560px){ .dt-px{ margin-left:0; text-align:left; width:100%; } .dt-actions{ justify-content:flex-start; } }
+@media (max-width:680px){
+  .dt-head{ flex-wrap:wrap; gap:13px; }
+  .dt-id{ min-width:0; flex:1; }
+  .dt-id .nm{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .dt-px{ margin-left:0; text-align:left; width:100%; }
+  .dt-px .v{ font-size:26px; }
+  .dt-actions{ justify-content:flex-start; flex-wrap:wrap; margin-top:10px; }
+  .dt-actions .btn{ flex:1; justify-content:center; }
+  .sumgrid{ grid-template-columns:repeat(2,1fr); }
+  .range-tabs{ flex-wrap:wrap; justify-content:flex-end; }
+  .detail-chart{ height:220px; }
+  .fgroup{ grid-template-columns:1fr; }
+}
+@media (max-width:380px){ .sumgrid{ grid-template-columns:1fr; } }
 
 /* toast */
 .toast {
@@ -1299,6 +1312,14 @@ const ETFS = [
   { tk:'SPXI11', nm:'It Now S&P 500',     seg:'Exterior',          px:58.20,  pat:'R$ 1,4B', tx:'0,23%', var:+1.30 },
   { tk:'XINA11', nm:'Trend China',        seg:'Exterior',          px:14.60,  pat:'R$ 410M', tx:'0,75%', var:+0.92 },
   { tk:'ECOO11', nm:'iShares ESG',        seg:'Renda Variável BR', px:96.80,  pat:'R$ 380M', tx:'0,25%', var:+0.41 },
+  { tk:'IMAB11', nm:'It Now IMA-B',       seg:'Renda Fixa',        px:96.40,  pat:'R$ 1,3B', tx:'0,25%', var:+0.12 },
+  { tk:'FIXA11', nm:'Renda Fixa Pré',     seg:'Renda Fixa',        px:104.20, pat:'R$ 720M', tx:'0,20%', var:+0.08 },
+  { tk:'B5P211', nm:'IMA-B 5+ Invest.',   seg:'Renda Fixa',        px:88.30,  pat:'R$ 560M', tx:'0,20%', var:+0.15 },
+  { tk:'USTK11', nm:'BTG US Tech',        seg:'Exterior',          px:42.10,  pat:'R$ 340M', tx:'0,30%', var:+1.55 },
+  { tk:'ACWI11', nm:'iShares ACWI Global',seg:'Exterior',          px:38.70,  pat:'R$ 280M', tx:'0,30%', var:+0.88 },
+  { tk:'TECK11', nm:'Trend Tech US',      seg:'Exterior',          px:19.40,  pat:'R$ 260M', tx:'0,30%', var:+1.62 },
+  { tk:'WRLD11', nm:'Trend ETF Mundo',    seg:'Exterior',          px:22.80,  pat:'R$ 210M', tx:'0,30%', var:+0.74 },
+  { tk:'GOVE11', nm:'It Now Governança',  seg:'Renda Variável BR', px:91.50,  pat:'R$ 190M', tx:'0,30%', var:+0.45 },
 ];
 
 /* ─── STOCKS (internacional) ─── */
@@ -1363,9 +1384,9 @@ const RECOMENDADAS = [
    HELPERS
    ══════════════════════════════════════════════════════════ */
 const $ = s => document.querySelector(s);
-const fmt = n => n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-const fmtInt = n => Math.round(n).toLocaleString('pt-BR');
-const brl = n => 'R$ ' + fmt(n);
+const fmt = n => (typeof n==='number' && isFinite(n)) ? n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—';
+const fmtInt = n => (typeof n==='number' && isFinite(n)) ? Math.round(n).toLocaleString('pt-BR') : '—';
+const brl = n => (typeof n==='number' && isFinite(n)) ? 'R$ ' + fmt(n) : '—';
 
 function sparkPath(data, w, h, pad=2){
   const min = Math.min(...data), max = Math.max(...data);
@@ -2399,9 +2420,11 @@ function fmtPx(a,k){
   if(ASSET_CLASS[k].cur==='usd') return usd(a.px);
   return (k==='cripto' && a.px>=100) ? brl(Math.round(a.px)) : brl(a.px);
 }
-/* logo real do ativo (CDN brapi p/ B3, CoinCap p/ cripto) com fallback monograma */
+/* logo real do ativo (CDN brapi p/ B3, CoinCap p/ cripto, Clearbit p/ stocks US) */
+const STOCK_DOMAIN = { NVDA:'nvidia.com', AAPL:'apple.com', MSFT:'microsoft.com', GOOGL:'google.com', AMZN:'amazon.com', META:'meta.com', TSM:'tsmc.com', AVGO:'broadcom.com', TSLA:'tesla.com', JPM:'jpmorganchase.com', NFLX:'netflix.com', AMD:'amd.com', V:'visa.com', MA:'mastercard.com', KO:'coca-cola.com', DIS:'thewaltdisneycompany.com' };
 function logoSrc(tk,k){
   if(k==='cripto') return `https://assets.coincap.io/assets/icons/${String(tk).toLowerCase()}@2x.png`;
+  if(k==='stocks'){ const d=STOCK_DOMAIN[tk]; return d?`https://logo.clearbit.com/${d}`:''; }
   if(k==='acoes'||k==='fiis'||k==='bdrs'||k==='etfs') return `https://icons.brapi.dev/icons/${tk}.svg`;
   return '';
 }
@@ -2500,6 +2523,9 @@ function metricsForDetail(a,k){
   return [];
 }
 function fundamentalsHTML(a,k,f){
+  if(a._uni && !f){
+    return `<div class="card card-pad"><div style="font-size:13px;color:var(--ink-2);line-height:1.6"><i class="fa-solid fa-circle-info" style="color:var(--accent)"></i> Este ativo faz parte do <strong>universo completo da B3</strong>. Preço, variação e gráfico já estão ativos; os indicadores fundamentalistas detalhados (P/L, DY, ROE, balanço…) chegam ao conectar uma fonte de dados de fundamentos.</div></div>`;
+  }
   if(k==='acoes'){
     const vpa=a.px/a.pvp, lpa=a.px/a.pl;
     return `<div class="dt-grid">
@@ -2614,7 +2640,7 @@ function aboutHTML(a,k,f){
   const grid = f ? (isFii
       ? `${fRow('Segmento', a.seg)}${fRow('Tipo', f.tipo)}${fRow('Gestão', f.gestao)}${fRow('Taxa de adm.', f.txadm)}${fRow('Patrimônio líq.', f.plf)}${fRow('Valor de mercado', f.mkt)}${fRow('Nº de cotistas', f.cotistas)}${fRow('Nº de cotas', f.cotas)}`
       : `${fRow('Setor', f.setor)}${fRow('Segmento', f.sub)}${fRow('Governança', f.gov)}${fRow('Tag Along', f.tag)}${fRow('Free Float', f.ff)}${fRow('Nº de ações', f.shares)}${fRow('Valor de mercado', f.mkt)}${fRow('Valor de firma', f.ev)}`)
-    : `${fRow('Segmento', a.seg)}${fRow('Classe', ASSET_CLASS[k].label)}`;
+    : `${fRow('Segmento', a.seg)}${fRow('Classe', ASSET_CLASS[k].label)}${a.mkt?fRow('Valor de mercado', a.mkt):''}${fRow('Cotação', fmtPx(a,k))}`;
   return `<div class="card card-pad">
     <div class="ds-title">${title}</div>
     <div class="about-head">${assetLogo(a.tk,k,'md')}<div><div style="font-weight:600;font-size:15px">${esc(a.nm)}</div><div style="font-size:12.5px;color:var(--ink-3);margin-top:2px">${sub}</div></div></div>
@@ -2638,8 +2664,9 @@ function newsHTML(tk){
 
 function summaryCards(a,k,f){
   let cards=[];
-  if(k==='acoes') cards=[['Valor de mercado',f?f.mkt:'—'],['P/L',pc(a.pl,2)+'x'],['Dividend Yield',pc(a.dy,1)+'%','up'],['ROE',pc(a.roe,1)+'%'],['P/VP',pc(a.pvp,2)],['Valor de firma',f?f.ev:'—']];
-  else if(k==='fiis') cards=[['Valor de mercado',f?f.mkt:'—'],['P/VP',pc(a.pvp,2)],['Dividend Yield',pc(a.dy,1)+'%','up'],['Vacância',pc(a.vac,1)+'%',a.vac<5?'up':'down'],['Último rend.',brl(a.div),'up'],['Patrimônio',f?f.plf:'—']];
+  if(a._uni) cards=[['Cotação',fmtPx(a,k)],['Variação hoje',(a.var>=0?'+':'')+pc(a.var)+'%',a.var>=0?'up':'down'],['Valor de mercado',a.mkt||'—'],['Setor',a.seg||'—'],['Classe',ASSET_CLASS[k].label]];
+  else if(k==='acoes') cards=[['Valor de mercado',(f&&f.mkt)||a.mkt||'—'],['P/L',pc(a.pl,2)+'x'],['Dividend Yield',pc(a.dy,1)+'%','up'],['ROE',pc(a.roe,1)+'%'],['P/VP',pc(a.pvp,2)],['Valor de firma',f?f.ev:'—']];
+  else if(k==='fiis') cards=[['Valor de mercado',(f&&f.mkt)||a.mkt||'—'],['P/VP',pc(a.pvp,2)],['Dividend Yield',pc(a.dy,1)+'%','up'],['Vacância',pc(a.vac,1)+'%',a.vac<5?'up':'down'],['Último rend.',brl(a.div),'up'],['Patrimônio',f?f.plf:'—']];
   else cards=metricsForDetail(a,k).slice(0,6);
   return cards.map(c=>`<div class="sumcard"><div class="l">${c[0]}</div><div class="v ${c[2]||''}">${c[1]}</div></div>`).join('');
 }
