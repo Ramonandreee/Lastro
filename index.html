@@ -582,11 +582,6 @@ a { color: inherit; text-decoration: none; }
 <!-- ════════ TOAST ════════ -->
 <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i> <span id="toastMsg"></span></div>
 
-<!-- ════════ DRAWER — DETALHE DO ATIVO ════════ -->
-<div class="drawer-scrim" id="assetDrawer" onclick="if(event.target===this)closeAsset()">
-  <aside class="drawer" id="assetDrawerPanel" role="dialog" aria-label="Detalhe do ativo"></aside>
-</div>
-
 <style>
 /* ══════════════════════════════════════════════════════════
    COMPONENT STYLES (views)
@@ -977,75 +972,51 @@ input[type=range]::-moz-range-thumb {
 .sr-pr { font-family: var(--mono); font-size: 13px; font-weight: 500; }
 .search-empty { padding: 32px; text-align: center; color: var(--ink-3); font-size: 13px; }
 
-/* asset detail drawer */
-.drawer-scrim {
-  position: fixed; inset: 0; z-index: 240;
-  background: rgba(15,20,25,.44); backdrop-filter: blur(3px);
-  display: flex; justify-content: flex-end;
-  opacity: 0; pointer-events: none; transition: opacity .28s var(--ease);
-}
-.drawer-scrim.open { opacity: 1; pointer-events: auto; }
-.drawer {
-  width: 524px; max-width: 96vw; height: 100%;
-  background: var(--surface); border-left: 1px solid var(--line-2);
-  box-shadow: var(--sh-xl); overflow-y: auto;
-  display: flex; flex-direction: column;
-  transform: translateX(100%); transition: transform .34s var(--ease-out);
-}
-.drawer-scrim.open .drawer { transform: none; }
-.drawer-head {
-  position: sticky; top: 0; z-index: 3;
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
-  padding: 20px 22px 14px; background: var(--surface); border-bottom: 1px solid var(--line);
-}
-.dh-asset { display: flex; gap: 13px; align-items: center; min-width: 0; }
-.dh-ic {
-  width: 46px; height: 46px; border-radius: 12px; flex: none;
-  background: linear-gradient(135deg, var(--brand), var(--brand-d)); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--mono); font-size: 12px; font-weight: 600;
-}
-.dh-tk { font-family: var(--mono); font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-.dh-nm { font-size: 13px; color: var(--ink-3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.drawer-close {
-  width: 34px; height: 34px; border-radius: 9px; flex: none;
-  border: 1px solid var(--line); background: var(--surface); color: var(--ink-3);
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-  transition: all .15s var(--ease);
-}
-.drawer-close:hover { background: var(--surface-3); color: var(--ink); }
-.drawer-price { display: flex; align-items: baseline; gap: 12px; padding: 16px 22px 6px; flex-wrap: wrap; }
-.dp-px { font-family: var(--mono); font-size: 30px; font-weight: 600; letter-spacing: -.01em; }
-.dp-var { font-family: var(--mono); font-size: 13.5px; font-weight: 600; padding: 3px 9px; border-radius: 7px; }
-.dp-var.up { color: var(--up); background: var(--up-l); }
-.dp-var.down { color: var(--down); background: var(--down-l); }
-.dp-seg { font-size: 12.5px; color: var(--ink-3); margin-left: auto; }
-.drawer-sec { padding: 18px 22px; border-top: 1px solid var(--line); }
-.ds-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3); margin-bottom: 14px; }
-.ds-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.range-tabs { display: flex; gap: 3px; background: var(--surface-3); padding: 3px; border-radius: 9px; }
-.range-tabs button { font-size: 11.5px; font-weight: 500; padding: 5px 11px; border-radius: 6px; color: var(--ink-3); cursor: pointer; transition: all .14s var(--ease); }
-.range-tabs button.on { background: var(--surface); color: var(--ink); box-shadow: var(--sh-sm); }
-.drawer-chart { height: 184px; position: relative; }
-.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
-.metric { background: var(--surface); padding: 13px 15px; }
-.metric .ml { font-size: 11.5px; color: var(--ink-3); margin-bottom: 5px; }
-.metric .mv { font-family: var(--mono); font-size: 16px; font-weight: 600; }
-.metric .mv.up { color: var(--up); } .metric .mv.down { color: var(--down); }
-.drawer-score-row { display: flex; gap: 18px; align-items: center; }
-.dnews { display: flex; flex-direction: column; }
-.dnews a { display: block; padding: 11px 0; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink); line-height: 1.45; cursor: pointer; transition: color .14s var(--ease); }
-.dnews a:first-child { border-top: none; padding-top: 0; }
-.dnews a:hover { color: var(--brand); }
-.dnews a .nm { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
-.drawer-empty { font-size: 12.5px; color: var(--ink-3); }
-.drawer-actions {
-  margin-top: auto; position: sticky; bottom: 0;
-  display: flex; gap: 10px; padding: 16px 22px;
-  background: var(--surface); border-top: 1px solid var(--line);
-}
-.drawer-actions .btn { flex: 1; justify-content: center; }
-@media (max-width: 560px) { .drawer { width: 100vw; } }
+/* asset detail page */
+.dt-back { display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:500; color:var(--ink-3); padding:7px 12px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface); cursor:pointer; transition:all .15s var(--ease); margin-bottom:16px; }
+.dt-back:hover { color:var(--ink); border-color:var(--line-2); }
+.dt-head { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
+.dt-ic { width:56px; height:56px; border-radius:14px; flex:none; background:linear-gradient(135deg,var(--brand),var(--brand-d)); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:14px; font-weight:600; }
+.dt-id .tk { font-family:var(--mono); font-size:23px; font-weight:600; display:flex; align-items:center; gap:9px; }
+.dt-id .nm { font-size:14px; color:var(--ink-2); margin-top:2px; }
+.dt-id .sec { font-size:12px; color:var(--ink-3); margin-top:4px; }
+.dt-px { margin-left:auto; text-align:right; }
+.dt-px .v { font-family:var(--mono); font-size:30px; font-weight:600; letter-spacing:-.01em; }
+.dt-px .d { font-family:var(--mono); font-size:13.5px; font-weight:600; margin-top:4px; display:inline-block; padding:2px 8px; border-radius:7px; }
+.dt-px .d.up{ color:var(--up); background:var(--up-l); } .dt-px .d.down{ color:var(--down); background:var(--down-l); }
+.dt-actions { display:flex; gap:9px; margin-top:12px; justify-content:flex-end; }
+.sumgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; margin-bottom:16px; }
+.sumcard { background:var(--surface); padding:14px 16px; }
+.sumcard .l { font-size:10.5px; color:var(--ink-3); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
+.sumcard .v { font-family:var(--mono); font-size:17px; font-weight:600; }
+.sumcard .v.up{color:var(--up)} .sumcard .v.down{color:var(--down)}
+.fgroup-title { font-size:13px; font-weight:600; color:var(--ink); margin:2px 0 8px; }
+.fgroup { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:0 28px; }
+.f-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10.5px 0; border-bottom:1px solid var(--line); font-size:13px; }
+.f-row .f-l { color:var(--ink-2); }
+.f-row .f-v { font-family:var(--mono); font-weight:600; text-align:right; }
+.f-row .f-v.up{color:var(--up)} .f-row .f-v.down{color:var(--down)}
+.about-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 28px; }
+.detail-chart { height:280px; position:relative; }
+.div-chart { height:210px; position:relative; }
+.dnews { display:flex; flex-direction:column; }
+.dnews a { display:block; padding:12px 0; border-top:1px solid var(--line); font-size:13.5px; color:var(--ink); line-height:1.45; cursor:pointer; transition:color .14s var(--ease); }
+.dnews a:first-child { border-top:none; padding-top:0; }
+.dnews a:hover { color:var(--brand); }
+.dnews a .nm { font-size:11.5px; color:var(--ink-3); margin-top:4px; }
+.metric-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; }
+.metric { background:var(--surface); padding:13px 15px; }
+.metric .ml { font-size:11.5px; color:var(--ink-3); margin-bottom:5px; }
+.metric .mv { font-family:var(--mono); font-size:16px; font-weight:600; }
+.metric .mv.up{color:var(--up)} .metric .mv.down{color:var(--down)}
+.range-tabs { display:flex; gap:3px; background:var(--surface-3); padding:3px; border-radius:9px; }
+.range-tabs button { font-size:11.5px; font-weight:500; padding:5px 11px; border-radius:6px; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
+.range-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
+.ds-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-3); margin-bottom:14px; }
+.ds-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:12px; flex-wrap:wrap; }
+.dt-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
+@media (max-width:880px){ .dt-grid{ grid-template-columns:1fr; } .about-grid{ grid-template-columns:1fr; } }
+@media (max-width:560px){ .dt-px{ margin-left:0; text-align:left; width:100%; } .dt-actions{ justify-content:flex-start; } }
 
 /* toast */
 .toast {
@@ -1150,6 +1121,36 @@ const ACOES = [
   { tk:'RDOR3', nm:'Rede D\'Or',   seg:'Saúde',        px:31.80, pl:22.1, pvp:2.6,  dy:1.1,  roe:12.3, mgl:14.0, var:-0.31, consist:0.70, liq:34 },
 ];
 ACOES.forEach(a => a.score = scoreLastro(a));
+
+/* ─── FUNDAMENTOS DETALHADOS (dataset expandido p/ a página do ativo) ───
+   Valores estáticos realistas; cotação/variação seguem ao vivo. Pronto p/
+   ser substituído por uma fonte de fundamentos quando conectada. */
+const FUND = {
+  /* ── AÇÕES ── */
+  PETR4:{setor:'Petróleo, Gás e Biocombustíveis',sub:'Exploração, Refino e Distribuição',gov:'Nível 2',tag:'100%',ff:'36,8%',shares:'13,04 bi',mkt:'R$ 545,7 bi',ev:'R$ 921,8 bi',pebit:3.1,evebit:3.8,evebitda:2.6,psr:1.2,pativo:0.52,roa:11.2,roic:18.9,mb:51.2,mebit:38.5,ml:24.1,giro:0.42,dleb:0.78,dlpl:0.45,lc:0.92,pat:0.41,payout:45,cagrR:8.4,cagrL:12.1,divs:[['2021',3.45],['2022',7.85],['2023',4.20],['2024',5.10],['2025',5.85]],desc:'Maior empresa do Brasil, atua em exploração, produção, refino e distribuição de petróleo e gás. Forte geração de caixa e política de dividendos atrelada ao endividamento.'},
+  BBAS3:{setor:'Financeiro',sub:'Bancos',gov:'Novo Mercado',tag:'100%',ff:'50,0%',shares:'5,70 bi',mkt:'R$ 108,2 bi',ev:'—',pebit:null,evebit:null,evebitda:null,psr:1.1,pativo:0.09,roa:1.4,roic:null,mb:null,mebit:null,ml:24.0,giro:0.06,dleb:null,dlpl:null,lc:null,pat:0.08,payout:40,cagrR:9.1,cagrL:14.5,divs:[['2021',1.45],['2022',2.30],['2023',2.65],['2024',2.10],['2025',1.95]],desc:'Maior banco da América Latina em ativos, forte presença no crédito rural e ampla base de clientes. Controle estatal e histórico consistente de dividendos.'},
+  VALE3:{setor:'Materiais Básicos',sub:'Mineração — Minério de Ferro',gov:'Novo Mercado',tag:'100%',ff:'100%',shares:'4,29 bi',mkt:'R$ 332,8 bi',ev:'R$ 380,1 bi',pebit:4.1,evebit:4.7,evebitda:3.4,psr:1.5,pativo:0.78,roa:12.0,roic:16.5,mb:44.0,mebit:36.2,ml:25.5,giro:0.47,dleb:0.55,dlpl:0.20,lc:1.05,pat:0.50,payout:60,cagrR:6.8,cagrL:5.2,divs:[['2021',8.40],['2022',6.10],['2023',5.40],['2024',6.80],['2025',7.20]],desc:'Uma das maiores mineradoras do mundo e líder global em minério de ferro e pelotas, com operações de níquel e cobre. Forte exposição à demanda chinesa.'},
+  ITUB4:{setor:'Financeiro',sub:'Bancos',gov:'Nível 1',tag:'100% ON / 80% PN',ff:'45,2%',shares:'9,80 bi',mkt:'R$ 385,4 bi',ev:'—',pebit:null,evebit:null,evebitda:null,psr:3.2,pativo:0.16,roa:1.8,roic:null,mb:null,mebit:null,ml:26.8,giro:0.07,dleb:null,dlpl:null,lc:null,pat:0.10,payout:30,cagrR:8.0,cagrL:11.0,divs:[['2021',0.85],['2022',0.95],['2023',1.20],['2024',1.45],['2025',1.60]],desc:'Maior banco privado do Brasil, com operações de varejo, atacado e gestão de patrimônio. Rentabilidade elevada e consistente (ROE ~20%).'},
+  BBDC4:{setor:'Financeiro',sub:'Bancos',gov:'Nível 1',tag:'100% ON / 80% PN',ff:'70,0%',shares:'10,60 bi',mkt:'R$ 159,6 bi',ev:'—',pebit:null,evebit:null,evebitda:null,psr:1.8,pativo:0.10,roa:1.0,roic:null,mb:null,mebit:null,ml:18.2,giro:0.06,dleb:null,dlpl:null,lc:null,pat:0.09,payout:35,cagrR:6.5,cagrL:4.0,divs:[['2021',0.65],['2022',0.70],['2023',0.62],['2024',0.58],['2025',0.60]],desc:'Um dos maiores bancos privados do país, com forte atuação em seguros. Passa por ciclo de reestruturação e recuperação de rentabilidade.'},
+  ABEV3:{setor:'Consumo não Cíclico',sub:'Bebidas',gov:'Tradicional',tag:'100%',ff:'28,0%',shares:'15,75 bi',mkt:'R$ 255,9 bi',ev:'R$ 240,2 bi',pebit:11.5,evebit:10.8,evebitda:8.5,psr:2.9,pativo:1.4,roa:11.0,roic:14.2,mb:50.5,mebit:25.4,ml:21.4,giro:0.52,dleb:-0.3,dlpl:-0.10,lc:1.10,pat:0.62,payout:65,cagrR:10.2,cagrL:7.5,divs:[['2021',0.55],['2022',0.62],['2023',1.05],['2024',0.78],['2025',0.85]],desc:'Maior cervejaria da América Latina, subsidiária da AB InBev. Caixa líquido, marcas líderes (Skol, Brahma, Antarctica) e forte geração de caixa.'},
+  WEGE3:{setor:'Bens Industriais',sub:'Motores, Máquinas e Equipamentos',gov:'Novo Mercado',tag:'100%',ff:'42,0%',shares:'4,20 bi',mkt:'R$ 176,9 bi',ev:'R$ 172,0 bi',pebit:28.0,evebit:27.2,evebitda:24.5,psr:5.8,pativo:6.2,roa:22.0,roic:28.5,mb:32.5,mebit:20.1,ml:17.9,giro:1.05,dleb:-0.4,dlpl:-0.12,lc:2.10,pat:0.58,payout:55,cagrR:18.5,cagrL:22.0,divs:[['2021',0.35],['2022',0.42],['2023',0.55],['2024',0.68],['2025',0.80]],desc:'Multinacional brasileira líder em motores elétricos, automação e geração de energia. Crescimento consistente, alta rentabilidade e caixa líquido.'},
+  PRIO3:{setor:'Petróleo, Gás e Biocombustíveis',sub:'Exploração e Produção',gov:'Novo Mercado',tag:'100%',ff:'66,0%',shares:'8,10 bi',mkt:'R$ 51,1 bi',ev:'R$ 58,9 bi',pebit:5.8,evebit:6.7,evebitda:4.2,psr:3.1,pativo:1.2,roa:15.5,roic:20.1,mb:62.0,mebit:50.5,ml:48.2,giro:0.32,dleb:0.85,dlpl:0.30,lc:1.40,pat:0.55,payout:0,cagrR:35.0,cagrL:40.0,divs:[['2021',0],['2022',0],['2023',0],['2024',0],['2025',0]],desc:'Maior empresa independente de óleo e gás do Brasil (ex-PetroRio), especializada em redesenvolvimento de campos maduros. Baixo custo de extração, foco em crescimento.'},
+  BPAC11:{setor:'Financeiro',sub:'Banco de Investimento',gov:'Nível 2',tag:'100%',ff:'30,0%',shares:'7,90 bi',mkt:'R$ 388,2 bi',ev:'—',pebit:null,evebit:null,evebitda:null,psr:6.5,pativo:0.18,roa:2.5,roic:null,mb:null,mebit:null,ml:33.0,giro:0.08,dleb:null,dlpl:null,lc:null,pat:0.11,payout:25,cagrR:22.0,cagrL:25.5,divs:[['2021',0.30],['2022',0.45],['2023',0.85],['2024',1.10],['2025',1.30]],desc:'Maior banco de investimento da América Latina, com forte crescimento em wealth management, crédito e banking digital. Rentabilidade e crescimento elevados.'},
+  RDOR3:{setor:'Saúde',sub:'Serviços Médico-Hospitalares',gov:'Novo Mercado',tag:'100%',ff:'45,0%',shares:'2,30 bi',mkt:'R$ 73,1 bi',ev:'R$ 95,4 bi',pebit:18.5,evebit:24.0,evebitda:14.5,psr:2.0,pativo:1.3,roa:5.5,roic:9.8,mb:28.0,mebit:14.5,ml:14.0,giro:0.45,dleb:2.1,dlpl:0.70,lc:1.30,pat:0.40,payout:25,cagrR:24.0,cagrL:18.0,divs:[['2021',0.20],['2022',0.25],['2023',0.30],['2024',0.35],['2025',0.38]],desc:'Maior rede de hospitais e saúde integrada do Brasil, com operação hospitalar, oncologia e seguradora. Crescimento via aquisições e verticalização.'},
+  /* ── FIIs ── */
+  KNCR11:{fii:1,tipo:'Papel · CDI',gestao:'Ativa',plf:'R$ 6,2 bi',mkt:'R$ 6,1 bi',cotistas:'412 mil',cotas:'58,5 mi',liqf:'R$ 18,5 mi/dia',txadm:'1,08% a.a.',nat:'74 CRIs',desc:'FII de papel da Kinea com carteira de CRIs majoritariamente indexada ao CDI, baixo risco de crédito e renda mensal estável.'},
+  HGLG11:{fii:1,tipo:'Tijolo · Logístico',gestao:'Ativa',plf:'R$ 4,3 bi',mkt:'R$ 3,9 bi',cotistas:'320 mil',cotas:'26,1 mi',liqf:'R$ 9,2 mi/dia',txadm:'0,80% a.a.',nat:'19 galpões',desc:'FII logístico da CSHG/Pátria com galpões de alto padrão locados a grandes empresas, contratos longos e baixa vacância.'},
+  VGIR11:{fii:1,tipo:'Papel · CDI',gestao:'Ativa',plf:'R$ 1,8 bi',mkt:'R$ 1,7 bi',cotistas:'185 mil',cotas:'17,3 mi',liqf:'R$ 4,1 mi/dia',txadm:'1,00% a.a.',nat:'58 CRIs',desc:'FII de papel da Valora com foco em CRIs de maior retorno indexados ao CDI, DY elevado e gestão ativa de crédito.'},
+  XPML11:{fii:1,tipo:'Tijolo · Shopping',gestao:'Ativa',plf:'R$ 4,9 bi',mkt:'R$ 4,4 bi',cotistas:'480 mil',cotas:'42,3 mi',liqf:'R$ 12,8 mi/dia',txadm:'0,95% a.a.',nat:'18 shoppings',desc:'Maior FII de shoppings da B3, gerido pela XP, com participação em malls dominantes em diversas regiões do país.'},
+  VISC11:{fii:1,tipo:'Tijolo · Shopping',gestao:'Ativa',plf:'R$ 3,3 bi',mkt:'R$ 3,0 bi',cotistas:'360 mil',cotas:'29,0 mi',liqf:'R$ 7,5 mi/dia',txadm:'0,95% a.a.',nat:'22 shoppings',desc:'FII de shoppings da Vinci com portfólio diversificado regionalmente, gestão ativa e histórico consistente de distribuição.'},
+  KNIP11:{fii:1,tipo:'Papel · IPCA',gestao:'Ativa',plf:'R$ 7,1 bi',mkt:'R$ 6,8 bi',cotistas:'298 mil',cotas:'74,0 mi',liqf:'R$ 14,0 mi/dia',txadm:'1,08% a.a.',nat:'91 CRIs',desc:'FII de papel da Kinea com CRIs indexados ao IPCA, oferecendo proteção inflacionária e renda mensal.'},
+  BTLG11:{fii:1,tipo:'Tijolo · Logístico',gestao:'Ativa',plf:'R$ 3,1 bi',mkt:'R$ 2,9 bi',cotistas:'265 mil',cotas:'28,5 mi',liqf:'R$ 6,8 mi/dia',txadm:'0,75% a.a.',nat:'27 galpões',desc:'FII logístico do BTG Pactual com galpões bem localizados (última milha e regional), contratos atípicos e vacância baixa.'},
+  TRXF11:{fii:1,tipo:'Tijolo · Renda Urbana',gestao:'Ativa',plf:'R$ 2,2 bi',mkt:'R$ 1,9 bi',cotistas:'210 mil',cotas:'21,0 mi',liqf:'R$ 3,9 mi/dia',txadm:'1,00% a.a.',nat:'42 imóveis',desc:'FII de renda urbana da TRX com varejo e lajes em contratos atípicos de longo prazo (sale-leaseback).'},
+  XPLG11:{fii:1,tipo:'Tijolo · Logístico',gestao:'Ativa',plf:'R$ 3,0 bi',mkt:'R$ 2,7 bi',cotistas:'290 mil',cotas:'29,5 mi',liqf:'R$ 6,2 mi/dia',txadm:'0,75% a.a.',nat:'24 galpões',desc:'FII logístico da XP com galpões locados a grandes operadores logísticos e e-commerce, diversificado geograficamente.'},
+  MXRF11:{fii:1,tipo:'Híbrido',gestao:'Ativa',plf:'R$ 4,2 bi',mkt:'R$ 4,3 bi',cotistas:'1,3 mi',cotas:'410 mi',liqf:'R$ 22,0 mi/dia',txadm:'1,00% a.a.',nat:'CRIs + cotas',desc:'Um dos FIIs mais populares do Brasil (gestão XP/Maxi), híbrido com CRIs, cotas de FIIs e recebíveis, alta liquidez e cota de baixo valor.'},
+  GGRC11:{fii:1,tipo:'Tijolo · Logístico',gestao:'Ativa',plf:'R$ 1,4 bi',mkt:'R$ 1,3 bi',cotistas:'140 mil',cotas:'12,8 mi',liqf:'R$ 2,4 mi/dia',txadm:'0,90% a.a.',nat:'16 imóveis',desc:'FII de galpões industriais/logísticos em contratos atípicos de longo prazo, com inquilinos de perfil corporativo.'},
+  RBRP11:{fii:1,tipo:'Tijolo · Lajes',gestao:'Ativa',plf:'R$ 1,1 bi',mkt:'R$ 0,9 bi',cotistas:'120 mil',cotas:'13,6 mi',liqf:'R$ 1,9 mi/dia',txadm:'1,00% a.a.',nat:'7 edifícios',desc:'FII de lajes corporativas de alto padrão em São Paulo, gerido pela RBR, com estratégia de reposicionamento de ativos.'},
+};
 
 // Carteira do usuário
 const CARTEIRA = [
@@ -1355,6 +1356,7 @@ function render(v, soft){
   else if(v==='noticias')    c.innerHTML = viewNoticias();
   else if(v==='simulador')   c.innerHTML = viewSimulador();
   else if(v==='score')       c.innerHTML = viewScore();
+  else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
 }
 
@@ -2088,6 +2090,7 @@ function afterRender(v, soft){
   }
   if(v==='simulador'){ runSim(); }
   if(v==='score'){ animateGauges(); }
+  if(v==='asset'){ initDetailCharts(); animateGauges(); }
 }
 
 function animateGauges(){
@@ -2255,7 +2258,7 @@ function runSearch(q){
     </div>`).join('');
 }
 /* ══════════════════════════════════════════════════════════
-   DRAWER — DETALHE DO ATIVO
+   PÁGINA DE DETALHE DO ATIVO (estilo Investidor10 + Score Lastro)
    ══════════════════════════════════════════════════════════ */
 const ASSET_CLASS = {
   fiis:   { label:'FII',    cur:'brl', score:true },
@@ -2265,8 +2268,6 @@ const ASSET_CLASS = {
   stocks: { label:'Stock',  cur:'usd' },
   cripto: { label:'Cripto', cur:'brl' },
 };
-let ASSET_OPEN = null;
-
 function assetLookup(tk){
   const map = [['fiis',FIIS],['acoes',ACOES],['bdrs',BDRS],['etfs',ETFS],['stocks',STOCKS],['cripto',CRIPTO]];
   for(const [k,arr] of map){ const a = arr.find(x=>x.tk===tk); if(a) return { a, k }; }
@@ -2276,33 +2277,9 @@ function fmtPx(a,k){
   if(ASSET_CLASS[k].cur==='usd') return usd(a.px);
   return (k==='cripto' && a.px>=100) ? brl(Math.round(a.px)) : brl(a.px);
 }
-function metricsFor(a,k){
-  if(k==='fiis') return [
-    ['DY 12M', pc(a.dy,1)+'%', 'up'], ['P/VP', pc(a.pvp,2), a.pvp<1?'up':''],
-    ['Dividendo/cota', brl(a.div), ''], ['Vacância', pc(a.vac,1)+'%', a.vac<5?'up':'down'],
-    ['Liquidez', a.liq+' / 50', ''], ['Consistência', Math.round((a.consist||0)*100)+'/100', ''],
-  ];
-  if(k==='acoes') return [
-    ['P/L', pc(a.pl,1)+'x', a.pl<10?'up':''], ['P/VP', pc(a.pvp,1)+'x', ''],
-    ['Dividend Yield', pc(a.dy,1)+'%', a.dy>5?'up':''], ['ROE', pc(a.roe,1)+'%', ''],
-    ['Margem líquida', pc(a.mgl,1)+'%', ''], ['Liquidez', a.liq+' / 50', ''],
-  ];
-  if(k==='bdrs') return [ ['Paridade', a.par, ''], ['Dividend Yield', pc(a.dy,1)+'%', a.dy>0?'up':''], ['Setor', a.seg, ''] ];
-  if(k==='etfs') return [ ['Patrimônio', a.pat, ''], ['Taxa de adm.', a.tx, ''], ['Índice / Tema', a.seg, ''] ];
-  if(k==='stocks') return [
-    ['Valor de mercado', 'US$ '+a.mkt, ''], ['P/L', pc(a.pe,1)+'x', a.pe<30?'up':''],
-    ['Dividend Yield', pc(a.dy,1)+'%', a.dy>0?'up':''], ['Setor', a.seg, ''],
-  ];
-  if(k==='cripto') return [
-    ['Valor de mercado', a.mkt, ''],
-    ['Variação 24h', (a.v24>=0?'+':'')+pc(a.v24,1)+'%', a.v24>=0?'up':'down'],
-    ['Variação 7 dias', (a.v7>=0?'+':'')+pc(a.v7,1)+'%', a.v7>=0?'up':'down'],
-  ];
-  return [];
-}
 function assetNews(tk){
   const pool = (Array.isArray(window.LAST_NEWS) && window.LAST_NEWS.length) ? window.LAST_NEWS : NEWS;
-  return pool.filter(n => (n.ticker||n.tk)===tk).slice(0,4);
+  return pool.filter(n => (n.ticker||n.tk)===tk).slice(0,5);
 }
 
 /* watchlist (persistida no navegador) */
@@ -2319,138 +2296,304 @@ function toggleWatch(tk){
 
 /* série histórica determinística (ilustrativa) ancorada no preço atual */
 function seedFrom(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
-function rng(seed){ return function(){ let t=seed+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }; }
+function rngF(seed){ return function(){ let t=seed+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }; }
 function genSeries(key, endPx, n, vol){
-  const r=rng(seedFrom(key)); let p=endPx*(0.80+r()*0.14); const out=[];
+  const r=rngF(seedFrom(key)); let p=endPx*(0.80+r()*0.14); const out=[];
   for(let i=0;i<n;i++){ const drift=(endPx-p)*0.05; const noise=(r()-0.5)*2*vol*p; p=Math.max(p+drift+noise, endPx*0.4); out.push(p); }
   const k=endPx/out[out.length-1]; return out.map(v=>v*k);
 }
-function hexToRgba(hex,a){ const h=hex.replace('#','').trim(); const n=h.length===3?h.split('').map(c=>c+c).join(''):h; const r=parseInt(n.slice(0,2),16),g=parseInt(n.slice(2,4),16),b=parseInt(n.slice(4,6),16); return `rgba(${r||0},${g||0},${b||0},${a})`; }
+function hexToRgba(hex,a){ const h=String(hex).replace('#','').trim(); const n=h.length===3?h.split('').map(c=>c+c).join(''):h; const r=parseInt(n.slice(0,2),16),g=parseInt(n.slice(2,4),16),b=parseInt(n.slice(4,6),16); return `rgba(${r||0},${g||0},${b||0},${a})`; }
 
-const ASSET_RANGES = { '7D':7, '1M':22, '3M':66, '1A':53 };
-let assetRange = '3M';
-function setAssetRange(r){
-  assetRange = r;
-  document.querySelectorAll('#assetRanges button').forEach(b=> b.classList.toggle('on', b.textContent===r));
-  initAssetChart();
+/* formatação dos indicadores */
+const nz = v => (v===null||v===undefined||v==='');
+function num(v, suf='', dec=2){ return nz(v)?'—':(typeof v==='number'? pc(v,dec):v)+suf; }
+function fRow(label, val, cls){ return `<div class="f-row"><span class="f-l">${label}</span><span class="f-v ${cls||''}">${nz(val)?'—':val}</span></div>`; }
+
+/* ── gráfico de cotação ── */
+const ASSET_RANGES = { '1M':22, '3M':66, '6M':132, '1A':252, '5A':260 };
+let detailRange = '1A', currentAssetTk = null, prevView = 'painel';
+function setDetailRange(r){
+  detailRange = r;
+  document.querySelectorAll('#detailRanges button').forEach(b=> b.classList.toggle('on', b.textContent===r));
+  initDetailPriceChart();
 }
-function initAssetChart(){
-  const ctx = document.getElementById('assetChart'); if(!ctx || !ASSET_OPEN) return;
+function initDetailPriceChart(){
+  const ctx=document.getElementById('detailPriceChart'); if(!ctx || !currentAssetTk) return;
   if(typeof Chart==='undefined'){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico indisponível</div>'; return; }
-  if(charts.assetChart){ try{ charts.assetChart.destroy(); }catch(e){} }
-  const a = assetLookup(ASSET_OPEN.tk).a;
-  const n = ASSET_RANGES[assetRange]||66;
-  const data = genSeries(ASSET_OPEN.tk+assetRange, a.px, n, 0.016);
-  const up = data[data.length-1] >= data[0];
-  const col = cssVar(up?'--up':'--down') || '#0E7C5A';
-  const g = ctx.getContext('2d'); const grad = g.createLinearGradient(0,0,0,184);
-  grad.addColorStop(0, hexToRgba(col,.20)); grad.addColorStop(1, hexToRgba(col,0));
-  const isUsd = ASSET_OPEN.k==='stocks';
-  charts.assetChart = new Chart(ctx, {
-    type:'line',
-    data:{ labels:data.map((_,i)=>i), datasets:[{ data, borderColor:col, backgroundColor:grad, fill:true, borderWidth:2, tension:.35, pointRadius:0, pointHoverRadius:4, pointHoverBackgroundColor:col }] },
-    options:{ responsive:true, maintainAspectRatio:false, animation:{duration:600},
-      plugins:{ legend:{display:false}, tooltip:{ enabled:true, displayColors:false, callbacks:{ title:()=>'', label:c=> (isUsd?'US$ ':'R$ ')+c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) } } },
-      scales:{ x:{ display:false }, y:{ position:'right', grid:{ color:cssVar('--line') }, ticks:{ color:cssVar('--ink-3'), font:{size:10}, maxTicksLimit:4 }, border:{display:false} } },
-      interaction:{ intersect:false, mode:'index' } }
-  });
+  if(charts.detailPrice){ try{charts.detailPrice.destroy();}catch(e){} }
+  const found=assetLookup(currentAssetTk); const a=found.a, k=found.k;
+  const n=ASSET_RANGES[detailRange]||252;
+  const data=genSeries(currentAssetTk+detailRange, a.px, n, 0.014);
+  const up=data[data.length-1]>=data[0]; const col=cssVar(up?'--up':'--down')||'#0E7C5A';
+  const g=ctx.getContext('2d'); const grad=g.createLinearGradient(0,0,0,280); grad.addColorStop(0,hexToRgba(col,.22)); grad.addColorStop(1,hexToRgba(col,0));
+  const isUsd=k==='stocks';
+  charts.detailPrice=new Chart(ctx,{type:'line',data:{labels:data.map((_,i)=>i),datasets:[{data,borderColor:col,backgroundColor:grad,fill:true,borderWidth:2,tension:.32,pointRadius:0,pointHoverRadius:4,pointHoverBackgroundColor:col}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},
+      plugins:{legend:{display:false},tooltip:{enabled:true,displayColors:false,callbacks:{title:()=>'',label:c=>(isUsd?'US$ ':'R$ ')+c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}}},
+      scales:{x:{display:false},y:{position:'right',grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},maxTicksLimit:5},border:{display:false}}},
+      interaction:{intersect:false,mode:'index'}}});
 }
+/* ── gráfico de dividendos ── */
+function dividendSeries(tk,a,k,f){
+  if(k==='acoes' && f && f.divs) return { labels:f.divs.map(d=>d[0]), data:f.divs.map(d=>d[1]) };
+  const base=a.div||(a.px*((a.dy||6)/100)/12)||1; const r=rngF(seedFrom(tk+'div'));
+  const months=['jul','ago','set','out','nov','dez','jan','fev','mar','abr','mai','jun'];
+  const data=months.map(()=> +(base*(0.9+r()*0.2)).toFixed(2));
+  return { labels:months, data };
+}
+function initDetailDivChart(){
+  const ctx=document.getElementById('detailDivChart'); if(!ctx || !currentAssetTk) return;
+  if(typeof Chart==='undefined') return;
+  if(charts.detailDiv){ try{charts.detailDiv.destroy();}catch(e){} }
+  const found=assetLookup(currentAssetTk); const a=found.a, k=found.k; const f=FUND[currentAssetTk];
+  const s=dividendSeries(currentAssetTk,a,k,f);
+  const col=cssVar('--brand')||'#0E7C5A';
+  charts.detailDiv=new Chart(ctx,{type:'bar',data:{labels:s.labels,datasets:[{data:s.data,backgroundColor:hexToRgba(col,.55),hoverBackgroundColor:col,borderRadius:5,maxBarThickness:34}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},
+      plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{label:c=>'R$ '+c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}}},
+      scales:{x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
+              y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v},border:{display:false}}}}});
+}
+function initDetailCharts(){ initDetailPriceChart(); initDetailDivChart(); }
 
-function openAsset(tk){
-  const found = assetLookup(tk);
-  if(!found){ toast(`${tk} — ativo não encontrado`); return; }
-  const { a, k } = found; ASSET_OPEN = { tk, k }; assetRange='3M';
-  const cls = ASSET_CLASS[k];
-  const vv = (k==='cripto' ? a.v24 : a.var) ?? 0;
-  const hasScore = cls.score && typeof a.score==='number';
-
-  const metrics = metricsFor(a,k).map(m=>`<div class="metric"><div class="ml">${m[0]}</div><div class="mv ${m[2]||''}">${m[1]}</div></div>`).join('');
-
-  let scoreBlock='';
-  if(hasScore){
-    const c=scoreColor(a.score), circ=2*Math.PI*52, off=circ-(a.score/100)*circ;
-    scoreBlock = `<div class="drawer-sec">
-      <div class="ds-title">Score Lastro™ <span style="color:${c}">· ${scoreTier(a.score)}</span></div>
-      <div class="drawer-score-row">
-        <div class="gauge" style="flex:none">
-          <svg width="132" height="132" viewBox="0 0 132 132">
-            <circle cx="66" cy="66" r="52" fill="none" stroke="var(--surface-3)" stroke-width="11"/>
-            <circle class="gauge-arc" cx="66" cy="66" r="52" fill="none" stroke="${c}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ}" data-off="${off}"/>
-          </svg>
-          <div class="gauge-center"><div class="gauge-num" style="color:${c}">${a.score}</div><div class="gauge-lbl">/100</div></div>
+/* ── indicadores fundamentalistas ── */
+function metricsForDetail(a,k){
+  if(k==='bdrs') return [['Cotação',brl(a.px)],['Paridade',a.par],['Dividend Yield',pc(a.dy,1)+'%',a.dy>0?'up':''],['Setor',a.seg]];
+  if(k==='etfs') return [['Cotação',brl(a.px)],['Patrimônio',a.pat],['Taxa de adm.',a.tx],['Índice/Tema',a.seg]];
+  if(k==='stocks') return [['Cotação',usd(a.px)],['Valor de mercado','US$ '+a.mkt],['P/L',pc(a.pe,1)+'x',a.pe<30?'up':''],['Dividend Yield',pc(a.dy,1)+'%'],['Setor',a.seg]];
+  if(k==='cripto') return [['Cotação',fmtPx(a,k)],['Valor de mercado',a.mkt],['Variação 24h',(a.v24>=0?'+':'')+pc(a.v24,1)+'%',a.v24>=0?'up':'down'],['Variação 7d',(a.v7>=0?'+':'')+pc(a.v7,1)+'%',a.v7>=0?'up':'down']];
+  return [];
+}
+function fundamentalsHTML(a,k,f){
+  if(k==='acoes'){
+    const vpa=a.px/a.pvp, lpa=a.px/a.pl;
+    return `<div class="dt-grid">
+      <div class="card card-pad">
+        <div class="fgroup-title">Valuation</div>
+        <div class="fgroup">
+          ${fRow('P/L', num(a.pl,'x'))}${fRow('P/VP', num(a.pvp,'x'))}
+          ${fRow('P/EBIT', num(f&&f.pebit,'x'))}${fRow('EV/EBIT', num(f&&f.evebit,'x'))}
+          ${fRow('EV/EBITDA', num(f&&f.evebitda,'x'))}${fRow('P/Receita (PSR)', num(f&&f.psr,'x'))}
+          ${fRow('P/Ativo', num(f&&f.pativo,'x'))}${fRow('VPA', brl(vpa))}
+          ${fRow('LPA', brl(lpa))}${fRow('Dividend Yield', num(a.dy,'%',1),'up')}
         </div>
-        <div class="gauge-break" style="flex:1">
-          ${gbRow('DY sustentável (35%)', Math.min(a.dy/15,1)*100)}
-          ${gbRow('Valuation P/VP (30%)', (a.pvp<=1?1:Math.max(0,1.6-a.pvp)/0.6)*100)}
-          ${gbRow('Liquidez (20%)', Math.min(a.liq/50,1)*100)}
-          ${gbRow('Consistência (15%)', (a.consist||0.7)*100)}
+      </div>
+      <div class="card card-pad">
+        <div class="fgroup-title">Rentabilidade</div>
+        <div class="fgroup">
+          ${fRow('ROE', num(a.roe,'%',1))}${fRow('ROA', num(f&&f.roa,'%',1))}
+          ${fRow('ROIC', num(f&&f.roic,'%',1))}${fRow('Margem Bruta', num(f&&f.mb,'%',1))}
+          ${fRow('Margem EBIT', num(f&&f.mebit,'%',1))}${fRow('Margem Líquida', num(a.mgl,'%',1))}
+          ${fRow('Giro do Ativo', num(f&&f.giro,'',2))}
+        </div>
+      </div>
+      <div class="card card-pad">
+        <div class="fgroup-title">Endividamento</div>
+        <div class="fgroup">
+          ${fRow('Dív. Líq./EBITDA', num(f&&f.dleb,'x'))}${fRow('Dív. Líq./Patrim.', num(f&&f.dlpl,'x'))}
+          ${fRow('Liquidez Corrente', num(f&&f.lc,'x'))}${fRow('Patrim./Ativos', num(f&&f.pat,'x'))}
+        </div>
+      </div>
+      <div class="card card-pad">
+        <div class="fgroup-title">Crescimento & Payout</div>
+        <div class="fgroup">
+          ${fRow('CAGR Receitas 5a', num(f&&f.cagrR,'%',1))}${fRow('CAGR Lucros 5a', num(f&&f.cagrL,'%',1))}
+          ${fRow('Payout', num(f&&f.payout,'%',0))}
         </div>
       </div>
     </div>`;
   }
-
-  const news = assetNews(tk);
-  const newsBlock = `<div class="drawer-sec">
-    <div class="ds-title">Notícias do ativo</div>
-    ${ news.length ? `<div class="dnews">${news.map(n=>{
-        const tt=esc(n.title||n.tt||''), src=esc(n.source||n.src||''), url=n.url||'';
-        const tm = n.published_at ? timeAgo(n.published_at) : (n.t||'');
-        return `<a data-url="${esc(url)}" data-tk="${esc(tk)}" onclick="openNews(this)">${tt}<div class="nm">${src}${tm?` · ${esc(tm)}`:''}</div></a>`;
-      }).join('')}</div>` : `<div class="drawer-empty">Sem notícias recentes para ${tk}. O feed cobre ações, FIIs, BDRs, ETFs e cripto.</div>` }
-  </div>`;
-
-  $('#assetDrawerPanel').innerHTML = `
-    <div class="drawer-head">
-      <div class="dh-asset">
-        <div class="dh-ic">${tk.slice(0,4)}</div>
-        <div style="min-width:0">
-          <div class="dh-tk">${tk} <span class="chip chip-neu" style="font-size:10px">${cls.label}</span></div>
-          <div class="dh-nm">${esc(a.nm)}</div>
-        </div>
+  if(k==='fiis'){
+    return `<div class="card card-pad">
+      <div class="fgroup-title">Indicadores do fundo</div>
+      <div class="fgroup">
+        ${fRow('P/VP', num(a.pvp,'x'))}${fRow('Dividend Yield', num(a.dy,'%',1),'up')}
+        ${fRow('Último rendimento', brl(a.div),'up')}${fRow('Vacância', num(a.vac,'%',1), a.vac<5?'up':'down')}
+        ${fRow('Liquidez diária', f&&f.liqf)}${fRow('Patrimônio líquido', f&&f.plf)}
+        ${fRow('Valor de mercado', f&&f.mkt)}${fRow('Nº de cotistas', f&&f.cotistas)}
+        ${fRow('Nº de cotas', f&&f.cotas)}${fRow('Taxa de adm.', f&&f.txadm)}
+        ${fRow('Tipo', f&&f.tipo)}${fRow('Gestão', f&&f.gestao)}
+        ${fRow('Ativos', f&&f.nat)}${fRow('Segmento', a.seg)}
       </div>
-      <button class="drawer-close" onclick="closeAsset()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-
-    <div class="drawer-price">
-      <div class="dp-px">${fmtPx(a,k)}</div>
-      <div class="dp-var ${vv>=0?'up':'down'}"><i class="fa-solid fa-caret-${vv>=0?'up':'down'}"></i> ${vv>=0?'+':''}${pc(vv)}%</div>
-      <div class="dp-seg">${esc(a.seg||cls.label)}</div>
-    </div>
-
-    <div class="drawer-sec">
-      <div class="ds-head">
-        <span class="ds-title" style="margin:0">Desempenho</span>
-        <div class="range-tabs" id="assetRanges">${Object.keys(ASSET_RANGES).map(r=>`<button class="${r===assetRange?'on':''}" onclick="setAssetRange('${r}')">${r}</button>`).join('')}</div>
-      </div>
-      <div class="drawer-chart"><canvas id="assetChart"></canvas></div>
-      <div style="font-size:10.5px;color:var(--ink-4);margin-top:9px;text-align:right">Série ilustrativa · histórico real ao conectar provedor de dados</div>
-    </div>
-
-    ${scoreBlock}
-
-    <div class="drawer-sec">
-      <div class="ds-title">Indicadores</div>
-      <div class="metric-grid">${metrics}</div>
-    </div>
-
-    ${newsBlock}
-
-    <div class="drawer-actions">
-      <button class="btn btn-ghost" id="watchBtn" onclick="toggleWatch('${tk}')">${watchBtnInner(tk)}</button>
-      <button class="btn btn-primary" onclick="toast('Em breve: adicionar ${tk} à carteira')"><i class="fa-solid fa-plus"></i> Carteira</button>
     </div>`;
+  }
+  const m=metricsForDetail(a,k).map(x=>`<div class="metric"><div class="ml">${x[0]}</div><div class="mv ${x[2]||''}">${x[1]}</div></div>`).join('');
+  return `<div class="metric-grid">${m}</div><div style="font-size:12px;color:var(--ink-3);margin-top:12px"><i class="fa-solid fa-circle-info"></i> Indicadores fundamentalistas detalhados disponíveis para Ações e FIIs.</div>`;
+}
 
-  $('#assetDrawer').classList.add('open');
-  document.body.style.overflow='hidden';
-  requestAnimationFrame(()=>{ initAssetChart(); animateGauges(); });
+function scoreBlockHTML(a){
+  const c=scoreColor(a.score), circ=2*Math.PI*52, off=circ-(a.score/100)*circ;
+  return `<div class="card card-pad">
+    <div class="ds-title">Score Lastro™ <span style="color:${c}">· ${scoreTier(a.score)}</span></div>
+    <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">
+      <div class="gauge" style="flex:none">
+        <svg width="132" height="132" viewBox="0 0 132 132">
+          <circle cx="66" cy="66" r="52" fill="none" stroke="var(--surface-3)" stroke-width="11"/>
+          <circle class="gauge-arc" cx="66" cy="66" r="52" fill="none" stroke="${c}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ}" data-off="${off}"/>
+        </svg>
+        <div class="gauge-center"><div class="gauge-num" style="color:${c}">${a.score}</div><div class="gauge-lbl">/100</div></div>
+      </div>
+      <div class="gauge-break" style="flex:1;min-width:230px">
+        ${gbRow('DY sustentável (35%)', Math.min(a.dy/15,1)*100)}
+        ${gbRow('Valuation P/VP (30%)', (a.pvp<=1?1:Math.max(0,1.6-a.pvp)/0.6)*100)}
+        ${gbRow('Liquidez (20%)', Math.min(a.liq/50,1)*100)}
+        ${gbRow('Consistência (15%)', (a.consist||0.7)*100)}
+      </div>
+    </div>
+  </div>`;
 }
-function closeAsset(){
-  const d=$('#assetDrawer'); if(d) d.classList.remove('open');
-  document.body.style.overflow='';
-  if(charts.assetChart){ try{ charts.assetChart.destroy(); }catch(e){} delete charts.assetChart; }
-  ASSET_OPEN=null;
+
+function peersHTML(tk,a,k){
+  let pool=[];
+  if(k==='acoes') pool=ACOES.filter(x=>x.tk!==tk && x.seg===a.seg);
+  else if(k==='fiis') pool=FIIS.filter(x=>x.tk!==tk && x.seg===a.seg);
+  else return '';
+  if(!pool.length) return '';
+  pool=pool.slice(0,5); const isF=k==='fiis';
+  const rows=pool.map(p=>`<tr onclick="openAsset('${p.tk}')">
+    <td class="cell-left"><div class="td-asset"><div class="asset-ic">${p.tk.slice(0,4)}</div><div class="nm"><div class="tk">${p.tk}</div><div class="ds">${p.nm}</div></div></div></td>
+    <td class="mono">${brl(p.px)}</td>
+    <td class="mono ${isF&&p.pvp<1?'up':''}">${isF?pc(p.pvp,2):pc(p.pl,1)+'x'}</td>
+    <td class="mono up">${pc(p.dy,1)}%</td>
+    <td><span class="score-pill" style="color:${scoreColor(p.score)};justify-content:flex-end"><span class="score-dot" style="background:${scoreColor(p.score)}"></span>${p.score}</span></td>
+  </tr>`).join('');
+  return `<div class="card card-pad">
+    <div class="ds-title">Comparação com pares · ${a.seg}</div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th class="cell-left">Ativo</th><th>Cotação</th><th>${isF?'P/VP':'P/L'}</th><th>DY</th><th>Score</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </div>`;
 }
-// alias: cliques existentes (quickView) agora abrem o drawer
+
+function aboutHTML(a,k,f){
+  if(!f) return '';
+  if(k==='acoes') return `<div class="card card-pad">
+    <div class="ds-title">Sobre a empresa</div>
+    <div style="font-size:13.5px;line-height:1.7;color:var(--ink-2);margin-bottom:16px">${esc(f.desc)}</div>
+    <div class="about-grid">
+      ${fRow('Setor', f.setor)}${fRow('Segmento', f.sub)}
+      ${fRow('Governança', f.gov)}${fRow('Tag Along', f.tag)}
+      ${fRow('Free Float', f.ff)}${fRow('Nº de ações', f.shares)}
+      ${fRow('Valor de mercado', f.mkt)}${fRow('Valor de firma', f.ev)}
+    </div>
+  </div>`;
+  if(k==='fiis') return `<div class="card card-pad">
+    <div class="ds-title">Sobre o fundo</div>
+    <div style="font-size:13.5px;line-height:1.7;color:var(--ink-2);margin-bottom:16px">${esc(f.desc)}</div>
+    <div class="about-grid">
+      ${fRow('Segmento', a.seg)}${fRow('Tipo', f.tipo)}
+      ${fRow('Gestão', f.gestao)}${fRow('Taxa de adm.', f.txadm)}
+      ${fRow('Patrimônio líq.', f.plf)}${fRow('Valor de mercado', f.mkt)}
+      ${fRow('Nº de cotistas', f.cotistas)}${fRow('Nº de cotas', f.cotas)}
+    </div>
+  </div>`;
+  return '';
+}
+
+function newsHTML(tk){
+  const news=assetNews(tk);
+  return `<div class="card card-pad">
+    <div class="ds-title">Notícias de ${tk}</div>
+    ${ news.length ? `<div class="dnews">${news.map(n=>{
+        const tt=esc(n.title||n.tt||''),src=esc(n.source||n.src||''),url=n.url||'';
+        const tm=n.published_at?timeAgo(n.published_at):(n.t||'');
+        return `<a data-url="${esc(url)}" data-tk="${esc(tk)}" onclick="openNews(this)">${tt}<div class="nm">${src}${tm?` · ${esc(tm)}`:''}</div></a>`;
+      }).join('')}</div>` : `<div style="font-size:12.5px;color:var(--ink-3)">Sem notícias recentes para ${tk}.</div>` }
+  </div>`;
+}
+
+function summaryCards(a,k,f){
+  let cards=[];
+  if(k==='acoes') cards=[['Valor de mercado',f?f.mkt:'—'],['P/L',pc(a.pl,2)+'x'],['Dividend Yield',pc(a.dy,1)+'%','up'],['ROE',pc(a.roe,1)+'%'],['P/VP',pc(a.pvp,2)],['Valor de firma',f?f.ev:'—']];
+  else if(k==='fiis') cards=[['Valor de mercado',f?f.mkt:'—'],['P/VP',pc(a.pvp,2)],['Dividend Yield',pc(a.dy,1)+'%','up'],['Vacância',pc(a.vac,1)+'%',a.vac<5?'up':'down'],['Último rend.',brl(a.div),'up'],['Patrimônio',f?f.plf:'—']];
+  else cards=metricsForDetail(a,k).slice(0,6);
+  return cards.map(c=>`<div class="sumcard"><div class="l">${c[0]}</div><div class="v ${c[2]||''}">${c[1]}</div></div>`).join('');
+}
+
+function viewAssetDetail(tk){
+  const found=assetLookup(tk); if(!found) return '<div class="card card-pad">Ativo não encontrado.</div>';
+  const {a,k}=found; const cls=ASSET_CLASS[k]; const f=FUND[tk];
+  const vv=(k==='cripto'?a.v24:a.var)??0;
+  const hasScore=cls.score && typeof a.score==='number';
+  const ps=genSeries(tk+'1A', a.px, 252, 0.02); const pmin=Math.min(...ps), pmax=Math.max(...ps); const var12=(a.px-ps[0])/ps[0]*100;
+
+  return `
+  <button class="dt-back" onclick="backFromAsset()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+  <div class="dt-head">
+    <div class="dt-ic">${tk.slice(0,4)}</div>
+    <div class="dt-id">
+      <div class="tk">${tk} <span class="chip chip-neu" style="font-size:10px">${cls.label}</span>${hasScore?` <span class="chip ${scoreChip(a.score)}" style="font-size:10px"><i class="fa-solid fa-award" style="font-size:9px"></i> Score ${a.score}</span>`:''}</div>
+      <div class="nm">${esc(a.nm)}</div>
+      <div class="sec">${esc(f?(f.setor||f.tipo||a.seg||''):(a.seg||cls.label))}</div>
+    </div>
+    <div class="dt-px">
+      <div class="v">${fmtPx(a,k)}</div>
+      <div class="d ${vv>=0?'up':'down'}"><i class="fa-solid fa-caret-${vv>=0?'up':'down'}"></i> ${vv>=0?'+':''}${pc(vv)}% hoje</div>
+      <div class="dt-actions">
+        <button class="btn btn-ghost" id="watchBtn" onclick="toggleWatch('${tk}')">${watchBtnInner(tk)}</button>
+        <button class="btn btn-primary" onclick="toast('Em breve: adicionar ${tk} à carteira')"><i class="fa-solid fa-plus"></i> Carteira</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sumgrid">${summaryCards(a,k,f)}</div>
+
+  <div class="card card-pad" style="margin-bottom:16px">
+    <div class="ds-head">
+      <span class="ds-title" style="margin:0">Cotação</span>
+      <div class="range-tabs" id="detailRanges">${Object.keys(ASSET_RANGES).map(r=>`<button class="${r===detailRange?'on':''}" onclick="setDetailRange('${r}')">${r}</button>`).join('')}</div>
+    </div>
+    <div class="detail-chart"><canvas id="detailPriceChart"></canvas></div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--ink-3)">
+      <span>Mín 52s <strong class="mono" style="color:var(--ink)">${fmtPx({px:pmin},k)}</strong></span>
+      <span>Máx 52s <strong class="mono" style="color:var(--ink)">${fmtPx({px:pmax},k)}</strong></span>
+      <span>Variação 12m <strong class="mono" style="color:${var12>=0?'var(--up)':'var(--down)'}">${var12>=0?'+':''}${pc(var12,1)}%</strong></span>
+      <span style="margin-left:auto;color:var(--ink-4)">Série ilustrativa · histórico real ao conectar provedor</span>
+    </div>
+  </div>
+
+  ${hasScore?scoreBlockHTML(a):''}
+
+  <div style="${hasScore?'margin-top:16px':''}">
+    <div class="ds-title" style="padding-left:2px">Indicadores fundamentalistas</div>
+    ${fundamentalsHTML(a,k,f)}
+  </div>
+
+  <div class="dt-grid" style="margin-top:16px">
+    <div class="card card-pad">
+      <div class="ds-head"><span class="ds-title" style="margin:0">Dividendos ${k==='acoes'?'(por ano)':'(12 meses)'}</span></div>
+      <div class="div-chart"><canvas id="detailDivChart"></canvas></div>
+      <div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--ink-3)">
+        <span>Dividend Yield <strong class="mono" style="color:var(--up)">${pc(a.dy,1)}%</strong></span>
+        ${f&&f.payout!=null?`<span>Payout <strong class="mono" style="color:var(--ink)">${pc(f.payout,0)}%</strong></span>`:''}
+        ${k==='fiis'?`<span>Último <strong class="mono" style="color:var(--ink)">${brl(a.div)}</strong></span>`:''}
+      </div>
+    </div>
+    ${ (k==='acoes'||k==='fiis') ? aboutHTML(a,k,f) : newsHTML(tk) }
+  </div>
+
+  ${ (k==='acoes'||k==='fiis') ? `<div class="dt-grid" style="margin-top:16px">${peersHTML(tk,a,k)}${newsHTML(tk)}</div>` : '' }
+  `;
+}
+
+function openAsset(tk){
+  if(!assetLookup(tk)){ toast(`${tk} — ativo não encontrado`); return; }
+  if(currentView!=='asset') prevView=currentView;
+  currentView='asset'; currentAssetTk=tk; detailRange='1A';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const a=assetLookup(tk).a;
+  $('#pageTitle').textContent=tk; $('#pageSub').textContent=a.nm;
+  render('asset');
+  $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'});
+}
+function backFromAsset(){
+  const v=prevView||'painel'; currentView=v;
+  $('#pageTitle').textContent=PAGES[v].t; $('#pageSub').textContent=PAGES[v].s;
+  document.querySelectorAll('.nav-item').forEach(n=> n.classList.toggle('active', (n.getAttribute('onclick')||'').includes(`'${v}'`)));
+  render(v); $('#content').scrollTop=0;
+}
+function closeAsset(){ if(currentView==='asset') backFromAsset(); }
 function quickView(tk){ openAsset(tk); }
 
 function toggleTheme(){
@@ -2503,6 +2646,11 @@ function screenSymbols(){
     case 'cripto': CRIPTO.forEach(c=> crypto.add(c.tk)); break;
     case 'painel':
     case 'carteira': CARTEIRA.forEach(c=> b3.add(c.tk)); break;
+    case 'asset': {
+      const f = currentAssetTk && assetLookup(currentAssetTk);
+      if(f){ if(f.k==='cripto') crypto.add(f.a.tk); else if(f.k!=='stocks') b3.add(f.a.tk); }
+      break;
+    }
     // 'stocks' (EUA) e demais telas não têm cotação na brapi
   }
   return { b3:[...b3], crypto:[...crypto] };
@@ -2547,7 +2695,7 @@ function softRefreshView(){
   if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)){
     if(typing) return;            // não recriar a tabela enquanto o usuário digita/filtra
     renderAssets(v);
-  } else if(['painel','carteira','score'].includes(v) && !typing){
+  } else if(['painel','carteira','score','asset'].includes(v) && !typing){
     render(v, true);             // soft: re-renderiza sem re-disparar buscas (evita loop)
   }
 }
