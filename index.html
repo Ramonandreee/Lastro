@@ -692,6 +692,11 @@ img, svg, canvas, video { max-width: 100%; }
    COMPONENT STYLES (views)
    ══════════════════════════════════════════════════════════ */
 .grid { display: grid; gap: 16px; }
+/* itens de grid não devem expandir além do espaço por causa de conteúdo largo
+   (ex.: tabelas). min-width:0 deixa a tabela rolar dentro do .tbl-wrap em vez
+   de empurrar/cortar o layout — corrige Alocação cortada e tabelas vazando. */
+.grid > *, .dt-grid > *, .mstrip > *, .sim-grid > * { min-width: 0; }
+.card { min-width: 0; }
 .row { display: flex; gap: 16px; }
 
 /* ─── HERO PORTFOLIO ─────────────────────────────── */
