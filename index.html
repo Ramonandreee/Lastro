@@ -1320,6 +1320,19 @@ const ETFS = [
   { tk:'TECK11', nm:'Trend Tech US',      seg:'Exterior',          px:19.40,  pat:'R$ 260M', tx:'0,30%', var:+1.62 },
   { tk:'WRLD11', nm:'Trend ETF Mundo',    seg:'Exterior',          px:22.80,  pat:'R$ 210M', tx:'0,30%', var:+0.74 },
   { tk:'GOVE11', nm:'It Now Governança',  seg:'Renda Variável BR', px:91.50,  pat:'R$ 190M', tx:'0,30%', var:+0.45 },
+  /* ── ETFs internacionais (listados nos EUA, em USD) ── */
+  { tk:'IVV',  nm:'iShares Core S&P 500',        seg:'S&P 500',        px:612.40, pat:'US$ 560B', tx:'0,03%', var:+0.62, usd:true },
+  { tk:'VOO',  nm:'Vanguard S&P 500',            seg:'S&P 500',        px:565.10, pat:'US$ 540B', tx:'0,03%', var:+0.61, usd:true },
+  { tk:'QQQM', nm:'Invesco Nasdaq 100',          seg:'Nasdaq 100',     px:212.80, pat:'US$ 38B',  tx:'0,15%', var:+1.34, usd:true },
+  { tk:'SOXX', nm:'iShares Semiconductor',       seg:'Semicondutores', px:242.50, pat:'US$ 13B',  tx:'0,35%', var:+2.18, usd:true },
+  { tk:'SCHD', nm:'Schwab US Dividend Equity',   seg:'Dividendos',     px:28.40,  pat:'US$ 68B',  tx:'0,06%', var:+0.28, usd:true },
+  { tk:'JEPQ', nm:'JPMorgan Nasdaq Equity Inc.', seg:'Renda + Nasdaq', px:56.20,  pat:'US$ 26B',  tx:'0,35%', var:+0.74, usd:true },
+  { tk:'JEPI', nm:'JPMorgan Equity Premium Inc.',seg:'Renda + S&P',    px:59.10,  pat:'US$ 39B',  tx:'0,35%', var:+0.45, usd:true },
+  { tk:'TFLO', nm:'iShares Treasury Float Rate',  seg:'Renda Fixa US',  px:50.45,  pat:'US$ 8B',   tx:'0,15%', var:+0.03, usd:true },
+  { tk:'URA',  nm:'Global X Uranium',            seg:'Urânio',         px:35.80,  pat:'US$ 3,8B', tx:'0,69%', var:+3.10, usd:true },
+  { tk:'VTI',  nm:'Vanguard Total Market',       seg:'Total Market US',px:298.70, pat:'US$ 470B', tx:'0,03%', var:+0.58, usd:true },
+  { tk:'SCHG', nm:'Schwab US Large-Cap Growth',  seg:'Crescimento US', px:32.10,  pat:'US$ 45B',  tx:'0,04%', var:+0.96, usd:true },
+  { tk:'VGT',  nm:'Vanguard Info Technology',    seg:'Tecnologia US',  px:648.30, pat:'US$ 92B',  tx:'0,09%', var:+1.21, usd:true },
 ];
 
 /* ─── STOCKS (internacional) ─── */
@@ -1661,11 +1674,11 @@ const ASSET_CFG = {
     data:()=>ETFS, icon:'fa-layer-group', label:'ETFs', unit:'ETFs', score:false,
     segs:['Renda Variável BR','Exterior','Small Caps BR','Dividendos BR','Criptoativos','Commodities','Financeiro BR','Renda Fixa'],
     regions:['Brasil','Internacional'],
-    regOf:a=> a.seg==='Exterior' ? 'Internacional' : 'Brasil',
+    regOf:a=> /11$/.test(a.tk) ? 'Brasil' : 'Internacional',
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
       {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
-      {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${a.usd?usd(a.px):brl(a.px)}</td>`},
       {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat}</td>`},
       {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx}</td>`},
     ],
@@ -2389,7 +2402,7 @@ function diagnose(){
 // fonte de busca: todas as classes, ao vivo (inclui o universo mesclado)
 function searchPool(){
   const map=[['FII',FIIS],['Ação',ACOES],['BDR',BDRS],['ETF',ETFS],['Stock',STOCKS],['Cripto',CRIPTO]];
-  const out=[]; for(const [lbl,arr] of map) for(const a of arr) out.push({tk:a.tk,nm:a.nm,px:a.px,var:a.var,kind:lbl});
+  const out=[]; for(const [lbl,arr] of map) for(const a of arr) out.push({tk:a.tk,nm:a.nm,px:a.px,var:a.var,kind:lbl,usd:a.usd});
   return out;
 }
 function openSearch(){ $('#searchModal').classList.add('open'); setTimeout(()=>$('#searchInput').focus(),60); runSearch(''); }
@@ -2402,7 +2415,7 @@ function runSearch(q){
   body.innerHTML = res.slice(0,12).map(a=>`
     <div class="sr" onclick="quickView('${a.tk}');closeSearch()">
       <div class="sr-l">${assetLogo(a.tk, kindFromLabel(a.kind),'xs')}<div><div class="sr-nm">${a.tk}</div><div class="sr-ds">${a.nm} · ${a.kind}</div></div></div>
-      <div class="sr-r"><div class="sr-pr">${a.kind==='Stock'?usd(a.px):brl(a.px)}</div><div class="sr-ds ${a.var>=0?'up':'down'}" style="font-family:var(--mono)">${a.var>=0?'+':''}${pc(a.var)}%</div></div>
+      <div class="sr-r"><div class="sr-pr">${(a.kind==='Stock'||a.usd)?usd(a.px):brl(a.px)}</div><div class="sr-ds ${a.var>=0?'up':'down'}" style="font-family:var(--mono)">${a.var>=0?'+':''}${pc(a.var)}%</div></div>
     </div>`).join('');
 }
 /* ══════════════════════════════════════════════════════════
@@ -2422,7 +2435,7 @@ function assetLookup(tk){
   return null;
 }
 function fmtPx(a,k){
-  if(ASSET_CLASS[k].cur==='usd') return usd(a.px);
+  if(ASSET_CLASS[k].cur==='usd' || a.usd) return usd(a.px);
   return (k==='cripto' && a.px>=100) ? brl(Math.round(a.px)) : brl(a.px);
 }
 /* logo real do ativo (CDN brapi p/ B3, CoinCap p/ cripto, Clearbit p/ stocks US) */
@@ -2532,7 +2545,7 @@ function initDetailCharts(){ initDetailPriceChart(); initDetailDivChart(); }
 /* ── indicadores fundamentalistas ── */
 function metricsForDetail(a,k){
   if(k==='bdrs') return [['Cotação',brl(a.px)],['Paridade',a.par],['Dividend Yield',pc(a.dy,1)+'%',a.dy>0?'up':''],['Setor',a.seg]];
-  if(k==='etfs') return [['Cotação',brl(a.px)],['Patrimônio',a.pat],['Taxa de adm.',a.tx],['Índice/Tema',a.seg]];
+  if(k==='etfs') return [['Cotação',fmtPx(a,k)],['Patrimônio',a.pat],['Taxa de adm.',a.tx],['Índice/Tema',a.seg]];
   if(k==='stocks') return [['Cotação',usd(a.px)],['Valor de mercado','US$ '+a.mkt],['P/L',pc(a.pe,1)+'x',a.pe<30?'up':''],['Dividend Yield',pc(a.dy,1)+'%'],['Setor',a.seg]];
   if(k==='cripto') return [['Cotação',fmtPx(a,k)],['Valor de mercado',a.mkt],['Variação 24h',(a.v24>=0?'+':'')+pc(a.v24,1)+'%',a.v24>=0?'up':'down'],['Variação 7d',(a.v7>=0?'+':'')+pc(a.v7,1)+'%',a.v7>=0?'up':'down']];
   return [];
@@ -2818,7 +2831,7 @@ function screenSymbols(){
     case 'fiis':  add(FIIS); break;
     case 'acoes': add(ACOES); break;
     case 'bdrs':  add(BDRS); break;
-    case 'etfs':  add(ETFS); break;
+    case 'etfs':  ETFS.forEach(a=>{ if(!a.usd) b3.add(a.tk); }); break;
     case 'cripto': CRIPTO.forEach(c=> crypto.add(c.tk)); break;
     case 'painel':
     case 'carteira': CARTEIRA.forEach(c=> b3.add(c.tk)); break;
