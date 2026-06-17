@@ -463,6 +463,13 @@ a { color: inherit; text-decoration: none; }
 /* ══════════════════════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════════════════════ */
+/* guardas globais: nunca rolar horizontalmente / nada além da viewport */
+html, body { overflow-x: clip; max-width: 100%; }
+.app { max-width: 100%; }
+.main { min-width: 0; max-width: 100%; }
+.content { overflow-x: clip; }
+img, svg, canvas, video { max-width: 100%; }
+
 .menu-btn { display:none; width:38px; height:38px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--surface); color:var(--ink-2); align-items:center; justify-content:center; cursor:pointer; flex:none; margin-right:6px; }
 .menu-btn:hover { color:var(--ink); }
 .sidebar-scrim { display:none; position:fixed; inset:0; background:rgba(15,20,25,.45); backdrop-filter:blur(2px); z-index:60; opacity:0; transition:opacity .25s var(--ease); }
@@ -475,15 +482,17 @@ a { color: inherit; text-decoration: none; }
   .nav-item { justify-content: center; padding: 11px; }
   .theme-toggle { justify-content: center; }
   .user-chip { justify-content: center; }
+  .upgrade-cta { padding: 11px; }
+  .user-chip > i { display:none; }
 }
 
 /* mobile: sidebar off-canvas (drawer) + hambúrguer */
 @media (max-width: 900px) {
   .menu-btn { display:flex; }
   .sidebar {
-    position:fixed; left:0; top:0; width:272px; height:100vh; z-index:70;
+    position:fixed; left:0; top:0; width:min(80vw, 296px); height:100dvh; z-index:70;
     transform:translateX(-100%); transition:transform .3s var(--ease-out);
-    box-shadow:var(--sh-xl); padding:20px 14px;
+    box-shadow:var(--sh-xl); padding:18px 14px;
   }
   body.nav-open .sidebar { transform:none; }
   body.nav-open .sidebar-scrim { display:block; opacity:1; }
@@ -492,29 +501,36 @@ a { color: inherit; text-decoration: none; }
 
 /* telas estreitas: empilhar grids, tabelas roláveis, topbar compacto */
 @media (max-width: 760px) {
-  .content { padding: 14px; }
-  .topbar { padding: 0 14px; }
-  .grid { grid-template-columns: 1fr !important; }
-  .dt-grid { grid-template-columns: 1fr !important; }
-  .about-grid { grid-template-columns: 1fr !important; }
+  .content { padding: 16px; }
+  .topbar { padding: 0 14px; gap: 8px; }
+  .topbar-left { gap: 8px; min-width: 0; flex: 1; }
+  .topbar-left > div { min-width: 0; }
+  .page-title { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .page-sub { font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-right { gap: 8px; flex: none; }
+  /* qualquer grid de layout vira coluna única */
+  .grid, .dt-grid, .about-grid, .sim-grid { grid-template-columns: 1fr !important; }
+  .grid[style], .dt-grid[style] { grid-template-columns: 1fr !important; }
   .mstrip { grid-template-columns: repeat(2,1fr) !important; }
-  /* tabelas: largura natural (rolam só quando preciso), sem squish nem corte */
-  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -2px; }
+  /* tabelas: largura natural, rolagem suave dentro do card */
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table.tbl { width: max-content; min-width: 100%; }
   table.tbl th, table.tbl td { white-space: nowrap; padding-left: 10px; padding-right: 10px; }
-  table.tbl .td-asset .ds { max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+  table.tbl .td-asset .ds { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .market-status { display:none; }
-  .page-title { font-size: 18px; }
-  .page-sub { font-size: 11.5px; }
+  .card-pad { padding: 16px 16px; }
   .dt-head { gap:12px; }
   .dt-id .tk { font-size:20px; }
   .filters { flex-wrap: wrap; }
-  .filters .sel { flex: 1; min-width: 130px; }
+  .filters .sel, .filters .search-inp { flex: 1 1 130px; min-width: 130px; }
 }
 @media (max-width: 460px) {
+  .content { padding: 12px; }
   .mstrip { grid-template-columns: 1fr !important; }
   .data-status #dataStatusLabel { display:none; }
-  .topbar-right { gap:7px; }
+  .topbar-right { gap:6px; }
+  .card-pad { padding: 15px 14px; }
+  .pricing-foot { gap: 14px; }
 }
 
 /* utilitário de carregamento (skeleton) */
@@ -862,7 +878,7 @@ a { color: inherit; text-decoration: none; }
 .rank-pct { font-family: var(--mono); font-size: 12.5px; font-weight: 600; text-align: right; }
 
 /* data table */
-.tbl-wrap { overflow-x: auto; margin: 0 -4px; }
+.tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
 table.tbl { width: 100%; border-collapse: collapse; }
 table.tbl th {
   text-align: left;
@@ -1128,6 +1144,8 @@ input[type=range]::-moz-range-thumb {
   .range-tabs{ flex-wrap:wrap; justify-content:flex-end; }
   .detail-chart{ height:220px; }
   .fgroup{ grid-template-columns:1fr; }
+  .gauge-break{ min-width:0 !important; flex-basis:100%; }
+  .drawer-score-row, .ds-head{ flex-wrap:wrap; }
 }
 @media (max-width:380px){ .sumgrid{ grid-template-columns:1fr; } }
 
@@ -1209,7 +1227,7 @@ table.tbl tbody tr:hover .logo, .sr:hover .logo { transform: scale(1.05); }
 
 /* listas/cards clicáveis */
 .rank-row, .sr, .tl-item { transition: background .14s var(--ease); }
-.rank-row { border-radius: 8px; margin: 0 -6px; padding-left: 6px; padding-right: 6px; }
+.rank-row { border-radius: 8px; }
 .rank-row:hover { background: var(--surface-2); }
 
 /* inputs/selects: foco com acento */
@@ -3093,16 +3111,25 @@ function peersHTML(tk,a,k){
   else if(k==='fiis') pool=FIIS.filter(x=>x.tk!==tk && x.seg===a.seg);
   else return '';
   if(!pool.length) return '';
-  pool=pool.slice(0,5); const isF=k==='fiis';
-  const rows=pool.map(p=>`<tr onclick="openAsset('${p.tk}')">
-    <td class="cell-left"><div class="td-asset">${assetLogo(p.tk,k,'xs')}<div class="nm"><div class="tk">${p.tk}</div><div class="ds">${p.nm}</div></div></div></td>
-    <td class="mono">${brl(p.px)}</td>
-    <td class="mono ${isF&&p.pvp<1?'up':''}">${isF?pc(p.pvp,2):pc(p.pl,1)+'x'}</td>
-    <td class="mono up">${pc(p.dy,1)}%</td>
-    <td><span class="score-pill" style="color:${scoreColor(p.score)};justify-content:flex-end"><span class="score-dot" style="background:${scoreColor(p.score)}"></span>${p.score}</span></td>
-  </tr>`).join('');
+  const isF=k==='fiis';
+  // prioriza ativos com fundamentos (curados, com Score) antes dos do universo
+  pool=pool.sort((x,y)=> (typeof y.score==='number'?1:0)-(typeof x.score==='number'?1:0)).slice(0,6);
+  const scoreCell = s => typeof s==='number'
+    ? `<span class="score-pill" style="color:${scoreColor(s)};justify-content:flex-end"><span class="score-dot" style="background:${scoreColor(s)}"></span>${s}</span>`
+    : '<span class="muted" style="font-size:12px">—</span>';
+  const rows=pool.map(p=>{
+    const mid = isF ? (typeof p.pvp==='number'?pc(p.pvp,2):'—') : (typeof p.pl==='number'?pc(p.pl,1)+'x':'—');
+    const dy  = typeof p.dy==='number'?pc(p.dy,1)+'%':'—';
+    return `<tr onclick="openAsset('${p.tk}')">
+      <td class="cell-left"><div class="td-asset">${assetLogo(p.tk,k,'xs')}<div class="nm"><div class="tk">${p.tk}</div><div class="ds">${esc(p.nm||'')}</div></div></div></td>
+      <td class="mono">${fmtPx(p,k)}</td>
+      <td class="mono ${isF&&p.pvp<1?'up':''}">${mid}</td>
+      <td class="mono ${typeof p.dy==='number'&&p.dy>0?'up':''}">${dy}</td>
+      <td>${scoreCell(p.score)}</td>
+    </tr>`;
+  }).join('');
   return `<div class="card card-pad">
-    <div class="ds-title">Comparação com pares · ${a.seg}</div>
+    <div class="ds-title">Comparação com pares · ${esc(a.seg)}</div>
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr><th class="cell-left">Ativo</th><th>Cotação</th><th>${isF?'P/VP':'P/L'}</th><th>DY</th><th>Score</th></tr></thead>
       <tbody>${rows}</tbody>
