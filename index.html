@@ -582,6 +582,11 @@ a { color: inherit; text-decoration: none; }
 <!-- ════════ TOAST ════════ -->
 <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i> <span id="toastMsg"></span></div>
 
+<!-- ════════ DRAWER — DETALHE DO ATIVO ════════ -->
+<div class="drawer-scrim" id="assetDrawer" onclick="if(event.target===this)closeAsset()">
+  <aside class="drawer" id="assetDrawerPanel" role="dialog" aria-label="Detalhe do ativo"></aside>
+</div>
+
 <style>
 /* ══════════════════════════════════════════════════════════
    COMPONENT STYLES (views)
@@ -971,6 +976,76 @@ input[type=range]::-moz-range-thumb {
 .sr-r { text-align: right; }
 .sr-pr { font-family: var(--mono); font-size: 13px; font-weight: 500; }
 .search-empty { padding: 32px; text-align: center; color: var(--ink-3); font-size: 13px; }
+
+/* asset detail drawer */
+.drawer-scrim {
+  position: fixed; inset: 0; z-index: 240;
+  background: rgba(15,20,25,.44); backdrop-filter: blur(3px);
+  display: flex; justify-content: flex-end;
+  opacity: 0; pointer-events: none; transition: opacity .28s var(--ease);
+}
+.drawer-scrim.open { opacity: 1; pointer-events: auto; }
+.drawer {
+  width: 524px; max-width: 96vw; height: 100%;
+  background: var(--surface); border-left: 1px solid var(--line-2);
+  box-shadow: var(--sh-xl); overflow-y: auto;
+  display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform .34s var(--ease-out);
+}
+.drawer-scrim.open .drawer { transform: none; }
+.drawer-head {
+  position: sticky; top: 0; z-index: 3;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 20px 22px 14px; background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.dh-asset { display: flex; gap: 13px; align-items: center; min-width: 0; }
+.dh-ic {
+  width: 46px; height: 46px; border-radius: 12px; flex: none;
+  background: linear-gradient(135deg, var(--brand), var(--brand-d)); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+}
+.dh-tk { font-family: var(--mono); font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.dh-nm { font-size: 13px; color: var(--ink-3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drawer-close {
+  width: 34px; height: 34px; border-radius: 9px; flex: none;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink-3);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: all .15s var(--ease);
+}
+.drawer-close:hover { background: var(--surface-3); color: var(--ink); }
+.drawer-price { display: flex; align-items: baseline; gap: 12px; padding: 16px 22px 6px; flex-wrap: wrap; }
+.dp-px { font-family: var(--mono); font-size: 30px; font-weight: 600; letter-spacing: -.01em; }
+.dp-var { font-family: var(--mono); font-size: 13.5px; font-weight: 600; padding: 3px 9px; border-radius: 7px; }
+.dp-var.up { color: var(--up); background: var(--up-l); }
+.dp-var.down { color: var(--down); background: var(--down-l); }
+.dp-seg { font-size: 12.5px; color: var(--ink-3); margin-left: auto; }
+.drawer-sec { padding: 18px 22px; border-top: 1px solid var(--line); }
+.ds-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3); margin-bottom: 14px; }
+.ds-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.range-tabs { display: flex; gap: 3px; background: var(--surface-3); padding: 3px; border-radius: 9px; }
+.range-tabs button { font-size: 11.5px; font-weight: 500; padding: 5px 11px; border-radius: 6px; color: var(--ink-3); cursor: pointer; transition: all .14s var(--ease); }
+.range-tabs button.on { background: var(--surface); color: var(--ink); box-shadow: var(--sh-sm); }
+.drawer-chart { height: 184px; position: relative; }
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.metric { background: var(--surface); padding: 13px 15px; }
+.metric .ml { font-size: 11.5px; color: var(--ink-3); margin-bottom: 5px; }
+.metric .mv { font-family: var(--mono); font-size: 16px; font-weight: 600; }
+.metric .mv.up { color: var(--up); } .metric .mv.down { color: var(--down); }
+.drawer-score-row { display: flex; gap: 18px; align-items: center; }
+.dnews { display: flex; flex-direction: column; }
+.dnews a { display: block; padding: 11px 0; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink); line-height: 1.45; cursor: pointer; transition: color .14s var(--ease); }
+.dnews a:first-child { border-top: none; padding-top: 0; }
+.dnews a:hover { color: var(--brand); }
+.dnews a .nm { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+.drawer-empty { font-size: 12.5px; color: var(--ink-3); }
+.drawer-actions {
+  margin-top: auto; position: sticky; bottom: 0;
+  display: flex; gap: 10px; padding: 16px 22px;
+  background: var(--surface); border-top: 1px solid var(--line);
+}
+.drawer-actions .btn { flex: 1; justify-content: center; }
+@media (max-width: 560px) { .drawer { width: 100vw; } }
 
 /* toast */
 .toast {
@@ -1956,6 +2031,7 @@ async function loadNewsFeed(){
     const r = await fetch(url, { headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${cfg.SUPABASE_ANON_KEY}` } });
     if(!r.ok) throw new Error('HTTP '+r.status);
     const rows = await r.json();
+    if(Array.isArray(rows)) window.LAST_NEWS = rows;   // cache p/ o drawer de detalhe
     if(Array.isArray(rows) && rows.length){
       feed.innerHTML = rows.map(newsItemHTML).join('');
       const st = $('#newsStatusTxt'); if(st) st.textContent = 'Atualizado ' + timeAgo(rows[0].published_at);
@@ -2178,10 +2254,204 @@ function runSearch(q){
       <div class="sr-r"><div class="sr-pr">${brl(a.px)}</div><div class="sr-ds ${a.var>=0?'up':'down'}" style="font-family:var(--mono)">${a.var>=0?'+':''}${a.var.toFixed(2).replace('.',',')}%</div></div>
     </div>`).join('');
 }
-function quickView(tk){
-  const a = ALL.find(x=>x.tk===tk);
-  toast(`${tk} · ${a.nm} — Score Lastro ${a.score} (${scoreTier(a.score)})`);
+/* ══════════════════════════════════════════════════════════
+   DRAWER — DETALHE DO ATIVO
+   ══════════════════════════════════════════════════════════ */
+const ASSET_CLASS = {
+  fiis:   { label:'FII',    cur:'brl', score:true },
+  acoes:  { label:'Ação',   cur:'brl', score:true },
+  bdrs:   { label:'BDR',    cur:'brl' },
+  etfs:   { label:'ETF',    cur:'brl' },
+  stocks: { label:'Stock',  cur:'usd' },
+  cripto: { label:'Cripto', cur:'brl' },
+};
+let ASSET_OPEN = null;
+
+function assetLookup(tk){
+  const map = [['fiis',FIIS],['acoes',ACOES],['bdrs',BDRS],['etfs',ETFS],['stocks',STOCKS],['cripto',CRIPTO]];
+  for(const [k,arr] of map){ const a = arr.find(x=>x.tk===tk); if(a) return { a, k }; }
+  return null;
 }
+function fmtPx(a,k){
+  if(ASSET_CLASS[k].cur==='usd') return usd(a.px);
+  return (k==='cripto' && a.px>=100) ? brl(Math.round(a.px)) : brl(a.px);
+}
+function metricsFor(a,k){
+  if(k==='fiis') return [
+    ['DY 12M', pc(a.dy,1)+'%', 'up'], ['P/VP', pc(a.pvp,2), a.pvp<1?'up':''],
+    ['Dividendo/cota', brl(a.div), ''], ['Vacância', pc(a.vac,1)+'%', a.vac<5?'up':'down'],
+    ['Liquidez', a.liq+' / 50', ''], ['Consistência', Math.round((a.consist||0)*100)+'/100', ''],
+  ];
+  if(k==='acoes') return [
+    ['P/L', pc(a.pl,1)+'x', a.pl<10?'up':''], ['P/VP', pc(a.pvp,1)+'x', ''],
+    ['Dividend Yield', pc(a.dy,1)+'%', a.dy>5?'up':''], ['ROE', pc(a.roe,1)+'%', ''],
+    ['Margem líquida', pc(a.mgl,1)+'%', ''], ['Liquidez', a.liq+' / 50', ''],
+  ];
+  if(k==='bdrs') return [ ['Paridade', a.par, ''], ['Dividend Yield', pc(a.dy,1)+'%', a.dy>0?'up':''], ['Setor', a.seg, ''] ];
+  if(k==='etfs') return [ ['Patrimônio', a.pat, ''], ['Taxa de adm.', a.tx, ''], ['Índice / Tema', a.seg, ''] ];
+  if(k==='stocks') return [
+    ['Valor de mercado', 'US$ '+a.mkt, ''], ['P/L', pc(a.pe,1)+'x', a.pe<30?'up':''],
+    ['Dividend Yield', pc(a.dy,1)+'%', a.dy>0?'up':''], ['Setor', a.seg, ''],
+  ];
+  if(k==='cripto') return [
+    ['Valor de mercado', a.mkt, ''],
+    ['Variação 24h', (a.v24>=0?'+':'')+pc(a.v24,1)+'%', a.v24>=0?'up':'down'],
+    ['Variação 7 dias', (a.v7>=0?'+':'')+pc(a.v7,1)+'%', a.v7>=0?'up':'down'],
+  ];
+  return [];
+}
+function assetNews(tk){
+  const pool = (Array.isArray(window.LAST_NEWS) && window.LAST_NEWS.length) ? window.LAST_NEWS : NEWS;
+  return pool.filter(n => (n.ticker||n.tk)===tk).slice(0,4);
+}
+
+/* watchlist (persistida no navegador) */
+function watchlist(){ try{ return JSON.parse(localStorage.getItem('lastro_watch')||'[]'); }catch(e){ return []; } }
+function isWatched(tk){ return watchlist().includes(tk); }
+function watchBtnInner(tk){ const on=isWatched(tk); return `<i class="fa-${on?'solid':'regular'} fa-star" style="${on?'color:var(--gold)':''}"></i> ${on?'Na watchlist':'Watchlist'}`; }
+function toggleWatch(tk){
+  const w=watchlist(); const i=w.indexOf(tk);
+  if(i>=0) w.splice(i,1); else w.push(tk);
+  localStorage.setItem('lastro_watch', JSON.stringify(w));
+  toast(i>=0?`${tk} removido da watchlist`:`${tk} adicionado à watchlist ★`);
+  const b=document.getElementById('watchBtn'); if(b) b.innerHTML = watchBtnInner(tk);
+}
+
+/* série histórica determinística (ilustrativa) ancorada no preço atual */
+function seedFrom(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function rng(seed){ return function(){ let t=seed+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }; }
+function genSeries(key, endPx, n, vol){
+  const r=rng(seedFrom(key)); let p=endPx*(0.80+r()*0.14); const out=[];
+  for(let i=0;i<n;i++){ const drift=(endPx-p)*0.05; const noise=(r()-0.5)*2*vol*p; p=Math.max(p+drift+noise, endPx*0.4); out.push(p); }
+  const k=endPx/out[out.length-1]; return out.map(v=>v*k);
+}
+function hexToRgba(hex,a){ const h=hex.replace('#','').trim(); const n=h.length===3?h.split('').map(c=>c+c).join(''):h; const r=parseInt(n.slice(0,2),16),g=parseInt(n.slice(2,4),16),b=parseInt(n.slice(4,6),16); return `rgba(${r||0},${g||0},${b||0},${a})`; }
+
+const ASSET_RANGES = { '7D':7, '1M':22, '3M':66, '1A':53 };
+let assetRange = '3M';
+function setAssetRange(r){
+  assetRange = r;
+  document.querySelectorAll('#assetRanges button').forEach(b=> b.classList.toggle('on', b.textContent===r));
+  initAssetChart();
+}
+function initAssetChart(){
+  const ctx = document.getElementById('assetChart'); if(!ctx || !ASSET_OPEN) return;
+  if(typeof Chart==='undefined'){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico indisponível</div>'; return; }
+  if(charts.assetChart){ try{ charts.assetChart.destroy(); }catch(e){} }
+  const a = assetLookup(ASSET_OPEN.tk).a;
+  const n = ASSET_RANGES[assetRange]||66;
+  const data = genSeries(ASSET_OPEN.tk+assetRange, a.px, n, 0.016);
+  const up = data[data.length-1] >= data[0];
+  const col = cssVar(up?'--up':'--down') || '#0E7C5A';
+  const g = ctx.getContext('2d'); const grad = g.createLinearGradient(0,0,0,184);
+  grad.addColorStop(0, hexToRgba(col,.20)); grad.addColorStop(1, hexToRgba(col,0));
+  const isUsd = ASSET_OPEN.k==='stocks';
+  charts.assetChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:data.map((_,i)=>i), datasets:[{ data, borderColor:col, backgroundColor:grad, fill:true, borderWidth:2, tension:.35, pointRadius:0, pointHoverRadius:4, pointHoverBackgroundColor:col }] },
+    options:{ responsive:true, maintainAspectRatio:false, animation:{duration:600},
+      plugins:{ legend:{display:false}, tooltip:{ enabled:true, displayColors:false, callbacks:{ title:()=>'', label:c=> (isUsd?'US$ ':'R$ ')+c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) } } },
+      scales:{ x:{ display:false }, y:{ position:'right', grid:{ color:cssVar('--line') }, ticks:{ color:cssVar('--ink-3'), font:{size:10}, maxTicksLimit:4 }, border:{display:false} } },
+      interaction:{ intersect:false, mode:'index' } }
+  });
+}
+
+function openAsset(tk){
+  const found = assetLookup(tk);
+  if(!found){ toast(`${tk} — ativo não encontrado`); return; }
+  const { a, k } = found; ASSET_OPEN = { tk, k }; assetRange='3M';
+  const cls = ASSET_CLASS[k];
+  const vv = (k==='cripto' ? a.v24 : a.var) ?? 0;
+  const hasScore = cls.score && typeof a.score==='number';
+
+  const metrics = metricsFor(a,k).map(m=>`<div class="metric"><div class="ml">${m[0]}</div><div class="mv ${m[2]||''}">${m[1]}</div></div>`).join('');
+
+  let scoreBlock='';
+  if(hasScore){
+    const c=scoreColor(a.score), circ=2*Math.PI*52, off=circ-(a.score/100)*circ;
+    scoreBlock = `<div class="drawer-sec">
+      <div class="ds-title">Score Lastro™ <span style="color:${c}">· ${scoreTier(a.score)}</span></div>
+      <div class="drawer-score-row">
+        <div class="gauge" style="flex:none">
+          <svg width="132" height="132" viewBox="0 0 132 132">
+            <circle cx="66" cy="66" r="52" fill="none" stroke="var(--surface-3)" stroke-width="11"/>
+            <circle class="gauge-arc" cx="66" cy="66" r="52" fill="none" stroke="${c}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ}" data-off="${off}"/>
+          </svg>
+          <div class="gauge-center"><div class="gauge-num" style="color:${c}">${a.score}</div><div class="gauge-lbl">/100</div></div>
+        </div>
+        <div class="gauge-break" style="flex:1">
+          ${gbRow('DY sustentável (35%)', Math.min(a.dy/15,1)*100)}
+          ${gbRow('Valuation P/VP (30%)', (a.pvp<=1?1:Math.max(0,1.6-a.pvp)/0.6)*100)}
+          ${gbRow('Liquidez (20%)', Math.min(a.liq/50,1)*100)}
+          ${gbRow('Consistência (15%)', (a.consist||0.7)*100)}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const news = assetNews(tk);
+  const newsBlock = `<div class="drawer-sec">
+    <div class="ds-title">Notícias do ativo</div>
+    ${ news.length ? `<div class="dnews">${news.map(n=>{
+        const tt=esc(n.title||n.tt||''), src=esc(n.source||n.src||''), url=n.url||'';
+        const tm = n.published_at ? timeAgo(n.published_at) : (n.t||'');
+        return `<a data-url="${esc(url)}" data-tk="${esc(tk)}" onclick="openNews(this)">${tt}<div class="nm">${src}${tm?` · ${esc(tm)}`:''}</div></a>`;
+      }).join('')}</div>` : `<div class="drawer-empty">Sem notícias recentes para ${tk}. O feed cobre ações, FIIs, BDRs, ETFs e cripto.</div>` }
+  </div>`;
+
+  $('#assetDrawerPanel').innerHTML = `
+    <div class="drawer-head">
+      <div class="dh-asset">
+        <div class="dh-ic">${tk.slice(0,4)}</div>
+        <div style="min-width:0">
+          <div class="dh-tk">${tk} <span class="chip chip-neu" style="font-size:10px">${cls.label}</span></div>
+          <div class="dh-nm">${esc(a.nm)}</div>
+        </div>
+      </div>
+      <button class="drawer-close" onclick="closeAsset()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="drawer-price">
+      <div class="dp-px">${fmtPx(a,k)}</div>
+      <div class="dp-var ${vv>=0?'up':'down'}"><i class="fa-solid fa-caret-${vv>=0?'up':'down'}"></i> ${vv>=0?'+':''}${pc(vv)}%</div>
+      <div class="dp-seg">${esc(a.seg||cls.label)}</div>
+    </div>
+
+    <div class="drawer-sec">
+      <div class="ds-head">
+        <span class="ds-title" style="margin:0">Desempenho</span>
+        <div class="range-tabs" id="assetRanges">${Object.keys(ASSET_RANGES).map(r=>`<button class="${r===assetRange?'on':''}" onclick="setAssetRange('${r}')">${r}</button>`).join('')}</div>
+      </div>
+      <div class="drawer-chart"><canvas id="assetChart"></canvas></div>
+      <div style="font-size:10.5px;color:var(--ink-4);margin-top:9px;text-align:right">Série ilustrativa · histórico real ao conectar provedor de dados</div>
+    </div>
+
+    ${scoreBlock}
+
+    <div class="drawer-sec">
+      <div class="ds-title">Indicadores</div>
+      <div class="metric-grid">${metrics}</div>
+    </div>
+
+    ${newsBlock}
+
+    <div class="drawer-actions">
+      <button class="btn btn-ghost" id="watchBtn" onclick="toggleWatch('${tk}')">${watchBtnInner(tk)}</button>
+      <button class="btn btn-primary" onclick="toast('Em breve: adicionar ${tk} à carteira')"><i class="fa-solid fa-plus"></i> Carteira</button>
+    </div>`;
+
+  $('#assetDrawer').classList.add('open');
+  document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>{ initAssetChart(); animateGauges(); });
+}
+function closeAsset(){
+  const d=$('#assetDrawer'); if(d) d.classList.remove('open');
+  document.body.style.overflow='';
+  if(charts.assetChart){ try{ charts.assetChart.destroy(); }catch(e){} delete charts.assetChart; }
+  ASSET_OPEN=null;
+}
+// alias: cliques existentes (quickView) agora abrem o drawer
+function quickView(tk){ openAsset(tk); }
 
 function toggleTheme(){
   const html = document.documentElement;
@@ -2194,7 +2464,7 @@ function toggleTheme(){
 
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
-  if(e.key==='Escape') closeSearch();
+  if(e.key==='Escape'){ closeSearch(); closeAsset(); }
 });
 
 /* ══════════════════════════════════════════════════════════
