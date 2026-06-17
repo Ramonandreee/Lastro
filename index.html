@@ -977,6 +977,14 @@ input[type=range]::-moz-range-thumb {
 .dt-back:hover { color:var(--ink); border-color:var(--line-2); }
 .dt-head { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
 .dt-ic { width:56px; height:56px; border-radius:14px; flex:none; background:linear-gradient(135deg,var(--brand),var(--brand-d)); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:14px; font-weight:600; }
+/* logos de empresas/ativos */
+.logo { position:relative; display:inline-flex; align-items:center; justify-content:center; flex:none; overflow:hidden; border:1px solid var(--line); }
+.logo-img { width:100%; height:100%; object-fit:contain; background:#fff; padding:3px; }
+.logo-mono { width:100%; height:100%; align-items:center; justify-content:center; font-family:var(--mono); font-weight:600; color:var(--brand); background:var(--surface-3); }
+.logo.lg { width:56px; height:56px; border-radius:14px; font-size:14px; }
+.logo.md { width:46px; height:46px; border-radius:12px; font-size:12px; }
+.logo.sm { width:38px; height:38px; border-radius:10px; font-size:10px; }
+.logo.xs { width:34px; height:34px; border-radius:9px; font-size:9px; }
 .dt-id .tk { font-family:var(--mono); font-size:23px; font-weight:600; display:flex; align-items:center; gap:9px; }
 .dt-id .nm { font-size:14px; color:var(--ink-2); margin-top:2px; }
 .dt-id .sec { font-size:12px; color:var(--ink-3); margin-top:4px; }
@@ -997,6 +1005,9 @@ input[type=range]::-moz-range-thumb {
 .f-row .f-v { font-family:var(--mono); font-weight:600; text-align:right; }
 .f-row .f-v.up{color:var(--up)} .f-row .f-v.down{color:var(--down)}
 .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 28px; }
+.about-head { display:flex; align-items:center; gap:13px; margin-bottom:14px; }
+.about-desc { font-size:13.5px; line-height:1.72; color:var(--ink-2); margin-bottom:14px; }
+.about-tags { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
 .detail-chart { height:280px; position:relative; }
 .div-chart { height:210px; position:relative; }
 .dnews { display:flex; flex-direction:column; }
@@ -1105,20 +1116,54 @@ const FIIS = [
   { tk:'MXRF11', nm:'Maxi Renda',          seg:'Híbrido',   px:10.42,  dy:12.1, pvp:1.02, div:0.10, liq:41, consist:0.82, vac:1.5,  var:-0.19 },
   { tk:'GGRC11', nm:'GGR Covepi Renda',    seg:'Logístico', px:104.30, dy:9.4,  pvp:0.90, div:0.82, liq:12, consist:0.83, vac:0,    var:+0.58 },
   { tk:'RBRP11', nm:'RBR Properties',      seg:'Tijolo',    px:67.80,  dy:11.3, pvp:0.82, div:0.64, liq:9,  consist:0.74, vac:9.1,  var:-0.44 },
+  { tk:'KNRI11', nm:'Kinea Renda Imob.',   seg:'Híbrido',   px:160.00, dy:8.5,  pvp:0.95, div:1.13, liq:35, consist:0.92, vac:4.0,  var:+0.40 },
+  { tk:'HGRU11', nm:'CSHG Renda Urbana',   seg:'Renda Urbana',px:128.00,dy:8.8, pvp:1.00, div:0.94, liq:30, consist:0.90, vac:1.0,  var:+0.31 },
+  { tk:'HGRE11', nm:'CSHG Real Estate',    seg:'Lajes',     px:140.00, dy:8.0,  pvp:0.75, div:0.93, liq:22, consist:0.85, vac:12.0, var:+0.18 },
+  { tk:'IRDM11', nm:'Iridium Recebíveis',  seg:'Papel',     px:78.00,  dy:12.5, pvp:0.98, div:0.81, liq:28, consist:0.85, vac:0,    var:+0.52 },
+  { tk:'RECR11', nm:'REC Recebíveis',      seg:'Papel',     px:92.00,  dy:13.0, pvp:0.90, div:1.00, liq:20, consist:0.80, vac:0,    var:+0.27 },
+  { tk:'DEVA11', nm:'Devant Recebíveis',   seg:'Papel',     px:65.00,  dy:14.0, pvp:0.85, div:0.76, liq:16, consist:0.72, vac:0,    var:-0.21 },
+  { tk:'MCCI11', nm:'Mauá Capital Rec.',   seg:'Papel',     px:95.00,  dy:11.8, pvp:0.97, div:0.93, liq:18, consist:0.85, vac:0,    var:+0.36 },
+  { tk:'RZTR11', nm:'Riza Terrax',         seg:'Agro',      px:98.00,  dy:12.0, pvp:0.95, div:0.98, liq:14, consist:0.82, vac:0,    var:+0.30 },
+  { tk:'VILG11', nm:'Vinci Logística',     seg:'Logístico', px:100.00, dy:9.0,  pvp:0.92, div:0.75, liq:18, consist:0.85, vac:3.0,  var:+0.47 },
+  { tk:'BRCO11', nm:'Bresco Logística',    seg:'Logístico', px:105.00, dy:8.6,  pvp:0.95, div:0.75, liq:16, consist:0.86, vac:2.0,  var:+0.39 },
+  { tk:'HSML11', nm:'HSI Malls',           seg:'Shopping',  px:88.00,  dy:9.5,  pvp:0.85, div:0.70, liq:20, consist:0.82, vac:5.0,  var:+0.33 },
+  { tk:'ALZR11', nm:'Alianza Trust Renda', seg:'Tijolo',    px:110.00, dy:8.8,  pvp:0.96, div:0.81, liq:12, consist:0.83, vac:2.5,  var:+0.22 },
+  { tk:'BCFF11', nm:'BTG Fundo de Fundos', seg:'FoF',       px:68.00,  dy:10.5, pvp:0.92, div:0.60, liq:22, consist:0.80, vac:0,    var:+0.28 },
 ];
 FIIS.forEach(f => f.score = scoreLastro(f));
 
 const ACOES = [
-  { tk:'PETR4', nm:'Petrobras',    seg:'Energia',      px:41.84, pl:5.2,  pvp:1.1,  dy:13.8, roe:28.4, mgl:32.1, var:+1.85, consist:0.78, liq:50 },
-  { tk:'BBAS3', nm:'Banco do Brasil', seg:'Financeiro', px:18.99, pl:4.8, pvp:0.8,  dy:10.6, roe:17.2, mgl:24.0, var:+0.68, consist:0.85, liq:48 },
-  { tk:'VALE3', nm:'Vale',         seg:'Mat. Básicos', px:77.58, pl:6.3,  pvp:1.0,  dy:11.2, roe:18.7, mgl:28.5, var:+1.07, consist:0.80, liq:50 },
-  { tk:'ITUB4', nm:'Itaú Unibanco',seg:'Financeiro',   px:39.33, pl:8.1,  pvp:1.8,  dy:9.4,  roe:20.1, mgl:26.8, var:+0.08, consist:0.93, liq:50 },
-  { tk:'BBDC4', nm:'Bradesco',     seg:'Financeiro',   px:15.06, pl:9.2,  pvp:1.0,  dy:8.9,  roe:11.4, mgl:18.2, var:+0.73, consist:0.81, liq:46 },
-  { tk:'ABEV3', nm:'Ambev',        seg:'Consumo',      px:16.25, pl:15.2, pvp:2.3,  dy:6.8,  roe:16.1, mgl:21.4, var:+0.06, consist:0.88, liq:44 },
-  { tk:'WEGE3', nm:'WEG',          seg:'Indústria',    px:42.11, pl:32.4, pvp:11.2, dy:2.1,  roe:35.8, mgl:17.9, var:+2.75, consist:0.96, liq:42 },
-  { tk:'PRIO3', nm:'PetroRio',     seg:'Petróleo',     px:63.06, pl:9.7,  pvp:2.1,  dy:0.0,  roe:24.3, mgl:48.2, var:+2.04, consist:0.72, liq:40 },
-  { tk:'BPAC11',nm:'BTG Pactual',  seg:'Financeiro',   px:49.14, pl:10.8, pvp:1.7,  dy:4.2,  roe:19.4, mgl:33.0, var:+3.42, consist:0.89, liq:38 },
-  { tk:'RDOR3', nm:'Rede D\'Or',   seg:'Saúde',        px:31.80, pl:22.1, pvp:2.6,  dy:1.1,  roe:12.3, mgl:14.0, var:-0.31, consist:0.70, liq:34 },
+  { tk:'PETR4', nm:'Petrobras',      seg:'Petróleo e Gás',  px:41.84, pl:5.2,  pvp:1.1,  dy:13.8, roe:28.4, mgl:32.1, var:+1.85, consist:0.78, liq:50 },
+  { tk:'BBAS3', nm:'Banco do Brasil', seg:'Bancos',         px:18.99, pl:4.8,  pvp:0.8,  dy:10.6, roe:17.2, mgl:24.0, var:+0.68, consist:0.85, liq:48 },
+  { tk:'VALE3', nm:'Vale',           seg:'Mineração',       px:77.58, pl:6.3,  pvp:1.0,  dy:11.2, roe:18.7, mgl:28.5, var:+1.07, consist:0.80, liq:50 },
+  { tk:'ITUB4', nm:'Itaú Unibanco',  seg:'Bancos',          px:39.33, pl:8.1,  pvp:1.8,  dy:9.4,  roe:20.1, mgl:26.8, var:+0.08, consist:0.93, liq:50 },
+  { tk:'BBDC4', nm:'Bradesco',       seg:'Bancos',          px:15.06, pl:9.2,  pvp:1.0,  dy:8.9,  roe:11.4, mgl:18.2, var:+0.73, consist:0.81, liq:46 },
+  { tk:'ABEV3', nm:'Ambev',          seg:'Bebidas',         px:16.25, pl:15.2, pvp:2.3,  dy:6.8,  roe:16.1, mgl:21.4, var:+0.06, consist:0.88, liq:44 },
+  { tk:'WEGE3', nm:'WEG',            seg:'Bens Industriais',px:42.11, pl:32.4, pvp:11.2, dy:2.1,  roe:35.8, mgl:17.9, var:+2.75, consist:0.96, liq:42 },
+  { tk:'PRIO3', nm:'PetroRio',       seg:'Petróleo e Gás',  px:63.06, pl:9.7,  pvp:2.1,  dy:0.0,  roe:24.3, mgl:48.2, var:+2.04, consist:0.72, liq:40 },
+  { tk:'BPAC11',nm:'BTG Pactual',    seg:'Bancos',          px:49.14, pl:10.8, pvp:1.7,  dy:4.2,  roe:19.4, mgl:33.0, var:+3.42, consist:0.89, liq:38 },
+  { tk:'RDOR3', nm:'Rede D\'Or',     seg:'Saúde',           px:31.80, pl:22.1, pvp:2.6,  dy:1.1,  roe:12.3, mgl:14.0, var:-0.31, consist:0.70, liq:34 },
+  { tk:'ITSA4', nm:'Itaúsa',         seg:'Holdings',        px:10.20, pl:6.5,  pvp:1.1,  dy:7.8,  roe:17.5, mgl:90.0, var:+0.49, consist:0.90, liq:44 },
+  { tk:'B3SA3', nm:'B3',             seg:'Serviços Financ.',px:12.80, pl:14.0, pvp:3.0,  dy:4.5,  roe:22.0, mgl:55.0, var:+0.92, consist:0.90, liq:46 },
+  { tk:'SANB11',nm:'Santander Brasil',seg:'Bancos',         px:28.50, pl:8.0,  pvp:1.2,  dy:6.5,  roe:14.0, mgl:22.0, var:+0.34, consist:0.82, liq:38 },
+  { tk:'RENT3', nm:'Localiza',       seg:'Aluguel de Carros',px:42.00,pl:18.0, pvp:2.4,  dy:1.5,  roe:14.0, mgl:18.0, var:+1.21, consist:0.85, liq:42 },
+  { tk:'RADL3', nm:'Raia Drogasil',  seg:'Varejo Farma',    px:24.50, pl:26.0, pvp:4.5,  dy:1.0,  roe:17.0, mgl:5.0,  var:+0.42, consist:0.90, liq:40 },
+  { tk:'RAIL3', nm:'Rumo',           seg:'Logística',       px:19.80, pl:22.0, pvp:2.1,  dy:1.2,  roe:10.0, mgl:20.0, var:+0.83, consist:0.78, liq:38 },
+  { tk:'SUZB3', nm:'Suzano',         seg:'Papel e Celulose',px:58.00, pl:7.0,  pvp:1.6,  dy:2.5,  roe:20.0, mgl:28.0, var:+1.05, consist:0.80, liq:42 },
+  { tk:'KLBN11',nm:'Klabin',         seg:'Papel e Celulose',px:21.50, pl:9.0,  pvp:1.8,  dy:5.0,  roe:18.0, mgl:22.0, var:+0.58, consist:0.82, liq:36 },
+  { tk:'GGBR4', nm:'Gerdau',         seg:'Siderurgia',      px:18.20, pl:7.5,  pvp:0.9,  dy:6.0,  roe:12.0, mgl:14.0, var:+0.71, consist:0.78, liq:40 },
+  { tk:'CSNA3', nm:'CSN',            seg:'Siderurgia',      px:12.10, pl:8.0,  pvp:0.8,  dy:5.5,  roe:11.0, mgl:16.0, var:+1.12, consist:0.70, liq:38 },
+  { tk:'ELET3', nm:'Eletrobras',     seg:'Energia Elétrica',px:42.30, pl:9.0,  pvp:0.7,  dy:2.0,  roe:8.0,  mgl:25.0, var:+0.54, consist:0.72, liq:44 },
+  { tk:'TAEE11',nm:'Taesa',          seg:'Energia Elétrica',px:36.50, pl:8.5,  pvp:2.2,  dy:9.5,  roe:26.0, mgl:60.0, var:+0.21, consist:0.90, liq:36 },
+  { tk:'EGIE3', nm:'Engie Brasil',   seg:'Energia Elétrica',px:41.00, pl:9.5,  pvp:2.8,  dy:7.0,  roe:30.0, mgl:35.0, var:+0.33, consist:0.90, liq:34 },
+  { tk:'SBSP3', nm:'Sabesp',         seg:'Saneamento',      px:92.00, pl:12.0, pvp:1.8,  dy:2.0,  roe:15.0, mgl:22.0, var:+1.34, consist:0.82, liq:42 },
+  { tk:'EQTL3', nm:'Equatorial',     seg:'Energia Elétrica',px:33.80, pl:11.0, pvp:1.9,  dy:1.5,  roe:17.0, mgl:20.0, var:+0.74, consist:0.85, liq:40 },
+  { tk:'VIVT3', nm:'Vivo (Telefônica)',seg:'Telecom',       px:52.00, pl:15.0, pvp:1.3,  dy:5.5,  roe:9.0,  mgl:14.0, var:+0.22, consist:0.85, liq:36 },
+  { tk:'MGLU3', nm:'Magazine Luiza', seg:'Varejo',          px:9.50,  pl:30.0, pvp:1.5,  dy:0.0,  roe:5.0,  mgl:2.0,  var:+2.51, consist:0.55, liq:44 },
+  { tk:'LREN3', nm:'Lojas Renner',   seg:'Varejo',          px:16.80, pl:14.0, pvp:2.0,  dy:2.5,  roe:14.0, mgl:9.0,  var:+0.91, consist:0.80, liq:40 },
+  { tk:'JBSS3', nm:'JBS',            seg:'Alimentos',       px:32.00, pl:9.0,  pvp:1.7,  dy:3.5,  roe:16.0, mgl:5.0,  var:+0.63, consist:0.72, liq:40 },
+  { tk:'HAPV3', nm:'Hapvida',        seg:'Saúde',           px:4.20,  pl:28.0, pvp:1.1,  dy:0.0,  roe:4.0,  mgl:6.0,  var:+1.52, consist:0.60, liq:42 },
+  { tk:'TOTS3', nm:'TOTVS',          seg:'Tecnologia',      px:32.50, pl:28.0, pvp:6.0,  dy:1.5,  roe:22.0, mgl:14.0, var:-0.52, consist:0.85, liq:38 },
 ];
 ACOES.forEach(a => a.score = scoreLastro(a));
 
@@ -1190,6 +1235,12 @@ const BDRS = [
   { tk:'JPMC34', nm:'JPMorgan',   seg:'Financeiro', px:54.10,  par:'1:8',   dy:2.3, var:+0.74 },
   { tk:'COCA34', nm:'Coca-Cola',  seg:'Consumo',    px:41.25,  par:'1:6',   dy:3.0, var:+0.31 },
   { tk:'DISB34', nm:'Disney',     seg:'Mídia',      px:38.90,  par:'1:6',   dy:0.8, var:-0.52 },
+  { tk:'NFLX34', nm:'Netflix',    seg:'Mídia',      px:72.40,  par:'1:24',  dy:0.0, var:+1.45 },
+  { tk:'BABA34', nm:'Alibaba',    seg:'Consumo',    px:44.10,  par:'1:6',   dy:1.2, var:+0.88 },
+  { tk:'AMDC34', nm:'AMD',        seg:'Semicond.',  px:58.70,  par:'1:10',  dy:0.0, var:+2.74 },
+  { tk:'PYPL34', nm:'PayPal',     seg:'Financeiro', px:33.20,  par:'1:6',   dy:0.0, var:+0.65 },
+  { tk:'MELI34', nm:'Mercado Livre',seg:'Consumo',  px:96.50,  par:'1:144', dy:0.0, var:+1.92 },
+  { tk:'VISA34', nm:'Visa',       seg:'Financeiro', px:64.80,  par:'1:6',   dy:0.7, var:+0.54 },
 ];
 
 /* ─── ETFs ─── */
@@ -1202,6 +1253,10 @@ const ETFS = [
   { tk:'DIVO11', nm:'It Now IDIV',        seg:'Dividendos BR',     px:114.60, pat:'R$ 1,1B', tx:'0,50%', var:+0.44 },
   { tk:'GOLD11', nm:'Trend Ouro',         seg:'Commodities',       px:18.90,  pat:'R$ 640M', tx:'0,50%', var:+0.27 },
   { tk:'FIND11', nm:'It Now IFNC',        seg:'Financeiro BR',     px:97.40,  pat:'R$ 520M', tx:'0,50%', var:+0.38 },
+  { tk:'BOVV11', nm:'It Now Ibovespa',    seg:'Renda Variável BR', px:128.40, pat:'R$ 2,3B', tx:'0,30%', var:+0.59 },
+  { tk:'SPXI11', nm:'It Now S&P 500',     seg:'Exterior',          px:58.20,  pat:'R$ 1,4B', tx:'0,23%', var:+1.30 },
+  { tk:'XINA11', nm:'Trend China',        seg:'Exterior',          px:14.60,  pat:'R$ 410M', tx:'0,75%', var:+0.92 },
+  { tk:'ECOO11', nm:'iShares ESG',        seg:'Renda Variável BR', px:96.80,  pat:'R$ 380M', tx:'0,25%', var:+0.41 },
 ];
 
 /* ─── STOCKS (internacional) ─── */
@@ -1216,6 +1271,12 @@ const STOCKS = [
   { tk:'AVGO',  nm:'Broadcom',   seg:'Semicond.',  px:393.94, mkt:'1,1T', pe:39.8, dy:1.1, var:+3.11 },
   { tk:'TSLA',  nm:'Tesla',      seg:'Automotivo', px:289.60, mkt:'920B', pe:71.2, dy:0.0, var:-1.20 },
   { tk:'JPM',   nm:'JPMorgan',   seg:'Financeiro', px:298.10, mkt:'820B', pe:13.4, dy:2.3, var:+0.74 },
+  { tk:'NFLX',  nm:'Netflix',    seg:'Mídia',      px:892.40, mkt:'380B', pe:42.0, dy:0.0, var:+1.45 },
+  { tk:'AMD',   nm:'AMD',        seg:'Semicond.',  px:178.30, mkt:'288B', pe:45.5, dy:0.0, var:+2.74 },
+  { tk:'V',     nm:'Visa',       seg:'Financeiro', px:312.50, mkt:'620B', pe:30.1, dy:0.7, var:+0.54 },
+  { tk:'MA',    nm:'Mastercard', seg:'Financeiro', px:528.90, mkt:'490B', pe:35.4, dy:0.5, var:+0.61 },
+  { tk:'KO',    nm:'Coca-Cola',  seg:'Consumo',    px:69.80,  mkt:'300B', pe:24.6, dy:3.0, var:+0.31 },
+  { tk:'DIS',   nm:'Disney',     seg:'Mídia',      px:112.40, mkt:'205B', pe:21.0, dy:0.8, var:-0.52 },
 ];
 
 /* ─── CRIPTOMOEDAS ─── */
@@ -1228,6 +1289,12 @@ const CRIPTO = [
   { tk:'ADA',  nm:'Cardano',   px:4.95,   mkt:'R$ 175B', v24:+1.55, v7:+4.20 },
   { tk:'DOGE', nm:'Dogecoin',  px:1.18,   mkt:'R$ 170B', v24:+3.10, v7:+7.80 },
   { tk:'AVAX', nm:'Avalanche', px:185.40, mkt:'R$ 78B',  v24:+2.20, v7:+6.50 },
+  { tk:'LINK', nm:'Chainlink', px:148.50, mkt:'R$ 92B',  v24:+1.80, v7:+5.10 },
+  { tk:'DOT',  nm:'Polkadot',  px:62.40,  mkt:'R$ 89B',  v24:+0.95, v7:+3.40 },
+  { tk:'LTC',  nm:'Litecoin',  px:640.00, mkt:'R$ 48B',  v24:-0.40, v7:+1.90 },
+  { tk:'MATIC',nm:'Polygon',   px:3.10,   mkt:'R$ 31B',  v24:+2.60, v7:+8.20 },
+  { tk:'TRX',  nm:'TRON',      px:1.45,   mkt:'R$ 127B', v24:+0.30, v7:+2.10 },
+  { tk:'NEAR', nm:'NEAR',      px:34.80,  mkt:'R$ 41B',  v24:+1.40, v7:+4.70 },
 ];
 
 /* ─── NOTÍCIAS (feed; em produção conecta a uma API de news) ─── */
@@ -1480,7 +1547,7 @@ const varCell = a => `<td class="mono ${a.var>=0?'up':'down'}">${a.var>=0?'+':''
 const ASSET_CFG = {
   fiis: {
     data:()=>FIIS, icon:'fa-building', label:'Fundos Imobiliários', unit:'FIIs', score:true,
-    segs:['Papel','Logístico','Shopping','Tijolo','Híbrido'],
+    segs:['Papel','Logístico','Shopping','Tijolo','Híbrido','Lajes','Renda Urbana','Agro','FoF'],
     sorts:[['score','Score Lastro'],['dy','Maior DY'],['pvp','Menor P/VP'],['liq','Maior liquidez']],
     cols:[
       {h:'Segmento', f:a=>`<td class="cell-left"><span class="seg seg-${a.seg}">${a.seg}</span></td>`},
@@ -1495,7 +1562,7 @@ const ASSET_CFG = {
   },
   acoes: {
     data:()=>ACOES, icon:'fa-chart-column', label:'Ações B3', unit:'ações', score:true,
-    segs:['Financeiro','Energia','Mat. Básicos','Consumo','Indústria','Petróleo','Saúde'],
+    segs:['Bancos','Petróleo e Gás','Mineração','Bebidas','Bens Industriais','Saúde','Holdings','Serviços Financ.','Aluguel de Carros','Varejo Farma','Logística','Papel e Celulose','Siderurgia','Energia Elétrica','Saneamento','Telecom','Varejo','Alimentos','Tecnologia'],
     sorts:[['score','Score Lastro'],['dy','Maior DY'],['pl','Menor P/L'],['roe','Maior ROE']],
     cols:[
       {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
@@ -1605,7 +1672,7 @@ function renderAssets(kind){
     const vv = a[vfield];
     const vcell = `<td class="mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</td>`;
     return `<tr onclick="quickView('${a.tk}')">
-      <td class="cell-left"><div class="td-asset"><div class="asset-ic">${a.tk.slice(0,4)}</div><div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div></div></div></td>
+      <td class="cell-left"><div class="td-asset">${assetLogo(a.tk,kind,'sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div></div></div></td>
       ${cfg.cols.map(c=>c.f(a)).join('')}
       ${vcell}
     </tr>`;
@@ -1633,7 +1700,7 @@ function viewCarteira(){
     const a = FIIS.find(f=>f.tk===c.tk);
     const val = c.cotas*a.px, custo=c.cotas*c.pm, lucro=val-custo, lp=lucro/custo*100;
     return `<tr onclick="quickView('${a.tk}')">
-      <td><div class="td-asset"><div class="asset-ic">${a.tk.slice(0,4)}</div><div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.seg}</div></div></div></td>
+      <td><div class="td-asset">${assetLogo(a.tk,'fiis','sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.seg}</div></div></div></td>
       <td class="mono">${c.cotas}</td>
       <td class="mono">${brl(c.pm)}</td>
       <td class="mono">${brl(a.px)}</td>
@@ -1761,7 +1828,7 @@ function viewScore(){
     const isF = FIIS.includes(a);
     return `<tr onclick="quickView('${a.tk}')">
       <td><span class="rank-n" style="font-size:13px">${i+1}</span></td>
-      <td class="cell-left"><div class="td-asset"><div class="asset-ic">${a.tk.slice(0,4)}</div><div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div></div></div></td>
+      <td class="cell-left"><div class="td-asset">${assetLogo(a.tk,isF?'fiis':'acoes','sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div></div></div></td>
       <td><span class="chip ${isF?'chip-blue':'chip-neu'}">${isF?'FII':'Ação'}</span></td>
       <td><div class="rank-bar" style="width:120px;display:inline-block"><i style="width:${a.score}%;background:${c}"></i></div></td>
       <td><span class="score-pill" style="color:${c};justify-content:flex-end"><span class="score-dot" style="background:${c}"></span>${a.score}</span></td>
@@ -1879,7 +1946,7 @@ function runScreener(){
   const tbl=$('#scrTbl'); if(!tbl) return;
   const head=`<tr><th class="cell-left">Ativo</th><th>Score</th><th>Cotação</th><th>DY</th><th>P/VP</th></tr>`;
   const rows = res.length? res.map(a=>`<tr onclick="quickView('${a.tk}')">
-    <td class="cell-left"><div class="td-asset"><div class="asset-ic">${a.tk.slice(0,4)}</div><div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div></div></div></td>
+    <td class="cell-left"><div class="td-asset">${assetLogo(a.tk,'fiis','sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div></div></div></td>
     ${scoreCell(a)}<td class="mono">${brl(a.px)}</td><td class="mono up">${pc(a.dy,1)}%</td><td class="mono ${a.pvp<1?'up':''}">${pc(a.pvp,2)}</td></tr>`).join('')
     : `<tr><td colspan="5"><div class="search-empty">Nenhum ativo atende a todos os critérios. Relaxe os filtros.</div></td></tr>`;
   tbl.innerHTML=`<thead>${head}</thead><tbody>${rows}</tbody>`;
@@ -2253,7 +2320,7 @@ function runSearch(q){
   if(!res.length){ body.innerHTML='<div class="search-empty">Nenhum ativo encontrado para "'+q+'"</div>'; return; }
   body.innerHTML = res.slice(0,8).map(a=>`
     <div class="sr" onclick="quickView('${a.tk}');closeSearch()">
-      <div class="sr-l"><div class="sr-ic">${a.tk.slice(0,4)}</div><div><div class="sr-nm">${a.tk}</div><div class="sr-ds">${a.nm} · ${a.kind}</div></div></div>
+      <div class="sr-l">${assetLogo(a.tk, kindFromLabel(a.kind),'xs')}<div><div class="sr-nm">${a.tk}</div><div class="sr-ds">${a.nm} · ${a.kind}</div></div></div>
       <div class="sr-r"><div class="sr-pr">${brl(a.px)}</div><div class="sr-ds ${a.var>=0?'up':'down'}" style="font-family:var(--mono)">${a.var>=0?'+':''}${a.var.toFixed(2).replace('.',',')}%</div></div>
     </div>`).join('');
 }
@@ -2277,6 +2344,19 @@ function fmtPx(a,k){
   if(ASSET_CLASS[k].cur==='usd') return usd(a.px);
   return (k==='cripto' && a.px>=100) ? brl(Math.round(a.px)) : brl(a.px);
 }
+/* logo real do ativo (CDN brapi p/ B3, CoinCap p/ cripto) com fallback monograma */
+function logoSrc(tk,k){
+  if(k==='cripto') return `https://assets.coincap.io/assets/icons/${String(tk).toLowerCase()}@2x.png`;
+  if(k==='acoes'||k==='fiis'||k==='bdrs'||k==='etfs') return `https://icons.brapi.dev/icons/${tk}.svg`;
+  return '';
+}
+function assetLogo(tk,k,cls){
+  const src=logoSrc(tk,k);
+  const mono=`<span class="logo-mono" ${src?'style="display:none"':''}>${String(tk).slice(0,4)}</span>`;
+  const img=src?`<img class="logo-img" src="${src}" alt="${tk}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:'';
+  return `<span class="logo ${cls||''}">${img}${mono}</span>`;
+}
+function kindFromLabel(lbl){ return lbl==='FII'?'fiis': lbl==='Ação'?'acoes': lbl==='BDR'?'bdrs': lbl==='ETF'?'etfs': lbl==='Stock'?'stocks':'cripto'; }
 function assetNews(tk){
   const pool = (Array.isArray(window.LAST_NEWS) && window.LAST_NEWS.length) ? window.LAST_NEWS : NEWS;
   return pool.filter(n => (n.ticker||n.tk)===tk).slice(0,5);
@@ -2451,7 +2531,7 @@ function peersHTML(tk,a,k){
   if(!pool.length) return '';
   pool=pool.slice(0,5); const isF=k==='fiis';
   const rows=pool.map(p=>`<tr onclick="openAsset('${p.tk}')">
-    <td class="cell-left"><div class="td-asset"><div class="asset-ic">${p.tk.slice(0,4)}</div><div class="nm"><div class="tk">${p.tk}</div><div class="ds">${p.nm}</div></div></div></td>
+    <td class="cell-left"><div class="td-asset">${assetLogo(p.tk,k,'xs')}<div class="nm"><div class="tk">${p.tk}</div><div class="ds">${p.nm}</div></div></div></td>
     <td class="mono">${brl(p.px)}</td>
     <td class="mono ${isF&&p.pvp<1?'up':''}">${isF?pc(p.pvp,2):pc(p.pl,1)+'x'}</td>
     <td class="mono up">${pc(p.dy,1)}%</td>
@@ -2467,28 +2547,26 @@ function peersHTML(tk,a,k){
 }
 
 function aboutHTML(a,k,f){
-  if(!f) return '';
-  if(k==='acoes') return `<div class="card card-pad">
-    <div class="ds-title">Sobre a empresa</div>
-    <div style="font-size:13.5px;line-height:1.7;color:var(--ink-2);margin-bottom:16px">${esc(f.desc)}</div>
-    <div class="about-grid">
-      ${fRow('Setor', f.setor)}${fRow('Segmento', f.sub)}
-      ${fRow('Governança', f.gov)}${fRow('Tag Along', f.tag)}
-      ${fRow('Free Float', f.ff)}${fRow('Nº de ações', f.shares)}
-      ${fRow('Valor de mercado', f.mkt)}${fRow('Valor de firma', f.ev)}
-    </div>
+  const isFii = k==='fiis';
+  const title = isFii ? 'Sobre o fundo' : 'Sobre a empresa';
+  const sub = f ? (isFii ? `${esc(f.tipo||'')} · ${esc(a.seg||'')}` : `${esc(f.setor||'')} · ${esc(f.sub||'')}`)
+                : esc(a.seg || ASSET_CLASS[k].label);
+  const desc = f ? esc(f.desc) : `${esc(a.nm)} é um ${isFii?'fundo imobiliário':'ativo'} do segmento ${esc(a.seg||'—')} negociado na B3. Indicadores fundamentalistas detalhados em breve.`;
+  const tags = f ? (isFii
+      ? [f.tipo, f.gestao&&`Gestão ${f.gestao}`, f.txadm&&`Taxa ${f.txadm}`]
+      : [f.gov, f.tag&&`Tag Along ${f.tag}`, f.ff&&`Free Float ${f.ff}`]
+    ).filter(Boolean).map(t=>`<span class="chip chip-neu">${esc(t)}</span>`).join('') : '';
+  const grid = f ? (isFii
+      ? `${fRow('Segmento', a.seg)}${fRow('Tipo', f.tipo)}${fRow('Gestão', f.gestao)}${fRow('Taxa de adm.', f.txadm)}${fRow('Patrimônio líq.', f.plf)}${fRow('Valor de mercado', f.mkt)}${fRow('Nº de cotistas', f.cotistas)}${fRow('Nº de cotas', f.cotas)}`
+      : `${fRow('Setor', f.setor)}${fRow('Segmento', f.sub)}${fRow('Governança', f.gov)}${fRow('Tag Along', f.tag)}${fRow('Free Float', f.ff)}${fRow('Nº de ações', f.shares)}${fRow('Valor de mercado', f.mkt)}${fRow('Valor de firma', f.ev)}`)
+    : `${fRow('Segmento', a.seg)}${fRow('Classe', ASSET_CLASS[k].label)}`;
+  return `<div class="card card-pad">
+    <div class="ds-title">${title}</div>
+    <div class="about-head">${assetLogo(a.tk,k,'md')}<div><div style="font-weight:600;font-size:15px">${esc(a.nm)}</div><div style="font-size:12.5px;color:var(--ink-3);margin-top:2px">${sub}</div></div></div>
+    <p class="about-desc">${desc}</p>
+    ${tags?`<div class="about-tags">${tags}</div>`:''}
+    <div class="about-grid">${grid}</div>
   </div>`;
-  if(k==='fiis') return `<div class="card card-pad">
-    <div class="ds-title">Sobre o fundo</div>
-    <div style="font-size:13.5px;line-height:1.7;color:var(--ink-2);margin-bottom:16px">${esc(f.desc)}</div>
-    <div class="about-grid">
-      ${fRow('Segmento', a.seg)}${fRow('Tipo', f.tipo)}
-      ${fRow('Gestão', f.gestao)}${fRow('Taxa de adm.', f.txadm)}
-      ${fRow('Patrimônio líq.', f.plf)}${fRow('Valor de mercado', f.mkt)}
-      ${fRow('Nº de cotistas', f.cotistas)}${fRow('Nº de cotas', f.cotas)}
-    </div>
-  </div>`;
-  return '';
 }
 
 function newsHTML(tk){
@@ -2521,7 +2599,7 @@ function viewAssetDetail(tk){
   return `
   <button class="dt-back" onclick="backFromAsset()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
   <div class="dt-head">
-    <div class="dt-ic">${tk.slice(0,4)}</div>
+    ${assetLogo(tk,k,'lg')}
     <div class="dt-id">
       <div class="tk">${tk} <span class="chip chip-neu" style="font-size:10px">${cls.label}</span>${hasScore?` <span class="chip ${scoreChip(a.score)}" style="font-size:10px"><i class="fa-solid fa-award" style="font-size:9px"></i> Score ${a.score}</span>`:''}</div>
       <div class="nm">${esc(a.nm)}</div>
@@ -2553,12 +2631,12 @@ function viewAssetDetail(tk){
     </div>
   </div>
 
-  ${hasScore?scoreBlockHTML(a):''}
-
-  <div style="${hasScore?'margin-top:16px':''}">
+  <div>
     <div class="ds-title" style="padding-left:2px">Indicadores fundamentalistas</div>
     ${fundamentalsHTML(a,k,f)}
   </div>
+
+  <div style="margin-top:16px">${aboutHTML(a,k,f)}</div>
 
   <div class="dt-grid" style="margin-top:16px">
     <div class="card card-pad">
@@ -2570,7 +2648,7 @@ function viewAssetDetail(tk){
         ${k==='fiis'?`<span>Último <strong class="mono" style="color:var(--ink)">${brl(a.div)}</strong></span>`:''}
       </div>
     </div>
-    ${ (k==='acoes'||k==='fiis') ? aboutHTML(a,k,f) : newsHTML(tk) }
+    ${ hasScore ? scoreBlockHTML(a) : newsHTML(tk) }
   </div>
 
   ${ (k==='acoes'||k==='fiis') ? `<div class="dt-grid" style="margin-top:16px">${peersHTML(tk,a,k)}${newsHTML(tk)}</div>` : '' }

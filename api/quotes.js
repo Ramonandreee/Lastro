@@ -39,6 +39,8 @@ async function oneStock(symbol, token) {
 const COINGECKO_IDS = {
   BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', BNB: 'binancecoin',
   XRP: 'ripple', ADA: 'cardano', DOGE: 'dogecoin', AVAX: 'avalanche-2',
+  LINK: 'chainlink', DOT: 'polkadot', LTC: 'litecoin', MATIC: 'matic-network',
+  TRX: 'tron', NEAR: 'near',
 };
 
 async function fetchCrypto(coins) {
