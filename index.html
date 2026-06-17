@@ -1659,7 +1659,9 @@ const ASSET_CFG = {
   },
   etfs: {
     data:()=>ETFS, icon:'fa-layer-group', label:'ETFs', unit:'ETFs', score:false,
-    segs:['Renda Variável BR','Exterior','Small Caps BR','Dividendos BR','Criptoativos','Commodities','Financeiro BR'],
+    segs:['Renda Variável BR','Exterior','Small Caps BR','Dividendos BR','Criptoativos','Commodities','Financeiro BR','Renda Fixa'],
+    regions:['Brasil','Internacional'],
+    regOf:a=> a.seg==='Exterior' ? 'Internacional' : 'Brasil',
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
       {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
@@ -1695,13 +1697,14 @@ const ASSET_CFG = {
 };
 
 let tableState = {};
-Object.keys(ASSET_CFG).forEach(k=> tableState[k] = {q:'', seg:'', sort:ASSET_CFG[k].sorts[0][0], dir:(ASSET_CFG[k].sorts[0][0]==='pvp'||ASSET_CFG[k].sorts[0][0]==='pl')?1:-1});
+Object.keys(ASSET_CFG).forEach(k=> tableState[k] = {q:'', seg:'', reg:'', sort:ASSET_CFG[k].sorts[0][0], dir:(ASSET_CFG[k].sorts[0][0]==='pvp'||ASSET_CFG[k].sorts[0][0]==='pl')?1:-1});
 
 function viewAssets(kind){
   const cfg = ASSET_CFG[kind];
   const segOpts = cfg.segs.length ? ['<option value="">Todos os segmentos</option>', ...cfg.segs.map(s=>`<option>${s}</option>`)].join('') : '';
   const sortOpts = cfg.sorts.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('');
   const segSelect = cfg.segs.length ? `<select class="sel" onchange="tblFilter('${kind}','seg',this.value)">${segOpts}</select>` : '';
+  const regSelect = cfg.regions ? `<select class="sel" onchange="tblFilter('${kind}','reg',this.value)"><option value="">Brasil + Internacional</option>${cfg.regions.map(r=>`<option>${r}</option>`).join('')}</select>` : '';
   const badge = cfg.score ? `<span class="chip chip-gold"><i class="fa-solid fa-award" style="font-size:10px"></i> Com Score Lastro</span>`
     : cfg.intl ? `<span class="chip chip-blue"><i class="fa-solid fa-dollar-sign" style="font-size:10px"></i> Cotações em USD</span>`
     : `<span class="chip chip-neu">${cfg.label}</span>`;
@@ -1709,6 +1712,7 @@ function viewAssets(kind){
   return `
   <div class="filters">
     <div class="search-inp"><i class="fa-solid fa-magnifying-glass faint"></i><input placeholder="Buscar por ticker ou nome…" oninput="tblFilter('${kind}','q',this.value)"></div>
+    ${regSelect}
     ${segSelect}
     <select class="sel" onchange="tblFilter('${kind}','sort',this.value)">${sortOpts}</select>
   </div>
@@ -1732,8 +1736,9 @@ function viewAssets(kind){
 function renderAssets(kind){
   const cfg = ASSET_CFG[kind], st = tableState[kind];
   let data = cfg.data().slice();
-  if(st.q) data = data.filter(a=> a.tk.includes(st.q.toUpperCase()) || a.nm.toLowerCase().includes(st.q.toLowerCase()));
+  if(st.q) data = data.filter(a=> a.tk.includes(st.q.toUpperCase()) || (a.nm||'').toLowerCase().includes(st.q.toLowerCase()));
   if(st.seg) data = data.filter(a=> a.seg===st.seg);
+  if(st.reg && cfg.regOf) data = data.filter(a=> cfg.regOf(a)===st.reg);
   data.sort((a,b)=> ((a[st.sort]??0)-(b[st.sort]??0))*st.dir );
 
   const thead = `<tr><th class="cell-left">Ativo</th>${cfg.cols.map(c=>`<th>${c.h}</th>`).join('')}<th>Var. ${cfg.customVar==='v24'?'24h':'hoje'}</th></tr>`;
@@ -2428,10 +2433,20 @@ function logoSrc(tk,k){
   if(k==='acoes'||k==='fiis'||k==='bdrs'||k==='etfs') return `https://icons.brapi.dev/icons/${tk}.svg`;
   return '';
 }
+/* fonte secundária (se a primeira falhar) — favicon do Google p/ stocks US */
+function logoFallback(tk,k){
+  if(k==='stocks'){ const d=STOCK_DOMAIN[tk]; return d?`https://www.google.com/s2/favicons?domain=${d}&sz=128`:''; }
+  if(k==='cripto') return `https://icons.brapi.dev/icons/${tk}.svg`;
+  return '';
+}
+function logoErr(img, fb){
+  if(fb && !img.dataset.fb){ img.dataset.fb='1'; img.src=fb; return; }
+  img.style.display='none'; const m=img.nextElementSibling; if(m) m.style.display='flex';
+}
 function assetLogo(tk,k,cls){
-  const src=logoSrc(tk,k);
+  const src=logoSrc(tk,k), fb=logoFallback(tk,k);
   const mono=`<span class="logo-mono" ${src?'style="display:none"':''}>${String(tk).slice(0,4)}</span>`;
-  const img=src?`<img class="logo-img" src="${src}" alt="${tk}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:'';
+  const img=src?`<img class="logo-img" src="${src}" alt="${tk}" loading="lazy" onerror="logoErr(this,'${fb}')">`:'';
   return `<span class="logo ${cls||''}">${img}${mono}</span>`;
 }
 function kindFromLabel(lbl){ return lbl==='FII'?'fiis': lbl==='Ação'?'acoes': lbl==='BDR'?'bdrs': lbl==='ETF'?'etfs': lbl==='Stock'?'stocks':'cripto'; }
