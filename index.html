@@ -1137,6 +1137,52 @@ input[type=range]::-moz-range-thumb {
 @media (max-width: 1080px) {
   .grid[style*="320px"], .grid[style*="360px"] { grid-template-columns: 1fr !important; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   DESIGN POLISH — microinterações, foco, entrada de telas
+   ══════════════════════════════════════════════════════════ */
+/* foco acessível (apenas teclado) */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 5px; }
+button:focus:not(:focus-visible), .nav-item:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
+
+/* nav: ícone com leve nudge no hover */
+.nav-item i { transition: transform .18s var(--ease), color .18s var(--ease); }
+.nav-item:hover i { transform: translateX(1px); }
+.nav-item.active { box-shadow: inset 2.5px 0 0 var(--brand); }
+
+/* botões e chips clicáveis: feedback de press */
+.btn { will-change: transform; }
+.btn:active { transform: translateY(0) scale(.985); }
+.icon-btn:active, .data-status:active, .menu-btn:active, .search-trigger:active, .drawer-close:active, .dt-back:active { transform: scale(.95); }
+
+/* linhas de tabela: cursor + logo cresce no hover da linha */
+table.tbl tbody tr { cursor: pointer; }
+.logo { transition: transform .16s var(--ease); }
+table.tbl tbody tr:hover .logo, .sr:hover .logo { transform: scale(1.05); }
+
+/* listas/cards clicáveis */
+.rank-row, .sr, .tl-item { transition: background .14s var(--ease); }
+.rank-row { border-radius: 8px; margin: 0 -6px; padding-left: 6px; padding-right: 6px; }
+.rank-row:hover { background: var(--surface-2); }
+
+/* inputs/selects: foco com acento */
+.sel:focus, .search-inp input:focus, .insight-input input:focus, .search-bar input:focus { border-color: var(--accent); }
+.search-inp:focus-within { border-color: var(--accent); }
+
+/* animação de entrada das telas */
+@keyframes viewIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.content-anim { animation: viewIn .34s var(--ease-out); }
+
+/* skeleton (linhas de carregamento) */
+.skel-line { height: 11px; border-radius: 6px; margin: 9px 0; }
+.skel-line.sk-90 { width: 90%; } .skel-line.sk-75 { width: 75%; } .skel-line.sk-55 { width: 55%; } .skel-line.sk-40 { width: 40%; }
+
+/* sumcard/metric: leve realce no hover */
+.sumcard, .metric { transition: background .16s var(--ease); }
+.sumcard:hover, .metric:hover { background: var(--surface-2); }
+
+/* logos: borda some quando carrega imagem real (visual mais limpo) */
+.logo:has(.logo-img:not([style*="display: none"])) { border-color: transparent; }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -1476,6 +1522,10 @@ const PAGES = {
 };
 let currentView = 'painel';
 
+/* polish: anima a entrada da tela e gera skeleton de carregamento */
+function animateContent(){ const c=$('#content'); if(!c) return; c.classList.remove('content-anim'); void c.offsetWidth; c.classList.add('content-anim'); }
+function skelLines(n=3){ const w=['sk-90','sk-75','sk-55','sk-90','sk-40']; let s=''; for(let i=0;i<n;i++) s+=`<div class="skeleton skel-line ${w[i%w.length]}"></div>`; return s; }
+
 function nav(v, el){
   currentView = v;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -1483,6 +1533,7 @@ function nav(v, el){
   $('#pageTitle').textContent = PAGES[v].t;
   $('#pageSub').textContent = PAGES[v].s;
   render(v);
+  animateContent();
   $('#content').scrollTop = 0;
   window.scrollTo({top:0, behavior:'instant'});
   closeSidebar();
@@ -2362,7 +2413,7 @@ Responda em português, objetivo, máximo 3 parágrafos curtos. Use indicadores 
 Nunca prometa rentabilidade; eduque sobre risco. Não dê recomendação direta de compra/venda — apresente análise para decisão própria.`;
 
 async function callAI(msg, el){
-  if(el) el.innerHTML = '<span class="faint">Analisando…</span>';
+  if(el) el.innerHTML = skelLines(3);
   const endpoint = (window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || 'https://api.anthropic.com/v1/messages';
   try{
     const r = await fetch(endpoint,{
@@ -2773,6 +2824,7 @@ function openAsset(tk){
   const a=assetLookup(tk).a;
   $('#pageTitle').textContent=tk; $('#pageSub').textContent=a.nm;
   render('asset');
+  animateContent();
   $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'});
   closeSidebar();
 }
@@ -2780,7 +2832,7 @@ function backFromAsset(){
   const v=prevView||'painel'; currentView=v;
   $('#pageTitle').textContent=PAGES[v].t; $('#pageSub').textContent=PAGES[v].s;
   document.querySelectorAll('.nav-item').forEach(n=> n.classList.toggle('active', (n.getAttribute('onclick')||'').includes(`'${v}'`)));
-  render(v); $('#content').scrollTop=0;
+  render(v); animateContent(); $('#content').scrollTop=0;
 }
 function closeAsset(){ if(currentView==='asset') backFromAsset(); }
 function quickView(tk){ openAsset(tk); }
@@ -2956,6 +3008,7 @@ async function loadUniverse(){
 
 /* INIT */
 render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
+animateContent();
 loadUniverse();
 </script>
 </body>
