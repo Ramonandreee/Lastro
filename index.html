@@ -498,14 +498,18 @@ a { color: inherit; text-decoration: none; }
   .dt-grid { grid-template-columns: 1fr !important; }
   .about-grid { grid-template-columns: 1fr !important; }
   .mstrip { grid-template-columns: repeat(2,1fr) !important; }
-  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .tbl { min-width: 560px; }
+  /* tabelas: largura natural (rolam só quando preciso), sem squish nem corte */
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -2px; }
+  table.tbl { width: max-content; min-width: 100%; }
+  table.tbl th, table.tbl td { white-space: nowrap; padding-left: 10px; padding-right: 10px; }
+  table.tbl .td-asset .ds { max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
   .market-status { display:none; }
   .page-title { font-size: 18px; }
   .page-sub { font-size: 11.5px; }
   .dt-head { gap:12px; }
   .dt-id .tk { font-size:20px; }
   .filters { flex-wrap: wrap; }
+  .filters .sel { flex: 1; min-width: 130px; }
 }
 @media (max-width: 460px) {
   .mstrip { grid-template-columns: 1fr !important; }
@@ -557,7 +561,7 @@ a { color: inherit; text-decoration: none; }
       <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Minha Carteira</span></div>
       <div class="nav-item" data-view="watchlist" onclick="nav('watchlist',this)"><i class="fa-solid fa-star"></i><span>Watchlist</span></div>
       <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
-      <div class="nav-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span></div>
+      <div class="nav-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span><span class="nav-badge nav-badge-pro">PRO</span></div>
       <div class="nav-item" data-view="agenda" onclick="nav('agenda',this)"><i class="fa-solid fa-calendar-day"></i><span>Agenda de Dividendos</span></div>
       <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-star"></i><span>Carteiras Recomendadas</span></div>
       <div class="nav-item" data-view="noticias" onclick="nav('noticias',this)"><i class="fa-solid fa-newspaper"></i><span>Notícias</span><span class="nav-badge" style="background:var(--down-l);color:var(--down)">LIVE</span></div>
@@ -566,20 +570,25 @@ a { color: inherit; text-decoration: none; }
     <nav class="nav-section">
       <div class="nav-label">Inteligência</div>
       <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-snowflake"></i><span>Simulador</span></div>
-      <div class="nav-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge">PRO</span></div>
+      <div class="nav-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro">PRO</span></div>
     </nav>
     </div>
 
     <div class="sidebar-foot">
+      <button class="upgrade-cta" id="upgradeBtn" onclick="goPricing()">
+        <div class="uc-top"><i class="fa-solid fa-crown"></i> Seja Premium</div>
+        <div class="uc-sub">Análises, alertas e rastreador completos</div>
+      </button>
       <button class="theme-toggle" onclick="toggleTheme()">
         <i class="fa-solid fa-moon" id="themeIcon"></i><span id="themeLabel">Modo escuro</span>
       </button>
-      <div class="user-chip">
+      <div class="user-chip" onclick="goPricing()" style="cursor:pointer">
         <div class="avatar">R</div>
         <div class="user-meta">
           <div class="nm">Ramon</div>
-          <div class="pl">Plano Pro</div>
+          <div class="pl">Plano Gratuito</div>
         </div>
+        <i class="fa-solid fa-chevron-right" style="margin-left:auto;color:var(--ink-4);font-size:11px"></i>
       </div>
     </div>
   </aside>
@@ -639,6 +648,26 @@ a { color: inherit; text-decoration: none; }
       <div id="posErr" class="fld-err"></div>
     </div>
     <div class="modal-foot"><button class="btn btn-ghost" onclick="closePosModal()">Cancelar</button><button class="btn btn-primary" onclick="savePos()"><i class="fa-solid fa-check"></i> Salvar</button></div>
+  </div>
+</div>
+
+<!-- ════════ ONBOARDING ════════ -->
+<div class="modal-scrim" id="obModal">
+  <div class="modal-card ob-card" role="dialog" aria-label="Bem-vindo ao Lastro">
+    <div class="ob-hero">
+      <div class="ob-logo"><i class="fa-solid fa-chart-line"></i></div>
+      <div class="ob-title">Bem-vindo ao Lastro</div>
+      <div class="ob-sub">Inteligência para o investidor brasileiro — renda variável com dados ao vivo, Score proprietário e IA.</div>
+    </div>
+    <div class="ob-feats">
+      <div class="ob-feat"><div class="of-ic" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-bolt"></i></div><div><div class="of-t">Cotações ao vivo</div><div class="of-s">Ações, FIIs, BDRs, ETFs e cripto, sempre atualizados.</div></div></div>
+      <div class="ob-feat"><div class="of-ic" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></div><div><div class="of-t">Score Lastro™</div><div class="of-s">Qualidade de cada ativo num índice transparente de 0 a 100.</div></div></div>
+      <div class="ob-feat"><div class="of-ic" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-wallet"></i></div><div><div class="of-t">Carteira e Watchlist</div><div class="of-s">Acompanhe patrimônio, renda e os ativos que você segue.</div></div></div>
+    </div>
+    <div class="ob-foot">
+      <button class="btn btn-premium" style="width:100%;justify-content:center" onclick="closeOnboarding();goPricing()"><i class="fa-solid fa-crown"></i> Conhecer o Premium</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:9px" onclick="closeOnboarding()">Começar no plano Gratuito</button>
+    </div>
   </div>
 </div>
 
@@ -1248,6 +1277,72 @@ table.tbl tbody tr.no-hover td { border:none; }
 .fld-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .fld-err { font-size:12.5px; color:var(--down); min-height:16px; }
 @media (max-width:460px){ .fld-row { grid-template-columns:1fr; } }
+
+/* ══════════════════════════════════════════════════════════
+   SAAS — planos, paywall, premium, onboarding
+   ══════════════════════════════════════════════════════════ */
+.btn-premium { background: linear-gradient(135deg, #C8911F, #A87C2A 55%, #8a6420); color:#fff; box-shadow: 0 4px 14px rgba(168,124,42,.35); border:none; font-weight:600; }
+.btn-premium:hover { filter:brightness(1.06); box-shadow: 0 6px 18px rgba(168,124,42,.42); transform:translateY(-1px); }
+.btn-premium:disabled { filter:grayscale(.2) brightness(.95); cursor:default; transform:none; opacity:.85; }
+.pro-tag { display:inline-flex; align-items:center; font-size:9px; font-weight:700; letter-spacing:.04em; padding:2px 6px; border-radius:6px; background:var(--gold-l); color:var(--gold); vertical-align:middle; }
+
+/* sidebar upgrade CTA */
+.upgrade-cta { display:flex; flex-direction:column; gap:3px; text-align:left; width:100%; padding:11px 13px; margin-bottom:12px; border:none; cursor:pointer;
+  border-radius:var(--r-sm); background:linear-gradient(135deg, rgba(168,124,42,.14), rgba(168,124,42,.06)); border:1px solid color-mix(in srgb, var(--gold) 30%, transparent); transition:all .18s var(--ease); }
+.upgrade-cta:hover { background:linear-gradient(135deg, rgba(168,124,42,.2), rgba(168,124,42,.1)); transform:translateY(-1px); }
+.upgrade-cta .uc-top { font-size:13px; font-weight:600; color:var(--gold); display:flex; align-items:center; gap:7px; }
+.upgrade-cta .uc-sub { font-size:10.5px; color:var(--ink-3); }
+@media (max-width:1080px) and (min-width:901px){ .upgrade-cta .uc-sub { display:none; } .upgrade-cta { align-items:center; } }
+
+/* paywall card */
+.paywall { display:flex; flex-direction:column; align-items:center; text-align:center; padding:36px 22px; }
+.pw-ic { width:58px; height:58px; border-radius:16px; background:linear-gradient(135deg, var(--gold-l), color-mix(in srgb, var(--gold) 18%, transparent)); color:var(--gold); display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:16px; }
+.pw-t { font-size:17px; font-weight:600; letter-spacing:-.01em; }
+.pw-s { font-size:13px; color:var(--ink-2); margin:8px 0 18px; max-width:420px; line-height:1.6; }
+.pw-note { font-size:11.5px; color:var(--ink-3); margin-top:12px; }
+.ai-locked { font-size:12.5px; color:var(--ink-2); line-height:1.6; background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 24%,transparent); padding:12px 14px; border-radius:var(--r-sm); }
+.ai-locked i { color:var(--gold); margin-right:5px; }
+.ai-locked a { color:var(--accent); cursor:pointer; font-weight:600; }
+.sel-locked { display:inline-flex; align-items:center; gap:7px; justify-content:center; color:var(--ink-3); cursor:pointer; border-style:dashed !important; }
+.sel-locked:hover { color:var(--ink); border-color:var(--gold) !important; }
+
+/* página de preços */
+.pricing-hero { text-align:center; max-width:640px; margin:8px auto 28px; }
+.pricing-title { font-family:var(--serif); font-size:30px; font-weight:600; letter-spacing:-.02em; line-height:1.15; text-wrap:balance; }
+.pricing-sub { font-size:14px; color:var(--ink-2); line-height:1.6; margin-top:12px; }
+.pricing-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px; max-width:780px; margin:0 auto; align-items:start; }
+.plan-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); padding:26px 24px; position:relative; transition:transform .2s var(--ease), box-shadow .2s var(--ease); }
+.plan-card.featured { border:1.5px solid var(--gold); box-shadow:0 16px 40px rgba(168,124,42,.16); }
+.plan-flag { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,#C8911F,#A87C2A); color:#fff; font-size:11px; font-weight:600; padding:4px 14px; border-radius:20px; box-shadow:var(--sh); }
+.plan-name { font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px; }
+.plan-price { margin:14px 0 4px; display:flex; align-items:baseline; gap:8px; }
+.plan-price .amt { font-family:var(--serif); font-size:38px; font-weight:600; letter-spacing:-.02em; }
+.plan-price .amt .cents { font-size:22px; color:var(--ink-3); }
+.plan-price .per { font-size:13px; color:var(--ink-3); }
+.plan-desc { font-size:12.5px; color:var(--ink-2); margin-bottom:18px; }
+.plan-feats { list-style:none; display:flex; flex-direction:column; gap:11px; margin:0 0 20px; }
+.plan-feats li { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:var(--ink); line-height:1.45; }
+.plan-feats li i { margin-top:2px; color:var(--brand); font-size:12px; }
+.plan-feats li.off { color:var(--ink-3); } .plan-feats li.off i { color:var(--ink-4); }
+.plan-trust { text-align:center; font-size:11px; color:var(--ink-3); margin-top:12px; }
+.pricing-foot { display:flex; gap:26px; justify-content:center; flex-wrap:wrap; margin-top:30px; }
+.pf-item { font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:8px; }
+.pf-item i { color:var(--brand); }
+@media (max-width:680px){ .pricing-grid { grid-template-columns:1fr; } .plan-card.featured { order:-1; } .pricing-title { font-size:24px; } }
+
+/* onboarding */
+.ob-card { width:500px; }
+.ob-hero { text-align:center; padding:30px 26px 8px; }
+.ob-logo { width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg,var(--brand),var(--brand-d)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 16px; box-shadow:var(--sh); }
+.ob-title { font-family:var(--serif); font-size:24px; font-weight:600; letter-spacing:-.01em; }
+.ob-sub { font-size:13.5px; color:var(--ink-2); line-height:1.6; margin-top:9px; max-width:400px; margin-left:auto; margin-right:auto; }
+.ob-feats { padding:18px 26px; display:flex; flex-direction:column; gap:16px; }
+.ob-feat { display:flex; gap:13px; align-items:flex-start; }
+.of-ic { width:40px; height:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:15px; flex:none; }
+.of-t { font-size:14px; font-weight:600; }
+.of-s { font-size:12.5px; color:var(--ink-3); margin-top:2px; line-height:1.45; }
+.ob-foot { padding:8px 26px 26px; }
+body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -1381,6 +1476,9 @@ function addPosition(tk, cotas, pm){
   if(!tk || !assetLookup(tk)) return { ok:false, msg:'Ticker não encontrado' };
   if(!(cotas>0) || !(pm>0)) return { ok:false, msg:'Informe quantidade e preço médio válidos' };
   const ex = CARTEIRA.find(c=>c.tk===tk);
+  if(!ex && !isPremium() && CARTEIRA.length >= PLAN_LIMITS.carteira){
+    return { ok:false, premium:true, msg:`O plano Gratuito permite até ${PLAN_LIMITS.carteira} posições. Faça upgrade para carteira ilimitada.` };
+  }
   if(ex){ ex.cotas=cotas; ex.pm=pm; } else CARTEIRA.push({tk, cotas, pm});
   savePortfolio();
   return { ok:true };
@@ -1401,7 +1499,11 @@ function openPosModal(tk){
 function closePosModal(){ $('#posModal').classList.remove('open'); }
 function savePos(){
   const r = addPosition($('#posTk').value, $('#posQt').value, $('#posPm').value);
-  if(!r.ok){ $('#posErr').textContent = r.msg; return; }
+  if(!r.ok){
+    const err=$('#posErr');
+    err.innerHTML = r.premium ? `${r.msg} <a onclick="closePosModal();goPricing()" style="color:var(--accent);cursor:pointer;font-weight:600">Ver planos →</a>` : r.msg;
+    return;
+  }
   closePosModal(); toast('Posição salva ✓');
   if(currentView==='carteira') render('carteira');
 }
@@ -1624,8 +1726,61 @@ const PAGES = {
   noticias:     { t:'Notícias',              s:'Fatos relevantes e mercado em tempo real' },
   simulador:    { t:'Simulador de Renda',    s:'Projete quanto precisa para viver de dividendos' },
   score:        { t:'Score Lastro',          s:'Ranking proprietário de qualidade dos ativos' },
+  planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
 };
 let currentView = 'painel';
+
+/* ══════════════════════════════════════════════════════════
+   PLANOS (SaaS Free / Premium) + soft paywall
+   ══════════════════════════════════════════════════════════ */
+const PLAN_LIMITS = { carteira: 6, watchlist: 8, comparador: 2, aiDay: 5 };
+function getPlan(){ return localStorage.getItem('lastro_plan')==='premium' ? 'premium' : 'free'; }
+function isPremium(){ return getPlan()==='premium'; }
+function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); }
+function refreshPlanUI(){
+  const pro = isPremium();
+  document.body.classList.toggle('is-premium', pro);
+  const pl = document.querySelector('.user-meta .pl'); if(pl) pl.textContent = pro?'Plano Premium':'Plano Gratuito';
+  const up = document.getElementById('upgradeBtn'); if(up) up.style.display = pro?'none':'flex';
+}
+/* uso de IA no dia (limite do plano free) */
+function aiUsedToday(){ try{ const o=JSON.parse(localStorage.getItem('lastro_ai')||'{}'); const d=new Date().toISOString().slice(0,10); return o.d===d?(o.n||0):0; }catch(e){ return 0; } }
+function aiInc(){ const d=new Date().toISOString().slice(0,10); localStorage.setItem('lastro_ai', JSON.stringify({ d, n: aiUsedToday()+1 })); }
+function aiCanRun(){ return isPremium() || aiUsedToday() < PLAN_LIMITS.aiDay; }
+
+function goPricing(){
+  currentView='planos';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  $('#pageTitle').textContent = PAGES.planos.t; $('#pageSub').textContent = PAGES.planos.s;
+  render('planos'); animateContent(); $('#content').scrollTop=0; closeSidebar();
+}
+/* card de bloqueio (soft paywall) reutilizável */
+function paywall(title, sub){
+  return `<div class="paywall">
+    <div class="pw-ic"><i class="fa-solid fa-crown"></i></div>
+    <div class="pw-t">${title}</div>
+    <div class="pw-s">${sub||''}</div>
+    <button class="btn btn-premium" onclick="goPricing()"><i class="fa-solid fa-bolt"></i> Desbloquear com Premium</button>
+    <div class="pw-note">7 dias grátis · cancele quando quiser</div>
+  </div>`;
+}
+function upsell(){ toast('Recurso Premium — faça upgrade para desbloquear'); goPricing(); }
+
+/* mock de assinatura (billing real entra depois) */
+function subscribePremium(){
+  setPlan('premium');
+  toast('Bem-vindo ao Premium 👑');
+  goPricing();
+}
+function downgradeFree(){ setPlan('free'); toast('Plano alterado para Gratuito'); goPricing(); }
+
+/* onboarding (primeiro acesso) */
+function maybeOnboard(){
+  if(localStorage.getItem('lastro_onboarded')) return;
+  setTimeout(openOnboarding, 600);
+}
+function openOnboarding(){ const m=$('#obModal'); if(m) m.classList.add('open'); }
+function closeOnboarding(){ const m=$('#obModal'); if(m) m.classList.remove('open'); localStorage.setItem('lastro_onboarded','1'); }
 
 /* polish: anima a entrada da tela e gera skeleton de carregamento */
 function animateContent(){ const c=$('#content'); if(!c) return; c.classList.remove('content-anim'); void c.offsetWidth; c.classList.add('content-anim'); }
@@ -1661,6 +1816,7 @@ function render(v, soft){
   else if(v==='noticias')    c.innerHTML = viewNoticias();
   else if(v==='simulador')   c.innerHTML = viewSimulador();
   else if(v==='score')       c.innerHTML = viewScore();
+  else if(v==='planos')      c.innerHTML = viewPlanos();
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
 }
@@ -2039,6 +2195,64 @@ function viewWatchlist(){
 }
 
 /* ══════════════════════════════════════════════════════════
+   VIEW: PLANOS E PREÇOS
+   ══════════════════════════════════════════════════════════ */
+function viewPlanos(){
+  const pro = isPremium();
+  const feat = (txt, on=true, pr=false)=>`<li class="${on?'':'off'}"><i class="fa-solid fa-${on?'check':'xmark'}"></i> ${txt}${pr?' <span class="pro-tag">PRO</span>':''}</li>`;
+  return `
+  <div class="pricing-hero">
+    <span class="chip chip-gold" style="margin-bottom:14px"><i class="fa-solid fa-crown" style="font-size:10px"></i> Lastro Premium</span>
+    <h1 class="pricing-title">Inteligência completa para o investidor brasileiro</h1>
+    <p class="pricing-sub">Comece de graça. Faça upgrade quando quiser desbloquear todo o poder da plataforma — análises ilimitadas, rastreador avançado, alertas e relatórios.</p>
+  </div>
+
+  <div class="pricing-grid">
+    <div class="plan-card">
+      <div class="plan-name">Gratuito</div>
+      <div class="plan-price"><span class="amt">R$ 0</span><span class="per">para sempre</span></div>
+      <div class="plan-desc">O essencial para acompanhar o mercado.</div>
+      <ul class="plan-feats">
+        ${feat('Cotações ao vivo (B3 + cripto)')}
+        ${feat('Notícias com curadoria de renda variável')}
+        ${feat('Carteira até ' + PLAN_LIMITS.carteira + ' posições')}
+        ${feat('Watchlist até ' + PLAN_LIMITS.watchlist + ' ativos')}
+        ${feat('Comparador de ' + PLAN_LIMITS.comparador + ' ativos')}
+        ${feat(PLAN_LIMITS.aiDay + ' análises de IA por dia')}
+        ${feat('Score Lastro (resumo)')}
+      </ul>
+      <button class="btn ${pro?'btn-ghost':'btn-ghost'}" style="width:100%;justify-content:center" ${pro?`onclick="downgradeFree()"`:`disabled`}>${pro?'Voltar ao Gratuito':'Seu plano atual'}</button>
+    </div>
+
+    <div class="plan-card featured">
+      <div class="plan-flag">Mais popular</div>
+      <div class="plan-name">Premium <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>
+      <div class="plan-price"><span class="amt">R$ 29<span class="cents">,90</span></span><span class="per">/mês</span></div>
+      <div class="plan-desc">No plano anual: <strong>R$ 24,90/mês</strong> · economize 17%.</div>
+      <ul class="plan-feats">
+        ${feat('Tudo do plano Gratuito')}
+        ${feat('Carteira e watchlist ilimitadas', true, true)}
+        ${feat('Rastreador avançado (todos os filtros)', true, true)}
+        ${feat('Score Lastro completo + ranking', true, true)}
+        ${feat('Comparador de 4 ativos', true, true)}
+        ${feat('Análises de IA ilimitadas', true, true)}
+        ${feat('Alertas de preço e proventos', true, true)}
+        ${feat('Relatórios e exportação (PDF/CSV)', true, true)}
+        ${feat('Suporte prioritário', true, true)}
+      </ul>
+      <button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium()"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':'<i class="fa-solid fa-bolt"></i> Assinar Premium'}</button>
+      <div class="plan-trust">7 dias grátis · sem fidelidade · cancele quando quiser</div>
+    </div>
+  </div>
+
+  <div class="pricing-foot">
+    <div class="pf-item"><i class="fa-solid fa-shield-halved"></i> Pagamento seguro</div>
+    <div class="pf-item"><i class="fa-solid fa-rotate-left"></i> Cancele a qualquer momento</div>
+    <div class="pf-item"><i class="fa-solid fa-headset"></i> Suporte humano</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
    VIEW: SIMULADOR (signature)
    ══════════════════════════════════════════════════════════ */
 function viewSimulador(){
@@ -2118,8 +2332,10 @@ function viewScore(){
     </div>`;
   }).join('');
 
-  const ranked = [...FIIS,...ACOES].sort((a,b)=>b.score-a.score);
-  const rows = ranked.map((a,i)=>{
+  const ranked = [...FIIS,...ACOES].filter(a=>typeof a.score==='number').sort((a,b)=>b.score-a.score);
+  const pro = isPremium();
+  const visible = pro ? ranked : ranked.slice(0,8);
+  const rows = visible.map((a,i)=>{
     const c = scoreColor(a.score);
     const isF = FIIS.includes(a);
     return `<tr onclick="quickView('${a.tk}')">
@@ -2139,11 +2355,12 @@ function viewScore(){
   <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">${cards}</div>
 
   <div class="card card-pad">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-ranking-star"></i></span> Ranking geral de qualidade</div><span class="card-sub">${ranked.length} ativos avaliados</span></div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-ranking-star"></i></span> Ranking geral de qualidade</div><span class="card-sub">${pro?ranked.length+' ativos avaliados':'Top 8 · '+ranked.length+' no Premium'}</span></div>
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr><th>#</th><th>Ativo</th><th>Tipo</th><th>Distribuição</th><th>Score</th><th>Classificação</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
+    ${pro?'':`<div style="margin-top:18px">${paywall('Ranking completo é Premium','Veja o Score e o ranking de todos os '+ranked.length+' ativos avaliados, com breakdown dos 4 pilares.')}</div>`}
   </div>`;
 }
 function gbRow(label, pct){
@@ -2157,21 +2374,25 @@ const ALL_ASSETS_FLAT = ()=>[...FIIS.map(a=>({...a,_k:'fiis'})), ...ACOES.map(a=
 let cmpSel = ['KNCR11','HGLG11','VGIR11'];
 function viewComparador(){
   const opts = ALL_ASSETS_FLAT().map(a=>`<option value="${a.tk}">${a.tk} · ${a.nm}</option>`).join('');
+  const pro = isPremium();
+  const lockedSel = (n)=>`<button class="sel sel-locked" onclick="upsell()" style="flex:1" title="Premium"><i class="fa-solid fa-lock" style="font-size:10px"></i> + Ativo ${n} <span class="pro-tag">PRO</span></button>`;
   return `
   <div class="sec-title">Comparador de ativos</div>
-  <div class="sec-desc">Compare até quatro ativos lado a lado pelos principais fundamentos e pelo Score Lastro. Ideal para decidir entre alternativas do mesmo segmento.</div>
+  <div class="sec-desc">Compare ativos lado a lado pelos principais fundamentos e pelo Score Lastro. ${pro?'Até 4 ativos.':'No plano Gratuito você compara 2 — faça upgrade para 4.'}</div>
   <div class="filters">
     <select class="sel" id="cmp0" onchange="setCmp(0,this.value)" style="flex:1"><option value="">+ Ativo 1</option>${opts}</select>
     <select class="sel" id="cmp1" onchange="setCmp(1,this.value)" style="flex:1"><option value="">+ Ativo 2</option>${opts}</select>
-    <select class="sel" id="cmp2" onchange="setCmp(2,this.value)" style="flex:1"><option value="">+ Ativo 3</option>${opts}</select>
-    <select class="sel" id="cmp3" onchange="setCmp(3,this.value)" style="flex:1"><option value="">+ Ativo 4</option>${opts}</select>
+    ${pro?`<select class="sel" id="cmp2" onchange="setCmp(2,this.value)" style="flex:1"><option value="">+ Ativo 3</option>${opts}</select>`:lockedSel(3)}
+    ${pro?`<select class="sel" id="cmp3" onchange="setCmp(3,this.value)" style="flex:1"><option value="">+ Ativo 4</option>${opts}</select>`:lockedSel(4)}
   </div>
   <div class="card card-pad"><div id="cmpBody"></div></div>`;
 }
-function setCmp(i,v){ cmpSel[i]=v||null; cmpSel=cmpSel.filter(Boolean); initComparador(); }
+function setCmp(i,v){ if(i>=PLAN_LIMITS.comparador && !isPremium()){ upsell(); return; } cmpSel[i]=v||null; cmpSel=cmpSel.filter(Boolean); initComparador(); }
 function initComparador(){
+  const cap = isPremium()?4:PLAN_LIMITS.comparador;
+  if(cmpSel.length>cap) cmpSel = cmpSel.slice(0,cap);
   ['cmp0','cmp1','cmp2','cmp3'].forEach((id,i)=>{ const el=$('#'+id); if(el&&cmpSel[i]) el.value=cmpSel[i]; });
-  const items = cmpSel.map(tk=>ALL_ASSETS_FLAT().find(a=>a.tk===tk)).filter(Boolean);
+  const items = cmpSel.slice(0,cap).map(tk=>ALL_ASSETS_FLAT().find(a=>a.tk===tk)).filter(Boolean);
   const body = $('#cmpBody'); if(!body) return;
   if(items.length<2){ body.innerHTML='<div class="search-empty">Selecione ao menos dois ativos para comparar.</div>'; return; }
   const metrics = [
@@ -2199,6 +2420,11 @@ function initComparador(){
    ══════════════════════════════════════════════════════════ */
 let scrState = { universe:'fiis', dyMin:0, pvpMax:3, scoreMin:0 };
 function viewScreener(){
+  if(!isPremium()){
+    return `<div class="sec-title">Rastreador de ativos <span class="pro-tag">PRO</span></div>
+    <div class="sec-desc">Filtre centenas de ativos por DY, P/VP, Score e mais — encontre exatamente o que se encaixa na sua estratégia.</div>
+    <div class="card card-pad">${paywall('Rastreador avançado é Premium','Combine critérios fundamentalistas (DY mínimo, P/VP máximo, Score) sobre todo o universo de ativos. Disponível no plano Premium.')}</div>`;
+  }
   return `
   <div class="sec-title">Rastreador de ativos</div>
   <div class="sec-desc">Defina critérios fundamentalistas e encontre ativos que se encaixam na sua estratégia. Combine DY mínimo, P/VP máximo e Score Lastro.</div>
@@ -2585,6 +2811,11 @@ Responda em português, objetivo, máximo 3 parágrafos curtos. Use indicadores 
 Nunca prometa rentabilidade; eduque sobre risco. Não dê recomendação direta de compra/venda — apresente análise para decisão própria.`;
 
 async function callAI(msg, el){
+  if(!aiCanRun()){
+    if(el) el.innerHTML = `<div class="ai-locked"><i class="fa-solid fa-crown"></i> Você usou suas <strong>${PLAN_LIMITS.aiDay} análises gratuitas</strong> de hoje. <a onclick="goPricing()">Fazer upgrade para ilimitado →</a></div>`;
+    return;
+  }
+  if(!isPremium()) aiInc();
   if(el) el.innerHTML = skelLines(3);
   const endpoint = (window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || 'https://api.anthropic.com/v1/messages';
   try{
@@ -2697,6 +2928,7 @@ function isWatched(tk){ return watchlist().includes(tk); }
 function watchBtnInner(tk){ const on=isWatched(tk); return `<i class="fa-${on?'solid':'regular'} fa-star" style="${on?'color:var(--gold)':''}"></i> ${on?'Na watchlist':'Watchlist'}`; }
 function toggleWatch(tk){
   const w=watchlist(); const i=w.indexOf(tk);
+  if(i<0 && !isPremium() && w.length >= PLAN_LIMITS.watchlist){ toast(`Watchlist do plano Gratuito limitada a ${PLAN_LIMITS.watchlist} ativos`); goPricing(); return; }
   if(i>=0) w.splice(i,1); else w.push(tk);
   localStorage.setItem('lastro_watch', JSON.stringify(w));
   toast(i>=0?`${tk} removido da watchlist`:`${tk} adicionado à watchlist ★`);
@@ -3181,9 +3413,11 @@ async function loadUniverse(){
 }
 
 /* INIT */
+refreshPlanUI();
 render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
 animateContent();
 loadUniverse();
+maybeOnboard();
 </script>
 </body>
 </html>
