@@ -555,6 +555,7 @@ a { color: inherit; text-decoration: none; }
     <nav class="nav-section">
       <div class="nav-label">Ferramentas</div>
       <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Minha Carteira</span></div>
+      <div class="nav-item" data-view="watchlist" onclick="nav('watchlist',this)"><i class="fa-solid fa-star"></i><span>Watchlist</span></div>
       <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
       <div class="nav-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span></div>
       <div class="nav-item" data-view="agenda" onclick="nav('agenda',this)"><i class="fa-solid fa-calendar-day"></i><span>Agenda de Dividendos</span></div>
@@ -623,6 +624,23 @@ a { color: inherit; text-decoration: none; }
 
 <!-- ════════ TOAST ════════ -->
 <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i> <span id="toastMsg"></span></div>
+
+<!-- ════════ MODAL — POSIÇÃO DA CARTEIRA ════════ -->
+<div class="modal-scrim" id="posModal" onclick="if(event.target===this)closePosModal()">
+  <div class="modal-card" role="dialog" aria-label="Posição da carteira">
+    <div class="modal-head"><span id="posTitle">Adicionar posição</span><button class="drawer-close" onclick="closePosModal()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <label class="fld"><span>Ativo</span><input id="posTk" list="tkList" placeholder="Ex.: PETR4, HGLG11, IVV" autocomplete="off" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')savePos()"></label>
+      <datalist id="tkList"></datalist>
+      <div class="fld-row">
+        <label class="fld"><span>Quantidade</span><input id="posQt" type="number" min="0" step="any" inputmode="decimal" placeholder="0" onkeydown="if(event.key==='Enter')savePos()"></label>
+        <label class="fld"><span>Preço médio (R$)</span><input id="posPm" type="number" min="0" step="any" inputmode="decimal" placeholder="0,00" onkeydown="if(event.key==='Enter')savePos()"></label>
+      </div>
+      <div id="posErr" class="fld-err"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closePosModal()">Cancelar</button><button class="btn btn-primary" onclick="savePos()"><i class="fa-solid fa-check"></i> Salvar</button></div>
+  </div>
+</div>
 
 <style>
 /* ══════════════════════════════════════════════════════════
@@ -1208,6 +1226,28 @@ table.tbl tbody tr.no-hover td { border:none; }
 .card-h { letter-spacing:-.01em; }
 .tk, .mono, .sr-pr, .dp-px, .dt-px .v, .gauge-num { font-variant-numeric: tabular-nums; }
 .news-title { text-wrap: pretty; }
+
+/* botões de ação em linha de tabela */
+.row-acts { white-space:nowrap; text-align:right; }
+.row-act { width:30px; height:30px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); margin-left:4px; }
+.row-act:hover { color:var(--ink); border-color:var(--line-2); background:var(--surface-3); }
+.row-act.danger:hover { color:var(--down); border-color:var(--down); background:var(--down-l); }
+
+/* modal genérico (posição) */
+.modal-scrim { position:fixed; inset:0; z-index:260; background:rgba(15,20,25,.45); backdrop-filter:blur(3px); display:none; align-items:flex-start; justify-content:center; padding-top:12vh; }
+.modal-scrim.open { display:flex; animation:fadeIn .2s var(--ease); }
+.modal-card { width:440px; max-width:94vw; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-lg); box-shadow:var(--sh-xl); overflow:hidden; animation:panelIn .28s var(--ease-out); }
+.modal-head { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--line); font-size:15px; font-weight:600; }
+.modal-body { padding:20px; display:flex; flex-direction:column; gap:14px; }
+.modal-foot { display:flex; gap:10px; justify-content:flex-end; padding:16px 20px; border-top:1px solid var(--line); }
+.fld { display:flex; flex-direction:column; gap:6px; }
+.fld > span { font-size:12px; font-weight:500; color:var(--ink-2); }
+.fld input { padding:11px 13px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2); color:var(--ink); font-size:14px; font-family:var(--mono); transition:border-color .15s var(--ease); }
+.fld input:focus { border-color:var(--accent); background:var(--surface); }
+.fld input:disabled { opacity:.7; cursor:not-allowed; }
+.fld-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.fld-err { font-size:12.5px; color:var(--down); min-height:16px; }
+@media (max-width:460px){ .fld-row { grid-template-columns:1fr; } }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -1324,12 +1364,47 @@ const FUND = {
 };
 
 // Carteira do usuário
-const CARTEIRA = [
-  { tk:'HGLG11', cotas:120, pm:142.10, peso:30 },
-  { tk:'KNCR11', cotas:130, pm:101.50, peso:28 },
-  { tk:'VISC11', cotas:105, pm:99.80,  peso:22 },
-  { tk:'VGIR11', cotas:100, pm:96.20,  peso:20 },
+const CARTEIRA_SEED = [
+  { tk:'HGLG11', cotas:120, pm:142.10 },
+  { tk:'KNCR11', cotas:130, pm:101.50 },
+  { tk:'VISC11', cotas:105, pm:99.80  },
+  { tk:'VGIR11', cotas:100, pm:96.20  },
 ];
+let CARTEIRA = loadPortfolio();
+function loadPortfolio(){
+  try{ const s=JSON.parse(localStorage.getItem('lastro_carteira')); if(Array.isArray(s)) return s; }catch(e){}
+  return CARTEIRA_SEED.slice();
+}
+function savePortfolio(){ try{ localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} }
+function addPosition(tk, cotas, pm){
+  tk=String(tk||'').toUpperCase().trim(); cotas=+cotas; pm=+pm;
+  if(!tk || !assetLookup(tk)) return { ok:false, msg:'Ticker não encontrado' };
+  if(!(cotas>0) || !(pm>0)) return { ok:false, msg:'Informe quantidade e preço médio válidos' };
+  const ex = CARTEIRA.find(c=>c.tk===tk);
+  if(ex){ ex.cotas=cotas; ex.pm=pm; } else CARTEIRA.push({tk, cotas, pm});
+  savePortfolio();
+  return { ok:true };
+}
+function removePosition(tk){ CARTEIRA = CARTEIRA.filter(c=>c.tk!==tk); savePortfolio(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); }
+function fillTickerList(){ const dl=document.getElementById('tkList'); if(!dl) return; dl.innerHTML = searchPool().map(a=>`<option value="${a.tk}">${esc(a.nm||'')}</option>`).join(''); }
+function openPosModal(tk){
+  const editing = !!(tk && CARTEIRA.find(c=>c.tk===tk));
+  const c = editing ? CARTEIRA.find(x=>x.tk===tk) : null;
+  fillTickerList();
+  $('#posTk').value = tk||''; $('#posTk').disabled = editing;
+  $('#posQt').value = c? c.cotas : ''; $('#posPm').value = c? c.pm : '';
+  $('#posTitle').textContent = editing ? `Editar ${tk}` : (tk?`Adicionar ${tk}`:'Adicionar posição');
+  $('#posErr').textContent = '';
+  $('#posModal').classList.add('open');
+  setTimeout(()=>{ const el = (tk?$('#posQt'):$('#posTk')); el && el.focus(); }, 60);
+}
+function closePosModal(){ $('#posModal').classList.remove('open'); }
+function savePos(){
+  const r = addPosition($('#posTk').value, $('#posQt').value, $('#posPm').value);
+  if(!r.ok){ $('#posErr').textContent = r.msg; return; }
+  closePosModal(); toast('Posição salva ✓');
+  if(currentView==='carteira') render('carteira');
+}
 
 const MARKET = [
   { nm:'Ibovespa', vl:'168.619', dl:'+0,61%', up:true,  spark:[155,157,159,156,160,162,164,166,167,168.6] },
@@ -1514,16 +1589,20 @@ function toast(msg){
 
 /* portfolio computed */
 function portfolioStats(){
-  let invest=0, atual=0, renda=0;
+  let invest=0, atual=0, renda=0, dyNum=0;
   CARTEIRA.forEach(c => {
-    const a = FIIS.find(f=>f.tk===c.tk);
+    const f = assetLookup(c.tk); if(!f) return;
+    const a = f.a, val = c.cotas*(a.px||0);
     invest += c.cotas*c.pm;
-    atual  += c.cotas*a.px;
-    renda  += c.cotas*a.div;
+    atual  += val;
+    // renda mensal: FIIs pelo rendimento/cota; demais estimam DY anual/12
+    renda  += (f.k==='fiis' && typeof a.div==='number') ? c.cotas*a.div : (typeof a.dy==='number' ? val*(a.dy/100)/12 : 0);
+    dyNum  += (a.dy||0)*val;
   });
-  const dyMed = CARTEIRA.reduce((s,c)=>{ const a=FIIS.find(f=>f.tk===c.tk); return s + a.dy*(c.peso/100); },0);
-  return { invest, atual, renda, dyMed, lucro: atual-invest, lucroP: (atual-invest)/invest*100 };
+  const dyMed = atual ? dyNum/atual : 0;
+  return { invest, atual, renda, dyMed, lucro: atual-invest, lucroP: invest ? (atual-invest)/invest*100 : 0 };
 }
+function posWeight(c){ const f=assetLookup(c.tk); const p=portfolioStats(); return (f && p.atual) ? c.cotas*f.a.px/p.atual*100 : 0; }
 
 /* ══════════════════════════════════════════════════════════
    NAVIGATION
@@ -1537,6 +1616,7 @@ const PAGES = {
   stocks:       { t:'Stocks',                s:'Ações internacionais — bolsas dos EUA' },
   cripto:       { t:'Criptomoedas',          s:'Principais criptoativos por valor de mercado' },
   carteira:     { t:'Minha Carteira',        s:'Diagnóstico, proventos e saúde da sua carteira' },
+  watchlist:    { t:'Watchlist',             s:'Ativos que você acompanha de perto' },
   comparador:   { t:'Comparador',            s:'Compare ativos lado a lado pelos fundamentos' },
   screener:     { t:'Rastreador',            s:'Filtre ativos por critérios fundamentalistas' },
   agenda:       { t:'Agenda de Dividendos',  s:'Calendário de proventos dos seus ativos e do mercado' },
@@ -1573,6 +1653,7 @@ function render(v, soft){
   if(v==='painel')       c.innerHTML = viewPainel();
   else if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)) c.innerHTML = viewAssets(v);
   else if(v==='carteira')    c.innerHTML = viewCarteira();
+  else if(v==='watchlist')   c.innerHTML = viewWatchlist();
   else if(v==='comparador')  c.innerHTML = viewComparador();
   else if(v==='screener')    c.innerHTML = viewScreener();
   else if(v==='agenda')      c.innerHTML = viewAgenda();
@@ -1864,37 +1945,48 @@ function tblFilter(kind, key, val){
    ══════════════════════════════════════════════════════════ */
 function viewCarteira(){
   const p = portfolioStats();
-  const concentracao = Math.max(...CARTEIRA.map(c=>c.peso));
-  const papelPct = CARTEIRA.filter(c=>{const a=FIIS.find(f=>f.tk===c.tk);return a.seg==='Papel';}).reduce((s,c)=>s+c.peso,0);
-  const saude = Math.round(100 - (concentracao>30?15:8) - (papelPct>45?12:5) - (CARTEIRA.length<6?10:0));
+  const n = CARTEIRA.length;
+  const concentracao = n ? Math.max(...CARTEIRA.map(posWeight)) : 0;
+  const saude = n ? Math.max(0, Math.round(100 - (concentracao>30?15:6) - (n<6?12:0) - (n<3?10:0))) : 0;
+  const addBtn = `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar</button>`;
+
+  if(!n){
+    return `
+    <div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-wallet"></i></span> Minha Carteira</div>${addBtn}</div>
+      ${emptyState('fa-wallet','Sua carteira está vazia','Adicione suas posições (ativo, quantidade e preço médio) para acompanhar patrimônio, renda e saúde da carteira em tempo real.')}
+    </div>`;
+  }
 
   const holdings = CARTEIRA.map(c=>{
-    const a = FIIS.find(f=>f.tk===c.tk);
-    const val = c.cotas*a.px, custo=c.cotas*c.pm, lucro=val-custo, lp=lucro/custo*100;
+    const f = assetLookup(c.tk); if(!f) return '';
+    const a = f.a, val = c.cotas*(a.px||0), custo=c.cotas*c.pm, lucro=val-custo, lp=custo?lucro/custo*100:0;
+    const mensal = (f.k==='fiis' && typeof a.div==='number') ? c.cotas*a.div : (typeof a.dy==='number' ? val*(a.dy/100)/12 : 0);
     return `<tr onclick="quickView('${a.tk}')">
-      <td><div class="td-asset">${assetLogo(a.tk,'fiis','sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.seg}</div></div></div></td>
+      <td><div class="td-asset">${assetLogo(a.tk,f.k,'sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${esc(a.nm||a.seg||ASSET_CLASS[f.k].label)}</div></div></div></td>
       <td class="mono">${c.cotas}</td>
       <td class="mono">${brl(c.pm)}</td>
-      <td class="mono">${brl(a.px)}</td>
+      <td class="mono">${fmtPx(a,f.k)}</td>
       <td class="mono">${brl(val)}</td>
-      <td class="mono ${lucro>=0?'up':'down'}">${lucro>=0?'+':''}${lp.toFixed(1).replace('.',',')}%</td>
-      <td class="mono up">${brl(c.cotas*a.div)}</td>
+      <td class="mono ${lucro>=0?'up':'down'}">${lucro>=0?'+':''}${pc(lp,1)}%</td>
+      <td class="mono up">${brl(mensal)}</td>
+      <td class="row-acts"><button class="row-act" title="Editar" onclick="event.stopPropagation();openPosModal('${a.tk}')"><i class="fa-solid fa-pen"></i></button><button class="row-act danger" title="Remover" onclick="event.stopPropagation();removePosition('${a.tk}')"><i class="fa-solid fa-trash-can"></i></button></td>
     </tr>`;
   }).join('');
 
   return `
   <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl">${brl(p.atual)}</div><div class="dl up">+${p.lucroP.toFixed(1).replace('.',',')}%</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Renda mensal</div><div class="vl up">${brl(p.renda)}</div><div class="dl faint">${(p.renda*12/p.atual*100).toFixed(1).replace('.',',')}% a.a.</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl">${brl(p.atual)}</div><div class="dl ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}%</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Renda mensal</div><div class="vl up">${brl(p.renda)}</div><div class="dl faint">${p.atual?pc(p.renda*12/p.atual*100,1):'0,0'}% a.a.</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Lucro/Prejuízo</div><div class="vl ${p.lucro>=0?'up':'down'}">${brl(p.lucro)}</div><div class="dl faint">desde aporte</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Saúde da carteira</div><div class="vl" style="color:${scoreColor(saude)}">${saude}<span style="font-size:12px;color:var(--ink-3)">/100</span></div><div class="dl" style="color:${scoreColor(saude)}">${scoreTier(saude)}</div></div>
   </div>
 
   <div class="grid" style="grid-template-columns: 1fr 360px">
     <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições</div><button class="btn btn-ghost" onclick="toast('Em breve: importação automática da B3')"><i class="fa-solid fa-plus"></i> Adicionar</button></div>
+      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n}</span></div>${addBtn}</div>
       <div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>Ativo</th><th>Cotas</th><th>Preço médio</th><th>Atual</th><th>Posição</th><th>Result.</th><th>Renda/mês</th></tr></thead>
+        <thead><tr><th>Ativo</th><th>Qtde</th><th>Preço médio</th><th>Atual</th><th>Posição</th><th>Result.</th><th>Renda/mês</th><th></th></tr></thead>
         <tbody>${holdings}</tbody>
       </table></div>
     </div>
@@ -1911,6 +2003,38 @@ function viewCarteira(){
       <input id="cartAI" placeholder="Devo adicionar XPML11? Como rebalancear?" onkeydown="if(event.key==='Enter')askAICart()">
       <button class="insight-send" onclick="askAICart()"><i class="fa-solid fa-arrow-up"></i></button>
     </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   VIEW: WATCHLIST
+   ══════════════════════════════════════════════════════════ */
+function viewWatchlist(){
+  const items = watchlist().map(tk=>assetLookup(tk)).filter(Boolean);
+  const cta = `<button class="btn btn-ghost" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i> Buscar ativo</button>`;
+  if(!items.length){
+    return `<div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-star"></i></span> Watchlist</div>${cta}</div>
+      ${emptyState('fa-star','Sua watchlist está vazia','Abra qualquer ativo e toque em ★ Watchlist para acompanhá-lo aqui — cotações ao vivo e Score num só lugar.')}
+    </div>`;
+  }
+  const rows = items.map(({a,k})=>{
+    const vv=(k==='cripto'?a.v24:a.var)??0;
+    return `<tr onclick="quickView('${a.tk}')">
+      <td class="cell-left"><div class="td-asset">${assetLogo(a.tk,k,'sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${esc(a.nm||'')}</div></div></div></td>
+      <td><span class="chip chip-neu">${ASSET_CLASS[k].label}</span></td>
+      <td class="mono">${fmtPx(a,k)}</td>
+      <td class="mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</td>
+      <td>${typeof a.score==='number'?`<span class="score-pill" style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)}"></span>${a.score}</span>`:'<span class="muted" style="font-size:12px">—</span>'}</td>
+      <td class="row-acts"><button class="row-act danger" title="Remover da watchlist" onclick="event.stopPropagation();toggleWatch('${a.tk}');render('watchlist')"><i class="fa-solid fa-star" style="color:var(--gold)"></i></button></td>
+    </tr>`;
+  }).join('');
+  return `<div class="card card-pad">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-star"></i></span> Watchlist <span class="card-sub">· ${items.length}</span></div>${cta}</div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th class="cell-left">Ativo</th><th>Classe</th><th>Cotação</th><th>Var.</th><th>Score</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
   </div>`;
 }
 
@@ -2380,15 +2504,22 @@ function setIbov(p, btn){
 }
 
 /* Alloc chart */
+const ALLOC_COLORS = ['#0E7C5A','#2563EB','#8B4FB8','#A87C2A','#D14343','#0EA5A0','#E2761B','#5B7CFA','#16A34A','#B45309'];
 function initAlloc(){
   const ctx = $('#allocChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
+  // ordena por valor atual e agrupa o excedente em "Outros"
+  const items = CARTEIRA.map(c=>{ const f=assetLookup(c.tk); return { tk:c.tk, val: f? c.cotas*(f.a.px||0):0 }; })
+    .filter(x=>x.val>0).sort((a,b)=>b.val-a.val);
+  const top = items.slice(0,8); const rest = items.slice(8).reduce((s,x)=>s+x.val,0);
+  const labels = top.map(x=>x.tk).concat(rest>0?['Outros']:[]);
+  const data = top.map(x=>x.val).concat(rest>0?[rest]:[]);
   charts.alloc = new Chart(ctx,{
     type:'doughnut',
-    data:{ labels:CARTEIRA.map(c=>c.tk), datasets:[{ data:CARTEIRA.map(c=>c.peso), backgroundColor:[cssVar('--brand'),cssVar('--accent'),'#8B4FB8',cssVar('--gold')], borderWidth:0, hoverOffset:7 }] },
+    data:{ labels, datasets:[{ data, backgroundColor:labels.map((_,i)=>ALLOC_COLORS[i%ALLOC_COLORS.length]), borderWidth:0, hoverOffset:7 }] },
     options:{ responsive:true, maintainAspectRatio:false, cutout:'66%',
-      plugins:{ legend:{ position:'bottom', labels:{ color:cssVar('--ink-2'), font:{size:12, family:'IBM Plex Mono'}, padding:14, usePointStyle:true, pointStyleWidth:9 } },
-                tooltip:{ callbacks:{ label:c=>c.label+': '+c.parsed+'%' } } } }
+      plugins:{ legend:{ position:'bottom', labels:{ color:cssVar('--ink-2'), font:{size:11.5, family:'IBM Plex Mono'}, padding:12, usePointStyle:true, pointStyleWidth:9, boxHeight:7 } },
+                tooltip:{ callbacks:{ label:c=>{ const tot=c.dataset.data.reduce((s,v)=>s+v,0); return c.label+': '+(tot?(c.parsed/tot*100).toFixed(1):0)+'% · '+brl(c.parsed); } } } } }
   });
 }
 
@@ -2812,7 +2943,7 @@ function viewAssetDetail(tk){
       <div class="d ${vv>=0?'up':'down'}"><i class="fa-solid fa-caret-${vv>=0?'up':'down'}"></i> ${vv>=0?'+':''}${pc(vv)}% hoje</div>
       <div class="dt-actions">
         <button class="btn btn-ghost" id="watchBtn" onclick="toggleWatch('${tk}')">${watchBtnInner(tk)}</button>
-        <button class="btn btn-primary" onclick="toast('Em breve: adicionar ${tk} à carteira')"><i class="fa-solid fa-plus"></i> Carteira</button>
+        <button class="btn btn-primary" onclick="openPosModal('${tk}')"><i class="fa-solid fa-plus"></i> Carteira</button>
       </div>
     </div>
   </div>
@@ -2889,7 +3020,7 @@ function toggleTheme(){
 
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
-  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); }
+  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); }
 });
 
 /* ══════════════════════════════════════════════════════════
@@ -2928,6 +3059,7 @@ function screenSymbols(){
     case 'cripto': CRIPTO.forEach(c=> crypto.add(c.tk)); break;
     case 'painel':
     case 'carteira': CARTEIRA.forEach(c=> b3.add(c.tk)); break;
+    case 'watchlist': watchlist().forEach(tk=>{ const f=assetLookup(tk); if(f){ if(f.k==='cripto') crypto.add(tk); else if(f.k!=='stocks') b3.add(tk); } }); break;
     case 'asset': {
       const f = currentAssetTk && assetLookup(currentAssetTk);
       if(f){ if(f.k==='cripto') crypto.add(f.a.tk); else if(f.k!=='stocks') b3.add(f.a.tk); }
@@ -2977,7 +3109,7 @@ function softRefreshView(){
   if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)){
     if(typing) return;            // não recriar a tabela enquanto o usuário digita/filtra
     renderAssets(v);
-  } else if(['painel','carteira','score','asset'].includes(v) && !typing){
+  } else if(['painel','carteira','score','asset','watchlist'].includes(v) && !typing){
     render(v, true);             // soft: re-renderiza sem re-disparar buscas (evita loop)
   }
 }
