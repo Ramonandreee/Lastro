@@ -461,9 +461,14 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ══════════════════════════════════════════════════════════
-   RESPONSIVE BASE
+   RESPONSIVE
    ══════════════════════════════════════════════════════════ */
-@media (max-width: 1080px) {
+.menu-btn { display:none; width:38px; height:38px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--surface); color:var(--ink-2); align-items:center; justify-content:center; cursor:pointer; flex:none; margin-right:6px; }
+.menu-btn:hover { color:var(--ink); }
+.sidebar-scrim { display:none; position:fixed; inset:0; background:rgba(15,20,25,.45); backdrop-filter:blur(2px); z-index:60; opacity:0; transition:opacity .25s var(--ease); }
+
+/* tablet: rail de ícones */
+@media (max-width: 1080px) and (min-width: 901px) {
   .sidebar { width: 72px; padding: 22px 12px; }
   .brand-name, .nav-item span, .nav-label, .user-meta, .theme-toggle span, .nav-badge { display: none; }
   .brand { justify-content: center; padding: 0 0 24px; }
@@ -471,12 +476,47 @@ a { color: inherit; text-decoration: none; }
   .theme-toggle { justify-content: center; }
   .user-chip { justify-content: center; }
 }
-@media (max-width: 760px) {
-  .content { padding: 16px; }
-  .topbar { padding: 0 16px; }
-  .search-trigger { min-width: 0; }
-  .search-trigger span { display: none; }
+
+/* mobile: sidebar off-canvas (drawer) + hambúrguer */
+@media (max-width: 900px) {
+  .menu-btn { display:flex; }
+  .sidebar {
+    position:fixed; left:0; top:0; width:272px; height:100vh; z-index:70;
+    transform:translateX(-100%); transition:transform .3s var(--ease-out);
+    box-shadow:var(--sh-xl); padding:20px 14px;
+  }
+  body.nav-open .sidebar { transform:none; }
+  body.nav-open .sidebar-scrim { display:block; opacity:1; }
+  .search-trigger span:not(.kbd) { display:none; } .search-trigger .kbd { display:none; } .search-trigger { min-width:0; padding:8px 11px; }
 }
+
+/* telas estreitas: empilhar grids, tabelas roláveis, topbar compacto */
+@media (max-width: 760px) {
+  .content { padding: 14px; }
+  .topbar { padding: 0 14px; }
+  .grid { grid-template-columns: 1fr !important; }
+  .dt-grid { grid-template-columns: 1fr !important; }
+  .about-grid { grid-template-columns: 1fr !important; }
+  .mstrip { grid-template-columns: repeat(2,1fr) !important; }
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tbl { min-width: 560px; }
+  .market-status { display:none; }
+  .page-title { font-size: 18px; }
+  .page-sub { font-size: 11.5px; }
+  .dt-head { gap:12px; }
+  .dt-id .tk { font-size:20px; }
+  .filters { flex-wrap: wrap; }
+}
+@media (max-width: 460px) {
+  .mstrip { grid-template-columns: 1fr !important; }
+  .data-status #dataStatusLabel { display:none; }
+  .topbar-right { gap:7px; }
+}
+
+/* utilitário de carregamento (skeleton) */
+.skeleton { position:relative; overflow:hidden; background:var(--surface-3); border-radius:8px; }
+.skeleton::after { content:''; position:absolute; inset:0; transform:translateX(-100%); background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--ink-4) 16%, transparent), transparent); animation:shimmer 1.3s infinite; }
+@keyframes shimmer { 100% { transform:translateX(100%); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
@@ -484,6 +524,7 @@ a { color: inherit; text-decoration: none; }
 </style>
 </head>
 <body>
+<div class="sidebar-scrim" id="sidebarScrim" onclick="closeSidebar()"></div>
 <div class="app">
 
   <!-- ════════ SIDEBAR ════════ -->
@@ -546,6 +587,7 @@ a { color: inherit; text-decoration: none; }
   <div class="main">
     <header class="topbar">
       <div class="topbar-left">
+        <button class="menu-btn" onclick="toggleSidebar()" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
         <div>
           <div class="page-title" id="pageTitle">Painel</div>
           <div class="page-sub" id="pageSub">Visão geral do seu patrimônio e do mercado</div>
@@ -1409,7 +1451,12 @@ function nav(v, el){
   render(v);
   $('#content').scrollTop = 0;
   window.scrollTo({top:0, behavior:'instant'});
+  closeSidebar();
 }
+/* menu lateral (mobile) */
+function toggleSidebar(){ document.body.classList.toggle('nav-open'); }
+function openSidebar(){ document.body.classList.add('nav-open'); }
+function closeSidebar(){ document.body.classList.remove('nav-open'); }
 
 function render(v, soft){
   const c = $('#content');
@@ -1539,9 +1586,11 @@ function viewPainel(){
 /* ══════════════════════════════════════════════════════════
    VIEW: ASSETS — sistema genérico configurável
    ══════════════════════════════════════════════════════════ */
-const pc = (v,d=2)=> v.toFixed(d).replace('.',','); // número pt-BR
+const pc = (v,d=2)=> (typeof v==='number' && isFinite(v)) ? v.toFixed(d).replace('.',',') : '—'; // número pt-BR (tolerante)
 const usd = v => 'US$ '+pc(v);
-const scoreCell = a => `<td><span class="score-pill" style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)}"></span>${a.score}</span></td>`;
+const scoreCell = a => (typeof a.score==='number')
+  ? `<td><span class="score-pill" style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)}"></span>${a.score}</span></td>`
+  : `<td><span class="muted" style="font-size:12px">—</span></td>`;
 const varCell = a => `<td class="mono ${a.var>=0?'up':'down'}">${a.var>=0?'+':''}${pc(a.var)}%</td>`;
 
 const ASSET_CFG = {
@@ -2311,17 +2360,23 @@ function diagnose(){
 /* ══════════════════════════════════════════════════════════
    SEARCH & MISC
    ══════════════════════════════════════════════════════════ */
-const ALL = [...FIIS.map(f=>({...f,kind:'FII'})), ...ACOES.map(a=>({...a,kind:'Ação'}))];
+// fonte de busca: todas as classes, ao vivo (inclui o universo mesclado)
+function searchPool(){
+  const map=[['FII',FIIS],['Ação',ACOES],['BDR',BDRS],['ETF',ETFS],['Stock',STOCKS],['Cripto',CRIPTO]];
+  const out=[]; for(const [lbl,arr] of map) for(const a of arr) out.push({tk:a.tk,nm:a.nm,px:a.px,var:a.var,kind:lbl});
+  return out;
+}
 function openSearch(){ $('#searchModal').classList.add('open'); setTimeout(()=>$('#searchInput').focus(),60); runSearch(''); }
 function closeSearch(){ $('#searchModal').classList.remove('open'); $('#searchInput').value=''; }
 function runSearch(q){
-  const res = q ? ALL.filter(a=>a.tk.includes(q.toUpperCase())||a.nm.toLowerCase().includes(q.toLowerCase())) : ALL.slice(0,6);
+  const pool = searchPool();
+  const res = q ? pool.filter(a=>a.tk.includes(q.toUpperCase())||(a.nm||'').toLowerCase().includes(q.toLowerCase())) : pool.slice(0,7);
   const body = $('#searchBody');
   if(!res.length){ body.innerHTML='<div class="search-empty">Nenhum ativo encontrado para "'+q+'"</div>'; return; }
-  body.innerHTML = res.slice(0,8).map(a=>`
+  body.innerHTML = res.slice(0,12).map(a=>`
     <div class="sr" onclick="quickView('${a.tk}');closeSearch()">
       <div class="sr-l">${assetLogo(a.tk, kindFromLabel(a.kind),'xs')}<div><div class="sr-nm">${a.tk}</div><div class="sr-ds">${a.nm} · ${a.kind}</div></div></div>
-      <div class="sr-r"><div class="sr-pr">${brl(a.px)}</div><div class="sr-ds ${a.var>=0?'up':'down'}" style="font-family:var(--mono)">${a.var>=0?'+':''}${a.var.toFixed(2).replace('.',',')}%</div></div>
+      <div class="sr-r"><div class="sr-pr">${a.kind==='Stock'?usd(a.px):brl(a.px)}</div><div class="sr-ds ${a.var>=0?'up':'down'}" style="font-family:var(--mono)">${a.var>=0?'+':''}${pc(a.var)}%</div></div>
     </div>`).join('');
 }
 /* ══════════════════════════════════════════════════════════
@@ -2664,6 +2719,7 @@ function openAsset(tk){
   $('#pageTitle').textContent=tk; $('#pageSub').textContent=a.nm;
   render('asset');
   $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'});
+  closeSidebar();
 }
 function backFromAsset(){
   const v=prevView||'painel'; currentView=v;
@@ -2685,7 +2741,7 @@ function toggleTheme(){
 
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
-  if(e.key==='Escape'){ closeSearch(); closeAsset(); }
+  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); }
 });
 
 /* ══════════════════════════════════════════════════════════
@@ -2815,8 +2871,37 @@ async function refreshQuotes(manual){
   }
 }
 
+/* ══════════════════════════════════════════════════════════
+   UNIVERSO COMPLETO — mescla todas as ações/FIIs/BDRs (brapi list)
+   mantendo os fundamentos profundos dos ativos curados.
+   ══════════════════════════════════════════════════════════ */
+function mergeUniverse(arr, items){
+  if(!Array.isArray(items)) return 0;
+  const have = new Set(arr.map(a=>a.tk));
+  let added = 0;
+  items.forEach(it=>{
+    if(!it.tk || have.has(it.tk)) return;
+    have.add(it.tk);
+    arr.push({ tk:it.tk, nm:it.nm||it.tk, seg:it.seg||'Outros', px:it.px||0, var:it.var||0, mkt:it.mkt, logo:it.logo, _uni:true });
+    added++;
+  });
+  return added;
+}
+async function loadUniverse(){
+  try{
+    const r = await fetch('/api/universe'); if(!r.ok) return;
+    const d = await r.json();
+    const n = mergeUniverse(ACOES, d.stocks) + mergeUniverse(FIIS, d.funds) + mergeUniverse(BDRS, d.bdrs);
+    if(n){
+      console.log(`[Lastro] universo: +${n} ativos`);
+      if(['acoes','fiis','bdrs'].includes(currentView)) renderAssets(currentView);
+    }
+  }catch(e){ console.warn('[Lastro] universo indisponível:', e.message); }
+}
+
 /* INIT */
 render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
+loadUniverse();
 </script>
 </body>
 </html>
