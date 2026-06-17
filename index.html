@@ -1183,6 +1183,31 @@ table.tbl tbody tr:hover .logo, .sr:hover .logo { transform: scale(1.05); }
 
 /* logos: borda some quando carrega imagem real (visual mais limpo) */
 .logo:has(.logo-img:not([style*="display: none"])) { border-color: transparent; }
+
+/* empty states */
+.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:44px 20px; }
+.empty-state .es-ic { width:52px; height:52px; border-radius:14px; background:var(--surface-3); color:var(--ink-3); display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:14px; }
+.empty-state .es-t { font-size:14.5px; font-weight:600; color:var(--ink); }
+.empty-state .es-s { font-size:12.5px; color:var(--ink-3); margin-top:5px; max-width:320px; line-height:1.5; }
+table.tbl tbody tr.no-hover { cursor:default; }
+table.tbl tbody tr.no-hover:hover { background:transparent; }
+table.tbl tbody tr.no-hover td { border:none; }
+
+/* skeleton de notícia */
+.news-skel { padding:16px 0; border-bottom:1px solid var(--line); }
+.news-skel:first-child { padding-top:0; }
+
+/* chip de carregamento (universo) */
+.loading-chip { display:inline-flex; align-items:center; gap:7px; font-size:11.5px; color:var(--ink-3); }
+.loading-chip .spin { width:11px; height:11px; border:1.5px solid var(--line-2); border-top-color:var(--brand); border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* refino tipográfico */
+.sec-title, .page-title, .card-h, .dt-id .tk { text-wrap: balance; }
+.page-title { letter-spacing:-.015em; }
+.card-h { letter-spacing:-.01em; }
+.tk, .mono, .sr-pr, .dp-px, .dt-px .v, .gauge-num { font-variant-numeric: tabular-nums; }
+.news-title { text-wrap: pretty; }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -1761,6 +1786,7 @@ const ASSET_CFG = {
 };
 
 let tableState = {};
+let universeLoaded = false;
 Object.keys(ASSET_CFG).forEach(k=> tableState[k] = {q:'', seg:'', reg:'', sort:ASSET_CFG[k].sorts[0][0], dir:(ASSET_CFG[k].sorts[0][0]==='pvp'||ASSET_CFG[k].sorts[0][0]==='pl')?1:-1});
 
 function viewAssets(kind){
@@ -1782,7 +1808,7 @@ function viewAssets(kind){
   </div>
   <div class="card card-pad">
     <div class="card-head">
-      <div class="card-h"><span class="ico"><i class="fa-${cfg.brand?'brands':'solid'} ${cfg.icon}"></i></span> ${cfg.label} <span class="card-sub" id="tblCount" style="margin-left:6px"></span></div>
+      <div class="card-h"><span class="ico"><i class="fa-${cfg.brand?'brands':'solid'} ${cfg.icon}"></i></span> ${cfg.label} <span class="card-sub" id="tblCount" style="margin-left:6px"></span>${(['acoes','fiis','bdrs'].includes(kind) && !universeLoaded)?'<span class="loading-chip" id="uniChip" style="margin-left:10px"><span class="spin"></span> carregando universo…</span>':''}</div>
       ${badge}
     </div>
     <div class="tbl-wrap"><table class="tbl" id="dataTbl"></table></div>
@@ -1816,8 +1842,15 @@ function renderAssets(kind){
       ${vcell}
     </tr>`;
   }).join('');
-  $('#dataTbl').innerHTML = `<thead>${thead}</thead><tbody>${rows}</tbody>`;
+  const colspan = cfg.cols.length + 2;
+  const body = data.length ? `<tbody>${rows}</tbody>`
+    : `<tbody><tr class="no-hover"><td colspan="${colspan}">${emptyState('fa-magnifying-glass','Nenhum ativo encontrado','Ajuste a busca ou os filtros para ver resultados.')}</td></tr></tbody>`;
+  $('#dataTbl').innerHTML = `<thead>${thead}</thead>${body}`;
   const cnt = $('#tblCount'); if(cnt) cnt.textContent = `· ${data.length} ${cfg.unit}`;
+}
+/* estado vazio reutilizável */
+function emptyState(icon, title, sub){
+  return `<div class="empty-state"><div class="es-ic"><i class="fa-solid ${icon}"></i></div><div class="es-t">${title}</div>${sub?`<div class="es-s">${sub}</div>`:''}</div>`;
 }
 
 function tblFilter(kind, key, val){
@@ -2234,6 +2267,10 @@ async function loadNewsFeed(){
     const st = $('#newsStatusTxt'); if(st) st.textContent = 'Demonstração';
     return;
   }
+  // skeleton enquanto carrega (só na primeira carga, p/ não piscar nas atualizações)
+  if(!feed.dataset.loaded){
+    feed.innerHTML = Array.from({length:6}).map(()=>`<div class="news-skel"><div class="skeleton skel-line sk-40" style="height:9px"></div><div class="skeleton skel-line sk-90" style="height:14px;margin-top:10px"></div></div>`).join('');
+  }
   try{
     const url = `${cfg.SUPABASE_URL}/rest/v1/news?select=*&order=published_at.desc&limit=30`;
     const r = await fetch(url, { headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${cfg.SUPABASE_ANON_KEY}` } });
@@ -2242,13 +2279,17 @@ async function loadNewsFeed(){
     if(Array.isArray(rows)) window.LAST_NEWS = rows;   // cache p/ o drawer de detalhe
     if(Array.isArray(rows) && rows.length){
       feed.innerHTML = rows.map(newsItemHTML).join('');
+      feed.dataset.loaded = '1';
       const st = $('#newsStatusTxt'); if(st) st.textContent = 'Atualizado ' + timeAgo(rows[0].published_at);
+    } else if(!feed.dataset.loaded){
+      feed.innerHTML = emptyState('fa-newspaper','Sem notícias agora','O feed atualiza automaticamente a cada poucos minutos.');
     }
     // resumo do dia do Supabase (meta), se existir
     const rm = await fetch(`${cfg.SUPABASE_URL}/rest/v1/meta?key=eq.resumo_dia&select=value`, { headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${cfg.SUPABASE_ANON_KEY}` } });
     if(rm.ok){ const m = await rm.json(); const el=$('#newsAI'); if(m[0]&&el) el.textContent = m[0].value; }
   }catch(e){
     const st = $('#newsStatusTxt'); if(st) st.textContent = 'Feed offline';
+    if(!feed.dataset.loaded) feed.innerHTML = emptyState('fa-wifi','Feed indisponível','Não foi possível carregar as notícias agora. Tente novamente em instantes.');
   }
 }
 
@@ -3004,6 +3045,7 @@ async function loadUniverse(){
       if(['acoes','fiis','bdrs'].includes(currentView)) renderAssets(currentView);
     }
   }catch(e){ console.warn('[Lastro] universo indisponível:', e.message); }
+  finally{ universeLoaded = true; const ch=document.getElementById('uniChip'); if(ch) ch.remove(); }
 }
 
 /* INIT */
