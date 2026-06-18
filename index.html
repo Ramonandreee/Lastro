@@ -1366,6 +1366,27 @@ table.tbl tbody tr.no-hover td { border:none; }
 .of-s { font-size:12.5px; color:var(--ink-3); margin-top:2px; line-height:1.45; }
 .ob-foot { padding:8px 26px 26px; }
 body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
+
+/* ── card de decisão (data → decisão) ── */
+.decision { margin-bottom:16px; }
+.dec-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
+.dec-verdict { font-size:15px; font-weight:600; line-height:1.5; color:var(--ink); display:flex; gap:10px; align-items:flex-start; flex:1; min-width:200px; }
+.dec-verdict i { margin-top:3px; font-size:16px; }
+.tone-pos { color:var(--up); } .tone-neu { color:var(--gold); } .tone-neg { color:var(--down); }
+.dims { display:grid; grid-template-columns:repeat(auto-fit,minmax(118px,1fr)); gap:10px; margin-bottom:20px; }
+.dim { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-sm); padding:11px 13px; }
+.dim-l { font-size:10.5px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; margin-bottom:7px; }
+.dim-r { font-family:var(--mono); font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; }
+.dim-r::before { content:''; width:7px; height:7px; border-radius:50%; background:currentColor; flex:none; }
+.proscons { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+.pc-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+.pc-t.pos { color:var(--up); } .pc-t.neg { color:var(--down); }
+.proscons ul { list-style:none; display:flex; flex-direction:column; gap:10px; }
+.proscons li { font-size:12.5px; line-height:1.55; color:var(--ink-2); display:flex; gap:9px; align-items:flex-start; }
+.proscons li i { margin-top:3px; font-size:11px; flex:none; }
+.proscons li.pos i { color:var(--up); } .proscons li.neg i { color:var(--down); } .proscons li.muted { color:var(--ink-3); }
+.dec-foot { margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:11.5px; color:var(--ink-3); }
+@media (max-width:560px){ .proscons { grid-template-columns:1fr; gap:18px; } .dims { grid-template-columns:1fr 1fr; } }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -3186,6 +3207,120 @@ function summaryCards(a,k,f){
   return cards.map(c=>`<div class="sumcard"><div class="l">${c[0]}</div><div class="v ${c[2]||''}">${c[1]}</div></div>`).join('');
 }
 
+/* ── MOTOR DE DECISÃO: transforma indicadores em insights acionáveis ── */
+function dimRatings(a,k,f){
+  const dims=[];
+  if(k==='acoes'){
+    // Valuation
+    let vt='neu', vl='Justo';
+    if(typeof a.pl==='number'){
+      if(a.pl>0 && a.pl<8 && (a.pvp??99)<2.5){ vt='pos'; vl='Atrativo'; }
+      else if(a.pl>=25 || (a.pvp??0)>6){ vt='neg'; vl='Esticado'; }
+    }
+    dims.push({label:'Valuation', rating:vl, tone:vt});
+    // Dividendos
+    let dt='neu', dl='Moderado';
+    if(typeof a.dy==='number'){ if(a.dy>=8){dt='pos';dl='Alto';} else if(a.dy>=4){dt='pos';dl='Bom';} else if(a.dy===0){dt='neg';dl='Não paga';} }
+    dims.push({label:'Dividendos', rating:dl, tone:dt});
+    // Rentabilidade
+    let rt='neu', rl='Boa';
+    if(typeof a.roe==='number'){ if(a.roe>=18){rt='pos';rl='Alta';} else if(a.roe<8){rt='neg';rl='Baixa';} }
+    dims.push({label:'Rentabilidade', rating:rl, tone:rt});
+    // Solidez
+    let st='neu', sl='Equilibrada';
+    if(f && typeof f.dleb==='number'){ if(f.dleb<=0){st='pos';sl='Caixa líquido';} else if(f.dleb<=1){st='pos';sl='Sólida';} else if(f.dleb>3){st='neg';sl='Alavancada';} }
+    else if(typeof a.score==='number'){ st = a.score>=70?'pos':a.score<50?'neg':'neu'; sl = a.score>=70?'Sólida':a.score<50?'Frágil':'Ok'; }
+    dims.push({label:'Solidez', rating:sl, tone:st});
+  } else if(k==='fiis'){
+    let vt='neu', vl='Justo';
+    if(typeof a.pvp==='number'){ if(a.pvp<0.95){vt='pos';vl='Desconto';} else if(a.pvp>1.1){vt='neg';vl='Ágio';} }
+    dims.push({label:'Preço (P/VP)', rating:vl, tone:vt});
+    let dt='neu', dl='Moderado';
+    if(typeof a.dy==='number'){ if(a.dy>=11){dt='pos';dl='Alto';} else if(a.dy>=8){dt='pos';dl='Bom';} }
+    dims.push({label:'Rendimento', rating:dl, tone:dt});
+    const papel = /papel/i.test(a.seg)||/papel/i.test((f&&f.tipo)||'');
+    if(papel){ dims.push({label:'Risco crédito', rating: a.dy>13?'Mais agressivo':'Equilibrado', tone: a.dy>13?'neu':'pos'}); }
+    else { let ot='neu',ol='Ok'; if(typeof a.vac==='number'){ if(a.vac<=3){ot='pos';ol='Alta';} else if(a.vac>10){ot='neg';ol='Baixa';} } dims.push({label:'Ocupação', rating:ol, tone:ot}); }
+    let ct='neu', cl='Consistente';
+    if(typeof a.consist==='number'){ ct = a.consist>=0.88?'pos':a.consist<0.78?'neg':'neu'; cl = a.consist>=0.88?'Alta':a.consist<0.78?'Irregular':'Média'; }
+    dims.push({label:'Consistência', rating:cl, tone:ct});
+  }
+  return dims;
+}
+function assetInsights(a,k,f){
+  const pros=[], cons=[];
+  if(k==='acoes'){
+    if(typeof a.dy==='number'){
+      if(a.dy>=8) pros.push(`Dividend Yield de ${pc(a.dy,1)}% — bem acima da média da B3 (~6%): forte gerador de renda.`);
+      else if(a.dy>=4) pros.push(`Paga dividendos consistentes (DY ${pc(a.dy,1)}%), na faixa de boas pagadoras.`);
+      else if(a.dy>0 && a.dy<2) cons.push(`Dividend Yield baixo (${pc(a.dy,1)}%) — perfil de crescimento, não de renda.`);
+      else if(a.dy===0) cons.push(`Não distribui dividendos no momento — foco em reinvestir o lucro.`);
+    }
+    if(typeof a.pl==='number'){
+      if(a.pl>0 && a.pl<8) pros.push(`P/L de ${pc(a.pl,1)} — valuation atrativo: o preço equivale a ~${Math.round(a.pl)} anos de lucro.`);
+      else if(a.pl>=25) cons.push(`P/L de ${pc(a.pl,1)} — elevado: o preço já embute forte expectativa de crescimento.`);
+    }
+    if(typeof a.pvp==='number'){
+      if(a.pvp<1) pros.push(`Negocia a ${pc(a.pvp,2)}x o valor patrimonial — abaixo do patrimônio contábil.`);
+      else if(a.pvp>5) cons.push(`P/VP de ${pc(a.pvp,1)}x — prêmio alto sobre o patrimônio (exige crescimento para justificar).`);
+    }
+    if(typeof a.roe==='number'){
+      if(a.roe>=18) pros.push(`ROE de ${pc(a.roe,1)}% — rentabilidade alta sobre o capital dos acionistas.`);
+      else if(a.roe<8) cons.push(`ROE de ${pc(a.roe,1)}% — rentabilidade baixa frente ao mercado.`);
+    }
+    if(f){
+      if(typeof f.dleb==='number'){
+        if(f.dleb<=0) pros.push(`Caixa líquido (sem dívida líquida) — balanço robusto e resiliente a juros altos.`);
+        else if(f.dleb>3) cons.push(`Dívida líquida/EBITDA de ${pc(f.dleb,1)}x — alavancagem elevada, sensível à Selic.`);
+      }
+      if(typeof f.cagrL==='number' && f.cagrL>=15) pros.push(`Lucros cresceram ~${pc(f.cagrL,0)}% ao ano nos últimos 5 anos.`);
+    }
+  } else if(k==='fiis'){
+    if(typeof a.dy==='number'){
+      if(a.dy>=11) pros.push(`Dividend Yield de ${pc(a.dy,1)}% — bem acima da média de FIIs.`);
+      else if(a.dy>=8) pros.push(`Rendimento saudável para FIIs (DY ${pc(a.dy,1)}%).`);
+    }
+    if(typeof a.pvp==='number'){
+      if(a.pvp<0.95) pros.push(`Negocia com desconto: P/VP de ${pc(a.pvp,2)} (abaixo do valor patrimonial).`);
+      else if(a.pvp>1.1) cons.push(`P/VP de ${pc(a.pvp,2)} — ágio sobre o patrimônio, margem de segurança menor.`);
+    }
+    if(typeof a.vac==='number' && !/papel/i.test(a.seg)){
+      if(a.vac>10) cons.push(`Vacância de ${pc(a.vac,1)}% — elevada, pressiona a distribuição de renda.`);
+      else if(a.vac<=3) pros.push(`Vacância baixa (${pc(a.vac,1)}%) — imóveis bem ocupados, renda estável.`);
+    }
+    if(typeof a.div==='number') pros.push(`Último rendimento de ${brl(a.div)} por cota — pagamentos mensais.`);
+    if(typeof a.consist==='number' && a.consist<0.78) cons.push(`Histórico de distribuição menos regular — atenção à previsibilidade.`);
+  }
+  let verdict='Fundamentos detalhados em breve para este ativo.', tone='neu';
+  if(typeof a.score==='number'){
+    if(a.score>=80){ verdict='Ativo de alta qualidade pelos critérios do Score Lastro — fundamentos sólidos em vários pilares.'; tone='pos'; }
+    else if(a.score>=65){ verdict='Ativo sólido, com bons fundamentos e alguns pontos de atenção a observar.'; tone='pos'; }
+    else if(a.score>=50){ verdict='Qualidade razoável — pese os pontos de atenção antes de investir.'; tone='neu'; }
+    else { verdict='Score baixo — há fragilidades relevantes nos fundamentos; exige cautela.'; tone='neg'; }
+  }
+  return { verdict, tone, pros: pros.slice(0,4), cons: cons.slice(0,3) };
+}
+function decisionCard(a,k,f){
+  if(!ASSET_CLASS[k].score || typeof a.score!=='number') return '';
+  const ins = assetInsights(a,k,f), dims = dimRatings(a,k,f);
+  const icon = ins.tone==='pos'?'circle-check':ins.tone==='neg'?'circle-exclamation':'circle-info';
+  const dimHtml = dims.map(d=>`<div class="dim"><div class="dim-l">${d.label}</div><div class="dim-r tone-${d.tone}">${d.rating}</div></div>`).join('');
+  const pros = ins.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> ${t}</li>`).join('');
+  const cons = ins.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> ${t}</li>`).join('');
+  return `<div class="card card-pad decision">
+    <div class="dec-head">
+      <div class="dec-verdict"><i class="fa-solid fa-${icon} tone-${ins.tone}"></i> <span>${ins.verdict}</span></div>
+      <span class="chip ${scoreChip(a.score)}" style="white-space:nowrap"><i class="fa-solid fa-award" style="font-size:10px"></i> Score ${a.score}</span>
+    </div>
+    <div class="dims">${dimHtml}</div>
+    <div class="proscons">
+      <div class="pc-col"><div class="pc-t pos"><i class="fa-solid fa-thumbs-up"></i> Pontos fortes</div><ul>${pros||'<li class="muted">—</li>'}</ul></div>
+      <div class="pc-col"><div class="pc-t neg"><i class="fa-solid fa-circle-exclamation"></i> Pontos de atenção</div><ul>${cons||'<li class="muted">Sem alertas relevantes nos indicadores disponíveis.</li>'}</ul></div>
+    </div>
+    <div class="dec-foot"><i class="fa-solid fa-circle-info faint"></i> Resumo automático a partir dos fundamentos — não é recomendação de compra/venda.</div>
+  </div>`;
+}
+
 function viewAssetDetail(tk){
   const found=assetLookup(tk); if(!found) return '<div class="card card-pad">Ativo não encontrado.</div>';
   const {a,k}=found; const cls=ASSET_CLASS[k]; const f=FUND[tk];
@@ -3213,6 +3348,8 @@ function viewAssetDetail(tk){
   </div>
 
   <div class="sumgrid">${summaryCards(a,k,f)}</div>
+
+  ${decisionCard(a,k,f)}
 
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="ds-head">
