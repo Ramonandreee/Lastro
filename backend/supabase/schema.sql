@@ -42,3 +42,24 @@ create policy "leitura pública meta" on public.meta
 
 -- Limpeza opcional: remove notícias com mais de 30 dias (chame via cron se quiser)
 -- delete from public.news where published_at < now() - interval '30 days';
+
+-- ════════════════════════════════════════════════════════════
+-- Estado do usuário (sync de carteira/watchlist/plano na nuvem)
+-- Requer Supabase Auth (já habilitado por padrão).
+-- ════════════════════════════════════════════════════════════
+create table if not exists public.user_state (
+  user_id     uuid primary key references auth.users(id) on delete cascade,
+  data        jsonb not null default '{}'::jsonb,
+  updated_at  timestamptz default now()
+);
+alter table public.user_state enable row level security;
+
+-- Cada usuário só acessa a própria linha
+drop policy if exists "user_state select own" on public.user_state;
+create policy "user_state select own" on public.user_state for select using (auth.uid() = user_id);
+
+drop policy if exists "user_state insert own" on public.user_state;
+create policy "user_state insert own" on public.user_state for insert with check (auth.uid() = user_id);
+
+drop policy if exists "user_state update own" on public.user_state;
+create policy "user_state update own" on public.user_state for update using (auth.uid() = user_id) with check (auth.uid() = user_id);

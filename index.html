@@ -598,11 +598,11 @@ img, svg, canvas, video { max-width: 100%; }
       <button class="theme-toggle" onclick="toggleTheme()">
         <i class="fa-solid fa-moon" id="themeIcon"></i><span id="themeLabel">Modo escuro</span>
       </button>
-      <div class="user-chip" onclick="goPricing()" style="cursor:pointer">
-        <div class="avatar">R</div>
+      <div class="user-chip" onclick="accountClick()" style="cursor:pointer">
+        <div class="avatar">+</div>
         <div class="user-meta">
-          <div class="nm">Ramon</div>
-          <div class="pl">Plano Gratuito</div>
+          <div class="nm">Entrar ou criar conta</div>
+          <div class="pl">Sincronize seus dados</div>
         </div>
         <i class="fa-solid fa-chevron-right" style="margin-left:auto;color:var(--ink-4);font-size:11px"></i>
       </div>
@@ -667,6 +667,14 @@ img, svg, canvas, video { max-width: 100%; }
   </div>
 </div>
 
+<!-- ════════ CONTA / AUTENTICAÇÃO ════════ -->
+<div class="modal-scrim" id="authModal" onclick="if(event.target===this)closeAuth()">
+  <div class="modal-card" role="dialog" aria-label="Conta">
+    <div class="modal-head"><span id="authTitle">Entrar na Lastro</span><button class="drawer-close" onclick="closeAuth()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body" id="authBody"></div>
+  </div>
+</div>
+
 <!-- ════════ ONBOARDING ════════ -->
 <div class="modal-scrim" id="obModal">
   <div class="modal-card ob-card" role="dialog" aria-label="Bem-vindo ao Lastro">
@@ -681,8 +689,8 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="ob-feat"><div class="of-ic" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-wallet"></i></div><div><div class="of-t">Carteira e Watchlist</div><div class="of-s">Acompanhe patrimônio, renda e os ativos que você segue.</div></div></div>
     </div>
     <div class="ob-foot">
-      <button class="btn btn-premium" style="width:100%;justify-content:center" onclick="closeOnboarding();goPricing()"><i class="fa-solid fa-crown"></i> Conhecer o Premium</button>
-      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:9px" onclick="closeOnboarding()">Começar no plano Gratuito</button>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="closeOnboarding();openAuth('signup')"><i class="fa-solid fa-user-plus"></i> Criar conta grátis</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:9px" onclick="closeOnboarding()">Explorar sem conta</button>
     </div>
   </div>
 </div>
@@ -1387,6 +1395,18 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .proscons li.pos i { color:var(--up); } .proscons li.neg i { color:var(--down); } .proscons li.muted { color:var(--ink-3); }
 .dec-foot { margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:11.5px; color:var(--ink-3); }
 @media (max-width:560px){ .proscons { grid-template-columns:1fr; gap:18px; } .dims { grid-template-columns:1fr 1fr; } }
+.f-row[title] { cursor:help; }
+.frq { font-size:10px; color:var(--ink-4); }
+/* teaser premium (preview de valor) */
+.premium-teaser { position:relative; overflow:hidden; min-height:170px; }
+.pt-blur { filter:blur(5px); opacity:.45; pointer-events:none; user-select:none; }
+.pt-lock { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:22px; background:linear-gradient(180deg, color-mix(in srgb,var(--surface) 30%,transparent), var(--surface) 72%); }
+.pt-lock .pw-ic { width:50px; height:50px; font-size:19px; margin-bottom:12px; }
+.pt-lock .pw-t { font-size:15.5px; } .pt-lock .pw-s { margin:7px 0 16px; font-size:12.5px; }
+/* abas de autenticação */
+.auth-tabs { display:flex; gap:4px; background:var(--surface-3); padding:4px; border-radius:var(--r-sm); margin-bottom:6px; }
+.auth-tabs button { flex:1; padding:8px; border-radius:7px; font-size:13px; font-weight:500; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
+.auth-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -1514,7 +1534,7 @@ function loadPortfolio(){
   try{ const s=JSON.parse(localStorage.getItem('lastro_carteira')); if(Array.isArray(s)) return s; }catch(e){}
   return CARTEIRA_SEED.slice();
 }
-function savePortfolio(){ try{ localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} }
+function savePortfolio(){ try{ localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} if(typeof saveCloudState==='function') saveCloudState(); }
 function addPosition(tk, cotas, pm){
   tk=String(tk||'').toUpperCase().trim(); cotas=+cotas; pm=+pm;
   if(!tk || !assetLookup(tk)) return { ok:false, msg:'Ticker não encontrado' };
@@ -1780,7 +1800,7 @@ let currentView = 'painel';
 const PLAN_LIMITS = { carteira: 6, watchlist: 8, comparador: 2, aiDay: 5 };
 function getPlan(){ return localStorage.getItem('lastro_plan')==='premium' ? 'premium' : 'free'; }
 function isPremium(){ return getPlan()==='premium'; }
-function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); }
+function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
 function refreshPlanUI(){
   const pro = isPremium();
   document.body.classList.toggle('is-premium', pro);
@@ -1817,6 +1837,121 @@ function subscribePremium(){
   goPricing();
 }
 function downgradeFree(){ setPlan('free'); toast('Plano alterado para Gratuito'); goPricing(); }
+
+/* ══════════════════════════════════════════════════════════
+   AUTENTICAÇÃO (Supabase Auth) + sync na nuvem (best-effort)
+   ══════════════════════════════════════════════════════════ */
+function _sb(){ return window.LASTRO_CONFIG || {}; }
+function authHeaders(){ const c=_sb(); return { apikey:c.SUPABASE_ANON_KEY, 'Content-Type':'application/json' }; }
+function getSession(){ try{ return JSON.parse(localStorage.getItem('lastro_session')||'null'); }catch(e){ return null; } }
+function currentUser(){ const s=getSession(); return s&&s.user ? s.user : null; }
+function isAuthed(){ return !!currentUser(); }
+function saveSession(s){ localStorage.setItem('lastro_session', JSON.stringify(s)); updateAuthUI(); }
+function clearSession(){ localStorage.removeItem('lastro_session'); updateAuthUI(); }
+
+async function authSignup(email, pass){
+  const c=_sb(); if(!c.SUPABASE_URL) return {error:'Backend não configurado'};
+  try{
+    const r=await fetch(`${c.SUPABASE_URL}/auth/v1/signup`, {method:'POST', headers:authHeaders(), body:JSON.stringify({email, password:pass})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok) return {error: d.msg||d.error_description||d.error||'Falha no cadastro'};
+    if(d.access_token){ saveSession({access_token:d.access_token, refresh_token:d.refresh_token, user:{id:d.user.id, email:d.user.email}}); await saveCloudState(); return {ok:true}; }
+    return {ok:true, confirm:true, email};
+  }catch(e){ return {error:'Sem conexão com o servidor'}; }
+}
+async function authLogin(email, pass){
+  const c=_sb(); if(!c.SUPABASE_URL) return {error:'Backend não configurado'};
+  try{
+    const r=await fetch(`${c.SUPABASE_URL}/auth/v1/token?grant_type=password`, {method:'POST', headers:authHeaders(), body:JSON.stringify({email, password:pass})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok) return {error: d.error_description||d.msg||'E-mail ou senha inválidos'};
+    saveSession({access_token:d.access_token, refresh_token:d.refresh_token, user:{id:d.user.id, email:d.user.email}});
+    await loadCloudState();
+    return {ok:true};
+  }catch(e){ return {error:'Sem conexão com o servidor'}; }
+}
+function authLogout(){
+  const s=getSession(), c=_sb();
+  if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
+  clearSession(); toast('Você saiu da conta'); closeAuth();
+}
+/* sync nuvem: tabela user_state (user_id pk, data jsonb). Falha graciosa p/ localStorage. */
+async function loadCloudState(){
+  const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return;
+  try{
+    const r=await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?select=data&user_id=eq.${s.user.id}`, {headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`}});
+    if(!r.ok) return; const rows=await r.json();
+    const d = rows[0] && rows[0].data;
+    if(d){
+      if(Array.isArray(d.carteira)){ CARTEIRA=d.carteira; savePortfolio(); }
+      if(Array.isArray(d.watch)) localStorage.setItem('lastro_watch', JSON.stringify(d.watch));
+      if(d.plan) localStorage.setItem('lastro_plan', d.plan);
+      refreshPlanUI();
+      if(['carteira','watchlist'].includes(currentView)) render(currentView);
+    } else { await saveCloudState(); } // primeira vez: envia o estado local
+  }catch(e){}
+}
+let _cloudT;
+function saveCloudState(){
+  const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
+  clearTimeout(_cloudT);
+  return new Promise(res=>{ _cloudT=setTimeout(async()=>{
+    const data={ carteira:CARTEIRA, watch:watchlist(), plan:getPlan() };
+    try{ await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data, updated_at:new Date().toISOString()})}); }catch(e){}
+    res();
+  }, 700); });
+}
+function updateAuthUI(){
+  const u=currentUser();
+  const av=document.querySelector('.user-chip .avatar'), nm=document.querySelector('.user-chip .nm'), pl=document.querySelector('.user-chip .pl');
+  if(av) av.textContent = u ? (u.email[0]||'?').toUpperCase() : '+';
+  if(nm) nm.textContent = u ? u.email.split('@')[0] : 'Entrar ou criar conta';
+  if(pl) pl.textContent = u ? (isPremium()?'Plano Premium':'Plano Gratuito') : 'Sincronize seus dados';
+}
+function openAuth(mode){ renderAuth(mode||'login'); $('#authModal').classList.add('open'); }
+function closeAuth(){ $('#authModal').classList.remove('open'); }
+function accountClick(){ openAuth(); }
+function renderAuth(mode){
+  const body=$('#authBody'), u=currentUser();
+  if(u){
+    $('#authTitle').textContent='Sua conta';
+    body.innerHTML = `<div style="text-align:center;padding:4px 0 6px">
+        <div class="avatar" style="width:56px;height:56px;font-size:21px;margin:0 auto 12px">${(u.email[0]||'?').toUpperCase()}</div>
+        <div style="font-weight:600">${esc(u.email)}</div>
+        <div style="font-size:12.5px;color:var(--ink-3);margin-top:4px">${isPremium()?'Plano Premium 👑':'Plano Gratuito'} · <i class="fa-solid fa-cloud" style="font-size:11px"></i> carteira sincronizada</div>
+      </div>
+      ${isPremium()?'':'<button class="btn btn-premium" style="width:100%;justify-content:center;margin-bottom:9px" onclick="closeAuth();goPricing()"><i class="fa-solid fa-crown"></i> Conhecer o Premium</button>'}
+      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="authLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>`;
+    return;
+  }
+  $('#authTitle').textContent = mode==='signup'?'Criar conta grátis':'Entrar na Lastro';
+  body.innerHTML = `
+    <div class="auth-tabs"><button class="${mode==='login'?'on':''}" onclick="renderAuth('login')">Entrar</button><button class="${mode==='signup'?'on':''}" onclick="renderAuth('signup')">Criar conta</button></div>
+    <label class="fld"><span>E-mail</span><input id="auEmail" type="email" inputmode="email" placeholder="voce@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('#auPass').focus()"></label>
+    <label class="fld"><span>Senha</span><input id="auPass" type="password" placeholder="mínimo 6 caracteres" autocomplete="${mode==='signup'?'new-password':'current-password'}" onkeydown="if(event.key==='Enter')authSubmit('${mode}')"></label>
+    <div id="auErr" class="fld-err"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="authSubmit('${mode}')">${mode==='signup'?'Criar conta grátis':'Entrar'}</button>
+    <div style="font-size:11.5px;color:var(--ink-3);text-align:center;margin-top:14px;line-height:1.5"><i class="fa-solid fa-lock" style="font-size:10px"></i> Seus dados ficam protegidos. Sincronize carteira e watchlist entre dispositivos.</div>`;
+  setTimeout(()=>{ const e=$('#auEmail'); e&&e.focus(); }, 60);
+}
+async function authSubmit(mode){
+  const email=($('#auEmail').value||'').trim(), pass=$('#auPass').value||'', err=$('#auErr');
+  if(!/.+@.+\..+/.test(email)){ err.textContent='Informe um e-mail válido.'; return; }
+  if(pass.length<6){ err.textContent='A senha precisa de ao menos 6 caracteres.'; return; }
+  err.innerHTML='<span class="faint">Processando…</span>';
+  const r = mode==='signup' ? await authSignup(email,pass) : await authLogin(email,pass);
+  if(r.error){ err.textContent=r.error; return; }
+  if(r.confirm){
+    $('#authBody').innerHTML = `<div style="text-align:center;padding:14px 6px">
+      <div class="pw-ic" style="margin:0 auto 14px"><i class="fa-solid fa-envelope-circle-check"></i></div>
+      <div style="font-weight:600;font-size:15px">Confirme seu e-mail</div>
+      <div style="font-size:13px;color:var(--ink-2);margin-top:8px;line-height:1.6">Enviamos um link de confirmação para <strong>${esc(email)}</strong>. Após confirmar, faça login.</div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:18px" onclick="renderAuth('login')">Voltar ao login</button></div>`;
+    return;
+  }
+  closeAuth(); toast(mode==='signup'?'Conta criada 🎉':'Bem-vindo de volta!');
+  if(['carteira','watchlist'].includes(currentView)) render(currentView);
+}
 
 /* onboarding (primeiro acesso) */
 function maybeOnboard(){
@@ -2890,9 +3025,53 @@ function askAICart(){
   const inp=$('#cartAI'), out=$('#diagBody'); const msg=inp.value.trim(); if(!msg){inp.focus();return;} inp.value='';
   callAI(msg, out);
 }
-function diagnose(){
-  callAI('Faça um diagnóstico curto da minha carteira: pontos fortes, um risco e uma sugestão. Considere concentração e mix papel/tijolo.', $('#diagBody'));
+/* diagnóstico determinístico da carteira (instantâneo, gratuito) */
+function portfolioInsights(){
+  const p = portfolioStats(); const n = CARTEIRA.length;
+  const pos = CARTEIRA.map(c=>{ const f=assetLookup(c.tk); return f?{tk:c.tk, k:f.k, a:f.a, w:posWeight(c)}:null; }).filter(Boolean);
+  const pros=[], cons=[];
+  if(!pos.length) return { pros, cons, summary:'Adicione posições para ver o diagnóstico.' };
+  // concentração
+  const topp = pos.slice().sort((x,y)=>y.w-x.w)[0];
+  if(topp.w>30) cons.push(`Concentração alta: <strong>${topp.tk}</strong> é ${pc(topp.w,0)}% da carteira. Reduzir abaixo de 25% diminui o risco.`);
+  else pros.push(`Boa distribuição: nenhuma posição passa de ${pc(topp.w,0)}% do total.`);
+  // nº de ativos
+  if(n<5) cons.push(`Apenas ${n} ativo${n>1?'s':''} — pouca diversificação. O ideal é 8–15 para diluir risco específico.`);
+  else pros.push(`${n} ativos na carteira — diversificação adequada.`);
+  // mix de classes
+  const byK={}; pos.forEach(x=> byK[x.k]=(byK[x.k]||0)+x.w);
+  const classes=Object.keys(byK);
+  if(classes.length===1) cons.push(`Carteira 100% em <strong>${ASSET_CLASS[classes[0]].label}s</strong> — diversificar entre classes (ações, FIIs…) reduz a volatilidade.`);
+  else pros.push(`Exposição a ${classes.length} classes de ativos (${classes.map(k=>ASSET_CLASS[k].label).join(', ')}).`);
+  // FIIs: papel x tijolo
+  const fiis = pos.filter(x=>x.k==='fiis');
+  if(fiis.length>=3){
+    const papelW = fiis.filter(x=>/papel/i.test(x.a.seg)).reduce((s,x)=>s+x.w,0);
+    const totF = fiis.reduce((s,x)=>s+x.w,0);
+    const papelPct = totF? papelW/totF*100 : 0;
+    if(papelPct>70) cons.push(`Seus FIIs são majoritariamente de <strong>papel</strong> (${pc(papelPct,0)}%) — sensíveis à Selic/crédito; equilibre com tijolo.`);
+    else if(papelPct<20) pros.push(`Bom equilíbrio entre FIIs de papel e tijolo.`);
+  }
+  // renda
+  if(p.dyMed>=8) pros.push(`Renda passiva robusta: DY médio de <strong>${pc(p.dyMed,1)}%</strong> ao ano.`);
+  // resultado
+  const summary = p.lucro>=0
+    ? `Patrimônio de <strong>${brl(p.atual)}</strong>, com ganho de ${pc(p.lucroP,1)}% desde o aporte e renda de ${brl(p.renda)}/mês.`
+    : `Patrimônio de <strong>${brl(p.atual)}</strong> (${pc(p.lucroP,1)}% desde o aporte). Renda de ${brl(p.renda)}/mês ajuda a compor o retorno.`;
+  return { pros:pros.slice(0,3), cons:cons.slice(0,3), summary };
 }
+function renderDiag(){
+  const el=$('#diagBody'); if(!el) return;
+  const d = portfolioInsights();
+  const pros = d.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> ${t}</li>`).join('');
+  const cons = d.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> ${t}</li>`).join('');
+  el.innerHTML = `<div style="margin-bottom:14px">${d.summary}</div>
+    <div class="proscons">
+      <div class="pc-col"><div class="pc-t pos"><i class="fa-solid fa-thumbs-up"></i> Pontos fortes</div><ul>${pros||'<li class="muted">—</li>'}</ul></div>
+      <div class="pc-col"><div class="pc-t neg"><i class="fa-solid fa-circle-exclamation"></i> Atenção</div><ul>${cons||'<li class="muted">Sem alertas relevantes.</li>'}</ul></div>
+    </div>`;
+}
+function diagnose(){ renderDiag(); }
 
 /* ══════════════════════════════════════════════════════════
    SEARCH & MISC
@@ -2975,6 +3154,7 @@ function toggleWatch(tk){
   if(i<0 && !isPremium() && w.length >= PLAN_LIMITS.watchlist){ toast(`Watchlist do plano Gratuito limitada a ${PLAN_LIMITS.watchlist} ativos`); goPricing(); return; }
   if(i>=0) w.splice(i,1); else w.push(tk);
   localStorage.setItem('lastro_watch', JSON.stringify(w));
+  if(typeof saveCloudState==='function') saveCloudState();
   toast(i>=0?`${tk} removido da watchlist`:`${tk} adicionado à watchlist ★`);
   const b=document.getElementById('watchBtn'); if(b) b.innerHTML = watchBtnInner(tk);
 }
@@ -2992,7 +3172,22 @@ function hexToRgba(hex,a){ const h=String(hex).replace('#','').trim(); const n=h
 /* formatação dos indicadores */
 const nz = v => (v===null||v===undefined||v==='');
 function num(v, suf='', dec=2){ return nz(v)?'—':(typeof v==='number'? pc(v,dec):v)+suf; }
-function fRow(label, val, cls){ return `<div class="f-row"><span class="f-l">${label}</span><span class="f-v ${cls||''}">${nz(val)?'—':val}</span></div>`; }
+function fRow(label, val, cls, tip){ return `<div class="f-row"${tip?` title="${esc(tip)}"`:''}><span class="f-l">${label}${tip?' <i class="fa-regular fa-circle-question frq"></i>':''}</span><span class="f-v ${cls||''}">${nz(val)?'—':val}</span></div>`; }
+// interpreta um indicador → { cls, tip } (cor + explicação curta)
+function interp(metric, v){
+  if(typeof v!=='number') return {};
+  switch(metric){
+    case 'pl':  return v<=0?{cls:'down',tip:'Lucro negativo nos últimos 12 meses.'}: v<8?{cls:'up',tip:'Abaixo de 8 — valuation historicamente atrativo.'}: v>25?{cls:'down',tip:'Acima de 25 — caro ou com forte expectativa de crescimento.'}:{tip:'Na faixa considerada justa (8–25).'};
+    case 'pvp': return v<1?{cls:'up',tip:'Abaixo de 1 — negocia abaixo do valor patrimonial.'}: v>4?{cls:'down',tip:'Prêmio elevado sobre o patrimônio.'}:{tip:'Faixa usual de mercado.'};
+    case 'dy':  return v>=8?{cls:'up',tip:'Acima da média do mercado (~6%).'}: v>=4?{cls:'up',tip:'Boa faixa de dividendos.'}: v===0?{cls:'',tip:'Não distribui dividendos no momento.'}:{tip:'Dividendos moderados.'};
+    case 'roe': return v>=18?{cls:'up',tip:'Rentabilidade alta sobre o capital.'}: v<8?{cls:'down',tip:'Rentabilidade baixa.'}:{tip:'Rentabilidade adequada.'};
+    case 'dleb':return v<=0?{cls:'up',tip:'Caixa líquido — sem dívida líquida.'}: v>3?{cls:'down',tip:'Alavancagem elevada — sensível a juros.'}:{tip:'Endividamento sob controle.'};
+    case 'pvpFii': return v<0.95?{cls:'up',tip:'Desconto sobre o valor patrimonial.'}: v>1.1?{cls:'down',tip:'Ágio sobre o patrimônio.'}:{tip:'Próximo do valor patrimonial.'};
+    case 'dyFii':  return v>=11?{cls:'up',tip:'Bem acima da média de FIIs.'}: v>=8?{cls:'up',tip:'Rendimento saudável para FIIs.'}:{tip:'Rendimento moderado.'};
+    case 'vac': return v<=3?{cls:'up',tip:'Vacância baixa — imóveis bem ocupados.'}: v>10?{cls:'down',tip:'Vacância elevada — pressiona a renda.'}:{tip:'Vacância sob controle.'};
+  }
+  return {};
+}
 
 /* ── gráfico de cotação ── */
 const ASSET_RANGES = { '1M':22, '3M':66, '6M':132, '1A':252, '5A':260 };
@@ -3059,17 +3254,17 @@ function fundamentalsHTML(a,k,f){
       <div class="card card-pad">
         <div class="fgroup-title">Valuation</div>
         <div class="fgroup">
-          ${fRow('P/L', num(a.pl,'x'))}${fRow('P/VP', num(a.pvp,'x'))}
+          ${(()=>{const i=interp('pl',a.pl);return fRow('P/L', num(a.pl,'x'), i.cls, i.tip);})()}${(()=>{const i=interp('pvp',a.pvp);return fRow('P/VP', num(a.pvp,'x'), i.cls, i.tip);})()}
           ${fRow('P/EBIT', num(f&&f.pebit,'x'))}${fRow('EV/EBIT', num(f&&f.evebit,'x'))}
           ${fRow('EV/EBITDA', num(f&&f.evebitda,'x'))}${fRow('P/Receita (PSR)', num(f&&f.psr,'x'))}
           ${fRow('P/Ativo', num(f&&f.pativo,'x'))}${fRow('VPA', brl(vpa))}
-          ${fRow('LPA', brl(lpa))}${fRow('Dividend Yield', num(a.dy,'%',1),'up')}
+          ${fRow('LPA', brl(lpa))}${(()=>{const i=interp('dy',a.dy);return fRow('Dividend Yield', num(a.dy,'%',1), i.cls||'up', i.tip);})()}
         </div>
       </div>
       <div class="card card-pad">
         <div class="fgroup-title">Rentabilidade</div>
         <div class="fgroup">
-          ${fRow('ROE', num(a.roe,'%',1))}${fRow('ROA', num(f&&f.roa,'%',1))}
+          ${(()=>{const i=interp('roe',a.roe);return fRow('ROE', num(a.roe,'%',1), i.cls, i.tip);})()}${fRow('ROA', num(f&&f.roa,'%',1))}
           ${fRow('ROIC', num(f&&f.roic,'%',1))}${fRow('Margem Bruta', num(f&&f.mb,'%',1))}
           ${fRow('Margem EBIT', num(f&&f.mebit,'%',1))}${fRow('Margem Líquida', num(a.mgl,'%',1))}
           ${fRow('Giro do Ativo', num(f&&f.giro,'',2))}
@@ -3078,7 +3273,7 @@ function fundamentalsHTML(a,k,f){
       <div class="card card-pad">
         <div class="fgroup-title">Endividamento</div>
         <div class="fgroup">
-          ${fRow('Dív. Líq./EBITDA', num(f&&f.dleb,'x'))}${fRow('Dív. Líq./Patrim.', num(f&&f.dlpl,'x'))}
+          ${(()=>{const i=interp('dleb',f&&f.dleb);return fRow('Dív. Líq./EBITDA', num(f&&f.dleb,'x'), i.cls, i.tip);})()}${fRow('Dív. Líq./Patrim.', num(f&&f.dlpl,'x'))}
           ${fRow('Liquidez Corrente', num(f&&f.lc,'x'))}${fRow('Patrim./Ativos', num(f&&f.pat,'x'))}
         </div>
       </div>
@@ -3095,8 +3290,8 @@ function fundamentalsHTML(a,k,f){
     return `<div class="card card-pad">
       <div class="fgroup-title">Indicadores do fundo</div>
       <div class="fgroup">
-        ${fRow('P/VP', num(a.pvp,'x'))}${fRow('Dividend Yield', num(a.dy,'%',1),'up')}
-        ${fRow('Último rendimento', brl(a.div),'up')}${fRow('Vacância', num(a.vac,'%',1), a.vac<5?'up':'down')}
+        ${(()=>{const i=interp('pvpFii',a.pvp);return fRow('P/VP', num(a.pvp,'x'), i.cls, i.tip);})()}${(()=>{const i=interp('dyFii',a.dy);return fRow('Dividend Yield', num(a.dy,'%',1), i.cls||'up', i.tip);})()}
+        ${fRow('Último rendimento', brl(a.div),'up')}${(()=>{const i=interp('vac',a.vac);return fRow('Vacância', num(a.vac,'%',1), i.cls, i.tip);})()}
         ${fRow('Liquidez diária', f&&f.liqf)}${fRow('Patrimônio líquido', f&&f.plf)}
         ${fRow('Valor de mercado', f&&f.mkt)}${fRow('Nº de cotistas', f&&f.cotistas)}
         ${fRow('Nº de cotas', f&&f.cotas)}${fRow('Taxa de adm.', f&&f.txadm)}
@@ -3321,6 +3516,31 @@ function decisionCard(a,k,f){
   </div>`;
 }
 
+function premiumCard(a,k){
+  if(!ASSET_CLASS[k].score || typeof a.score!=='number') return '';
+  if(isPremium()){
+    return `<div class="card card-pad" style="margin-bottom:16px">
+      <div class="ds-title">Análise aprofundada · IA <span class="pro-tag">PRO</span></div>
+      <div id="aiDeep" style="font-size:13.5px;color:var(--ink-2);line-height:1.7"><span class="faint">Gere uma leitura contextual deste ativo com a Inteligência Lastro.</span></div>
+      <button class="btn btn-primary" style="margin-top:14px" onclick="deepAnalyze('${a.tk}')"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar análise</button>
+    </div>`;
+  }
+  return `<div class="card card-pad premium-teaser" style="margin-bottom:16px">
+    <div class="pt-blur">
+      <div class="ds-title">Análise aprofundada · IA</div>
+      <p style="font-size:13.5px;line-height:1.7;color:var(--ink-2);margin-top:6px">Com base nos fundamentos, ${a.tk} apresenta preço-teto estimado de R$ ••,•• e projeção de proventos de R$ ••• nos próximos 12 meses. No comparativo setorial, figura entre os ••• do segmento em qualidade, com gatilhos de valorização em ••••••.</p>
+      <p style="font-size:13.5px;line-height:1.7;color:var(--ink-2)">Riscos monitorados: •••••••••• · Sensibilidade à Selic: ••••• · Margem de segurança: ••••.</p>
+    </div>
+    <div class="pt-lock">
+      <div class="pw-ic"><i class="fa-solid fa-crown"></i></div>
+      <div class="pw-t">Análise aprofundada é Premium</div>
+      <div class="pw-s">Preço-teto, projeção de proventos, comparativo setorial e leitura por IA deste ativo.</div>
+      <button class="btn btn-premium" onclick="goPricing()"><i class="fa-solid fa-bolt"></i> Desbloquear</button>
+    </div>
+  </div>`;
+}
+function deepAnalyze(tk){ const f=assetLookup(tk); if(!f) return; callAI(`Analise ${tk} (${f.a.nm}) para um investidor pessoa física: está cara ou barata, pontos fortes, principais riscos e perspectiva. Objetivo, 2 parágrafos curtos.`, $('#aiDeep')); }
+
 function viewAssetDetail(tk){
   const found=assetLookup(tk); if(!found) return '<div class="card card-pad">Ativo não encontrado.</div>';
   const {a,k}=found; const cls=ASSET_CLASS[k]; const f=FUND[tk];
@@ -3350,6 +3570,8 @@ function viewAssetDetail(tk){
   <div class="sumgrid">${summaryCards(a,k,f)}</div>
 
   ${decisionCard(a,k,f)}
+
+  ${premiumCard(a,k)}
 
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="ds-head">
@@ -3421,7 +3643,7 @@ function toggleTheme(){
 
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
-  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); }
+  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); closeAuth(); }
 });
 
 /* ══════════════════════════════════════════════════════════
@@ -3472,16 +3694,29 @@ function screenSymbols(){
 }
 
 /* aplica o retorno do proxy {results, crypto} nos arrays em memória */
+// guarda anti-outlier: ignora cotação com erro de ordem de grandeza (ex.: split/feed
+// errado que faz um ativo de ~R$98 vir como R$9,65). Mantém o preço base nesse caso.
+function sanePrice(a, price){
+  if(typeof price!=='number' || !isFinite(price) || price<=0) return false;
+  if(a._base==null) a._base = a.px;           // captura o preço de referência (semente)
+  const base = a._base;
+  if(base>0 && (price < base*0.2 || price > base*5)){
+    console.warn(`[Lastro] cotação ignorada (outlier): ${a.tk} ${price} vs base ${base}`);
+    return false;
+  }
+  return true;
+}
 function applyQuotes(data){
   let updated = 0;
   const idx = liveIndex();
   (data.results||[]).forEach(q => {
     const arr = idx.get(q.symbol); if(!arr) return;
-    arr.forEach(a => { a.px = q.price; if(typeof q.change==='number') a.var = q.change; a.live = true; });
+    arr.forEach(a => { if(!sanePrice(a, q.price)) return; a.px = q.price; if(typeof q.change==='number') a.var = q.change; a.live = true; });
     updated++;
   });
   (data.crypto||[]).forEach(q => {
     const c = CRIPTO.find(x=> x.tk === q.symbol); if(!c) return;
+    if(!sanePrice(c, q.price)) return;
     c.px = q.price; if(typeof q.change==='number') c.v24 = q.change; c.live = true; updated++;
   });
   return updated;
@@ -3583,6 +3818,8 @@ async function loadUniverse(){
 
 /* INIT */
 refreshPlanUI();
+updateAuthUI();
+if(isAuthed()) loadCloudState();   // retoma sessão e sincroniza
 render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
 animateContent();
 loadUniverse();
