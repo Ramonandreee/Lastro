@@ -1397,6 +1397,15 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 @media (max-width:560px){ .proscons { grid-template-columns:1fr; gap:18px; } .dims { grid-template-columns:1fr 1fr; } }
 .f-row[title] { cursor:help; }
 .frq { font-size:10px; color:var(--ink-4); }
+/* preço justo / margem de segurança */
+.fairvalue { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px; margin-bottom:18px; }
+.fv-head { font-size:13px; color:var(--ink-2); line-height:1.5; margin-bottom:12px; }
+.fv-head strong { font-family:var(--mono); color:var(--ink); }
+.fv-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+.fv-cell { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-sm); padding:12px 14px; cursor:help; }
+.fv-l { font-size:11px; color:var(--ink-3); margin-bottom:6px; }
+.fv-v { font-family:var(--mono); font-size:19px; font-weight:600; }
+.fv-tag { font-size:12px; font-weight:600; font-family:var(--mono); margin-top:5px; display:flex; align-items:center; gap:6px; }
 /* teaser premium (preview de valor) */
 .premium-teaser { position:relative; overflow:hidden; min-height:170px; }
 .pt-blur { filter:blur(5px); opacity:.45; pointer-events:none; user-select:none; }
@@ -3495,6 +3504,29 @@ function assetInsights(a,k,f){
   }
   return { verdict, tone, pros: pros.slice(0,4), cons: cons.slice(0,3) };
 }
+function fairValueHTML(a,k){
+  if(typeof a.px!=='number' || a.px<=0) return '';
+  const items=[];
+  if(typeof a.dy==='number' && a.dy>0){
+    const target = k==='fiis'?8:6;
+    items.push({ label:`Preço-teto · Bazin ${target}%`, val:a.px*(a.dy/100)/(target/100), hint:`Preço que entrega ${target}% de dividendos ao ano com o provento atual.` });
+  }
+  if(k==='acoes' && typeof a.pl==='number' && a.pl>0 && typeof a.pvp==='number' && a.pvp>0){
+    const lpa=a.px/a.pl, vpa=a.px/a.pvp;
+    if(lpa>0 && vpa>0) items.push({ label:'Preço justo · Graham', val:Math.sqrt(22.5*lpa*vpa), hint:'√(22,5 × LPA × VPA) — referência clássica de valor intrínseco.' });
+  }
+  if(!items.length) return '';
+  const cells = items.map(it=>{
+    const up=(it.val-a.px)/a.px*100, below=up>=0;
+    return `<div class="fv-cell" title="${esc(it.hint)}"><div class="fv-l">${it.label} <i class="fa-regular fa-circle-question frq"></i></div><div class="fv-v">${brl(it.val)}</div><div class="fv-tag ${below?'tone-pos':'tone-neg'}">${below?'<i class="fa-solid fa-arrow-trend-up"></i> '+pc(up,1)+'% de margem':'<i class="fa-solid fa-arrow-trend-down"></i> '+pc(Math.abs(up),1)+'% acima'}</div></div>`;
+  }).join('');
+  const best = items.reduce((b,it)=> it.val>b.val?it:b, items[0]);
+  const upBest=(best.val-a.px)/a.px*100;
+  const verdict = upBest>=15 ? `<span class="tone-pos">Negocia com boa margem de segurança</span> — abaixo do preço justo estimado.`
+               : upBest>=0 ? `Próximo do preço justo estimado.`
+               : `<span class="tone-neg">Acima do preço justo estimado</span> — margem de segurança reduzida.`;
+  return `<div class="fairvalue"><div class="fv-head"><i class="fa-solid fa-scale-balanced faint"></i> <span>Preço atual <strong>${fmtPx(a,k)}</strong> · ${verdict}</span></div><div class="fv-grid">${cells}</div></div>`;
+}
 function decisionCard(a,k,f){
   if(!ASSET_CLASS[k].score || typeof a.score!=='number') return '';
   const ins = assetInsights(a,k,f), dims = dimRatings(a,k,f);
@@ -3508,6 +3540,7 @@ function decisionCard(a,k,f){
       <span class="chip ${scoreChip(a.score)}" style="white-space:nowrap"><i class="fa-solid fa-award" style="font-size:10px"></i> Score ${a.score}</span>
     </div>
     <div class="dims">${dimHtml}</div>
+    ${fairValueHTML(a,k)}
     <div class="proscons">
       <div class="pc-col"><div class="pc-t pos"><i class="fa-solid fa-thumbs-up"></i> Pontos fortes</div><ul>${pros||'<li class="muted">—</li>'}</ul></div>
       <div class="pc-col"><div class="pc-t neg"><i class="fa-solid fa-circle-exclamation"></i> Pontos de atenção</div><ul>${cons||'<li class="muted">Sem alertas relevantes nos indicadores disponíveis.</li>'}</ul></div>
