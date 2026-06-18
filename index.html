@@ -1642,10 +1642,38 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .dleg-l { display:flex; align-items:center; gap:9px; color:var(--ink); min-width:0; }
 .dleg-l small { color:var(--ink-3); font-size:11.5px; }
 .dleg-v { font-family:var(--mono); font-weight:600; color:var(--ink); flex:none; }
+/* rótulo central do donut */
+.donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+.donut-center span { font-size:11px; color:var(--ink-3); }
+.donut-center b { font-family:var(--mono); font-size:15px; font-weight:600; color:var(--ink); margin-top:2px; }
+/* ── Checklist ── */
+.ckl-top { display:flex; align-items:center; gap:20px; }
+.ckl-ring { width:96px; height:96px; flex:none; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:conic-gradient(var(--rc) calc(var(--p,0)*1%), var(--surface-3) 0); position:relative; }
+.ckl-ring[data-st="pos"]{ --rc:var(--up); } .ckl-ring[data-st="warn"]{ --rc:var(--warn); } .ckl-ring[data-st="crit"]{ --rc:var(--down); }
+.ckl-ring::after { content:''; position:absolute; inset:9px; border-radius:50%; background:var(--surface); }
+.ckl-pct { position:relative; z-index:1; font-family:var(--mono); font-size:26px; font-weight:600; letter-spacing:-.02em; }
+.ckl-pct small { font-size:13px; color:var(--ink-3); }
+.ckl-lbl { position:relative; z-index:1; font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); }
+.ckl-sum { flex:1; min-width:0; }
+.ckl-vd { font-size:16px; font-weight:700; display:flex; align-items:center; gap:8px; letter-spacing:-.01em; }
+.ckl-vd.st-pos{ color:var(--up); } .ckl-vd.st-warn{ color:var(--warn); } .ckl-vd.st-crit{ color:var(--down); }
+.ckl-cnt { font-size:13px; color:var(--ink-2); margin:6px 0 12px; }
+.ckl-cnt b { color:var(--ink); font-weight:600; }
+.ckl-bar { height:8px; border-radius:6px; background:var(--surface-3); overflow:hidden; }
+.ckl-bar i { display:block; height:100%; border-radius:6px; background:linear-gradient(90deg,var(--down),var(--warn) 50%,var(--up)); transition:width .9s var(--ease-out); }
+.ckl-list { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.ckl-item { display:flex; align-items:flex-start; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:14px 16px; box-shadow:var(--sh-sm); transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
+.ckl-item:hover { transform:translateY(-2px); box-shadow:var(--sh); }
+.ckl-ic { width:30px; height:30px; flex:none; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; }
+.ckl-q { font-size:13.5px; font-weight:600; color:var(--ink); line-height:1.3; }
+.ckl-d { font-size:12px; color:var(--ink-3); margin-top:3px; font-family:var(--mono); }
 @media (max-width:640px){
   .atabs { top:64px; }
   .prov-stats { grid-template-columns:1fr; }
-  .donut-wrap { height:190px; }
+  .donut-wrap { height:200px; }
+  .ckl-list { grid-template-columns:1fr; }
+  .ckl-top { gap:16px; }
+  .ckl-ring { width:84px; height:84px; }
 }
 </style>
 
@@ -4148,13 +4176,15 @@ function deepAnalyze(tk){ const f=assetLookup(tk); if(!f) return; callAI(`Analis
 const ASSET_TAB_DEFS = {
   geral:       { label:'Visão Geral', ico:'fa-gauge-high' },
   indicadores: { label:'Indicadores', ico:'fa-table-cells-large' },
+  checklist:   { label:'Checklist',   ico:'fa-clipboard-check' },
   proventos:   { label:'Proventos',   ico:'fa-coins' },
   resultados:  { label:'Resultados',  ico:'fa-chart-column' },
+  carteira:    { label:'Carteira',    ico:'fa-building' },
   sobre:       { label:'Sobre',       ico:'fa-circle-info' },
 };
 function assetTabsFor(k){
-  if(k==='acoes') return ['geral','indicadores','proventos','resultados','sobre'];
-  if(k==='fiis')  return ['geral','indicadores','proventos','sobre'];
+  if(k==='acoes') return ['geral','indicadores','checklist','proventos','resultados','sobre'];
+  if(k==='fiis')  return ['geral','indicadores','checklist','proventos','carteira','sobre'];
   return ['geral','sobre'];
 }
 function assetTabsHTML(k){
@@ -4173,8 +4203,10 @@ function setAssetTab(t){
 function assetTabContent(tk,a,k,f){
   switch(assetTab){
     case 'indicadores': return tabIndicadores(tk,a,k,f);
+    case 'checklist':   return tabChecklist(tk,a,k,f);
     case 'proventos':   return tabProventos(tk,a,k,f);
     case 'resultados':  return tabResultados(tk,a,k,f);
+    case 'carteira':    return tabCarteiraFii(tk,a,k,f);
     case 'sobre':       return tabSobre(tk,a,k,f);
     default:            return tabGeral(tk,a,k,f);
   }
@@ -4282,6 +4314,7 @@ function receitasPorRegiao(tk){
 }
 function tabResultados(tk,a,k,f){
   const tipo=receitasPorTipo(tk), reg=receitasPorRegiao(tk);
+  const totalRec=receitaLucroSeries(tk).rec.slice(-1)[0];
   window._RECT=tipo; window._RECR=reg;
   return `
   <div class="card card-pad" style="margin-bottom:16px">
@@ -4292,13 +4325,100 @@ function tabResultados(tk,a,k,f){
   <div class="dt-grid">
     <div class="card card-pad">
       <div class="ds-title">Receita por tipo de negócio</div>
-      <div class="donut-wrap"><canvas id="recTipoChart"></canvas></div>
+      <div class="donut-wrap"><canvas id="recTipoChart"></canvas><div class="donut-center"><span>Receita</span><b>R$ ${totalRec} bi</b></div></div>
       <div class="donut-leg">${donutLegend(tipo)}</div>
     </div>
     <div class="card card-pad">
       <div class="ds-title">Receita por região</div>
-      <div class="donut-wrap"><canvas id="recRegiaoChart"></canvas></div>
+      <div class="donut-wrap"><canvas id="recRegiaoChart"></canvas><div class="donut-center"><span>Receita</span><b>R$ ${totalRec} bi</b></div></div>
       <div class="donut-leg">${donutLegend(reg)}</div>
+    </div>
+  </div>`;
+}
+
+/* ── Checklist (qualidade do ativo) ── */
+function checklistItems(a,k,f){
+  const it=[]; const num=v=>typeof v==='number'&&isFinite(v);
+  // up=true: maior melhor | up=false: menor melhor
+  const chk=(label,val,ok,warn,up,detail)=>{ if(!num(val)) return; let s; if(up){ s=val>=ok?'pass':val>=warn?'warn':'fail'; } else { s=val<=ok?'pass':val<=warn?'warn':'fail'; } it.push({label,status:s,detail,val}); };
+  if(k==='fiis'){
+    chk('Negocia com desconto patrimonial', a.pvp, 1.0, 1.12, false, `P/VP ${pc(a.pvp,2)} — ${a.pvp<1?'abaixo':'acima'} do valor patrimonial`);
+    chk('Rendimento atrativo', a.dy, 9, 7, true, `DY ${pc(a.dy,1)}% ao ano`);
+    chk('Vacância sob controle', a.vac, 5, 10, false, `Vacância de ${pc(a.vac,1)}%`);
+    chk('Boa liquidez', f&&f.liqf?parseLiq(f.liqf):(a.live?2:null), 1, .3, true, `Liquidez diária ${f&&f.liqf?f.liqf:'—'}`);
+    if(num(a.score)) chk('Score Lastro elevado', a.score, 70, 50, true, `Score ${a.score}/100`);
+  } else {
+    chk('Preço/Lucro razoável', a.pl, 15, 25, false, `P/L ${pc(a.pl,1)}x`);
+    chk('Negocia perto do valor patrimonial', a.pvp, 1.5, 3, false, `P/VP ${pc(a.pvp,2)}`);
+    chk('Empresa rentável (ROE)', a.roe, 15, 8, true, `ROE ${pc(a.roe,1)}%`);
+    const ev=indVal('evebitda',a); chk('Múltiplo EV/EBITDA saudável', ev, 8, 12, false, `EV/EBITDA ${num(ev)?pc(ev,1)+'x':'—'}`);
+    const ml=indVal('ml',a); chk('Margem líquida positiva', ml, 10, 0, true, `Margem líquida ${num(ml)?pc(ml,1)+'%':'—'}`);
+    const dleb=indVal('dleb',a); chk('Endividamento controlado', dleb, 2, 3.5, false, `Dívida líq./EBITDA ${num(dleb)?pc(dleb,1)+'x':'—'}`);
+    chk('Paga bons dividendos', a.dy, 5, 2, true, `DY ${pc(a.dy,1)}%`);
+    const cagr=indVal('cagrRec',a); chk('Receita em crescimento', cagr, 5, 0, true, `CAGR receita ${num(cagr)?pc(cagr,1)+'%':'—'}`);
+    if(num(a.score)) chk('Score Lastro elevado', a.score, 70, 50, true, `Score ${a.score}/100`);
+  }
+  return it;
+}
+function parseLiq(s){ const m=String(s).match(/([\d.,]+)\s*(mi|mil|bi)?/i); if(!m) return null; let v=parseFloat(m[1].replace(/\./g,'').replace(',','.')); const u=(m[2]||'').toLowerCase(); if(u==='bi')v*=1000; if(u==='mil')v/=1000; return v; }
+function tabChecklist(tk,a,k,f){
+  const items=checklistItems(a,k,f); const pass=items.filter(i=>i.status==='pass').length, warn=items.filter(i=>i.status==='warn').length;
+  const n=items.length||1; const pct=Math.round((pass+warn*0.5)/n*100);
+  const verdict = pct>=75?{t:'Alta qualidade',c:'pos',ico:'fa-circle-check'}: pct>=50?{t:'Qualidade média',c:'warn',ico:'fa-circle-exclamation'}:{t:'Requer cautela',c:'crit',ico:'fa-triangle-exclamation'};
+  const ic={pass:{i:'fa-check',c:'var(--up)',bg:'var(--up-l)'},warn:{i:'fa-minus',c:'var(--warn)',bg:'var(--warn-l)'},fail:{i:'fa-xmark',c:'var(--down)',bg:'var(--down-l)'}};
+  return `
+  <div class="card card-pad" style="margin-bottom:16px">
+    <div class="ckl-top">
+      <div class="ckl-ring" data-st="${verdict.c}" style="--p:${pct}"><div class="ckl-pct">${pct}<small>%</small></div><div class="ckl-lbl">qualidade</div></div>
+      <div class="ckl-sum">
+        <div class="ckl-vd st-${verdict.c}"><i class="fa-solid ${verdict.ico}"></i> ${verdict.t}</div>
+        <div class="ckl-cnt"><b>${pass}</b> de <b>${items.length}</b> critérios atendidos${warn?` · ${warn} em atenção`:''}</div>
+        <div class="ckl-bar"><i style="width:${pct}%"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="ckl-list">
+    ${items.map(i=>`<div class="ckl-item" data-st="${i.status}"><span class="ckl-ic" style="background:${ic[i.status].bg};color:${ic[i.status].c}"><i class="fa-solid ${ic[i.status].i}"></i></span><div class="ckl-body"><div class="ckl-q">${esc(i.label)}</div><div class="ckl-d">${esc(i.detail)}</div></div></div>`).join('')}
+  </div>
+  <div class="card card-pad" style="margin-top:16px;background:var(--surface-2)">
+    <div style="font-size:12.5px;color:var(--ink-2);line-height:1.65"><i class="fa-solid fa-lightbulb" style="color:var(--gold)"></i> O Checklist resume, em linguagem de decisão, se o ativo é <strong>barato, rentável, pouco endividado e bom pagador</strong> — transformando dezenas de indicadores numa leitura rápida de qualidade.</div>
+  </div>`;
+}
+
+/* ── Carteira do FII (composição) ── */
+function fiiCarteira(tk,a,f){
+  const r=rngF(seedFrom(tk+'cart'));
+  const tipoF = (f&&/papel|cri|recebí/i.test((f.tipo||'')+(f.sub||''))) ? 'papel' : (f&&/fof|fundos/i.test((f.tipo||'')))?'fof':'tijolo';
+  let comp;
+  if(tipoF==='papel') comp=[{n:'CRIs indexados ao IPCA',v:.45+r()*.1,c:'#4F7FE8'},{n:'CRIs indexados ao CDI',v:.3+r()*.1,c:'#E8607A'},{n:'Caixa / LFTs',v:.08+r()*.05,c:'#9B8BE8'},{n:'Outros',v:.05+r()*.04,c:'#E8B45A'}];
+  else if(tipoF==='fof') comp=[{n:'FIIs de tijolo',v:.4+r()*.1,c:'#E8607A'},{n:'FIIs de papel',v:.3+r()*.1,c:'#4F7FE8'},{n:'FIIs de desenvolvimento',v:.1+r()*.05,c:'#9B8BE8'},{n:'Caixa',v:.06+r()*.04,c:'#E8B45A'}];
+  else comp=[{n:'Logística',v:.35+r()*.15,c:'#E8607A'},{n:'Lajes corporativas',v:.25+r()*.1,c:'#4F7FE8'},{n:'Shoppings',v:.15+r()*.1,c:'#9B8BE8'},{n:'Renda urbana / outros',v:.1+r()*.05,c:'#E8B45A'}];
+  const sum=comp.reduce((s,x)=>s+x.v,0); comp.forEach(x=>x.v/=sum); comp.forEach(x=>x.p=(x.v*100).toFixed(2)+'%');
+  return {tipoF, comp};
+}
+function tabCarteiraFii(tk,a,k,f){
+  const c=fiiCarteira(tk,a,f); window._FIIC=c.comp;
+  const r=rngF(seedFrom(tk+'cm'));
+  const tijolo=c.tipoF==='tijolo';
+  const stats = tijolo
+    ? [['Vacância física',pc(a.vac,1)+'%',a.vac<8?'up':'down'],['Inadimplência',pc(0.5+r()*2.5,1)+'%',''],['Imóveis',Math.round(8+r()*40),''],['Nº de inquilinos',Math.round(20+r()*180),'']]
+    : [['Ativos na carteira',Math.round(20+r()*60),''],['Duration média',pc(2+r()*4,1)+' anos',''],['Indexação IPCA',pc(40+r()*40,0)+'%',''],['Caixa',pc(5+r()*8,0)+'%','']];
+  return `
+  <div class="card card-pad" style="margin-bottom:16px">
+    <div class="ds-title">Composição da carteira</div>
+    <div class="dt-grid" style="align-items:center">
+      <div class="donut-wrap">
+        <canvas id="fiiCartChart"></canvas>
+        <div class="donut-center"><span>${tijolo?'Tijolo':c.tipoF==='fof'?'Fundos':'Papel'}</span><b>${c.comp.length} classes</b></div>
+      </div>
+      <div class="donut-leg">${donutLegend(c.comp)}</div>
+    </div>
+    ${illusNote('Composição ilustrativa · carteira real ao conectar o relatório gerencial do fundo.')}
+  </div>
+  <div class="card card-pad">
+    <div class="ds-title">${tijolo?'Imóveis e ocupação':'Carteira de crédito'}</div>
+    <div class="prov-stats" style="grid-template-columns:repeat(4,1fr)">
+      ${stats.map(s=>`<div class="hstat"><div class="l">${s[0]}</div><div class="v ${s[2]||''}">${s[1]}</div></div>`).join('')}
     </div>
   </div>`;
 }
@@ -4358,6 +4478,7 @@ function initAssetTabCharts(){
   if(assetTab==='geral') initDetailPriceChart();
   else if(assetTab==='proventos'){ initDyHistChart(); initDetailDivChart(); }
   else if(assetTab==='resultados'){ initResultChart(); initRecDonuts(); }
+  else if(assetTab==='carteira'){ charts.fiiCart=donutChart('fiiCartChart', window._FIIC); }
 }
 
 function viewAssetDetail(tk){
