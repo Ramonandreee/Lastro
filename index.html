@@ -6,6 +6,15 @@
 <meta name="description" content="Lastro — Inteligência para o investidor brasileiro. Análise de FIIs, ações B3, indicadores fundamentalistas e Score Lastro.">
 <meta name="theme-color" content="#0E7C5A">
 <title>Lastro · Inteligência de Investimentos</title>
+<!-- App icons / PWA -->
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lastro">
+<meta name="mobile-web-app-capable" content="yes">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1554,6 +1563,34 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .hist-ins li b { color:var(--ink); font-weight:600; }
 .hist-note { font-size:11px; color:var(--ink-4); margin-top:12px; }
 @media (max-width:640px){ .hist-stats { grid-template-columns:1fr; } .hstat-sec { grid-template-columns:repeat(2,1fr); } .hist-chart { height:280px; } .hist-controls { gap:10px; } .hist-sel select{ font-size:17px; } }
+
+/* ════ POLIMENTO PREMIUM GLOBAL (todo o app) ════ */
+/* microinteração consistente: cards ganham leve elevação ao passar o mouse */
+.card { will-change: transform; transition: background .4s var(--ease), border-color .2s var(--ease), box-shadow .22s var(--ease-out), transform .22s var(--ease-out); }
+@media (hover:hover){
+  .grid > .card:hover, .dt-grid > .card:hover, .about-grid > .card:hover { transform: translateY(-3px); box-shadow: var(--sh-lg); border-color: var(--line-2); }
+}
+/* revelação escalonada dos cards em qualquer grade */
+@keyframes cardRise { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
+.content-anim .grid > .card, .content-anim .dt-grid > .card, .content-anim .mstrip > .mcell { animation: cardRise .5s var(--ease-out) both; }
+.content-anim .grid > .card:nth-child(1),.content-anim .dt-grid > .card:nth-child(1),.content-anim .mstrip > .mcell:nth-child(1){animation-delay:.03s}
+.content-anim .grid > .card:nth-child(2),.content-anim .dt-grid > .card:nth-child(2),.content-anim .mstrip > .mcell:nth-child(2){animation-delay:.07s}
+.content-anim .grid > .card:nth-child(3),.content-anim .dt-grid > .card:nth-child(3),.content-anim .mstrip > .mcell:nth-child(3){animation-delay:.11s}
+.content-anim .grid > .card:nth-child(4),.content-anim .dt-grid > .card:nth-child(4),.content-anim .mstrip > .mcell:nth-child(4){animation-delay:.15s}
+.content-anim .grid > .card:nth-child(5),.content-anim .mstrip > .mcell:nth-child(5){animation-delay:.19s}
+.content-anim .grid > .card:nth-child(n+6),.content-anim .mstrip > .mcell:nth-child(n+6){animation-delay:.23s}
+/* cabeçalho de card com ícone — leve animação do ícone no hover do card */
+.card-h .ico { transition: transform .22s var(--ease-out); }
+.grid > .card:hover .card-h .ico, .dt-grid > .card:hover .card-h .ico { transform: scale(1.08); }
+/* linhas de lista (movers, screener, ranking, timeline): deslize sutil ao hover */
+@media (hover:hover){
+  .mv-row:hover, .sr:hover, .rank-row:hover { transform: translateX(2px); }
+}
+.mv-row, .sr, .rank-row { transition: background .14s var(--ease), transform .16s var(--ease-out); }
+@media (prefers-reduced-motion:reduce){
+  .content-anim .grid > .card, .content-anim .dt-grid > .card, .content-anim .mstrip > .mcell { animation:none; }
+  .grid > .card:hover, .dt-grid > .card:hover, .about-grid > .card:hover, .mv-row:hover, .sr:hover, .rank-row:hover { transform:none; }
+}
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -2188,11 +2225,22 @@ function render(v, soft){
 /* ══════════════════════════════════════════════════════════
    VIEW: PAINEL
    ══════════════════════════════════════════════════════════ */
-/* maiores altas/baixas REAIS (usa o universo carregado: var = variação do dia) */
-function topMovers(dir, n=5){
-  const pool = ACOES.filter(a=>typeof a.var==='number' && a.px>0);
-  pool.sort((x,y)=> dir==='up' ? y.var-x.var : x.var-y.var);
-  return pool.slice(0,n);
+/* maiores altas/baixas REAIS — só ações líquidas (evita micro-caps com swings absurdos) */
+function isLiquidStock(a){
+  if(!(a.px>0) || typeof a.var!=='number' || !isFinite(a.var)) return false;
+  if(!/^[A-Z]{4}\d{1,2}$/.test(a.tk)) return false;        // ticker padrão B3 (ON/PN/Unit)
+  if(Math.abs(a.var)>=25) return false;                     // descarta distorções de baixa liquidez
+  if(a._uni){ return typeof a.mkt==='number' && a.mkt>=3e9; } // universo: exige valor de mercado ≥ R$ 3 bi
+  return true;                                              // ativos curados já são blue-chips líquidos
+}
+function topMovers(dir, n=6){
+  const pool = ACOES.filter(a=>isLiquidStock(a) && a.var!==0);
+  // dedupe por empresa (PETR3/PETR4 → mantém a classe de maior valor de mercado)
+  pool.sort((x,y)=> (typeof y.mkt==='number'?y.mkt:0)-(typeof x.mkt==='number'?x.mkt:0));
+  const seen={}, uniq=[];
+  for(const a of pool){ const base=a.tk.slice(0,4); if(seen[base]) continue; seen[base]=1; uniq.push(a); }
+  uniq.sort((x,y)=> dir==='up' ? y.var-x.var : x.var-y.var);
+  return uniq.slice(0,n);
 }
 function moverRow(a){
   return `<div class="mv-row" onclick="quickView('${a.tk}')">
