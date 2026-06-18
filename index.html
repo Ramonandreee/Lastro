@@ -542,6 +542,7 @@ img, svg, canvas, video { max-width: 100%; }
   table.tbl th, table.tbl td { white-space: nowrap; padding-left: 10px; padding-right: 10px; }
   table.tbl .td-asset .ds { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .market-status, .data-status { display:none; }
+  .atabs { top:64px; }
   /* badge "Com Score Lastro" é redundante no mobile (já há o bloco Score Lastro acima) */
   .card-head .chip { display:none; }
   .card-pad { padding: 16px 16px; }
@@ -1615,6 +1616,36 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 @media (prefers-reduced-motion:reduce){
   .content-anim .grid > .card, .content-anim .dt-grid > .card, .content-anim .mstrip > .mcell { animation:none; }
   .grid > .card:hover, .dt-grid > .card:hover, .about-grid > .card:hover, .mv-row:hover, .sr:hover, .rank-row:hover { transform:none; }
+}
+
+/* ════ PÁGINA DO ATIVO — abas e componentes ════ */
+.atabs { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:4px 2px 14px; margin-bottom:4px; position:sticky; top:72px; z-index:30; background:linear-gradient(var(--canvas) 70%, transparent); }
+.atabs::-webkit-scrollbar { display:none; }
+.atab { flex:none; display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:500; cursor:pointer; white-space:nowrap; transition:all .16s var(--ease-out); }
+.atab i { font-size:12px; opacity:.7; }
+.atab:hover { border-color:var(--line-2); color:var(--ink); }
+.atab.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); box-shadow:var(--sh-sm); }
+.atab.on i { opacity:1; }
+#assetBody { animation:viewIn .3s var(--ease-out); }
+.prov-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
+.prov-tbl td, .prov-tbl th { padding-top:12px; padding-bottom:12px; }
+.illus-note { display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--ink-4); margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+.illus-note i { color:var(--ink-4); }
+.rl-leg, .donut-leg { display:flex; }
+.rl-leg { gap:16px; font-size:12px; color:var(--ink-2); }
+.rl-leg span { display:inline-flex; align-items:center; gap:6px; }
+.dot { width:9px; height:9px; border-radius:50%; flex:none; display:inline-block; }
+.donut-wrap { height:220px; position:relative; margin:6px 0 10px; }
+.donut-leg { flex-direction:column; gap:2px; }
+.dleg { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 4px; border-top:1px solid var(--line); font-size:13px; }
+.dleg:first-child { border-top:none; }
+.dleg-l { display:flex; align-items:center; gap:9px; color:var(--ink); min-width:0; }
+.dleg-l small { color:var(--ink-3); font-size:11.5px; }
+.dleg-v { font-family:var(--mono); font-weight:600; color:var(--ink); flex:none; }
+@media (max-width:640px){
+  .atabs { top:64px; }
+  .prov-stats { grid-template-columns:1fr; }
+  .donut-wrap { height:190px; }
 }
 </style>
 
@@ -3472,7 +3503,7 @@ function interp(metric, v){
 
 /* ── gráfico de cotação ── */
 const ASSET_RANGES = { '1M':22, '3M':66, '6M':132, '1A':252, '5A':260 };
-let detailRange = '1A', currentAssetTk = null, prevView = 'painel';
+let detailRange = '1A', currentAssetTk = null, prevView = 'painel', assetTab = 'geral';
 function setDetailRange(r){
   detailRange = r;
   document.querySelectorAll('#detailRanges button').forEach(b=> b.classList.toggle('on', b.textContent===r));
@@ -3515,7 +3546,7 @@ function initDetailDivChart(){
       scales:{x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
               y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v},border:{display:false}}}}});
 }
-function initDetailCharts(){ initDetailPriceChart(); initDetailDivChart(); }
+function initDetailCharts(){ initAssetTabCharts(); }
 
 /* ── indicadores fundamentalistas ── */
 function metricsForDetail(a,k){
@@ -4111,12 +4142,230 @@ function premiumCard(a,k){
 }
 function deepAnalyze(tk){ const f=assetLookup(tk); if(!f) return; callAI(`Analise ${tk} (${f.a.nm}) para um investidor pessoa física: está cara ou barata, pontos fortes, principais riscos e perspectiva. Objetivo, 2 parágrafos curtos.`, $('#aiDeep')); }
 
+/* ══════════════════════════════════════════════════════════
+   PÁGINA DO ATIVO — experiência em abas (premium)
+   ══════════════════════════════════════════════════════════ */
+const ASSET_TAB_DEFS = {
+  geral:       { label:'Visão Geral', ico:'fa-gauge-high' },
+  indicadores: { label:'Indicadores', ico:'fa-table-cells-large' },
+  proventos:   { label:'Proventos',   ico:'fa-coins' },
+  resultados:  { label:'Resultados',  ico:'fa-chart-column' },
+  sobre:       { label:'Sobre',       ico:'fa-circle-info' },
+};
+function assetTabsFor(k){
+  if(k==='acoes') return ['geral','indicadores','proventos','resultados','sobre'];
+  if(k==='fiis')  return ['geral','indicadores','proventos','sobre'];
+  return ['geral','sobre'];
+}
+function assetTabsHTML(k){
+  return assetTabsFor(k).map(t=>`<button class="atab ${t===assetTab?'on':''}" data-t="${t}" onclick="setAssetTab('${t}')"><i class="fa-solid ${ASSET_TAB_DEFS[t].ico}"></i> ${ASSET_TAB_DEFS[t].label}</button>`).join('');
+}
+function setAssetTab(t){
+  assetTab=t;
+  document.querySelectorAll('#assetTabs .atab').forEach(b=>b.classList.toggle('on', b.dataset.t===t));
+  const lk=assetLookup(currentAssetTk); if(!lk) return; const {a,k}=lk, f=FUND[currentAssetTk];
+  const body=$('#assetBody'); if(!body) return;
+  body.innerHTML=assetTabContent(currentAssetTk,a,k,f);
+  body.classList.remove('content-anim'); void body.offsetWidth; body.classList.add('content-anim');
+  destroyCharts(); initAssetTabCharts(); animateGauges(); animateCounts(body);
+  const tabs=$('#assetTabs'); if(tabs){ const y=tabs.getBoundingClientRect().top + window.scrollY - 70; if(window.scrollY>y) window.scrollTo({top:y,behavior:'smooth'}); }
+}
+function assetTabContent(tk,a,k,f){
+  switch(assetTab){
+    case 'indicadores': return tabIndicadores(tk,a,k,f);
+    case 'proventos':   return tabProventos(tk,a,k,f);
+    case 'resultados':  return tabResultados(tk,a,k,f);
+    case 'sobre':       return tabSobre(tk,a,k,f);
+    default:            return tabGeral(tk,a,k,f);
+  }
+}
+function illusNote(txt){ return `<div class="illus-note"><i class="fa-solid fa-circle-info"></i> ${txt}</div>`; }
+
+/* ── Visão Geral ── */
+function tabGeral(tk,a,k,f){
+  const cls=ASSET_CLASS[k], hasScore=cls.score && typeof a.score==='number';
+  const ps=genSeries(tk+'1A', a.px, 252, 0.02), pmin=Math.min(...ps), pmax=Math.max(...ps), var12=(a.px-ps[0])/ps[0]*100;
+  return `
+  <div class="sumgrid">${summaryCards(a,k,f)}</div>
+  ${decisionCard(a,k,f)}
+  ${premiumCard(a,k)}
+  <div class="card card-pad" style="margin-bottom:16px">
+    <div class="ds-head">
+      <span class="ds-title" style="margin:0">Cotação</span>
+      <div class="range-tabs" id="detailRanges">${Object.keys(ASSET_RANGES).map(r=>`<button class="${r===detailRange?'on':''}" onclick="setDetailRange('${r}')">${r}</button>`).join('')}</div>
+    </div>
+    <div class="detail-chart"><canvas id="detailPriceChart"></canvas></div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--ink-3)">
+      <span>Mín 52s <strong class="mono" style="color:var(--ink)">${fmtPx({px:pmin},k)}</strong></span>
+      <span>Máx 52s <strong class="mono" style="color:var(--ink)">${fmtPx({px:pmax},k)}</strong></span>
+      <span>Variação 12m <strong class="mono" style="color:${var12>=0?'var(--up)':'var(--down)'}">${var12>=0?'+':''}${pc(var12,1)}%</strong></span>
+      <span style="margin-left:auto;color:var(--ink-4)">Série ilustrativa · histórico real ao conectar provedor</span>
+    </div>
+  </div>
+  ${ (k==='acoes'||k==='fiis') ? `<div class="dt-grid">${peersHTML(tk,a,k)}${ hasScore ? scoreBlockHTML(a) : newsHTML(tk) }</div>` : '' }
+  `;
+}
+
+/* ── Indicadores ── */
+function tabIndicadores(tk,a,k,f){
+  return `
+  <div class="card card-pad" style="margin-bottom:16px;background:linear-gradient(135deg,var(--gold-l),transparent)">
+    <div class="ds-title" style="margin-bottom:6px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold)"></i> Inteligência de indicadores</div>
+    <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">Toque no <i class="fa-regular fa-circle-question"></i> de cada indicador para a explicação completa (fórmula, faixa e exemplo) e no <i class="fa-solid fa-chart-column"></i> para o histórico com comparação ao setor e insights automáticos — algo que as plataformas tradicionais não entregam.</p>
+  </div>
+  ${fundamentalsHTML(a,k,f)}`;
+}
+
+/* ── Proventos ── */
+function proventosRows(tk,a,k){
+  const r=rngF(seedFrom(tk+'prov'));
+  const per = k==='fiis'?1:2;
+  const base=a.div||(a.px*((a.dy||6)/100)/(k==='fiis'?12:4))||0.2;
+  const tipos = k==='fiis'?['Rendimento']:['JSCP','Dividendo','JSCP','Dividendo'];
+  const dd=x=>String(x).padStart(2,'0');
+  const fmtD=d=>`${dd(d.getDate())}/${dd(d.getMonth()+1)}/${String(d.getFullYear()).slice(2)}`;
+  const rows=[]; let d=new Date(2026,4,1);
+  for(let i=0;i<7;i++){
+    const val=+(base*(0.75+r()*0.6)).toFixed(2);
+    const pag=new Date(d); pag.setDate(pag.getDate()+18+Math.floor(r()*14));
+    rows.push({tipo:tipos[i%tipos.length], datacom:fmtD(d), pag:fmtD(pag), valor:val});
+    d=new Date(d); d.setMonth(d.getMonth()-per);
+  }
+  return rows;
+}
+function tabProventos(tk,a,k,f){
+  const h=indHistory('dy',tk,a.dy,10); const m5=h.data.slice(-6,-1); const dyMed=m5.reduce((s,v)=>s+v,0)/m5.length;
+  const rows=proventosRows(tk,a,k);
+  return `
+  <div class="card card-pad" style="margin-bottom:16px">
+    <div class="ds-head"><span class="ds-title" style="margin:0">Dividend Yield por ano</span><span class="chip chip-neu" style="font-size:10px">10 anos</span></div>
+    <div class="div-chart"><canvas id="dyHistChart"></canvas></div>
+    <div class="prov-stats">
+      <div class="hstat pri"><div class="l">DY atual</div><div class="v">${pc(a.dy,2)}%</div></div>
+      <div class="hstat"><div class="l">DY médio (5 anos)</div><div class="v">${pc(dyMed,2)}%</div></div>
+      <div class="hstat"><div class="l">${k==='fiis'?'Último rendimento':'Payout'}</div><div class="v">${k==='fiis'?brl(a.div):(f&&f.payout!=null?pc(f.payout,0)+'%':'—')}</div></div>
+    </div>
+  </div>
+  <div class="card card-pad" style="margin-bottom:16px">
+    <div class="ds-head"><span class="ds-title" style="margin:0">${k==='fiis'?'Rendimentos (12 meses)':'Dividendos por ano'}</span></div>
+    <div class="div-chart"><canvas id="detailDivChart"></canvas></div>
+  </div>
+  <div class="card card-pad">
+    <div class="ds-title">Histórico de proventos</div>
+    <div class="tbl-wrap"><table class="tbl prov-tbl">
+      <thead><tr><th class="cell-left">Tipo</th><th class="cell-left">Data com</th><th class="cell-left">Pagamento</th><th>Valor</th></tr></thead>
+      <tbody>${rows.map(p=>`<tr class="no-hover"><td class="cell-left"><span class="chip chip-neu" style="font-size:10px">${p.tipo}</span></td><td class="cell-left mono muted">${p.datacom}</td><td class="cell-left mono muted">${p.pag}</td><td class="mono up">R$ ${p.valor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('')}</tbody>
+    </table></div>
+    ${illusNote('Agenda ilustrativa · proventos reais ao conectar provedor de dados.')}
+  </div>`;
+}
+
+/* ── Resultados (ações) ── */
+function receitaLucroSeries(tk){
+  const r=rngF(seedFrom(tk+'rl')); let v=40+(seedFrom(tk)%360);
+  const years=[],rec=[],luc=[];
+  for(let y=2016;y<=2025;y++){ v=Math.max(10,v*(1+(r()-0.4)*0.45)); years.push(String(y)); const rr=+v.toFixed(0); rec.push(rr); luc.push(+(rr*(0.06+r()*0.20)).toFixed(0)); }
+  years.push('ÚLT 12M'); rec.push(rec[rec.length-1]); luc.push(luc[luc.length-1]);
+  return {years,rec,luc};
+}
+function donutLegend(items){ return items.map(it=>`<div class="dleg"><span class="dleg-l"><span class="dot" style="background:${it.c}"></span>${esc(it.n)}<small>${it.s||''}</small></span><span class="dleg-v">${it.p}</span></div>`).join(''); }
+function receitasPorTipo(tk){
+  const r=rngF(seedFrom(tk+'rtipo')); const segs=['Operação principal','Comercialização','Serviços','Outros'];
+  let parts=segs.map(()=>0.1+r()); const sum=parts.reduce((s,v)=>s+v,0); parts=parts.map(p=>p/sum);
+  const cols=['#E8607A','#4F7FE8','#9B8BE8','#E8B45A'];
+  return segs.map((n,i)=>({n, p:(parts[i]*100).toFixed(2)+'%', c:cols[i], v:parts[i]}));
+}
+function receitasPorRegiao(tk){
+  const r=rngF(seedFrom(tk+'rreg')); let parts=[0.55+r()*0.2,0.1+r()*0.1,0.05+r()*0.08,0.05+r()*0.05]; const sum=parts.reduce((s,v)=>s+v,0); parts=parts.map(p=>p/sum);
+  const reg=['Brasil','Ásia','América do Norte','Europa']; const cols=['#E8607A','#4F7FE8','#9B8BE8','#E8B45A'];
+  return reg.map((n,i)=>({n, p:(parts[i]*100).toFixed(2)+'%', c:cols[i], v:parts[i]}));
+}
+function tabResultados(tk,a,k,f){
+  const tipo=receitasPorTipo(tk), reg=receitasPorRegiao(tk);
+  window._RECT=tipo; window._RECR=reg;
+  return `
+  <div class="card card-pad" style="margin-bottom:16px">
+    <div class="ds-head"><span class="ds-title" style="margin:0">Receitas e Lucros</span><div class="rl-leg"><span><span class="dot" style="background:var(--brand)"></span>Receita</span><span><span class="dot" style="background:var(--gold)"></span>Lucro</span></div></div>
+    <div class="detail-chart"><canvas id="resultChart"></canvas></div>
+    ${illusNote('Série ilustrativa de 10 anos · resultados reais (DFP/ITR) ao conectar provedor.')}
+  </div>
+  <div class="dt-grid">
+    <div class="card card-pad">
+      <div class="ds-title">Receita por tipo de negócio</div>
+      <div class="donut-wrap"><canvas id="recTipoChart"></canvas></div>
+      <div class="donut-leg">${donutLegend(tipo)}</div>
+    </div>
+    <div class="card card-pad">
+      <div class="ds-title">Receita por região</div>
+      <div class="donut-wrap"><canvas id="recRegiaoChart"></canvas></div>
+      <div class="donut-leg">${donutLegend(reg)}</div>
+    </div>
+  </div>`;
+}
+
+/* ── Sobre ── */
+function posicaoAcionaria(tk){
+  const r=rngF(seedFrom(tk+'pos'));
+  const names=['Controlador','Outros','Investidores estrangeiros','BNDESPar','Tesouraria','Gestoras nacionais'];
+  let parts=names.map((_,i)=> i===0?0.3+r()*0.25 : 0.05+r()*0.15); const sum=parts.reduce((s,v)=>s+v,0); parts=parts.map(p=>p/sum);
+  return names.map((n,i)=>({n, on:(parts[i]*100*(0.7+r()*0.6)).toFixed(2), tot:(parts[i]*100).toFixed(2)})).sort((x,y)=>y.tot-x.tot);
+}
+function tabSobre(tk,a,k,f){
+  const pos = (k==='acoes') ? posicaoAcionaria(tk) : null;
+  return `
+  ${aboutHTML(a,k,f)}
+  ${ pos ? `<div class="card card-pad" style="margin-top:16px">
+    <div class="ds-title">Posição acionária</div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th class="cell-left">Acionista</th><th>% ON</th><th>% Total</th></tr></thead>
+      <tbody>${pos.map(p=>`<tr class="no-hover"><td class="cell-left">${esc(p.n)}</td><td class="mono muted">${p.on}%</td><td class="mono">${p.tot}%</td></tr>`).join('')}</tbody>
+    </table></div>
+    ${illusNote('Composição ilustrativa · posição acionária real ao conectar provedor.')}
+  </div>` : '' }
+  <div style="margin-top:16px">${newsHTML(tk)}</div>`;
+}
+
+/* ── inits de gráficos por aba ── */
+function initDyHistChart(){
+  const ctx=document.getElementById('dyHistChart'); if(!ctx||!currentAssetTk||typeof Chart==='undefined') return;
+  const lk=assetLookup(currentAssetTk); if(!lk) return; const a=lk.a;
+  const h=indHistory('dy',currentAssetTk,a.dy,10); const col=cssVar('--brand')||'#0E7C5A';
+  charts.dyHist=new Chart(ctx,{type:'bar',data:{labels:h.labels,datasets:[{data:h.data,backgroundColor:hexToRgba(col,.6),hoverBackgroundColor:col,borderRadius:5,maxBarThickness:30}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:550},
+      plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{label:c=>c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'}}},
+      scales:{x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
+              y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>v+'%'},border:{display:false},beginAtZero:true}}}});
+}
+function initResultChart(){
+  const ctx=document.getElementById('resultChart'); if(!ctx||!currentAssetTk||typeof Chart==='undefined') return;
+  const s=receitaLucroSeries(currentAssetTk); const brand=cssVar('--brand')||'#0E7C5A', gold=cssVar('--gold')||'#A87C2A';
+  charts.result=new Chart(ctx,{data:{labels:s.years,datasets:[
+      {type:'bar',label:'Receita',data:s.rec,backgroundColor:hexToRgba(brand,.55),hoverBackgroundColor:brand,borderRadius:4,maxBarThickness:26,order:2},
+      {type:'line',label:'Lucro',data:s.luc,borderColor:gold,backgroundColor:gold,borderWidth:2.4,tension:.3,pointRadius:3,pointBackgroundColor:'#fff',pointBorderColor:gold,pointBorderWidth:2,order:1}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>`${c.dataset.label}: R$ ${c.parsed.y} bi`}}},
+      scales:{x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
+              y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>v+'B'},border:{display:false}}}}});
+}
+function donutChart(id, items){
+  const ctx=document.getElementById(id); if(!ctx||typeof Chart==='undefined'||!items) return null;
+  return new Chart(ctx,{type:'doughnut',data:{labels:items.map(i=>i.n),datasets:[{data:items.map(i=>+i.v*100),backgroundColor:items.map(i=>i.c),borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'66%',animation:{duration:600},
+      plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(2)}%`}}}}});
+}
+function initRecDonuts(){ charts.recTipo=donutChart('recTipoChart', window._RECT); charts.recReg=donutChart('recRegiaoChart', window._RECR); }
+function initAssetTabCharts(){
+  if(assetTab==='geral') initDetailPriceChart();
+  else if(assetTab==='proventos'){ initDyHistChart(); initDetailDivChart(); }
+  else if(assetTab==='resultados'){ initResultChart(); initRecDonuts(); }
+}
+
 function viewAssetDetail(tk){
   const found=assetLookup(tk); if(!found) return '<div class="card card-pad">Ativo não encontrado.</div>';
   const {a,k}=found; const cls=ASSET_CLASS[k]; const f=FUND[tk];
   const vv=(k==='cripto'?a.v24:a.var)??0;
   const hasScore=cls.score && typeof a.score==='number';
-  const ps=genSeries(tk+'1A', a.px, 252, 0.02); const pmin=Math.min(...ps), pmax=Math.max(...ps); const var12=(a.px-ps[0])/ps[0]*100;
+  if(!assetTabsFor(k).includes(assetTab)) assetTab='geral';
 
   return `
   <button class="dt-back" onclick="backFromAsset()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
@@ -4137,54 +4386,15 @@ function viewAssetDetail(tk){
     </div>
   </div>
 
-  <div class="sumgrid">${summaryCards(a,k,f)}</div>
-
-  ${decisionCard(a,k,f)}
-
-  ${premiumCard(a,k)}
-
-  <div class="card card-pad" style="margin-bottom:16px">
-    <div class="ds-head">
-      <span class="ds-title" style="margin:0">Cotação</span>
-      <div class="range-tabs" id="detailRanges">${Object.keys(ASSET_RANGES).map(r=>`<button class="${r===detailRange?'on':''}" onclick="setDetailRange('${r}')">${r}</button>`).join('')}</div>
-    </div>
-    <div class="detail-chart"><canvas id="detailPriceChart"></canvas></div>
-    <div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--ink-3)">
-      <span>Mín 52s <strong class="mono" style="color:var(--ink)">${fmtPx({px:pmin},k)}</strong></span>
-      <span>Máx 52s <strong class="mono" style="color:var(--ink)">${fmtPx({px:pmax},k)}</strong></span>
-      <span>Variação 12m <strong class="mono" style="color:${var12>=0?'var(--up)':'var(--down)'}">${var12>=0?'+':''}${pc(var12,1)}%</strong></span>
-      <span style="margin-left:auto;color:var(--ink-4)">Série ilustrativa · histórico real ao conectar provedor</span>
-    </div>
-  </div>
-
-  <div>
-    <div class="ds-title" style="padding-left:2px">Indicadores fundamentalistas</div>
-    ${fundamentalsHTML(a,k,f)}
-  </div>
-
-  <div style="margin-top:16px">${aboutHTML(a,k,f)}</div>
-
-  <div class="dt-grid" style="margin-top:16px">
-    <div class="card card-pad">
-      <div class="ds-head"><span class="ds-title" style="margin:0">Dividendos ${k==='acoes'?'(por ano)':'(12 meses)'}</span></div>
-      <div class="div-chart"><canvas id="detailDivChart"></canvas></div>
-      <div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--ink-3)">
-        <span>Dividend Yield <strong class="mono" style="color:var(--up)">${pc(a.dy,1)}%</strong></span>
-        ${f&&f.payout!=null?`<span>Payout <strong class="mono" style="color:var(--ink)">${pc(f.payout,0)}%</strong></span>`:''}
-        ${k==='fiis'?`<span>Último <strong class="mono" style="color:var(--ink)">${brl(a.div)}</strong></span>`:''}
-      </div>
-    </div>
-    ${ hasScore ? scoreBlockHTML(a) : newsHTML(tk) }
-  </div>
-
-  ${ (k==='acoes'||k==='fiis') ? `<div class="dt-grid" style="margin-top:16px">${peersHTML(tk,a,k)}${newsHTML(tk)}</div>` : '' }
+  <div class="atabs" id="assetTabs">${assetTabsHTML(k)}</div>
+  <div id="assetBody">${assetTabContent(tk,a,k,f)}</div>
   `;
 }
 
 function openAsset(tk){
   if(!assetLookup(tk)){ toast(`${tk} — ativo não encontrado`); return; }
   if(currentView!=='asset') prevView=currentView;
-  currentView='asset'; currentAssetTk=tk; detailRange='1A';
+  currentView='asset'; currentAssetTk=tk; detailRange='1A'; assetTab='geral';
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const a=assetLookup(tk).a;
   $('#pageTitle').textContent=tk; $('#pageSub').textContent=a.nm;
