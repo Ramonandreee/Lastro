@@ -47,8 +47,16 @@
   --down-l:   #FBEBEB;
   --accent:   #2563EB;
   --accent-l: #E8EEFC;
+  --warn:     #B7791F;
+  --warn-l:   #FBF1DC;
+  --neu:      #2563EB;
+  --neu-l:    #E8EEFC;
   --gold:     #A87C2A;
   --gold-l:   #F6EFDF;
+
+  /* Glass */
+  --glass:     rgba(255,255,255,.72);
+  --glass-brd: rgba(15,20,25,.08);
 
   /* Type */
   --serif: 'Fraunces', Georgia, serif;
@@ -91,8 +99,14 @@
   --down-l:   rgba(240,99,90,.13);
   --accent:   #4F93FF;
   --accent-l: rgba(79,147,255,.13);
+  --warn:     #E0A93B;
+  --warn-l:   rgba(224,169,59,.14);
+  --neu:      #4F93FF;
+  --neu-l:    rgba(79,147,255,.13);
   --gold:     #D6AC5C;
   --gold-l:   rgba(214,172,92,.13);
+  --glass:     rgba(19,26,34,.66);
+  --glass-brd: rgba(255,255,255,.08);
   --sh-sm: 0 1px 2px rgba(0,0,0,.3);
   --sh:    0 2px 8px rgba(0,0,0,.35);
   --sh-lg: 0 12px 32px rgba(0,0,0,.45);
@@ -689,6 +703,7 @@ img, svg, canvas, video { max-width: 100%; }
         </div>
       </div>
       <div class="hist-stats" id="indMStats"></div>
+      <div class="hstat-sec" id="indMStats2"></div>
       <div class="hist-chart"><canvas id="histChart"></canvas></div>
       <div class="hist-analysis" id="indMAnalysis"></div>
     </div>
@@ -1453,28 +1468,58 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .auth-tabs button { flex:1; padding:8px; border-radius:7px; font-size:13px; font-weight:500; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
 .auth-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
 
-/* ── cards de indicador (estilo Investidor10++) ── */
-.ind-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }
-.ind-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px; transition:border-color .15s var(--ease), box-shadow .15s var(--ease); }
-.ind-card:hover { border-color:var(--line-2); box-shadow:var(--sh-sm); }
-.ind-top { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:9px; }
-.ind-l { font-size:12.5px; color:var(--ink-3); line-height:1.3; }
-.ind-ics { display:flex; gap:3px; flex:none; }
-.ind-ic { width:27px; height:27px; border-radius:7px; border:none; background:transparent; color:var(--ink-4); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:12.5px; transition:all .14s var(--ease); }
+/* ── cards de indicador — componentes premium ── */
+.ind-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
+.ind-card { position:relative; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:16px 18px 17px; box-shadow:var(--sh-sm); overflow:hidden; transition:transform .22s var(--ease-out), box-shadow .22s var(--ease-out), border-color .22s var(--ease); will-change:transform; }
+.ind-card::before { content:''; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:3px; background:var(--st,var(--ink-4)); opacity:.0; transition:opacity .22s var(--ease); }
+.ind-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
+.ind-card:hover::before { opacity:.85; }
+.ind-card[data-st="pos"]  { --st:var(--up); }
+.ind-card[data-st="neu"]  { --st:var(--neu); }
+.ind-card[data-st="warn"] { --st:var(--warn); }
+.ind-card[data-st="crit"] { --st:var(--down); }
+.ind-top { display:flex; align-items:center; gap:9px; margin-bottom:13px; }
+.ind-ico { width:32px; height:32px; flex:none; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; font-size:13.5px; background:color-mix(in srgb,var(--st,var(--ink-4)) 12%,transparent); color:var(--st,var(--ink-3)); transition:transform .22s var(--ease-out); }
+.ind-card:hover .ind-ico { transform:scale(1.06); }
+.ind-l { font-size:12.5px; font-weight:500; color:var(--ink-2); line-height:1.25; flex:1; min-width:0; }
+.ind-ics { display:flex; gap:2px; flex:none; }
+.ind-ic { width:26px; height:26px; border-radius:8px; border:none; background:transparent; color:var(--ink-4); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; transition:all .14s var(--ease); }
 .ind-ic:hover { color:var(--gold); background:var(--gold-l); }
-.ind-v { font-family:var(--mono); font-size:21px; font-weight:600; letter-spacing:-.01em; }
+.ind-v { font-family:var(--mono); font-size:23px; font-weight:600; letter-spacing:-.015em; line-height:1.05; color:var(--ink); }
+.ind-card[data-st="pos"]  .ind-v { color:var(--up); }
+.ind-card[data-st="crit"] .ind-v { color:var(--down); }
 .ind-v.up { color:var(--up); } .ind-v.down { color:var(--down); }
+.ind-tag { display:inline-block; margin-top:7px; font-size:10.5px; font-weight:600; letter-spacing:.02em; padding:2px 8px; border-radius:20px; background:color-mix(in srgb,var(--st,var(--ink-4)) 13%,transparent); color:var(--st,var(--ink-2)); }
+/* entrada premium escalonada */
+@keyframes indIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+.ind-card { animation:indIn .5s var(--ease-out) both; }
+.ind-grid .ind-card:nth-child(1){animation-delay:.02s}.ind-grid .ind-card:nth-child(2){animation-delay:.06s}.ind-grid .ind-card:nth-child(3){animation-delay:.10s}.ind-grid .ind-card:nth-child(4){animation-delay:.14s}.ind-grid .ind-card:nth-child(5){animation-delay:.18s}.ind-grid .ind-card:nth-child(6){animation-delay:.22s}.ind-grid .ind-card:nth-child(n+7){animation-delay:.26s}
+@media (prefers-reduced-motion:reduce){ .ind-card{ animation:none; } .ind-card:hover{ transform:none; } }
 
-/* ── popover rico (definição do indicador) ── */
-.tip.rich { background:var(--surface); color:var(--ink); border:1px solid var(--line-2); pointer-events:auto; padding:0; }
+/* ── popover rico (definição do indicador) — mini-painel ── */
+.tip.rich { background:var(--surface); color:var(--ink); border:1px solid var(--line-2); pointer-events:auto; padding:0; border-radius:var(--r-lg); box-shadow:var(--sh-xl); }
 .tip.rich::after { border-top-color:var(--surface); }
 .tip.rich.below::after { border-top-color:transparent; border-bottom-color:var(--surface); }
-.tipcard { padding:15px 17px; max-height:min(64vh,420px); overflow-y:auto; }
-.tc-h { font-size:14px; font-weight:700; margin-bottom:9px; }
-.tipcard p { font-size:12.5px; line-height:1.6; color:var(--ink-2); margin:0 0 4px; }
-.tc-row { font-size:12px; line-height:1.55; color:var(--ink-2); padding-top:9px; border-top:1px solid var(--line); margin-top:9px; }
+.tipcard { padding:16px 18px; max-height:min(64vh,440px); overflow-y:auto; }
+.tc-h { display:flex; align-items:center; gap:9px; font-size:14.5px; font-weight:700; margin-bottom:10px; letter-spacing:-.01em; }
+.tc-ico { width:28px; height:28px; flex:none; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:12px; background:var(--gold-l); color:var(--gold); }
+.tipcard p { font-size:12.5px; line-height:1.62; color:var(--ink-2); margin:0 0 4px; }
+.tc-row { font-size:12px; line-height:1.58; color:var(--ink-2); padding-top:10px; border-top:1px solid var(--line); margin-top:10px; }
 .tc-row span { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); margin-bottom:3px; }
 .tc-row b { font-family:var(--mono); color:var(--ink); font-weight:600; }
+.tc-close { display:none; }
+/* scrim do bottom-sheet (mobile) */
+.tip-scrim { position:fixed; inset:0; z-index:299; background:rgba(15,20,25,.42); backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .2s var(--ease); }
+.tip-scrim.show { opacity:1; pointer-events:auto; }
+.tip.sheet { position:fixed; left:0; right:0; bottom:0; top:auto; max-width:none; width:100%; border-radius:22px 22px 0 0; transform:translateY(101%); transition:transform .32s var(--ease-out); box-shadow:0 -16px 48px rgba(0,0,0,.25); }
+.tip.sheet.show { transform:none; }
+.tip.sheet::after { display:none; }
+.tip.sheet .tipcard { padding:8px 20px max(22px,env(safe-area-inset-bottom)); max-height:78vh; }
+.tip.sheet .tipcard::before { content:''; display:block; width:38px; height:4px; border-radius:3px; background:var(--line-2); margin:8px auto 14px; }
+.tip.sheet .tc-h { font-size:17px; }
+.tip.sheet .tipcard p { font-size:14px; }
+.tip.sheet .tc-row { font-size:13.5px; }
+.tip.sheet .tc-close { display:block; margin-top:16px; text-align:center; font-size:14px; font-weight:600; color:var(--gold); padding:13px; border-radius:12px; background:var(--gold-l); cursor:pointer; }
 
 /* ── modal de histórico de indicadores ── */
 .hist-card { width:880px; max-width:96vw; max-height:92vh; overflow-y:auto; }
@@ -1487,17 +1532,28 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .hist-years button, .hist-type button { font-size:12px; font-weight:500; padding:6px 11px; border-radius:6px; color:var(--ink-3); cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
 .hist-years button.on, .hist-type button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
 .hist-chk { font-size:12.5px; color:var(--ink-2); display:flex; align-items:center; gap:7px; cursor:pointer; user-select:none; }
-.hist-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
-.hstat { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-sm); padding:14px; text-align:center; }
+.hist-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:14px; }
+.hstat { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:14px 15px; text-align:center; transition:transform .18s var(--ease-out), box-shadow .18s var(--ease-out); }
+.hstat:hover { transform:translateY(-2px); box-shadow:var(--sh-sm); }
 .hstat .l { font-size:11.5px; color:var(--ink-3); margin-bottom:6px; }
 .hstat .v { font-family:var(--mono); font-size:22px; font-weight:600; }
-.hist-chart { height:320px; position:relative; }
-.hist-analysis { margin-top:18px; background:var(--brand-l); border:1px solid color-mix(in srgb,var(--brand) 18%,transparent); border-radius:var(--r); padding:15px 17px; }
-.hist-an-h { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--brand-d); display:flex; align-items:center; gap:7px; margin-bottom:9px; }
+.hstat.pri { background:linear-gradient(160deg,var(--gold-l),transparent); border-color:color-mix(in srgb,var(--gold) 26%,transparent); }
+.hstat.pri .v { color:var(--gold); }
+.hstat-sec { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+.hstat-sec .hs { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-sm); padding:11px 8px; text-align:center; }
+.hstat-sec .hs .l { font-size:10.5px; color:var(--ink-3); margin-bottom:4px; text-transform:uppercase; letter-spacing:.03em; }
+.hstat-sec .hs .v { font-family:var(--mono); font-size:15px; font-weight:600; }
+.hist-chart { height:340px; position:relative; }
+.hist-analysis { margin-top:18px; background:var(--brand-l); border:1px solid color-mix(in srgb,var(--brand) 18%,transparent); border-radius:var(--r-lg); padding:16px 18px; }
+.hist-an-h { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--brand-d); display:flex; align-items:center; gap:7px; margin-bottom:11px; }
 .hist-an-h i { color:var(--brand); }
 .hist-analysis p { font-size:13px; line-height:1.7; color:var(--ink-2); margin:0; }
-.hist-note { font-size:11px; color:var(--ink-4); margin-top:10px; }
-@media (max-width:640px){ .hist-stats { grid-template-columns:1fr; } .hist-chart { height:260px; } .hist-controls { gap:10px; } .hist-sel select{ font-size:17px; } }
+.hist-ins { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; }
+.hist-ins li { display:flex; gap:9px; align-items:flex-start; font-size:13px; line-height:1.55; color:var(--ink-2); }
+.hist-ins li i { flex:none; margin-top:2px; width:15px; text-align:center; color:var(--brand); font-size:12px; }
+.hist-ins li b { color:var(--ink); font-weight:600; }
+.hist-note { font-size:11px; color:var(--ink-4); margin-top:12px; }
+@media (max-width:640px){ .hist-stats { grid-template-columns:1fr; } .hstat-sec { grid-template-columns:repeat(2,1fr); } .hist-chart { height:280px; } .hist-controls { gap:10px; } .hist-sel select{ font-size:17px; } }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -2058,14 +2114,23 @@ function skelLines(n=3){ const w=['sk-90','sk-75','sk-55','sk-90','sk-40']; let 
 
 /* ── tooltips (funcionam no hover do desktop E no toque/clique do mobile) ── */
 let _tip;
-function _tipNode(){ if(!_tip){ _tip=document.createElement('div'); _tip.className='tip'; _tip.addEventListener('click', e=>e.stopPropagation()); document.body.appendChild(_tip); } return _tip; }
+let _tipScrim;
+function _tipNode(){ if(!_tip){ _tip=document.createElement('div'); _tip.className='tip'; _tip.addEventListener('click', e=>e.stopPropagation()); document.body.appendChild(_tip);
+    _tipScrim=document.createElement('div'); _tipScrim.className='tip-scrim'; _tipScrim.addEventListener('click', hideTip); document.body.appendChild(_tipScrim); } return _tip; }
 function showTip(target){
   const ind = target.getAttribute('data-ind'), txt = target.getAttribute('data-tip');
   if(!ind && !txt){ hideTip(); return; }
   const el=_tipNode();
-  if(ind){ el.innerHTML=indTipHTML(ind); el.classList.add('rich'); el.style.maxWidth=Math.min(330, window.innerWidth-24)+'px'; }
-  else { el.textContent=txt; el.classList.remove('rich'); el.style.maxWidth=Math.min(280, window.innerWidth-24)+'px'; }
-  el.classList.add('show'); el._for=target;
+  // mobile (sem hover) + tooltip rico → bottom sheet
+  const sheet = ind && !matchMedia('(hover:hover)').matches && window.innerWidth<=640;
+  if(ind){ el.innerHTML=indTipHTML(ind); el.classList.add('rich'); }
+  else { el.textContent=txt; el.classList.remove('rich'); }
+  el.classList.toggle('sheet', !!sheet);
+  el._for=target;
+  if(sheet){ el.style.maxWidth=''; el.style.left=''; el.style.top=''; el.classList.remove('below'); el.classList.add('show'); _tipScrim.classList.add('show'); return; }
+  el.style.maxWidth=Math.min(ind?340:280, window.innerWidth-24)+'px';
+  _tipScrim.classList.remove('show');
+  el.classList.add('show');
   const r=target.getBoundingClientRect(), tw=el.offsetWidth, th=el.offsetHeight;
   let left=Math.max(12, Math.min(r.left+r.width/2-tw/2, window.innerWidth-tw-12));
   let top=r.top-th-10, below=false;
@@ -2074,7 +2139,7 @@ function showTip(target){
   el.classList.toggle('below', below);
   el.style.setProperty('--ax', (r.left+r.width/2-left)+'px');
 }
-function hideTip(){ if(_tip){ _tip.classList.remove('show'); _tip._for=null; } }
+function hideTip(){ if(_tip){ _tip.classList.remove('show'); _tip._for=null; } if(_tipScrim){ _tipScrim.classList.remove('show'); } }
 document.addEventListener('click', e=>{
   const t=e.target.closest('[data-tip],[data-ind]');
   if(t){ if(_tip && _tip.classList.contains('show') && _tip._for===t) hideTip(); else showTip(t); }
@@ -2988,7 +3053,22 @@ function afterRender(v, soft){
   }
   if(v==='simulador'){ runSim(); }
   if(v==='score'){ animateGauges(); }
-  if(v==='asset'){ initDetailCharts(); animateGauges(); }
+  if(v==='asset'){ initDetailCharts(); animateGauges(); animateCounts(); }
+}
+
+/* contagem progressiva dos valores de indicador (.ind-v[data-num]) */
+function animateCounts(scope){
+  const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const els = (scope||document).querySelectorAll('.ind-v[data-num]');
+  els.forEach((el,i)=>{
+    const pre=el.dataset.pre||'', post=el.dataset.post||'', dec=+el.dataset.dec||0, target=parseFloat(el.dataset.num);
+    if(!isFinite(target)){ return; }
+    const fmt=x=>pre+x.toLocaleString('pt-BR',{minimumFractionDigits:dec,maximumFractionDigits:dec})+post;
+    if(reduce){ el.textContent=fmt(target); return; }
+    const dur=760, start=performance.now()+Math.min(i*45,360);
+    function tick(now){ const t=Math.max(0,Math.min((now-start)/dur,1)); const e=1-Math.pow(1-t,3); el.textContent=fmt(target*e); if(t<1) requestAnimationFrame(tick); }
+    el.textContent=fmt(0); requestAnimationFrame(tick);
+  });
 }
 
 function animateGauges(){
@@ -3421,6 +3501,62 @@ const INDICATORS = {
   vac:{nome:'Vacância',u:'%',descricao:'Percentual da área (ou receita) não locada de um FII de tijolo.',formula:'Área vaga / Área total',interpretacao:'Quanto menor, mais estável a renda do fundo.',faixaIdeal:'<5% baixa · >10% elevada.',pontosAtencao:'FIIs de papel não têm vacância (carteira de CRIs).'},
   liq:{nome:'Liquidez',u:'',descricao:'Volume médio negociado por dia.',formula:'Média do volume financeiro diário',interpretacao:'Facilidade de comprar/vender sem afetar o preço.',faixaIdeal:'Maior = mais fácil entrar e sair.',pontosAtencao:'Baixa liquidez aumenta o spread de compra/venda.'},
 };
+/* ícone Font Awesome por indicador (identidade visual própria) */
+const IND_ICON = {
+  pl:'fa-scale-balanced', pvp:'fa-layer-group', evebitda:'fa-building-columns', evebit:'fa-building-columns', pebit:'fa-receipt',
+  pativo:'fa-cubes', psr:'fa-tags', pcapgiro:'fa-rotate', pacliq:'fa-sack-dollar', ev:'fa-landmark', mktcap:'fa-landmark',
+  roe:'fa-arrow-trend-up', roic:'fa-bullseye', roa:'fa-chart-pie', roi:'fa-arrow-trend-up', mb:'fa-chart-simple', mebitda:'fa-chart-column',
+  mebit:'fa-chart-column', ml:'fa-percent', giro:'fa-rotate', giroEstoque:'fa-boxes-stacked', pmr:'fa-hourglass-half', pmp:'fa-hourglass-end',
+  cagrRec:'fa-seedling', cagrLuc:'fa-seedling', cagrEbitda:'fa-seedling', cagrDiv:'fa-seedling',
+  dy:'fa-coins', payout:'fa-hand-holding-dollar', dpa:'fa-coins', divGrowth:'fa-seedling',
+  dleb:'fa-scale-unbalanced', dlpl:'fa-scale-unbalanced', lc:'fa-droplet', ls:'fa-droplet', coberturaJuros:'fa-shield-halved',
+  lpa:'fa-money-bill-trend-up', vpa:'fa-book', fcpa:'fa-water', vac:'fa-door-open', liq:'fa-droplet',
+};
+const indIcon = id => IND_ICON[id] || 'fa-chart-line';
+/* exemplo prático curto por indicador (mostrado no tooltip) */
+const IND_EX = {
+  pl:'Uma ação a R$ 20 com LPA de R$ 2 tem P/L 10 — paga-se 10 anos de lucro atual.',
+  pvp:'P/VP 0,8 significa comprar R$ 1 de patrimônio por R$ 0,80.',
+  evebitda:'EV/EBITDA 5 sugere ~5 anos de caixa operacional para "pagar" a empresa.',
+  roe:'ROE 20% = a cada R$ 100 dos sócios, a empresa gera R$ 20 de lucro ao ano.',
+  roic:'ROIC 15% acima de um WACC de 10% indica criação de valor.',
+  dy:'DY 9% = R$ 9 de proventos ao ano para cada R$ 100 investidos.',
+  payout:'Payout 60% = 60% do lucro vira dividendo; 40% reinveste no negócio.',
+  dleb:'Dívida/EBITDA 2x significa ~2 anos de caixa operacional para quitar a dívida.',
+  ml:'Margem líquida 18% = R$ 18 de lucro para cada R$ 100 de receita.',
+  pvpFii:'FII com P/VP 0,9 negocia 10% abaixo do valor dos imóveis.',
+  vac:'Vacância 4% = 96% dos imóveis gerando aluguel.',
+  dpa:'DPA de R$ 0,90/mês em cota de R$ 100 equivale a ~10,8% ao ano.',
+};
+/* estado visual: pos | neu | warn | crit (refinado, sem exagero) */
+function indState(id,v){
+  if(typeof v!=='number'||!isFinite(v)) return 'neu';
+  const B=(crit,warn,ok,inv)=>{ // inv=true → menor é melhor
+    if(inv){ if(v<=ok)return'pos'; if(v<=warn)return'neu'; if(v<=crit)return'warn'; return'crit'; }
+    if(v>=ok)return'pos'; if(v>=warn)return'neu'; if(v>=crit)return'warn'; return'crit';
+  };
+  switch(id){
+    case 'pl':      return v<=0?'crit':v<8?'pos':v<=18?'neu':v<=25?'warn':'crit';
+    case 'pvp':     return v<1?'pos':v<=2?'neu':v<=4?'warn':'crit';
+    case 'pvpFii':  return v<0.92?'pos':v<=1.05?'neu':v<=1.15?'warn':'crit';
+    case 'evebitda':return B(14,10,6,true);
+    case 'evebit':  return B(16,12,8,true);
+    case 'roe':     return v>=18?'pos':v>=12?'neu':v>=8?'warn':'crit';
+    case 'roic':    return v>=14?'pos':v>=9?'neu':v>=6?'warn':'crit';
+    case 'roa':     return v>=8?'pos':v>=4?'neu':v>=2?'warn':'crit';
+    case 'ml': case 'mb': case 'mebit': case 'mebitda': return v>=20?'pos':v>=10?'neu':v>=3?'warn':'crit';
+    case 'dy':      return v>=8?'pos':v>=4?'neu':v>0?'warn':'crit';
+    case 'dyFii':   return v>=11?'pos':v>=8?'neu':v>5?'warn':'crit';
+    case 'payout':  return v>0&&v<=80?'pos':v<=100?'neu':'warn';
+    case 'dleb':    return v<=0?'pos':v<=2?'neu':v<=3.5?'warn':'crit';
+    case 'dlpl':    return v<=0?'pos':v<=1?'neu':v<=2?'warn':'crit';
+    case 'lc': case 'ls': return v>=1.5?'pos':v>=1?'neu':v>=.7?'warn':'crit';
+    case 'vac':     return v<=3?'pos':v<=6?'neu':v<=10?'warn':'crit';
+    case 'cagrRec': case 'cagrLuc': case 'cagrEbitda': return v>=15?'pos':v>=5?'neu':v>=0?'warn':'crit';
+  }
+  return 'neu';
+}
+const STATE_TAG = { pos:'Saudável', neu:'Neutro', warn:'Atenção', crit:'Crítico' };
 function indVal(id,a,f){ f=f||(a&&FUND[a.tk])||{}; if(!a) return null; switch(id){
   case 'pl':return a.pl; case 'pvp':return a.pvp; case 'dy':return a.dy; case 'roe':return a.roe; case 'ml':return a.mgl;
   case 'vpa':return a.pvp>0?a.px/a.pvp:null; case 'lpa':return a.pl>0?a.px/a.pl:null; case 'vac':return a.vac;
@@ -3453,15 +3589,26 @@ function indAnalysis(id,a,k,val){ if(typeof val!=='number') return ''; const d=I
 /* popover rico (definição do indicador) */
 function indTipHTML(id){ const d=INDICATORS[id]; if(!d) return '';
   const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
-  return `<div class="tipcard"><div class="tc-h">${esc(d.nome)}</div><p>${esc(d.descricao)}</p>${row('Fórmula', d.formula?`<b>${esc(d.formula)}</b>`:'')}${row('Como interpretar', esc(d.interpretacao||''))}${row('Faixa de referência', esc(d.faixaIdeal||''))}${row('⚠ Atenção', esc(d.pontosAtencao||''))}</div>`;
+  const ex = IND_EX[id];
+  return `<div class="tipcard"><div class="tc-h"><span class="tc-ico"><i class="fa-solid ${indIcon(id)}"></i></span>${esc(d.nome)}</div><p>${esc(d.descricao)}</p>${row('Fórmula', d.formula?`<b>${esc(d.formula)}</b>`:'')}${row('Como interpretar', esc(d.interpretacao||''))}${row('Faixa de referência', esc(d.faixaIdeal||''))}${ex?row('Exemplo', esc(ex)):''}${row('⚠ Atenção', esc(d.pontosAtencao||''))}<div class="tc-close" onclick="hideTip()">Entendi</div></div>`;
 }
-/* card de indicador (label + ? e ícone de histórico, valor) */
+/* card de indicador premium (ícone · ? · histórico · valor animado · estado) */
 function indCard(id, value, cls){
   const d=INDICATORS[id], label=d?d.nome:id;
   const lk=assetLookup(currentAssetTk), raw=lk?indVal(id,lk.a):null, hasData=typeof raw==='number'&&isFinite(raw);
+  const sid = (lk&&lk.k==='fiis') ? (id==='pvp'?'pvpFii':id==='dy'?'dyFii':id) : id;
+  let st = hasData ? indState(sid, raw) : 'neu';
+  if(st==='neu'){ if(cls==='up') st='pos'; else if(cls==='down') st='crit'; }
   const q = d?`<button class="ind-ic" data-ind="${id}" aria-label="Sobre ${esc(label)}"><i class="fa-regular fa-circle-question"></i></button>`:'';
   const h = hasData?`<button class="ind-ic" onclick="openIndHistory('${id}')" aria-label="Histórico de ${esc(label)}"><i class="fa-solid fa-chart-column"></i></button>`:'';
-  return `<div class="ind-card"><div class="ind-top"><span class="ind-l">${label}</span><span class="ind-ics">${q}${h}</span></div><div class="ind-v ${cls||''}">${nz(value)?'—':value}</div></div>`;
+  const v = nz(value)?'—':String(value);
+  // count-up: separa prefixo/numero/sufixo de um valor formatado pt-BR
+  const m = v.match(/^([^\d-]*)(-?[\d.]*,?\d+)(.*)$/);
+  let vAttr='', vText=v;
+  if(m){ const num=parseFloat(m[2].replace(/\./g,'').replace(',','.')); const dec=(m[2].split(',')[1]||'').length;
+    if(isFinite(num)){ vAttr=` data-pre="${esc(m[1])}" data-num="${num}" data-dec="${dec}" data-post="${esc(m[3])}"`; } }
+  const tag = (d && hasData) ? `<span class="ind-tag">${STATE_TAG[st]}</span>` : '';
+  return `<div class="ind-card" data-st="${st}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${indIcon(id)}"></i></span><span class="ind-l">${label}</span><span class="ind-ics">${q}${h}</span></div><div class="ind-v"${vAttr}>${vText}</div>${tag}</div>`;
 }
 
 /* ── modal de histórico de indicadores ── */
@@ -3476,16 +3623,53 @@ function setHistMetric(v){ histState.id=v; renderIndHistory(); setTimeout(initHi
 function setHistType(t){ histState.type=t; document.querySelectorAll('#histType button').forEach(b=>b.classList.toggle('on', b.dataset.t===t)); initHistChart(); }
 function setHistYears(y){ histState.years=+y; document.querySelectorAll('#histYears button').forEach(b=>b.classList.toggle('on', +b.dataset.y===+y)); renderIndHistory(); setTimeout(initHistChart,30); }
 function toggleHistIgnore(cb){ histState.ignore=cb.checked; initHistChart(); }
+function median(arr){ const s=[...arr].sort((a,b)=>a-b), n=s.length; if(!n) return null; return n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2; }
+function sectorVals(id,a,k){ const arr=k==='fiis'?FIIS:ACOES; return arr.filter(x=>x.seg===a.seg && x.tk!==a.tk).map(x=>indVal(id,x)).filter(v=>typeof v==='number'&&isFinite(v)); }
+/* insights automáticos (lista) — comparações reais de setor + série histórica */
+function indInsights(id,a,k,val,h){
+  if(typeof val!=='number') return [];
+  const out=[], d=INDICATORS[id]||{}, mean=histMean(h), data=h.data, mx=Math.max(...data), mn=Math.min(...data);
+  const lowerBetter = ['pl','pvp','pvpFii','evebitda','evebit','pebit','pativo','psr','dleb','dlpl','vac'].includes(id);
+  // percentil no setor
+  const peers=sectorVals(id,a,k);
+  if(peers.length>=4){
+    const below=peers.filter(v=>v<val).length, pAbove=Math.round(below/peers.length*100);
+    const better = lowerBetter ? (100-pAbove) : pAbove;
+    out.push(`<li><i class="fa-solid fa-ranking-star"></i> O <b>${esc(d.nome)}</b> atual está ${lowerBetter?'abaixo':'acima'} de <b>${(lowerBetter?(100-pAbove):pAbove)}%</b> das empresas do mesmo setor — ${better>=66?'posição favorável':better>=40?'posição mediana':'posição desfavorável'}.</li>`);
+  }
+  // vs média histórica
+  if(isFinite(mean) && mean!==0){
+    const diff=Math.round((val-mean)/Math.abs(mean)*100);
+    if(Math.abs(diff)>=4) out.push(`<li><i class="fa-solid fa-clock-rotate-left"></i> Está <b>${Math.abs(diff)}% ${diff>0?'acima':'abaixo'}</b> da própria média dos últimos ${histState.years} anos (${fmtMetric(id,mean)}).</li>`);
+    else out.push(`<li><i class="fa-solid fa-clock-rotate-left"></i> Está praticamente <b>na média histórica</b> dos últimos ${histState.years} anos (${fmtMetric(id,mean)}).</li>`);
+  }
+  // proximidade de máxima/mínima
+  const rng=mx-mn||1;
+  if((mx-val)/rng<=0.1) out.push(`<li><i class="fa-solid fa-arrow-up"></i> Próximo da <b>máxima</b> do período (${fmtMetric(id,mx)}).</li>`);
+  else if((val-mn)/rng<=0.1) out.push(`<li><i class="fa-solid fa-arrow-down"></i> Próximo da <b>mínima</b> do período (${fmtMetric(id,mn)}).</li>`);
+  // tendência
+  const first=data[0], slope=val-first;
+  if(Math.abs(slope)/(Math.abs(first)||1)>=0.15) out.push(`<li><i class="fa-solid fa-chart-line"></i> Tendência de <b>${slope>0?'alta':'queda'}</b> no período (${fmtMetric(id,first)} → ${fmtMetric(id,val)}).</li>`);
+  return out;
+}
 function renderIndHistory(){
   const lk=assetLookup(currentAssetTk); if(!lk) return; const {a,k}=lk; const id=histState.id, val=indVal(id,a);
   $('#indMTitle').textContent = `Histórico de Indicadores · ${a.tk}`;
   $('#indMSel').innerHTML = availableIndicators(a,k).map(x=>`<option value="${x}" ${x===id?'selected':''}>${INDICATORS[x].nome}</option>`).join('');
   const h=indHistory(id,a.tk,val,histState.years), mean=histMean(h), sec=sectorAvg(id,a,k);
+  const data=h.data, mx=Math.max(...data), mn=Math.min(...data), med=median(data);
+  const sd=Math.sqrt(data.reduce((s,v)=>s+(v-mean)*(v-mean),0)/data.length), cv=mean?Math.abs(sd/mean*100):0;
   $('#indMStats').innerHTML = `
-    <div class="hstat"><div class="l">Valor atual</div><div class="v">${fmtMetric(id,val)}</div></div>
+    <div class="hstat pri"><div class="l">Valor atual</div><div class="v">${fmtMetric(id,val)}</div></div>
     <div class="hstat"><div class="l">Média da empresa</div><div class="v">${fmtMetric(id,mean)}</div></div>
     <div class="hstat"><div class="l">Média do setor</div><div class="v">${sec!=null?fmtMetric(id,sec):'—'}</div></div>`;
-  $('#indMAnalysis').innerHTML = `<div class="hist-an-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Análise automática</div><p>${indAnalysis(id,a,k,val)}</p><div class="hist-note">Série histórica ilustrativa · valor atual e média do setor com dados reais.</div>`;
+  $('#indMStats2').innerHTML = `
+    <div class="hs"><div class="l">Máxima</div><div class="v">${fmtMetric(id,mx)}</div></div>
+    <div class="hs"><div class="l">Mínima</div><div class="v">${fmtMetric(id,mn)}</div></div>
+    <div class="hs"><div class="l">Mediana</div><div class="v">${fmtMetric(id,med)}</div></div>
+    <div class="hs"><div class="l">Volatilidade</div><div class="v">${cv?pc(cv,0)+'%':'—'}</div></div>`;
+  const ins=indInsights(id,a,k,val,h);
+  $('#indMAnalysis').innerHTML = `<div class="hist-an-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Insights automáticos</div>${ins.length?`<ul class="hist-ins">${ins.join('')}</ul>`:`<p>${indAnalysis(id,a,k,val)}</p>`}<div class="hist-note">Série histórica ilustrativa · valor atual, média e percentil do setor com dados reais.</div>`;
 }
 function smoothOut(data){ const m=data.reduce((s,v)=>s+v,0)/data.length, sd=Math.sqrt(data.reduce((s,v)=>s+(v-m)*(v-m),0)/data.length)||1; return data.map(v=> Math.abs(v-m)>2.2*sd?m:v); }
 function initHistChart(){
