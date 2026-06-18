@@ -675,6 +675,26 @@ img, svg, canvas, video { max-width: 100%; }
   </div>
 </div>
 
+<!-- ════════ HISTÓRICO DE INDICADORES ════════ -->
+<div class="modal-scrim" id="indModal" onclick="if(event.target===this)closeIndHistory()">
+  <div class="modal-card hist-card" role="dialog" aria-label="Histórico de indicadores">
+    <div class="modal-head"><span><i class="fa-solid fa-chart-column" style="color:var(--gold);margin-right:8px"></i><span id="indMTitle">Histórico de Indicadores</span></span><button class="drawer-close" onclick="closeIndHistory()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="hist-body">
+      <div class="hist-controls">
+        <div class="hist-sel"><label>Indicador</label><select id="indMSel" class="sel" onchange="setHistMetric(this.value)"></select></div>
+        <div class="hist-right">
+          <div class="hist-years" id="histYears"><button data-y="5" onclick="setHistYears(5)">5A</button><button data-y="10" class="on" onclick="setHistYears(10)">10A</button><button data-y="15" onclick="setHistYears(15)">Máx</button></div>
+          <label class="hist-chk"><input type="checkbox" onchange="toggleHistIgnore(this)"> Ignorar anomalias</label>
+          <div class="hist-type" id="histType"><button data-t="line" onclick="setHistType('line')"><i class="fa-solid fa-chart-line"></i> Linhas</button><button data-t="bar" class="on" onclick="setHistType('bar')"><i class="fa-solid fa-chart-column"></i> Barra</button></div>
+        </div>
+      </div>
+      <div class="hist-stats" id="indMStats"></div>
+      <div class="hist-chart"><canvas id="histChart"></canvas></div>
+      <div class="hist-analysis" id="indMAnalysis"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ════════ ONBOARDING ════════ -->
 <div class="modal-scrim" id="obModal">
   <div class="modal-card ob-card" role="dialog" aria-label="Bem-vindo ao Lastro">
@@ -1432,6 +1452,52 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .auth-tabs { display:flex; gap:4px; background:var(--surface-3); padding:4px; border-radius:var(--r-sm); margin-bottom:6px; }
 .auth-tabs button { flex:1; padding:8px; border-radius:7px; font-size:13px; font-weight:500; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
 .auth-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
+
+/* ── cards de indicador (estilo Investidor10++) ── */
+.ind-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }
+.ind-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px; transition:border-color .15s var(--ease), box-shadow .15s var(--ease); }
+.ind-card:hover { border-color:var(--line-2); box-shadow:var(--sh-sm); }
+.ind-top { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:9px; }
+.ind-l { font-size:12.5px; color:var(--ink-3); line-height:1.3; }
+.ind-ics { display:flex; gap:3px; flex:none; }
+.ind-ic { width:27px; height:27px; border-radius:7px; border:none; background:transparent; color:var(--ink-4); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:12.5px; transition:all .14s var(--ease); }
+.ind-ic:hover { color:var(--gold); background:var(--gold-l); }
+.ind-v { font-family:var(--mono); font-size:21px; font-weight:600; letter-spacing:-.01em; }
+.ind-v.up { color:var(--up); } .ind-v.down { color:var(--down); }
+
+/* ── popover rico (definição do indicador) ── */
+.tip.rich { background:var(--surface); color:var(--ink); border:1px solid var(--line-2); pointer-events:auto; padding:0; }
+.tip.rich::after { border-top-color:var(--surface); }
+.tip.rich.below::after { border-top-color:transparent; border-bottom-color:var(--surface); }
+.tipcard { padding:15px 17px; max-height:min(64vh,420px); overflow-y:auto; }
+.tc-h { font-size:14px; font-weight:700; margin-bottom:9px; }
+.tipcard p { font-size:12.5px; line-height:1.6; color:var(--ink-2); margin:0 0 4px; }
+.tc-row { font-size:12px; line-height:1.55; color:var(--ink-2); padding-top:9px; border-top:1px solid var(--line); margin-top:9px; }
+.tc-row span { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); margin-bottom:3px; }
+.tc-row b { font-family:var(--mono); color:var(--ink); font-weight:600; }
+
+/* ── modal de histórico de indicadores ── */
+.hist-card { width:880px; max-width:96vw; max-height:92vh; overflow-y:auto; }
+.hist-body { padding:18px 22px 22px; }
+.hist-controls { display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:16px; }
+.hist-sel label { display:block; font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
+.hist-sel select { font-family:var(--serif); font-size:19px; font-weight:600; border:none; background:transparent; color:var(--ink); cursor:pointer; padding:2px 4px; border-radius:6px; }
+.hist-right { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.hist-years, .hist-type { display:flex; gap:3px; background:var(--surface-3); padding:3px; border-radius:9px; }
+.hist-years button, .hist-type button { font-size:12px; font-weight:500; padding:6px 11px; border-radius:6px; color:var(--ink-3); cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+.hist-years button.on, .hist-type button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
+.hist-chk { font-size:12.5px; color:var(--ink-2); display:flex; align-items:center; gap:7px; cursor:pointer; user-select:none; }
+.hist-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
+.hstat { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-sm); padding:14px; text-align:center; }
+.hstat .l { font-size:11.5px; color:var(--ink-3); margin-bottom:6px; }
+.hstat .v { font-family:var(--mono); font-size:22px; font-weight:600; }
+.hist-chart { height:320px; position:relative; }
+.hist-analysis { margin-top:18px; background:var(--brand-l); border:1px solid color-mix(in srgb,var(--brand) 18%,transparent); border-radius:var(--r); padding:15px 17px; }
+.hist-an-h { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--brand-d); display:flex; align-items:center; gap:7px; margin-bottom:9px; }
+.hist-an-h i { color:var(--brand); }
+.hist-analysis p { font-size:13px; line-height:1.7; color:var(--ink-2); margin:0; }
+.hist-note { font-size:11px; color:var(--ink-4); margin-top:10px; }
+@media (max-width:640px){ .hist-stats { grid-template-columns:1fr; } .hist-chart { height:260px; } .hist-controls { gap:10px; } .hist-sel select{ font-size:17px; } }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -1992,10 +2058,13 @@ function skelLines(n=3){ const w=['sk-90','sk-75','sk-55','sk-90','sk-40']; let 
 
 /* ── tooltips (funcionam no hover do desktop E no toque/clique do mobile) ── */
 let _tip;
-function _tipNode(){ if(!_tip){ _tip=document.createElement('div'); _tip.className='tip'; document.body.appendChild(_tip); } return _tip; }
+function _tipNode(){ if(!_tip){ _tip=document.createElement('div'); _tip.className='tip'; _tip.addEventListener('click', e=>e.stopPropagation()); document.body.appendChild(_tip); } return _tip; }
 function showTip(target){
-  const txt = target.getAttribute('data-tip'); if(!txt){ hideTip(); return; }
-  const el=_tipNode(); el.textContent=txt; el.style.maxWidth=Math.min(280, window.innerWidth-24)+'px';
+  const ind = target.getAttribute('data-ind'), txt = target.getAttribute('data-tip');
+  if(!ind && !txt){ hideTip(); return; }
+  const el=_tipNode();
+  if(ind){ el.innerHTML=indTipHTML(ind); el.classList.add('rich'); el.style.maxWidth=Math.min(330, window.innerWidth-24)+'px'; }
+  else { el.textContent=txt; el.classList.remove('rich'); el.style.maxWidth=Math.min(280, window.innerWidth-24)+'px'; }
   el.classList.add('show'); el._for=target;
   const r=target.getBoundingClientRect(), tw=el.offsetWidth, th=el.offsetHeight;
   let left=Math.max(12, Math.min(r.left+r.width/2-tw/2, window.innerWidth-tw-12));
@@ -2007,12 +2076,12 @@ function showTip(target){
 }
 function hideTip(){ if(_tip){ _tip.classList.remove('show'); _tip._for=null; } }
 document.addEventListener('click', e=>{
-  const t=e.target.closest('[data-tip]');
+  const t=e.target.closest('[data-tip],[data-ind]');
   if(t){ if(_tip && _tip.classList.contains('show') && _tip._for===t) hideTip(); else showTip(t); }
   else hideTip();
 });
-document.addEventListener('mouseover', e=>{ if(!matchMedia('(hover:hover)').matches) return; const t=e.target.closest('[data-tip]'); if(t) showTip(t); });
-document.addEventListener('mouseout', e=>{ if(!matchMedia('(hover:hover)').matches) return; const t=e.target.closest('[data-tip]'); if(t) hideTip(); });
+document.addEventListener('mouseover', e=>{ if(!matchMedia('(hover:hover)').matches) return; const t=e.target.closest('[data-tip],[data-ind]'); if(t) showTip(t); });
+document.addEventListener('mouseout', e=>{ if(!matchMedia('(hover:hover)').matches) return; const t=e.target.closest('[data-tip],[data-ind]'); if(t) hideTip(); });
 window.addEventListener('scroll', hideTip, {passive:true});
 window.addEventListener('resize', hideTip);
 
@@ -3297,61 +3366,211 @@ function metricsForDetail(a,k){
   if(k==='cripto') return [['Cotação',fmtPx(a,k)],['Valor de mercado',a.mkt],['Variação 24h',(a.v24>=0?'+':'')+pc(a.v24,1)+'%',a.v24>=0?'up':'down'],['Variação 7d',(a.v7>=0?'+':'')+pc(a.v7,1)+'%',a.v7>=0?'up':'down']];
   return [];
 }
+/* ══════════════════════════════════════════════════════════
+   BANCO CENTRAL DE INDICADORES (definições padronizadas)
+   Adicionar um indicador = adicionar aqui (a UI usa automaticamente).
+   ══════════════════════════════════════════════════════════ */
+const INDICATORS = {
+  // ── Valuation ──
+  pl:{nome:'P/L',u:'x',descricao:'Preço da ação dividido pelo lucro por ação. Indica quantos anos de lucro o preço atual representa.',formula:'Preço / LPA',interpretacao:'Quanto menor, mais barata tende a estar (paga-se menos por cada R$ 1 de lucro).',faixaIdeal:'8–15 justo · <8 atrativo · >25 caro ou alta expectativa de crescimento.',pontosAtencao:'Lucro pontual ou negativo distorce o índice. Compare sempre com o setor.'},
+  pvp:{nome:'P/VP',u:'x',descricao:'Preço da ação sobre o valor patrimonial por ação.',formula:'Preço / VPA',interpretacao:'Abaixo de 1 = negocia abaixo do patrimônio contábil.',faixaIdeal:'<1 desconto · 1–2 usual · >4 prêmio elevado.',pontosAtencao:'Empresas de alto ROE costumam negociar com P/VP alto justificadamente.'},
+  evebitda:{nome:'EV/EBITDA',u:'x',descricao:'Valor da empresa (incluindo dívida, descontado o caixa) sobre o EBITDA.',formula:'Enterprise Value / EBITDA',interpretacao:'Mostra quanto custaria comprar a empresa inteira em relação à sua geração de caixa operacional. Menor = mais barata.',faixaIdeal:'<6 atrativo · 6–10 razoável · >12 esticado (varia por setor).',pontosAtencao:'Não usar para bancos/seguradoras (não têm EBITDA comparável).'},
+  evebit:{nome:'EV/EBIT',u:'x',descricao:'Valor da empresa sobre o lucro operacional (EBIT).',formula:'Enterprise Value / EBIT',interpretacao:'Similar ao EV/EBITDA, mas considera a depreciação (mais conservador).',faixaIdeal:'<8 atrativo (depende do setor).',pontosAtencao:'Comparar apenas entre empresas do mesmo setor.'},
+  pebit:{nome:'P/EBIT',u:'x',descricao:'Preço sobre o lucro operacional por ação.',formula:'Preço / EBIT por ação',interpretacao:'Valuation pelo resultado operacional, ignorando efeitos financeiros e tributários.',faixaIdeal:'Quanto menor, melhor (compare com pares).',pontosAtencao:'Desconsidera a estrutura de capital.'},
+  pativo:{nome:'P/Ativo',u:'x',descricao:'Preço de mercado sobre o ativo total por ação.',formula:'Valor de mercado / Ativos',interpretacao:'Quanto o mercado paga por cada R$ 1 de ativo da empresa.',faixaIdeal:'Varia muito por setor (bancos costumam ser <0,2).',pontosAtencao:'Pouco útil isolado; use junto com rentabilidade.'},
+  psr:{nome:'P/Receita (PSR)',u:'x',descricao:'Preço sobre a receita líquida por ação (Price to Sales Ratio).',formula:'Valor de mercado / Receita Líquida',interpretacao:'Quanto se paga por cada R$ 1 de receita. Útil para empresas sem lucro ainda.',faixaIdeal:'<1 costuma ser barato; >5 exige forte crescimento.',pontosAtencao:'Ignora a rentabilidade — receita alta sem margem vale pouco.'},
+  pcapgiro:{nome:'P/Capital de Giro',u:'x',descricao:'Preço sobre o capital de giro (ativo circulante − passivo circulante).',formula:'Valor de mercado / Capital de Giro',interpretacao:'Mede quanto se paga pelo capital de curto prazo líquido.',faixaIdeal:'Valores baixos/positivos indicam folga de caixa.',pontosAtencao:'Negativo quando o passivo circulante supera o ativo.'},
+  pacliq:{nome:'P/Ativo Circ. Líq.',u:'x',descricao:'Preço sobre o ativo circulante líquido (estilo Graham).',formula:'Valor de mercado / (Ativo Circ. − Passivo Total)',interpretacao:'Quando negativo e pequeno, sugere ações descontadas (net-net de Graham).',faixaIdeal:'Raramente positivo; valores muito baixos chamam atenção.',pontosAtencao:'Indicador de nicho, para situações de profundo desconto.'},
+  ev:{nome:'Enterprise Value',u:'',descricao:'Valor total da empresa: capitalização de mercado + dívida líquida.',formula:'Market Cap + Dívida − Caixa',interpretacao:'Representa o "preço de aquisição" da empresa inteira.',faixaIdeal:'—',pontosAtencao:'Use em múltiplos (EV/EBITDA, EV/EBIT), não isolado.'},
+  mktcap:{nome:'Valor de Mercado',u:'',descricao:'Capitalização de mercado: total que o mercado atribui à empresa.',formula:'Preço × Nº de ações',interpretacao:'Tamanho da empresa na bolsa.',faixaIdeal:'—',pontosAtencao:'Não confundir com Enterprise Value (que inclui dívida).'},
+  // ── Rentabilidade ──
+  roe:{nome:'ROE',u:'%',descricao:'Retorno sobre o patrimônio líquido — lucro gerado sobre o capital dos sócios.',formula:'Lucro Líquido / Patrimônio Líquido',interpretacao:'Mede a eficiência em transformar o capital próprio em lucro.',faixaIdeal:'>15% bom · >20% excelente · <8% fraco.',pontosAtencao:'ROE alto com alavancagem elevada pode embutir risco.'},
+  roic:{nome:'ROIC',u:'%',descricao:'Retorno sobre o capital investido (próprio + dívida).',formula:'NOPAT / Capital Investido',interpretacao:'Rentabilidade do negócio independente da estrutura de capital. ROIC > custo de capital cria valor.',faixaIdeal:'>12% costuma ser bom.',pontosAtencao:'Compare com o custo de capital (WACC) da empresa.'},
+  roa:{nome:'ROA',u:'%',descricao:'Retorno sobre os ativos totais.',formula:'Lucro Líquido / Ativos',interpretacao:'Eficiência em gerar lucro a partir de toda a base de ativos.',faixaIdeal:'Quanto maior, melhor (varia por setor).',pontosAtencao:'Setores intensivos em ativos têm ROA naturalmente menor.'},
+  roi:{nome:'ROI',u:'%',descricao:'Retorno sobre o investimento realizado.',formula:'(Ganho − Custo) / Custo',interpretacao:'Mede o retorno de um investimento específico.',faixaIdeal:'Quanto maior, melhor.',pontosAtencao:'Depende muito da base de cálculo adotada.'},
+  mb:{nome:'Margem Bruta',u:'%',descricao:'Quanto sobra da receita após o custo dos produtos/serviços.',formula:'Lucro Bruto / Receita Líquida',interpretacao:'Indica poder de precificação e eficiência produtiva.',faixaIdeal:'Quanto maior, melhor; estabilidade é valiosa.',pontosAtencao:'Margens variam muito entre setores.'},
+  mebitda:{nome:'Margem EBITDA',u:'%',descricao:'EBITDA sobre a receita — geração de caixa operacional percentual.',formula:'EBITDA / Receita Líquida',interpretacao:'Mostra quanto da receita vira caixa operacional, antes de juros, impostos e depreciação.',faixaIdeal:'Quanto maior e mais estável, melhor.',pontosAtencao:'Não reflete necessidades de investimento (capex).'},
+  mebit:{nome:'Margem EBIT',u:'%',descricao:'Lucro operacional (EBIT) sobre a receita.',formula:'EBIT / Receita Líquida',interpretacao:'Rentabilidade operacional após depreciação.',faixaIdeal:'Quanto maior, melhor.',pontosAtencao:'Comparar dentro do mesmo setor.'},
+  ml:{nome:'Margem Líquida',u:'%',descricao:'Lucro líquido sobre a receita — quanto sobra no fim para o acionista.',formula:'Lucro Líquido / Receita Líquida',interpretacao:'Eficiência final do negócio após todos os custos e despesas.',faixaIdeal:'Quanto maior, melhor; >20% é forte.',pontosAtencao:'Pode ser inflada por resultados não recorrentes.'},
+  // ── Crescimento ──
+  cagrRec:{nome:'CAGR Receita 5a',u:'%',descricao:'Crescimento anual composto da receita nos últimos 5 anos.',formula:'(Receita final / inicial)^(1/anos) − 1',interpretacao:'Ritmo de expansão das vendas.',faixaIdeal:'>10% a.a. é robusto.',pontosAtencao:'Crescer receita sem margem/lucro pode destruir valor.'},
+  cagrLuc:{nome:'CAGR Lucro 5a',u:'%',descricao:'Crescimento anual composto do lucro nos últimos 5 anos.',formula:'(Lucro final / inicial)^(1/anos) − 1',interpretacao:'Consistência e ritmo de crescimento dos resultados.',faixaIdeal:'>10% a.a. é forte.',pontosAtencao:'Base inicial muito baixa distorce o percentual.'},
+  cagrEbitda:{nome:'CAGR EBITDA 5a',u:'%',descricao:'Crescimento anual composto do EBITDA.',formula:'(EBITDA final / inicial)^(1/anos) − 1',interpretacao:'Evolução da geração de caixa operacional.',faixaIdeal:'>10% a.a. é positivo.',pontosAtencao:'Avalie junto à margem.'},
+  cagrDiv:{nome:'CAGR Dividendos 5a',u:'%',descricao:'Crescimento anual composto dos dividendos.',formula:'(DPA final / inicial)^(1/anos) − 1',interpretacao:'Indica capacidade de aumentar proventos ao longo do tempo.',faixaIdeal:'Crescente e sustentável é o ideal.',pontosAtencao:'Payout muito alto pode limitar o crescimento futuro.'},
+  // ── Dividendos ──
+  dy:{nome:'Dividend Yield',u:'%',descricao:'Proventos distribuídos nos últimos 12 meses sobre o preço atual.',formula:'Dividendos 12m / Preço',interpretacao:'Renda anual em dividendos que o preço atual proporciona.',faixaIdeal:'Acima de ~6% a.a. é alto na B3 (FIIs ~8–12%).',pontosAtencao:'DY muito alto pode ser dividendo extraordinário não recorrente.'},
+  payout:{nome:'Payout',u:'%',descricao:'Percentual do lucro distribuído como dividendos.',formula:'Dividendos / Lucro Líquido',interpretacao:'Quanto do lucro vira provento (vs. reinvestimento).',faixaIdeal:'40–70% costuma ser equilibrado.',pontosAtencao:'Payout >100% (paga mais que lucra) raramente é sustentável.'},
+  dpa:{nome:'Dividendos por Ação',u:'R$',descricao:'Valor pago em proventos por ação/cota no período.',formula:'Total de proventos / Nº de ações',interpretacao:'Quanto cada ação rendeu em dinheiro.',faixaIdeal:'Crescente e regular é o ideal.',pontosAtencao:'Considere se houve eventos extraordinários.'},
+  divGrowth:{nome:'Crescimento dos Dividendos',u:'%',descricao:'Variação dos dividendos ao longo do tempo.',formula:'Δ DPA período a período',interpretacao:'Mede se a empresa aumenta os proventos de forma consistente.',faixaIdeal:'Crescimento estável é valioso para renda.',pontosAtencao:'Crescimento puxado por payout crescente tem limite.'},
+  // ── Endividamento ──
+  dleb:{nome:'Dív. Líq./EBITDA',u:'x',descricao:'Quantos anos de geração de caixa seriam necessários para quitar a dívida líquida.',formula:'Dívida Líquida / EBITDA',interpretacao:'Mede o nível de alavancagem.',faixaIdeal:'<1 conservador · 1–3 confortável · >3,5 alto.',pontosAtencao:'Sensível a juros altos; setores estáveis suportam mais dívida.'},
+  dlpl:{nome:'Dív. Líq./Patrim.',u:'x',descricao:'Dívida líquida sobre o patrimônio líquido.',formula:'Dívida Líquida / Patrimônio',interpretacao:'Proporção da dívida frente ao capital próprio.',faixaIdeal:'<0,5 confortável · >1 elevado.',pontosAtencao:'Negativo indica caixa líquido (sem dívida líquida).'},
+  lc:{nome:'Liquidez Corrente',u:'x',descricao:'Capacidade de pagar obrigações de curto prazo.',formula:'Ativo Circulante / Passivo Circulante',interpretacao:'Acima de 1 = ativos de curto prazo cobrem as dívidas de curto prazo.',faixaIdeal:'1,2–2,0 é saudável.',pontosAtencao:'Muito alto pode indicar caixa ocioso.'},
+  ls:{nome:'Liquidez Seca',u:'x',descricao:'Liquidez corrente excluindo os estoques (ativos menos líquidos).',formula:'(Ativo Circ. − Estoques) / Passivo Circ.',interpretacao:'Visão mais conservadora da liquidez de curto prazo.',faixaIdeal:'≥1 é confortável.',pontosAtencao:'Relevante em setores com estoque alto (varejo, indústria).'},
+  coberturaJuros:{nome:'Cobertura de Juros',u:'x',descricao:'Quantas vezes o lucro operacional cobre as despesas com juros.',formula:'EBIT / Despesas Financeiras',interpretacao:'Mede a folga para honrar os juros da dívida.',faixaIdeal:'>3x é confortável.',pontosAtencao:'Abaixo de 1,5x acende alerta de risco financeiro.'},
+  // ── Eficiência ──
+  giro:{nome:'Giro do Ativo',u:'x',descricao:'Receita gerada por cada R$ 1 de ativo.',formula:'Receita Líquida / Ativos',interpretacao:'Eficiência no uso dos ativos para gerar vendas.',faixaIdeal:'Quanto maior, melhor (varia por setor).',pontosAtencao:'Varejo tem giro alto; utilities, baixo.'},
+  giroEstoque:{nome:'Giro de Estoques',u:'x',descricao:'Quantas vezes o estoque é renovado no período.',formula:'CMV / Estoque Médio',interpretacao:'Eficiência na gestão de estoques.',faixaIdeal:'Quanto maior, mais ágil a operação.',pontosAtencao:'Setores sem estoque (serviços) não se aplicam.'},
+  pmr:{nome:'Prazo Médio de Receb.',u:'d',descricao:'Dias médios para receber as vendas.',formula:'(Contas a Receber / Receita) × 365',interpretacao:'Quanto menor, mais rápido a empresa converte vendas em caixa.',faixaIdeal:'Quanto menor, melhor.',pontosAtencao:'Comparar com o prazo de pagamento (PMP).'},
+  pmp:{nome:'Prazo Médio de Pagto.',u:'d',descricao:'Dias médios para pagar fornecedores.',formula:'(Fornecedores / CMV) × 365',interpretacao:'PMP > PMR favorece o caixa (financia-se com fornecedor).',faixaIdeal:'Maior que o PMR é vantajoso.',pontosAtencao:'Prazos muito longos podem desgastar fornecedores.'},
+  // ── Por ação ──
+  lpa:{nome:'LPA',u:'R$',descricao:'Lucro líquido por ação.',formula:'Lucro Líquido / Nº de ações',interpretacao:'Quanto de lucro cabe a cada ação. Base do P/L.',faixaIdeal:'Crescente é o ideal.',pontosAtencao:'Afetado por recompras e emissões de ações.'},
+  vpa:{nome:'VPA',u:'R$',descricao:'Valor patrimonial por ação.',formula:'Patrimônio Líquido / Nº de ações',interpretacao:'Patrimônio contábil que cabe a cada ação. Base do P/VP.',faixaIdeal:'Crescente ao longo do tempo.',pontosAtencao:'Valor contábil pode diferir do valor de mercado dos ativos.'},
+  fcpa:{nome:'Fluxo de Caixa por Ação',u:'R$',descricao:'Geração de caixa operacional por ação.',formula:'Fluxo de Caixa Operacional / Nº de ações',interpretacao:'Mostra o caixa real gerado, menos sujeito a distorções contábeis que o lucro.',faixaIdeal:'Próximo ou acima do LPA é saudável.',pontosAtencao:'Compare com o LPA para checar a qualidade do lucro.'},
+  // ── FIIs ──
+  vac:{nome:'Vacância',u:'%',descricao:'Percentual da área (ou receita) não locada de um FII de tijolo.',formula:'Área vaga / Área total',interpretacao:'Quanto menor, mais estável a renda do fundo.',faixaIdeal:'<5% baixa · >10% elevada.',pontosAtencao:'FIIs de papel não têm vacância (carteira de CRIs).'},
+  liq:{nome:'Liquidez',u:'',descricao:'Volume médio negociado por dia.',formula:'Média do volume financeiro diário',interpretacao:'Facilidade de comprar/vender sem afetar o preço.',faixaIdeal:'Maior = mais fácil entrar e sair.',pontosAtencao:'Baixa liquidez aumenta o spread de compra/venda.'},
+};
+function indVal(id,a,f){ f=f||(a&&FUND[a.tk])||{}; if(!a) return null; switch(id){
+  case 'pl':return a.pl; case 'pvp':return a.pvp; case 'dy':return a.dy; case 'roe':return a.roe; case 'ml':return a.mgl;
+  case 'vpa':return a.pvp>0?a.px/a.pvp:null; case 'lpa':return a.pl>0?a.px/a.pl:null; case 'vac':return a.vac;
+  case 'evebitda':return f.evebitda; case 'evebit':return f.evebit; case 'pebit':return f.pebit; case 'pativo':return f.pativo; case 'psr':return f.psr;
+  case 'roa':return f.roa; case 'roic':return f.roic; case 'mb':return f.mb; case 'mebit':return f.mebit;
+  case 'dleb':return f.dleb; case 'dlpl':return f.dlpl; case 'lc':return f.lc; case 'giro':return f.giro;
+  case 'payout':return f.payout; case 'cagrRec':return f.cagrR; case 'cagrLuc':return f.cagrL; case 'dpa':return a.div;
+} return null; }
+function fmtMetric(id,v){ if(typeof v!=='number'||!isFinite(v)) return '—'; const u=(INDICATORS[id]||{}).u; if(u==='%')return pc(v,1)+'%'; if(u==='x')return pc(v,2)+'x'; if(u==='R$')return brl(v); if(u==='d')return Math.round(v)+' dias'; return pc(v,2); }
+function sectorAvg(id,a,k){ const arr=k==='fiis'?FIIS:ACOES; const vals=arr.filter(x=>x.seg===a.seg && x.tk!==a.tk).map(x=>indVal(id,x)).filter(v=>typeof v==='number'&&isFinite(v)); return vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:null; }
+function marketAvg(id,k){ const arr=k==='fiis'?FIIS:ACOES; const vals=arr.map(x=>indVal(id,x)).filter(v=>typeof v==='number'&&isFinite(v)); return vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:null; }
+/* histórico sintético determinístico (ilustrativo) — cacheado.
+   Retorna { labels:[anos..., 'Atual'], data:[...] }. */
+const HIST_CACHE={};
+function indHistory(id,tk,val,years){ const key=id+'|'+tk+'|'+years; if(HIST_CACHE[key])return HIST_CACHE[key];
+  const r=rngF(seedFrom('h'+id+tk)); const labels=[],data=[]; const y0=new Date().getFullYear()-years; let v=val*(0.65+r()*0.55);
+  for(let i=0;i<years;i++){ const drift=(val-v)*0.18; const noise=(r()-0.5)*0.30*Math.abs(val||1); v=v+drift+noise; if((val||0)>=0)v=Math.max(v,(val||1)*0.12); labels.push(String(y0+i)); data.push(+v.toFixed(4)); }
+  labels.push('Atual'); data.push(val);
+  const res={labels,data}; HIST_CACHE[key]=res; return res; }
+function histMean(h){ return h.data.reduce((s,v)=>s+v,0)/h.data.length; }
+function indAnalysis(id,a,k,val){ if(typeof val!=='number') return ''; const d=INDICATORS[id]; const mean=histMean(indHistory(id,a.tk,val,10)); const sec=sectorAvg(id,a,k); const lines=[];
+  const rel = val<mean*0.92?'abaixo':val>mean*1.08?'acima':'em linha com';
+  lines.push(`O ${d.nome} atual de <strong>${fmtMetric(id,val)}</strong> está <strong>${rel}</strong> da média histórica de ${fmtMetric(id,mean)}.`);
+  if(sec!=null){ const r2 = val>sec?'acima':'abaixo'; lines.push(`Frente ao setor (${esc(a.seg)}), está <strong>${r2}</strong> da média (${fmtMetric(id,sec)}).`); }
+  // leitura qualitativa por tipo de indicador
+  const lowerBetter = ['pl','pvp','evebitda','evebit','pebit','pativo','dleb','dlpl','pmr'].includes(id);
+  if(sec!=null){ const better = lowerBetter ? val<sec : val>sec; lines.push(better?`Comparativamente, é um ponto <span class="tone-pos">favorável</span>.`:`Vale checar se há razão fundamentalista para o desvio antes de concluir.`); }
+  return lines.join(' '); }
+
+/* popover rico (definição do indicador) */
+function indTipHTML(id){ const d=INDICATORS[id]; if(!d) return '';
+  const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
+  return `<div class="tipcard"><div class="tc-h">${esc(d.nome)}</div><p>${esc(d.descricao)}</p>${row('Fórmula', d.formula?`<b>${esc(d.formula)}</b>`:'')}${row('Como interpretar', esc(d.interpretacao||''))}${row('Faixa de referência', esc(d.faixaIdeal||''))}${row('⚠ Atenção', esc(d.pontosAtencao||''))}</div>`;
+}
+/* card de indicador (label + ? e ícone de histórico, valor) */
+function indCard(id, value, cls){
+  const d=INDICATORS[id], label=d?d.nome:id;
+  const lk=assetLookup(currentAssetTk), raw=lk?indVal(id,lk.a):null, hasData=typeof raw==='number'&&isFinite(raw);
+  const q = d?`<button class="ind-ic" data-ind="${id}" aria-label="Sobre ${esc(label)}"><i class="fa-regular fa-circle-question"></i></button>`:'';
+  const h = hasData?`<button class="ind-ic" onclick="openIndHistory('${id}')" aria-label="Histórico de ${esc(label)}"><i class="fa-solid fa-chart-column"></i></button>`:'';
+  return `<div class="ind-card"><div class="ind-top"><span class="ind-l">${label}</span><span class="ind-ics">${q}${h}</span></div><div class="ind-v ${cls||''}">${nz(value)?'—':value}</div></div>`;
+}
+
+/* ── modal de histórico de indicadores ── */
+let histState={ id:'pvp', years:10, type:'bar', ignore:false };
+function availableIndicators(a,k){
+  const order = k==='fiis' ? ['pvp','dy','dpa','vac'] : ['pl','pvp','evebitda','evebit','pebit','pativo','dy','payout','roe','roic','roa','mb','mebit','ml','giro','dleb','dlpl','lc','cagrRec','cagrLuc','vpa','lpa'];
+  return order.filter(id=>INDICATORS[id] && typeof indVal(id,a)==='number');
+}
+function openIndHistory(id){ const lk=assetLookup(currentAssetTk); if(!lk) return; if(id) histState.id=id; if(!availableIndicators(lk.a,lk.k).includes(histState.id)) histState.id=availableIndicators(lk.a,lk.k)[0]||histState.id; $('#indModal').classList.add('open'); renderIndHistory(); setTimeout(initHistChart,40); }
+function closeIndHistory(){ $('#indModal').classList.remove('open'); if(charts.hist){ try{charts.hist.destroy()}catch(e){} delete charts.hist; } }
+function setHistMetric(v){ histState.id=v; renderIndHistory(); setTimeout(initHistChart,30); }
+function setHistType(t){ histState.type=t; document.querySelectorAll('#histType button').forEach(b=>b.classList.toggle('on', b.dataset.t===t)); initHistChart(); }
+function setHistYears(y){ histState.years=+y; document.querySelectorAll('#histYears button').forEach(b=>b.classList.toggle('on', +b.dataset.y===+y)); renderIndHistory(); setTimeout(initHistChart,30); }
+function toggleHistIgnore(cb){ histState.ignore=cb.checked; initHistChart(); }
+function renderIndHistory(){
+  const lk=assetLookup(currentAssetTk); if(!lk) return; const {a,k}=lk; const id=histState.id, val=indVal(id,a);
+  $('#indMTitle').textContent = `Histórico de Indicadores · ${a.tk}`;
+  $('#indMSel').innerHTML = availableIndicators(a,k).map(x=>`<option value="${x}" ${x===id?'selected':''}>${INDICATORS[x].nome}</option>`).join('');
+  const h=indHistory(id,a.tk,val,histState.years), mean=histMean(h), sec=sectorAvg(id,a,k);
+  $('#indMStats').innerHTML = `
+    <div class="hstat"><div class="l">Valor atual</div><div class="v">${fmtMetric(id,val)}</div></div>
+    <div class="hstat"><div class="l">Média da empresa</div><div class="v">${fmtMetric(id,mean)}</div></div>
+    <div class="hstat"><div class="l">Média do setor</div><div class="v">${sec!=null?fmtMetric(id,sec):'—'}</div></div>`;
+  $('#indMAnalysis').innerHTML = `<div class="hist-an-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Análise automática</div><p>${indAnalysis(id,a,k,val)}</p><div class="hist-note">Série histórica ilustrativa · valor atual e média do setor com dados reais.</div>`;
+}
+function smoothOut(data){ const m=data.reduce((s,v)=>s+v,0)/data.length, sd=Math.sqrt(data.reduce((s,v)=>s+(v-m)*(v-m),0)/data.length)||1; return data.map(v=> Math.abs(v-m)>2.2*sd?m:v); }
+function initHistChart(){
+  const ctx=document.getElementById('histChart'); if(!ctx) return;
+  if(typeof Chart==='undefined'){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4)">Gráfico indisponível</div>'; return; }
+  if(charts.hist){ try{charts.hist.destroy()}catch(e){} }
+  const lk=assetLookup(currentAssetTk); if(!lk) return; const {a}=lk; const id=histState.id, val=indVal(id,a);
+  const h=indHistory(id,a.tk,val,histState.years); let data=h.data.slice(); if(histState.ignore) data=smoothOut(data);
+  const mean=data.reduce((s,v)=>s+v,0)/data.length;
+  const gold='#A87C2A', g=ctx.getContext('2d'); const grad=g.createLinearGradient(0,0,0,320); grad.addColorStop(0,hexToRgba(gold,.30)); grad.addColorStop(1,hexToRgba(gold,0));
+  const main = histState.type==='bar'
+    ? {type:'bar', label:'v', data, backgroundColor:gold, hoverBackgroundColor:'#8a6420', borderRadius:4, maxBarThickness:46}
+    : {type:'line', label:'v', data, borderColor:gold, backgroundColor:grad, fill:true, borderWidth:2.4, tension:.25, pointRadius:4, pointHoverRadius:6, pointBackgroundColor:'#fff', pointBorderColor:gold, pointBorderWidth:2};
+  const avg = {type:'line', label:'média', data:h.labels.map(()=>mean), borderColor:cssVar('--ink-4'), borderDash:[5,5], borderWidth:1.4, pointRadius:0, fill:false};
+  charts.hist=new Chart(ctx,{ data:{labels:h.labels, datasets:[main, avg]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:450},
+      plugins:{legend:{display:false}, tooltip:{filter:i=>i.datasetIndex===0, displayColors:false, callbacks:{title:items=>items[0].label, label:c=>fmtMetric(id,c.parsed.y)}}},
+      interaction:{intersect:false,mode:'index'},
+      scales:{x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:11}},border:{display:false}},
+              y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:11},callback:v=>fmtMetric(id,v)},border:{display:false},beginAtZero:(typeof val==='number'&&val>=0)}}}});
+}
+
 function fundamentalsHTML(a,k,f){
   if(a._uni && !f){
     return `<div class="card card-pad"><div style="font-size:13px;color:var(--ink-2);line-height:1.6"><i class="fa-solid fa-circle-info" style="color:var(--accent)"></i> Este ativo faz parte do <strong>universo completo da B3</strong>. Preço, variação e gráfico já estão ativos; os indicadores fundamentalistas detalhados (P/L, DY, ROE, balanço…) chegam ao conectar uma fonte de dados de fundamentos.</div></div>`;
   }
+  const grp=(t,cards)=>`<div class="fgroup-title">${t}</div><div class="ind-grid">${cards.filter(Boolean).join('')}</div>`;
   if(k==='acoes'){
     const vpa=a.px/a.pvp, lpa=a.px/a.pl;
-    return `<div class="dt-grid">
-      <div class="card card-pad">
-        <div class="fgroup-title">Valuation</div>
-        <div class="fgroup">
-          ${(()=>{const i=interp('pl',a.pl);return fRow('P/L', num(a.pl,'x'), i.cls, i.tip);})()}${(()=>{const i=interp('pvp',a.pvp);return fRow('P/VP', num(a.pvp,'x'), i.cls, i.tip);})()}
-          ${fRow('P/EBIT', num(f&&f.pebit,'x'))}${fRow('EV/EBIT', num(f&&f.evebit,'x'))}
-          ${fRow('EV/EBITDA', num(f&&f.evebitda,'x'))}${fRow('P/Receita (PSR)', num(f&&f.psr,'x'))}
-          ${fRow('P/Ativo', num(f&&f.pativo,'x'))}${fRow('VPA', brl(vpa))}
-          ${fRow('LPA', brl(lpa))}${(()=>{const i=interp('dy',a.dy);return fRow('Dividend Yield', num(a.dy,'%',1), i.cls||'up', i.tip);})()}
-        </div>
-      </div>
-      <div class="card card-pad">
-        <div class="fgroup-title">Rentabilidade</div>
-        <div class="fgroup">
-          ${(()=>{const i=interp('roe',a.roe);return fRow('ROE', num(a.roe,'%',1), i.cls, i.tip);})()}${fRow('ROA', num(f&&f.roa,'%',1))}
-          ${fRow('ROIC', num(f&&f.roic,'%',1))}${fRow('Margem Bruta', num(f&&f.mb,'%',1))}
-          ${fRow('Margem EBIT', num(f&&f.mebit,'%',1))}${fRow('Margem Líquida', num(a.mgl,'%',1))}
-          ${fRow('Giro do Ativo', num(f&&f.giro,'',2))}
-        </div>
-      </div>
-      <div class="card card-pad">
-        <div class="fgroup-title">Endividamento</div>
-        <div class="fgroup">
-          ${(()=>{const i=interp('dleb',f&&f.dleb);return fRow('Dív. Líq./EBITDA', num(f&&f.dleb,'x'), i.cls, i.tip);})()}${fRow('Dív. Líq./Patrim.', num(f&&f.dlpl,'x'))}
-          ${fRow('Liquidez Corrente', num(f&&f.lc,'x'))}${fRow('Patrim./Ativos', num(f&&f.pat,'x'))}
-        </div>
-      </div>
-      <div class="card card-pad">
-        <div class="fgroup-title">Crescimento & Payout</div>
-        <div class="fgroup">
-          ${fRow('CAGR Receitas 5a', num(f&&f.cagrR,'%',1))}${fRow('CAGR Lucros 5a', num(f&&f.cagrL,'%',1))}
-          ${fRow('Payout', num(f&&f.payout,'%',0))}
-        </div>
-      </div>
-    </div>`;
+    return `
+      ${grp('Valuation',[
+        indCard('pl', num(a.pl,'x'), interp('pl',a.pl).cls),
+        indCard('pvp', num(a.pvp,'x'), interp('pvp',a.pvp).cls),
+        indCard('pebit', num(f&&f.pebit,'x')),
+        indCard('evebit', num(f&&f.evebit,'x')),
+        indCard('evebitda', num(f&&f.evebitda,'x')),
+        indCard('psr', num(f&&f.psr,'x')),
+        indCard('pativo', num(f&&f.pativo,'x')),
+        indCard('mktcap', (f&&f.mkt)||a.mkt||'—'),
+        indCard('ev', f?f.ev:'—'),
+        indCard('dy', num(a.dy,'%',1), interp('dy',a.dy).cls||'up'),
+      ])}
+      <div style="margin-top:18px"></div>
+      ${grp('Rentabilidade',[
+        indCard('roe', num(a.roe,'%',1), interp('roe',a.roe).cls),
+        indCard('roa', num(f&&f.roa,'%',1)),
+        indCard('roic', num(f&&f.roic,'%',1)),
+        indCard('mb', num(f&&f.mb,'%',1)),
+        indCard('mebit', num(f&&f.mebit,'%',1)),
+        indCard('ml', num(a.mgl,'%',1)),
+        indCard('giro', num(f&&f.giro,'',2)),
+      ])}
+      <div style="margin-top:18px"></div>
+      ${grp('Endividamento',[
+        indCard('dleb', num(f&&f.dleb,'x'), interp('dleb',f&&f.dleb).cls),
+        indCard('dlpl', num(f&&f.dlpl,'x')),
+        indCard('lc', num(f&&f.lc,'x')),
+      ])}
+      <div style="margin-top:18px"></div>
+      ${grp('Crescimento & Dividendos',[
+        indCard('cagrRec', num(f&&f.cagrR,'%',1)),
+        indCard('cagrLuc', num(f&&f.cagrL,'%',1)),
+        indCard('payout', num(f&&f.payout,'%',0)),
+      ])}
+      <div style="margin-top:18px"></div>
+      ${grp('Por ação',[ indCard('vpa', brl(vpa)), indCard('lpa', brl(lpa)) ])}`;
   }
   if(k==='fiis'){
-    return `<div class="card card-pad">
-      <div class="fgroup-title">Indicadores do fundo</div>
-      <div class="fgroup">
-        ${(()=>{const i=interp('pvpFii',a.pvp);return fRow('P/VP', num(a.pvp,'x'), i.cls, i.tip);})()}${(()=>{const i=interp('dyFii',a.dy);return fRow('Dividend Yield', num(a.dy,'%',1), i.cls||'up', i.tip);})()}
-        ${fRow('Último rendimento', brl(a.div),'up')}${(()=>{const i=interp('vac',a.vac);return fRow('Vacância', num(a.vac,'%',1), i.cls, i.tip);})()}
-        ${fRow('Liquidez diária', f&&f.liqf)}${fRow('Patrimônio líquido', f&&f.plf)}
-        ${fRow('Valor de mercado', f&&f.mkt)}${fRow('Nº de cotistas', f&&f.cotistas)}
-        ${fRow('Nº de cotas', f&&f.cotas)}${fRow('Taxa de adm.', f&&f.txadm)}
-        ${fRow('Tipo', f&&f.tipo)}${fRow('Gestão', f&&f.gestao)}
-        ${fRow('Ativos', f&&f.nat)}${fRow('Segmento', a.seg)}
-      </div>
-    </div>`;
+    return `
+      ${grp('Indicadores do fundo',[
+        indCard('pvp', num(a.pvp,'x'), interp('pvpFii',a.pvp).cls),
+        indCard('dy', num(a.dy,'%',1), interp('dyFii',a.dy).cls||'up'),
+        indCard('dpa', brl(a.div), 'up'),
+        indCard('vac', num(a.vac,'%',1), interp('vac',a.vac).cls),
+      ])}
+      <div class="card card-pad" style="margin-top:18px">
+        <div class="fgroup-title">Dados do fundo</div>
+        <div class="fgroup">
+          ${fRow('Liquidez diária', f&&f.liqf)}${fRow('Patrimônio líquido', f&&f.plf)}
+          ${fRow('Valor de mercado', f&&f.mkt)}${fRow('Nº de cotistas', f&&f.cotistas)}
+          ${fRow('Nº de cotas', f&&f.cotas)}${fRow('Taxa de adm.', f&&f.txadm)}
+          ${fRow('Tipo', f&&f.tipo)}${fRow('Gestão', f&&f.gestao)}
+          ${fRow('Ativos', f&&f.nat)}${fRow('Segmento', a.seg)}
+        </div>
+      </div>`;
   }
   const m=metricsForDetail(a,k).map(x=>`<div class="metric"><div class="ml">${x[0]}</div><div class="mv ${x[2]||''}">${x[1]}</div></div>`).join('');
   return `<div class="metric-grid">${m}</div><div style="font-size:12px;color:var(--ink-3);margin-top:12px"><i class="fa-solid fa-circle-info"></i> Indicadores fundamentalistas detalhados disponíveis para Ações e FIIs.</div>`;
