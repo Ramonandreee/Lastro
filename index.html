@@ -1395,8 +1395,24 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .proscons li.pos i { color:var(--up); } .proscons li.neg i { color:var(--down); } .proscons li.muted { color:var(--ink-3); }
 .dec-foot { margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:11.5px; color:var(--ink-3); }
 @media (max-width:560px){ .proscons { grid-template-columns:1fr; gap:18px; } .dims { grid-template-columns:1fr 1fr; } }
-.f-row[title] { cursor:help; }
+.f-row[data-tip], .dim[data-tip], .fv-cell[data-tip] { cursor:help; }
 .frq { font-size:10px; color:var(--ink-4); }
+/* tooltip flutuante (hover desktop + toque mobile) */
+.tip { position:fixed; z-index:300; max-width:280px; background:var(--ink); color:var(--canvas); font-size:12px; line-height:1.55; padding:10px 13px; border-radius:10px; box-shadow:var(--sh-lg); opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .14s var(--ease), transform .14s var(--ease); }
+.tip.show { opacity:1; transform:none; }
+.tip::after { content:''; position:absolute; left:var(--ax,50%); transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--ink); bottom:-9px; }
+.tip.below::after { bottom:auto; top:-9px; border-top-color:transparent; border-bottom-color:var(--ink); }
+/* maiores altas/baixas (painel) */
+.mv-list { display:flex; flex-direction:column; }
+.mv-row { display:flex; align-items:center; gap:11px; padding:10px 8px; margin:0 -8px; border-radius:9px; cursor:pointer; transition:background .14s var(--ease); }
+.mv-row:hover { background:var(--surface-2); }
+.mv-row + .mv-row { border-top:1px solid var(--line); }
+.mv-id { flex:1; min-width:0; }
+.mv-tk { font-family:var(--mono); font-weight:600; font-size:13px; }
+.mv-nm { font-size:11px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mv-px { font-size:12.5px; color:var(--ink-2); }
+.mv-pct { font-family:var(--mono); font-weight:600; font-size:13px; min-width:62px; text-align:right; }
+.mv-pct.up { color:var(--up); } .mv-pct.down { color:var(--down); }
 /* preço justo / margem de segurança */
 .fairvalue { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px; margin-bottom:18px; }
 .fv-head { font-size:13px; color:var(--ink-2); line-height:1.5; margin-bottom:12px; }
@@ -1974,6 +1990,32 @@ function closeOnboarding(){ const m=$('#obModal'); if(m) m.classList.remove('ope
 function animateContent(){ const c=$('#content'); if(!c) return; c.classList.remove('content-anim'); void c.offsetWidth; c.classList.add('content-anim'); }
 function skelLines(n=3){ const w=['sk-90','sk-75','sk-55','sk-90','sk-40']; let s=''; for(let i=0;i<n;i++) s+=`<div class="skeleton skel-line ${w[i%w.length]}"></div>`; return s; }
 
+/* ── tooltips (funcionam no hover do desktop E no toque/clique do mobile) ── */
+let _tip;
+function _tipNode(){ if(!_tip){ _tip=document.createElement('div'); _tip.className='tip'; document.body.appendChild(_tip); } return _tip; }
+function showTip(target){
+  const txt = target.getAttribute('data-tip'); if(!txt){ hideTip(); return; }
+  const el=_tipNode(); el.textContent=txt; el.style.maxWidth=Math.min(280, window.innerWidth-24)+'px';
+  el.classList.add('show'); el._for=target;
+  const r=target.getBoundingClientRect(), tw=el.offsetWidth, th=el.offsetHeight;
+  let left=Math.max(12, Math.min(r.left+r.width/2-tw/2, window.innerWidth-tw-12));
+  let top=r.top-th-10, below=false;
+  if(top<8){ top=r.bottom+10; below=true; }
+  el.style.left=left+'px'; el.style.top=top+'px';
+  el.classList.toggle('below', below);
+  el.style.setProperty('--ax', (r.left+r.width/2-left)+'px');
+}
+function hideTip(){ if(_tip){ _tip.classList.remove('show'); _tip._for=null; } }
+document.addEventListener('click', e=>{
+  const t=e.target.closest('[data-tip]');
+  if(t){ if(_tip && _tip.classList.contains('show') && _tip._for===t) hideTip(); else showTip(t); }
+  else hideTip();
+});
+document.addEventListener('mouseover', e=>{ if(!matchMedia('(hover:hover)').matches) return; const t=e.target.closest('[data-tip]'); if(t) showTip(t); });
+document.addEventListener('mouseout', e=>{ if(!matchMedia('(hover:hover)').matches) return; const t=e.target.closest('[data-tip]'); if(t) hideTip(); });
+window.addEventListener('scroll', hideTip, {passive:true});
+window.addEventListener('resize', hideTip);
+
 function nav(v, el){
   currentView = v;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -2012,6 +2054,20 @@ function render(v, soft){
 /* ══════════════════════════════════════════════════════════
    VIEW: PAINEL
    ══════════════════════════════════════════════════════════ */
+/* maiores altas/baixas REAIS (usa o universo carregado: var = variação do dia) */
+function topMovers(dir, n=5){
+  const pool = ACOES.filter(a=>typeof a.var==='number' && a.px>0);
+  pool.sort((x,y)=> dir==='up' ? y.var-x.var : x.var-y.var);
+  return pool.slice(0,n);
+}
+function moverRow(a){
+  return `<div class="mv-row" onclick="quickView('${a.tk}')">
+    ${assetLogo(a.tk,'acoes','xs')}
+    <div class="mv-id"><div class="mv-tk">${a.tk}</div><div class="mv-nm">${esc(a.nm||'')}</div></div>
+    <div class="mv-px mono">${brl(a.px)}</div>
+    <span class="mv-pct ${a.var>=0?'up':'down'}">${a.var>=0?'+':''}${pc(a.var)}%</span>
+  </div>`;
+}
 function viewPainel(){
   const p = portfolioStats();
   const mstrip = MARKET.map(m=>{
@@ -2031,20 +2087,8 @@ function viewPainel(){
       <div class="tl-val"><div class="v">${d.v}</div><div class="t">${d.t}</div></div>
     </div>`).join('');
 
-  const altasRows = ALTAS.map((r,i)=>`
-    <div class="rank-row" onclick="quickView('${r[0]}')">
-      <span class="rank-n">${i+1}</span>
-      <span class="rank-tk">${r[0]}</span>
-      <span class="rank-bar"><i style="width:${(r[1]/2.75*100)}%;background:var(--up)"></i></span>
-      <span class="rank-pct up">+${r[1].toFixed(2).replace('.',',')}%</span>
-    </div>`).join('');
-  const baixasRows = BAIXAS.map((r,i)=>`
-    <div class="rank-row" onclick="quickView('${r[0]}')">
-      <span class="rank-n">${i+1}</span>
-      <span class="rank-tk">${r[0]}</span>
-      <span class="rank-bar"><i style="width:${(Math.abs(r[1])/7.28*100)}%;background:var(--down)"></i></span>
-      <span class="rank-pct down">${r[1].toFixed(2).replace('.',',')}%</span>
-    </div>`).join('');
+  const altasRows = topMovers('up').map(moverRow).join('') || '<div class="drawer-empty" style="padding:14px 0">Carregando mercado…</div>';
+  const baixasRows = topMovers('down').map(moverRow).join('') || '<div class="drawer-empty" style="padding:14px 0">Carregando mercado…</div>';
 
   const intReais = Math.floor(p.atual);
   const cents = Math.round((p.atual-intReais)*100).toString().padStart(2,'0');
@@ -2060,9 +2104,9 @@ function viewPainel(){
       </div>
       <div class="hero-spark" id="heroSpark"></div>
       <div class="hero-stats">
-        <div class="hero-stat"><div class="lbl">Renda mensal estimada</div><div class="val up">${brl(p.renda)}</div><div class="sub faint">próximo: 16 jun</div></div>
-        <div class="hero-stat"><div class="lbl">DY médio ponderado</div><div class="val">${p.dyMed.toFixed(1).replace('.',',')}%</div><div class="sub up">acima do IFIX (8,9%)</div></div>
-        <div class="hero-stat"><div class="lbl">Total investido</div><div class="val">${brl(p.invest)}</div><div class="sub faint">4 ativos · FIIs</div></div>
+        <div class="hero-stat"><div class="lbl">Renda mensal estimada</div><div class="val up">${brl(p.renda)}</div><div class="sub faint">${p.atual?pc(p.renda*12/p.atual*100,1)+'% a.a.':''}</div></div>
+        <div class="hero-stat"><div class="lbl">DY médio ponderado</div><div class="val">${pc(p.dyMed,1)}%</div><div class="sub ${p.dyMed>=8?'up':'faint'}">${p.dyMed>=8?'renda robusta':'da carteira'}</div></div>
+        <div class="hero-stat"><div class="lbl">Total investido</div><div class="val">${brl(p.invest)}</div><div class="sub faint">${CARTEIRA.length} ativo${CARTEIRA.length!==1?'s':''}</div></div>
       </div>
     </div>
 
@@ -2108,12 +2152,12 @@ function viewPainel(){
 
   <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top:16px;">
     <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-arrow-trend-up"></i></span> Maiores altas</div><span class="card-sub">hoje</span></div>
-      <div class="rank">${altasRows}</div>
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-arrow-trend-up"></i></span> Maiores altas</div><span class="card-sub">ações · dia</span></div>
+      <div class="mv-list">${altasRows}</div>
     </div>
     <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-arrow-trend-down"></i></span> Maiores baixas</div><span class="card-sub">hoje</span></div>
-      <div class="rank">${baixasRows}</div>
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-arrow-trend-down"></i></span> Maiores baixas</div><span class="card-sub">ações · dia</span></div>
+      <div class="mv-list">${baixasRows}</div>
     </div>
   </div>`;
 }
@@ -3181,7 +3225,7 @@ function hexToRgba(hex,a){ const h=String(hex).replace('#','').trim(); const n=h
 /* formatação dos indicadores */
 const nz = v => (v===null||v===undefined||v==='');
 function num(v, suf='', dec=2){ return nz(v)?'—':(typeof v==='number'? pc(v,dec):v)+suf; }
-function fRow(label, val, cls, tip){ return `<div class="f-row"${tip?` title="${esc(tip)}"`:''}><span class="f-l">${label}${tip?' <i class="fa-regular fa-circle-question frq"></i>':''}</span><span class="f-v ${cls||''}">${nz(val)?'—':val}</span></div>`; }
+function fRow(label, val, cls, tip){ return `<div class="f-row"${tip?` data-tip="${esc(tip)}"`:''}><span class="f-l">${label}${tip?' <i class="fa-regular fa-circle-question frq"></i>':''}</span><span class="f-v ${cls||''}">${nz(val)?'—':val}</span></div>`; }
 // interpreta um indicador → { cls, tip } (cor + explicação curta)
 function interp(metric, v){
   if(typeof v!=='number') return {};
@@ -3518,7 +3562,7 @@ function fairValueHTML(a,k){
   if(!items.length) return '';
   const cells = items.map(it=>{
     const up=(it.val-a.px)/a.px*100, below=up>=0;
-    return `<div class="fv-cell" title="${esc(it.hint)}"><div class="fv-l">${it.label} <i class="fa-regular fa-circle-question frq"></i></div><div class="fv-v">${brl(it.val)}</div><div class="fv-tag ${below?'tone-pos':'tone-neg'}">${below?'<i class="fa-solid fa-arrow-trend-up"></i> '+pc(up,1)+'% de margem':'<i class="fa-solid fa-arrow-trend-down"></i> '+pc(Math.abs(up),1)+'% acima'}</div></div>`;
+    return `<div class="fv-cell" data-tip="${esc(it.hint)}"><div class="fv-l">${it.label} <i class="fa-regular fa-circle-question frq"></i></div><div class="fv-v">${brl(it.val)}</div><div class="fv-tag ${below?'tone-pos':'tone-neg'}">${below?'<i class="fa-solid fa-arrow-trend-up"></i> '+pc(up,1)+'% de margem':'<i class="fa-solid fa-arrow-trend-down"></i> '+pc(Math.abs(up),1)+'% acima'}</div></div>`;
   }).join('');
   const best = items.reduce((b,it)=> it.val>b.val?it:b, items[0]);
   const upBest=(best.val-a.px)/a.px*100;
@@ -3531,7 +3575,18 @@ function decisionCard(a,k,f){
   if(!ASSET_CLASS[k].score || typeof a.score!=='number') return '';
   const ins = assetInsights(a,k,f), dims = dimRatings(a,k,f);
   const icon = ins.tone==='pos'?'circle-check':ins.tone==='neg'?'circle-exclamation':'circle-info';
-  const dimHtml = dims.map(d=>`<div class="dim"><div class="dim-l">${d.label}</div><div class="dim-r tone-${d.tone}">${d.rating}</div></div>`).join('');
+  const DIM_HINTS = {
+    'Valuation':'Quão cara ou barata a ação está pelos múltiplos P/L e P/VP. Ex.: P/L baixo costuma indicar preço atrativo.',
+    'Dividendos':'Quanto a empresa paga em proventos frente ao preço (Dividend Yield). Acima de ~6% a.a. é considerado alto.',
+    'Rentabilidade':'Eficiência em gerar lucro sobre o capital dos sócios (ROE). Acima de 18% é alto.',
+    'Solidez':'Saúde do balanço e endividamento. Caixa líquido ou baixa dívida = mais resiliente.',
+    'Preço (P/VP)':'Preço frente ao valor patrimonial da cota. Abaixo de 1 = negocia com desconto.',
+    'Rendimento':'Dividend Yield do FII frente à média da classe. Acima de ~11% é alto.',
+    'Ocupação':'Quanto dos imóveis está alugado (inverso da vacância). Quanto maior, mais estável a renda.',
+    'Risco crédito':'Perfil de risco da carteira de CRIs de um FII de papel. DY muito alto pode indicar crédito mais arriscado.',
+    'Consistência':'Regularidade histórica das distribuições. Alta = pagamentos previsíveis.'
+  };
+  const dimHtml = dims.map(d=>`<div class="dim" data-tip="${esc(DIM_HINTS[d.label]||'')}"><div class="dim-l">${d.label} <i class="fa-regular fa-circle-question frq"></i></div><div class="dim-r tone-${d.tone}">${d.rating}</div></div>`).join('');
   const pros = ins.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> ${t}</li>`).join('');
   const cons = ins.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> ${t}</li>`).join('');
   return `<div class="card card-pad decision">
@@ -3844,6 +3899,7 @@ async function loadUniverse(){
     if(n){
       console.log(`[Lastro] universo: +${n} ativos`);
       if(['acoes','fiis','bdrs'].includes(currentView)) renderAssets(currentView);
+      else if(currentView==='painel') render('painel', true);   // movers ao vivo no painel
     }
   }catch(e){ console.warn('[Lastro] universo indisponível:', e.message); }
   finally{ universeLoaded = true; const ch=document.getElementById('uniChip'); if(ch) ch.remove(); }
