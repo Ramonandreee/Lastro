@@ -357,6 +357,17 @@ a { color: inherit; text-decoration: none; }
 .data-status.loading .ds-dot { background: var(--accent, #2563EB); animation: dsblink 1s var(--ease) infinite; }
 @keyframes dsblink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 .topbar-right { display: flex; align-items: center; gap: 12px; }
+/* logo centralizada na tela Início (no lugar do título) */
+.topbar-brand { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); display:none; align-items:center; gap:9px; pointer-events:none; }
+.topbar-brand .tb-mark { width:30px; height:30px; border-radius:9px; background:linear-gradient(150deg,#23B07E,#0E7C5A 55%,#09533C); box-shadow:inset 0 1px 1px rgba(255,255,255,.25), 0 2px 6px rgba(9,83,60,.3); display:inline-flex; align-items:center; justify-content:center; }
+.topbar-brand .tb-mark svg { width:17px; height:17px; }
+.topbar-brand .tb-name { font-size:20px; font-weight:700; letter-spacing:-.02em; color:var(--ink); }
+body.view-inicio .page-title { visibility:hidden; }
+body.view-inicio .topbar-brand { display:flex; }
+/* coroa premium (não assinantes) */
+.hdr-crown i { color:var(--gold); }
+.hdr-crown { border-color:color-mix(in srgb,var(--gold) 40%,transparent) !important; background:var(--gold-l) !important; }
+.hdr-crown:hover { box-shadow:0 0 0 3px var(--gold-l); }
 .search-trigger {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 14px;
@@ -561,7 +572,7 @@ img, svg, canvas, video { max-width: 100%; }
 }
 @media (max-width: 460px) {
   .content { padding: 12px; }
-  .mstrip { grid-template-columns: 1fr !important; }
+  .mstrip { grid-template-columns: repeat(2,1fr) !important; }
   .data-status #dataStatusLabel { display:none; }
   .topbar-right { gap:6px; }
   .card-pad { padding: 15px 14px; }
@@ -654,10 +665,14 @@ img, svg, canvas, video { max-width: 100%; }
           <div class="page-sub" id="pageSub">Visão geral do seu patrimônio e do mercado</div>
         </div>
       </div>
+      <div class="topbar-brand" id="topbarBrand" aria-hidden="true">
+        <span class="tb-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span>
+        <span class="tb-name">Lastro</span>
+      </div>
       <div class="topbar-right">
         <div class="market-status"><span class="pulse"></span> Mercado aberto</div>
         <button class="data-status demo" id="dataStatus" onclick="refreshQuotes(true)" title="Fonte de dados — clique para atualizar"><span class="ds-dot"></span><span id="dataStatusLabel">Demonstração</span></button>
-        <button class="icon-btn" title="Notificações"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></button>
+        <button class="icon-btn" id="hdrAction" title="Notificações"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></button>
       </div>
     </header>
 
@@ -886,7 +901,7 @@ img, svg, canvas, video { max-width: 100%; }
 .insight-send:hover { background: var(--brand-d); }
 
 /* metric strip */
-.mstrip { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 16px; }
+.mstrip { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
 .mcell {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -2307,6 +2322,18 @@ function refreshPlanUI(){
   document.body.classList.toggle('is-premium', pro);
   const pl = document.querySelector('.user-meta .pl'); if(pl) pl.textContent = pro?'Plano Premium':'Plano Gratuito';
   const up = document.getElementById('upgradeBtn'); if(up) up.style.display = pro?'none':'flex';
+  updateHeaderAction();
+}
+/* cabeçalho: sino (assinante) ou coroa Premium (não assinante) */
+function updateHeaderAction(){
+  const b = document.getElementById('hdrAction'); if(!b) return;
+  if(isPremium()){
+    b.className='icon-btn'; b.title='Notificações'; b.onclick=null;
+    b.innerHTML='<i class="fa-regular fa-bell"></i><span class="notif-dot"></span>';
+  } else {
+    b.className='icon-btn hdr-crown'; b.title='Premium — desbloqueie notificações e mais'; b.onclick=goPricing;
+    b.innerHTML='<i class="fa-solid fa-crown"></i>';
+  }
 }
 /* uso de IA no dia (limite do plano free) */
 function aiUsedToday(){ try{ const o=JSON.parse(localStorage.getItem('lastro_ai')||'{}'); const d=new Date().toISOString().slice(0,10); return o.d===d?(o.n||0):0; }catch(e){ return 0; } }
@@ -2590,7 +2617,8 @@ function goView(v){ const el=document.querySelector('.nav-item[data-view="'+v+'"
 
 function viewPainel(){
   const p = portfolioStats();
-  const mstrip = MARKET.map(m=>{
+  // Ibovespa já é o destaque do hero — a faixa abaixo mostra os demais índices (sem repetir)
+  const mstrip = MARKET.slice(1).map(m=>{
     const col = m.up===true?'var(--up)': m.up===false?'var(--down)':'var(--ink-3)';
     const cls = m.up===true?'up': m.up===false?'down':'faint';
     return `<div class="mcell">
@@ -2643,11 +2671,6 @@ function viewPainel(){
         <span class="faint" style="font-size:12.5px">no pregão de hoje</span>
       </div>
       <div class="hero-spark" id="heroSpark"></div>
-      <div class="hero-stats">
-        <div class="hero-stat"><div class="lbl">IFIX</div><div class="val ${MARKET[1].up?'up':'down'}">${MARKET[1].vl}</div><div class="sub ${MARKET[1].up?'up':'down'}">${MARKET[1].dl}</div></div>
-        <div class="hero-stat"><div class="lbl">Dólar</div><div class="val">R$ ${MARKET[2].vl}</div><div class="sub ${MARKET[2].up?'up':'down'}">${MARKET[2].dl}</div></div>
-        <div class="hero-stat"><div class="lbl">Selic</div><div class="val">${MARKET[3].vl}</div><div class="sub faint">meta a.a.</div></div>
-      </div>
     </div>
 
     <div class="insight">
@@ -2669,7 +2692,7 @@ function viewPainel(){
 
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="card-head">
-      <div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></span> Destaques Lastro <span class="card-sub" style="margin-left:6px">maiores Scores agora</span></div>
+      <div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></span> Destaques Lastro</div>
       <button class="btn btn-ghost btn-sm" onclick="goView('score')">Ver ranking <i class="fa-solid fa-arrow-right"></i></button>
     </div>
     <div class="opp-grid">${opps}</div>
@@ -3490,6 +3513,7 @@ function destroyCharts(){ Object.values(charts).forEach(c=>{try{c.destroy()}catc
 
 function afterRender(v, soft){
   destroyCharts();
+  document.body.classList.toggle('view-inicio', v==='painel');
   if(newsTimer){ clearInterval(newsTimer); newsTimer = null; }   // pausa o feed ao sair de Notícias
   if(v==='painel'){
     const p = portfolioStats();
