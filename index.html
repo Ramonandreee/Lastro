@@ -358,7 +358,8 @@ a { color: inherit; text-decoration: none; }
 @keyframes dsblink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 .topbar-right { display: flex; align-items: center; gap: 12px; }
 /* logo centralizada na tela Início (no lugar do título) */
-.topbar-brand { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); display:none; align-items:center; gap:9px; pointer-events:none; }
+.topbar-brand { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); display:none; align-items:center; gap:9px; cursor:pointer; user-select:none; }
+.topbar-brand:active { transform:translate(-50%,-50%) scale(.96); }
 .topbar-brand .tb-mark { width:30px; height:30px; border-radius:9px; background:linear-gradient(150deg,#23B07E,#0E7C5A 55%,#09533C); box-shadow:inset 0 1px 1px rgba(255,255,255,.25), 0 2px 6px rgba(9,83,60,.3); display:inline-flex; align-items:center; justify-content:center; }
 .topbar-brand .tb-mark svg { width:17px; height:17px; }
 .topbar-brand .tb-name { font-size:20px; font-weight:700; letter-spacing:-.02em; color:var(--ink); }
@@ -498,6 +499,10 @@ body.view-inicio .topbar-brand { display:flex; }
 .divider { height: 1px; background: var(--line); margin: 18px 0; }
 
 /* segmented control */
+.chart-ctrls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.chart-type { display:inline-flex; background:var(--surface-3); border-radius:9px; padding:3px; gap:2px; }
+.chart-type button { width:32px; height:30px; border-radius:7px; color:var(--ink-3); cursor:pointer; font-size:13px; display:inline-flex; align-items:center; justify-content:center; transition:all .14s var(--ease); }
+.chart-type button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
 .segmented {
   display: inline-flex;
   background: var(--surface-3);
@@ -686,7 +691,7 @@ img, svg, canvas, video { max-width: 100%; }
           <div class="page-sub" id="pageSub">Visão geral do seu patrimônio e do mercado</div>
         </div>
       </div>
-      <div class="topbar-brand" id="topbarBrand" aria-hidden="true">
+      <div class="topbar-brand" id="topbarBrand" role="button" tabindex="0" title="Ir para o Início" onclick="goView('painel')">
         <span class="tb-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span>
         <span class="tb-name">Lastro</span>
       </div>
@@ -1225,7 +1230,7 @@ input[type=range]::-moz-range-thumb {
 .dt-head { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
 .dt-ic { width:56px; height:56px; border-radius:14px; flex:none; background:linear-gradient(135deg,var(--brand),var(--brand-d)); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:14px; font-weight:600; }
 /* logos de empresas/ativos */
-.logo { position:relative; display:inline-flex; align-items:center; justify-content:center; flex:none; overflow:hidden; border:1px solid var(--line); background:#fff; }
+.logo { position:relative; display:inline-flex; align-items:center; justify-content:center; flex:none; overflow:hidden; border:none; background:#fff; }
 /* logo preenche o quadrado arredondado (cobre o fundo branco) no formato da marca oficial */
 .logo-img { width:100%; height:100%; object-fit:cover; background:#fff; }
 .logo-mono { width:100%; height:100%; align-items:center; justify-content:center; font-family:var(--mono); font-weight:600; color:var(--brand); background:var(--surface-3); }
@@ -1390,7 +1395,6 @@ table.tbl tbody tr:hover .logo, .sr:hover .logo { transform: scale(1.05); }
 .sumcard:hover, .metric:hover { background: var(--surface-2); }
 
 /* logos: borda some quando carrega imagem real (visual mais limpo) */
-.logo:has(.logo-img:not([style*="display: none"])) { border-color: transparent; }
 
 /* empty states */
 .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:44px 20px; }
@@ -1471,9 +1475,18 @@ table.tbl tbody tr.no-hover td { border:none; }
 .pricing-hero { text-align:center; max-width:640px; margin:8px auto 28px; }
 .pricing-title { font-family:var(--serif); font-size:30px; font-weight:600; letter-spacing:-.02em; line-height:1.15; text-wrap:balance; }
 .pricing-sub { font-size:14px; color:var(--ink-2); line-height:1.6; margin-top:12px; }
-.pricing-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px; max-width:780px; margin:0 auto; align-items:start; }
-.plan-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); padding:26px 24px; position:relative; transition:transform .2s var(--ease), box-shadow .2s var(--ease); }
-.plan-card.featured { border:1.5px solid var(--gold); box-shadow:0 16px 40px rgba(168,124,42,.16); }
+/* carrossel de planos */
+.plan-carousel { display:flex; gap:18px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:18px 4px 8px; scroll-padding:4px; }
+.plan-carousel::-webkit-scrollbar { display:none; }
+.plan-card { flex:0 0 86%; max-width:340px; scroll-snap-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); padding:26px 24px; position:relative; box-shadow:var(--sh-sm); transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
+@media (min-width:760px){ .plan-carousel { justify-content:center; flex-wrap:nowrap; } .plan-card { flex:0 0 320px; } }
+.plan-card.featured { border:1.5px solid var(--gold); background:linear-gradient(180deg, color-mix(in srgb,var(--gold) 7%,transparent), var(--surface) 30%); box-shadow:0 18px 44px rgba(168,124,42,.18); }
+.plan-card.featured:hover { transform:translateY(-4px); }
+.plan-save { display:inline-block; font-weight:700; color:var(--gold); background:var(--gold-l); padding:1px 8px; border-radius:20px; }
+.plan-dots { display:flex; justify-content:center; gap:7px; margin-top:6px; }
+.plan-dots .pd { width:7px; height:7px; border-radius:50%; background:var(--line-2); transition:all .2s var(--ease); cursor:pointer; }
+.plan-dots .pd.on { background:var(--gold); width:20px; border-radius:4px; }
+@media (min-width:760px){ .plan-dots { display:none; } }
 .plan-flag { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,#C8911F,#A87C2A); color:#fff; font-size:11px; font-weight:600; padding:4px 14px; border-radius:20px; box-shadow:var(--sh); }
 .plan-name { font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px; }
 .plan-price { margin:14px 0 4px; display:flex; align-items:baseline; gap:8px; }
@@ -1489,7 +1502,7 @@ table.tbl tbody tr.no-hover td { border:none; }
 .pricing-foot { display:flex; gap:26px; justify-content:center; flex-wrap:wrap; margin-top:30px; }
 .pf-item { font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:8px; }
 .pf-item i { color:var(--brand); }
-@media (max-width:680px){ .pricing-grid { grid-template-columns:1fr; } .plan-card.featured { order:-1; } .pricing-title { font-size:24px; } }
+@media (max-width:680px){ .pricing-title { font-size:24px; } }
 
 /* onboarding */
 .ob-card { width:500px; }
@@ -2782,11 +2795,17 @@ function viewPainel(){
     <div class="card card-pad">
       <div class="card-head">
         <div class="card-h"><span class="ico" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-chart-area"></i></span> Nasdaq</div>
-        <div class="segmented" id="ibovSeg">
-          <button onclick="setIbov('7d',this)" class="active">7D</button>
-          <button onclick="setIbov('30d',this)">30D</button>
-          <button onclick="setIbov('6m',this)">6M</button>
-          <button onclick="setIbov('1a',this)">1A</button>
+        <div class="chart-ctrls">
+          <div class="chart-type" id="homeType">
+            <button data-t="line" class="on" onclick="setHomeType('line')" title="Linha"><i class="fa-solid fa-chart-line"></i></button>
+            <button data-t="candle" onclick="setHomeType('candle')" title="Candles"><i class="fa-solid fa-chart-simple"></i></button>
+          </div>
+          <div class="segmented" id="ibovSeg">
+            <button onclick="setIbov('7d',this)" class="active">7D</button>
+            <button onclick="setIbov('30d',this)">30D</button>
+            <button onclick="setIbov('6m',this)">6M</button>
+            <button onclick="setIbov('1a',this)">1A</button>
+          </div>
         </div>
       </div>
       <div style="position:relative;height:240px"><canvas id="ibovChart" role="img" aria-label="Histórico do Nasdaq"></canvas></div>
@@ -3147,7 +3166,7 @@ function viewPlanos(){
     <p class="pricing-sub">Comece de graça. Faça upgrade quando quiser desbloquear todo o poder da plataforma — análises ilimitadas, rastreador avançado, alertas e relatórios.</p>
   </div>
 
-  <div class="pricing-grid">
+  <div class="plan-carousel" id="planCarousel">
     <div class="plan-card">
       <div class="plan-name">Gratuito</div>
       <div class="plan-price"><span class="amt">R$ 0</span><span class="per">para sempre</span></div>
@@ -3161,14 +3180,14 @@ function viewPlanos(){
         ${feat(PLAN_LIMITS.aiDay + ' análises de IA por dia')}
         ${feat('Score Lastro (resumo)')}
       </ul>
-      <button class="btn ${pro?'btn-ghost':'btn-ghost'}" style="width:100%;justify-content:center" ${pro?`onclick="downgradeFree()"`:`disabled`}>${pro?'Voltar ao Gratuito':'Seu plano atual'}</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center" ${pro?`onclick="downgradeFree()"`:`disabled`}>${pro?'Voltar ao Gratuito':'Seu plano atual'}</button>
     </div>
 
     <div class="plan-card featured">
       <div class="plan-flag">Mais popular</div>
-      <div class="plan-name">Premium <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>
-      <div class="plan-price"><span class="amt">R$ 29<span class="cents">,90</span></span><span class="per">/mês</span></div>
-      <div class="plan-desc">No plano anual: <strong>R$ 24,90/mês</strong> · economize 17%.</div>
+      <div class="plan-name">Premium Anual <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>
+      <div class="plan-price"><span class="amt">R$ 24<span class="cents">,90</span></span><span class="per">/mês</span></div>
+      <div class="plan-desc"><span class="plan-save">economize 17%</span> · cobrado R$ 298,80/ano</div>
       <ul class="plan-feats">
         ${feat('Tudo do plano Gratuito')}
         ${feat('Carteira e watchlist ilimitadas', true, true)}
@@ -3180,10 +3199,28 @@ function viewPlanos(){
         ${feat('Relatórios e exportação (PDF/CSV)', true, true)}
         ${feat('Suporte prioritário', true, true)}
       </ul>
-      <button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium()"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':'<i class="fa-solid fa-bolt"></i> Assinar Premium'}</button>
+      <button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium()"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':'<i class="fa-solid fa-bolt"></i> Assinar anual'}</button>
+      <div class="plan-trust">7 dias grátis · sem fidelidade · cancele quando quiser</div>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">Premium Mensal <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>
+      <div class="plan-price"><span class="amt">R$ 29<span class="cents">,90</span></span><span class="per">/mês</span></div>
+      <div class="plan-desc">Flexibilidade total, sem compromisso anual.</div>
+      <ul class="plan-feats">
+        ${feat('Tudo do plano Gratuito')}
+        ${feat('Carteira e watchlist ilimitadas', true, true)}
+        ${feat('Rastreador avançado (todos os filtros)', true, true)}
+        ${feat('Score Lastro completo + ranking', true, true)}
+        ${feat('Comparador de 4 ativos', true, true)}
+        ${feat('Análises de IA ilimitadas', true, true)}
+        ${feat('Alertas de preço e proventos', true, true)}
+      </ul>
+      <button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium()"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':'<i class="fa-solid fa-bolt"></i> Assinar mensal'}</button>
       <div class="plan-trust">7 dias grátis · sem fidelidade · cancele quando quiser</div>
     </div>
   </div>
+  <div class="plan-dots" id="planDots"><span class="pd on"></span><span class="pd"></span><span class="pd"></span></div>
 
   <div class="pricing-foot">
     <div class="pf-item"><i class="fa-solid fa-shield-halved"></i> Pagamento seguro</div>
@@ -3662,7 +3699,18 @@ function afterRender(v, soft){
   }
   if(v==='simulador'){ runSim(); }
   if(v==='score'){ animateGauges(); }
+  if(v==='planos'){ initPlanCarousel(); }
   if(v==='asset'){ initDetailCharts(); animateGauges(); animateCounts(); }
+}
+function initPlanCarousel(){
+  const car=$('#planCarousel'), dots=$('#planDots'); if(!car) return;
+  const cards=[...car.children];
+  const centerOf=i=>{ const c=cards[i]; return c.offsetLeft - (car.clientWidth - c.clientWidth)/2; };
+  const activeIdx=()=>{ let best=0,bd=1e9; const mid=car.scrollLeft+car.clientWidth/2; cards.forEach((c,i)=>{ const d=Math.abs((c.offsetLeft+c.clientWidth/2)-mid); if(d<bd){bd=d;best=i;} }); return best; };
+  const syncDots=()=>{ if(dots) [...dots.children].forEach((d,i)=>d.classList.toggle('on', i===activeIdx())); };
+  if(dots) [...dots.children].forEach((d,i)=> d.onclick=()=>car.scrollTo({left:centerOf(i), behavior:'smooth'}));
+  car.onscroll=()=>{ clearTimeout(car._t); car._t=setTimeout(syncDots,60); };
+  setTimeout(()=>{ car.scrollTo({left:centerOf(1), behavior:'auto'}); syncDots(); }, 30);  // abre no plano em destaque
 }
 
 /* contagem progressiva dos valores de indicador (.ind-v[data-num]) */
@@ -3702,28 +3750,62 @@ const NASDAQ = {
   '1a': { l:['Jun/25','Ago','Out','Dez','Fev/26','Abr','Jun/26'], d:[15800,16700,17400,18100,19000,19700,20485] },
 };
 function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
-function initIbov(){
+let homeChartPeriod='7d', homeChartType='line';
+const kfmt = v => (v/1000).toFixed(1).replace('.',',')+'k';   // ex.: 19,8k / 168,6k (evita "20k" repetido)
+/* deriva candles (OHLC) a partir da série de fechamento */
+function ohlcFrom(arr, key){
+  const r=rngF(seedFrom(key||'ohlc')); const out=[];
+  for(let i=0;i<arr.length;i++){
+    const c=arr[i]; const o = i===0 ? c*(0.996+r()*0.006) : out[i-1].c;
+    const span = Math.abs(c-o) + c*(0.002+r()*0.004);
+    const h = Math.max(o,c) + span*(0.3+r()*0.5);
+    const l = Math.min(o,c) - span*(0.3+r()*0.5);
+    out.push({o,c,h,l});
+  }
+  return out;
+}
+function initIbov(){ renderHomeChart(); }
+function renderHomeChart(){
   const ctx = $('#ibovChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
-  const br = cssVar('--accent');
-  const p = NASDAQ['7d'];
-  const grd = ctx.getContext('2d').createLinearGradient(0,0,0,240);
-  grd.addColorStop(0, br+'33'); grd.addColorStop(1, br+'00');
-  charts.ibov = new Chart(ctx,{
-    type:'line',
-    data:{ labels:p.l, datasets:[{ data:p.d, borderColor:br, backgroundColor:grd, fill:true, tension:.4, pointRadius:0, pointHoverRadius:5, pointHoverBackgroundColor:br, borderWidth:2.5 }] },
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:cssVar('--ink'), titleColor:cssVar('--canvas'), bodyColor:cssVar('--canvas'), padding:10, displayColors:false, callbacks:{ label:c=>fmtInt(c.parsed.y)+' pts' } } },
-      scales:{ x:{ grid:{display:false}, ticks:{ color:cssVar('--ink-3'), font:{size:11} }, border:{display:false} },
-               y:{ grid:{color:cssVar('--line')}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, callback:v=>(v/1000).toFixed(0)+'k' }, border:{display:false} } }
-    }
-  });
+  if(charts.ibov){ try{charts.ibov.destroy();}catch(e){} }
+  const p = NASDAQ[homeChartPeriod] || NASDAQ['7d'];
+  const baseScales = {
+    x:{ grid:{display:false}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxRotation:0, autoSkipPadding:14 }, border:{display:false} },
+    y:{ position:'right', grid:{color:cssVar('--line')}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxTicksLimit:6, callback:v=>kfmt(v) }, border:{display:false} }
+  };
+  if(homeChartType==='candle'){
+    const ohlc=ohlcFrom(p.d, 'nq'+homeChartPeriod);
+    const upc=cssVar('--up')||'#0E7C5A', downc=cssVar('--down')||'#D14343';
+    const colors=ohlc.map(x=> x.c>=x.o?upc:downc);
+    charts.ibov=new Chart(ctx,{ data:{ labels:p.l, datasets:[
+        { type:'bar', label:'wick', data:ohlc.map(x=>[x.l,x.h]), backgroundColor:colors, barThickness:2, grouped:false, order:2 },
+        { type:'bar', label:'corpo', data:ohlc.map(x=>[Math.min(x.o,x.c),Math.max(x.o,x.c)]), backgroundColor:colors, borderRadius:2, barPercentage:0.55, categoryPercentage:0.9, grouped:false, order:1 },
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, animation:{duration:900,easing:'easeOutQuart'},
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:cssVar('--ink'), titleColor:cssVar('--canvas'), bodyColor:cssVar('--canvas'), padding:11, displayColors:false, filter:i=>i.datasetIndex===1,
+          callbacks:{ title:items=>p.l[items[0].dataIndex], label:c=>{ const d=ohlc[c.dataIndex]; return ['Abert. '+kfmt(d.o), 'Máx. '+kfmt(d.h), 'Mín. '+kfmt(d.l), 'Fech. '+kfmt(d.c)]; } } } },
+        scales:baseScales } });
+  } else {
+    const br=cssVar('--accent')||'#2563EB';
+    const grd=ctx.getContext('2d').createLinearGradient(0,0,0,240); grd.addColorStop(0,br+'2e'); grd.addColorStop(1,br+'00');
+    charts.ibov=new Chart(ctx,{ type:'line',
+      data:{ labels:p.l, datasets:[{ data:p.d, borderColor:br, backgroundColor:grd, fill:true, tension:.42, cubicInterpolationMode:'monotone', pointRadius:0, pointHoverRadius:5, pointHoverBackgroundColor:'#fff', pointHoverBorderColor:br, pointHoverBorderWidth:2, borderWidth:2.6 }] },
+      options:{ responsive:true, maintainAspectRatio:false, animation:{duration:1000,easing:'easeOutQuart'},
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:cssVar('--ink'), titleColor:cssVar('--canvas'), bodyColor:cssVar('--canvas'), padding:10, displayColors:false, callbacks:{ label:c=>kfmt(c.parsed.y)+' pts' } } },
+        interaction:{intersect:false,mode:'index'}, scales:baseScales } });
+  }
 }
 function setIbov(p, btn){
+  homeChartPeriod=p;
   document.querySelectorAll('#ibovSeg button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  if(!charts.ibov) return;
-  charts.ibov.data.labels = NASDAQ[p].l; charts.ibov.data.datasets[0].data = NASDAQ[p].d; charts.ibov.update();
+  if(btn) btn.classList.add('active');
+  renderHomeChart();
+}
+function setHomeType(t){
+  homeChartType=t;
+  document.querySelectorAll('#homeType button').forEach(b=>b.classList.toggle('on', b.dataset.t===t));
+  renderHomeChart();
 }
 
 /* Alloc chart */
