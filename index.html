@@ -687,13 +687,16 @@ img, svg, canvas, video { max-width: 100%; }
   <div class="modal-card" role="dialog" aria-label="Posição da carteira">
     <div class="modal-head"><span id="posTitle">Adicionar posição</span><button class="drawer-close" onclick="closePosModal()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
-      <label class="fld"><span>Ativo</span><input id="posTk" list="tkList" placeholder="Ex.: PETR4, HGLG11, IVV" autocomplete="off" oninput="this.value=this.value.toUpperCase();posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
-      <datalist id="tkList"></datalist>
+      <div class="fld fld-rel">
+        <span>Ativo</span>
+        <input id="posTk" placeholder="Ex.: PETR4, HGLG11, IVV" autocomplete="off" oninput="this.value=this.value.toUpperCase();posSuggest()" onfocus="posSuggest()" onblur="hidePosSug()" onkeydown="posSugKey(event)">
+        <div id="posSug" class="pos-sug" role="listbox"></div>
+      </div>
       <div class="fld-row">
         <label class="fld"><span>Quantidade</span><input id="posQt" type="number" min="0" step="any" inputmode="decimal" placeholder="0" oninput="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
-        <label class="fld"><span>Preço do aporte (R$)</span><input id="posPm" type="number" min="0" step="any" inputmode="decimal" placeholder="0,00" oninput="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
+        <label class="fld"><span>Valor (R$) <small style="color:var(--ink-4);font-weight:400">por unidade</small></span><input id="posPm" type="text" inputmode="decimal" placeholder="0,00" oninput="maskBRL(this)" onkeydown="if(event.key==='Enter')savePos()"></label>
       </div>
-      <label class="fld"><span>Data do aporte <small style="color:var(--ink-4);font-weight:400">(opcional · contabiliza proventos)</small></span><input id="posDt" type="date" onkeydown="if(event.key==='Enter')savePos()"></label>
+      <label class="fld"><span>Data do aporte <small style="color:var(--ink-4);font-weight:400">· contabiliza os proventos</small></span><input id="posDt" type="date" required onchange="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
       <div id="posPreview" class="pos-preview"></div>
       <div id="posErr" class="fld-err"></div>
     </div>
@@ -1717,7 +1720,16 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
   .pat-card .btn { width:100%; justify-content:center; }
 }
 
-/* ════ CARTEIRA — prévia no modal e histórico de aportes ════ */
+/* ════ CARTEIRA — autocomplete, prévia no modal e histórico de aportes ════ */
+.fld-rel { position:relative; }
+.pos-sug { position:absolute; left:0; right:0; top:100%; margin-top:6px; z-index:20; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r); box-shadow:var(--sh-lg); max-height:264px; overflow-y:auto; display:none; padding:5px; }
+.pos-sug.on { display:block; animation:fadeIn .14s var(--ease); }
+.sug-row { display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:var(--r-sm); cursor:pointer; transition:background .12s var(--ease); }
+.sug-row:hover, .sug-row.on { background:var(--surface-3); }
+.sug-id { min-width:0; flex:1; }
+.sug-tk { font-family:var(--mono); font-weight:600; font-size:13.5px; color:var(--ink); }
+.sug-nm { font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sug-k { flex:none; font-size:10.5px; font-weight:600; color:var(--ink-3); background:var(--surface-3); padding:2px 8px; border-radius:20px; }
 .pos-preview { display:none; margin-top:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:13px 15px; }
 .pos-preview.on { display:block; animation:fadeIn .2s var(--ease); }
 .pp-h { display:flex; align-items:center; gap:10px; padding-bottom:10px; margin-bottom:8px; border-bottom:1px solid var(--line); }
@@ -1874,23 +1886,26 @@ function savePortfolio(){ try{ localStorage.setItem('lastro_carteira', JSON.stri
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function normLots(){ if(!Array.isArray(CARTEIRA)){ CARTEIRA=[]; return; } let ch=false; CARTEIRA.forEach(c=>{ if(!c.id){ c.id=uid(); ch=true; } }); if(ch) savePortfolio(); }
 function uniqueTickers(){ return [...new Set(CARTEIRA.map(c=>c.tk))]; }
+function validDate(date){ if(!date) return false; const d=new Date(date); if(isNaN(d)) return false; return d.getTime() <= Date.now()+864e5; }
 /* cada aporte é um lote (lot) com data própria — preço médio é ponderado */
 function addPosition(tk, cotas, pm, date){
   tk=String(tk||'').toUpperCase().trim(); cotas=+cotas; pm=+pm;
   if(!tk || !assetLookup(tk)) return { ok:false, msg:'Ticker não encontrado' };
-  if(!(cotas>0) || !(pm>0)) return { ok:false, msg:'Informe quantidade e preço válidos' };
+  if(!(cotas>0) || !(pm>0)) return { ok:false, msg:'Informe quantidade e valor válidos' };
+  if(!validDate(date)) return { ok:false, msg:'Informe a data do aporte (não futura)' };
   const has = CARTEIRA.some(c=>c.tk===tk);
   if(!has && !isPremium() && uniqueTickers().length >= PLAN_LIMITS.carteira){
     return { ok:false, premium:true, msg:`O plano Gratuito permite até ${PLAN_LIMITS.carteira} ativos. Faça upgrade para carteira ilimitada.` };
   }
-  CARTEIRA.push({ id:uid(), tk, cotas, pm, date: date||null });
+  CARTEIRA.push({ id:uid(), tk, cotas, pm, date });
   savePortfolio();
   return { ok:true };
 }
 function editLot(id, cotas, pm, date){
   const l=CARTEIRA.find(c=>c.id===id); if(!l) return { ok:false, msg:'Aporte não encontrado' };
   cotas=+cotas; pm=+pm; if(!(cotas>0)||!(pm>0)) return { ok:false, msg:'Valores inválidos' };
-  l.cotas=cotas; l.pm=pm; l.date=date||null; savePortfolio(); return { ok:true };
+  if(!validDate(date)) return { ok:false, msg:'Informe a data do aporte (não futura)' };
+  l.cotas=cotas; l.pm=pm; l.date=date; savePortfolio(); return { ok:true };
 }
 function removeLot(id){ CARTEIRA=CARTEIRA.filter(c=>c.id!==id); savePortfolio(); toast('Aporte removido'); if(currentView==='carteira') render('carteira'); }
 function removePosition(tk){ CARTEIRA = CARTEIRA.filter(c=>c.tk!==tk); savePortfolio(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); }
@@ -1923,11 +1938,56 @@ function fmtDateBR(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(
 function toggleLots(tk){ const r=document.getElementById('lots-'+tk); if(r){ r.hidden=!r.hidden; const row=document.querySelector(`.pos-row[data-tk="${tk}"] .lot-caret`); if(row) row.classList.toggle('open', !r.hidden); } }
 function fillTickerList(){ const dl=document.getElementById('tkList'); if(!dl) return; dl.innerHTML = searchPool().map(a=>`<option value="${a.tk}">${esc(a.nm||'')}</option>`).join(''); }
 /* prévia ao vivo: Score, cotação e leitura do preço digitado */
+/* máscara de moeda pt-BR ao digitar (1.234,56) */
+function maskBRL(input){
+  let d=String(input.value||'').replace(/\D/g,'');
+  if(!d){ input.value=''; posPreview(); return; }
+  d=d.replace(/^0+(?=\d)/,'');
+  if(d.length<3) d=d.padStart(3,'0');
+  const cents=d.slice(-2), intp=d.slice(0,-2).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  input.value=intp+','+cents;
+  posPreview();
+}
+function parseBRL(s){ s=String(s||'').replace(/\./g,'').replace(',','.'); const n=parseFloat(s); return isFinite(n)?n:NaN; }
+function fmtBRLInput(n){ return (typeof n==='number'&&isFinite(n)) ? n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : ''; }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+
+/* autocomplete rico do ativo (logo + ticker + nome) */
+let _sugList=[], _sugIdx=-1;
+function posSuggest(){
+  const box=$('#posSug'), inp=$('#posTk'); if(!box||!inp) return;
+  posPreview();
+  const q=(inp.value||'').toUpperCase().trim();
+  if(!q){ hidePosSug(); return; }
+  const pool=searchPool(); const starts=[], incl=[];
+  for(const a of pool){ const tk=a.tk, nm=(a.nm||'').toUpperCase();
+    if(tk.startsWith(q)) starts.push(a);
+    else if(tk.includes(q)||nm.includes(q)) incl.push(a);
+    if(starts.length>=10) break;
+  }
+  _sugList=[...starts,...incl].slice(0,6); _sugIdx=-1;
+  if(!_sugList.length){ hidePosSug(); return; }
+  box.innerHTML=_sugList.map((a,i)=>{ const lk=assetLookup(a.tk); const k=lk?lk.k:'acoes';
+    return `<div class="sug-row" data-i="${i}" onmousedown="event.preventDefault();pickTicker('${a.tk}')">${assetLogo(a.tk,k,'sm')}<div class="sug-id"><div class="sug-tk">${a.tk}</div><div class="sug-nm">${esc(a.nm||'')}</div></div><span class="sug-k">${ASSET_CLASS[k]?ASSET_CLASS[k].label:''}</span></div>`;
+  }).join('');
+  box.classList.add('on');
+}
+function hidePosSug(){ const box=$('#posSug'); if(box){ setTimeout(()=>box.classList.remove('on'),120); } }
+function pickTicker(tk){ const inp=$('#posTk'); inp.value=tk; const box=$('#posSug'); if(box) box.classList.remove('on'); posPreview(); const q=$('#posQt'); q&&q.focus(); }
+function posSugKey(e){
+  const box=$('#posSug'); const open=box&&box.classList.contains('on')&&_sugList.length;
+  if(e.key==='ArrowDown'&&open){ e.preventDefault(); _sugIdx=Math.min(_sugIdx+1,_sugList.length-1); hlSug(); }
+  else if(e.key==='ArrowUp'&&open){ e.preventDefault(); _sugIdx=Math.max(_sugIdx-1,0); hlSug(); }
+  else if(e.key==='Enter'){ if(open&&_sugIdx>=0){ e.preventDefault(); pickTicker(_sugList[_sugIdx].tk); } else savePos(); }
+  else if(e.key==='Escape'){ box&&box.classList.remove('on'); }
+}
+function hlSug(){ document.querySelectorAll('#posSug .sug-row').forEach((r,i)=>r.classList.toggle('on', i===_sugIdx)); const a=document.querySelector('#posSug .sug-row.on'); if(a) a.scrollIntoView({block:'nearest'}); }
+
 function posPreview(){
   const el=$('#posPreview'); if(!el) return;
   const tk=($('#posTk').value||'').toUpperCase().trim(); const f=assetLookup(tk);
   if(!f){ el.innerHTML=''; el.classList.remove('on'); return; }
-  const a=f.a,k=f.k; const pm=+$('#posPm').value, qt=+$('#posQt').value;
+  const a=f.a,k=f.k; const pm=parseBRL($('#posPm').value), qt=+$('#posQt').value;
   const rows=[];
   if(typeof a.score==='number') rows.push(`<div class="pp-row"><span>Score Lastro</span><b style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)};margin-right:6px"></span>${a.score}/100 · ${scoreTier(a.score)}</b></div>`);
   rows.push(`<div class="pp-row"><span>Cotação atual</span><b class="mono">${fmtPx(a,k)}</b></div>`);
@@ -1938,10 +1998,11 @@ function posPreview(){
 }
 function openPosModal(tk, lotId){
   const lot = lotId ? CARTEIRA.find(c=>c.id===lotId) : null;
-  fillTickerList();
   const lockTk = !!lot || !!tk;
+  $('#posSug').classList.remove('on'); _sugList=[]; _sugIdx=-1;
   $('#posTk').value = (lot?lot.tk:tk)||''; $('#posTk').disabled = lockTk;
-  $('#posQt').value = lot? lot.cotas : ''; $('#posPm').value = lot? lot.pm : ''; $('#posDt').value = (lot&&lot.date)||'';
+  $('#posQt').value = lot? lot.cotas : ''; $('#posPm').value = lot? fmtBRLInput(lot.pm) : '';
+  $('#posDt').value = (lot&&lot.date) || todayISO(); $('#posDt').max = todayISO();
   $('#posModal').dataset.lot = lot? lot.id : '';
   $('#posTitle').textContent = lot? `Editar aporte · ${lot.tk}` : (tk?`Novo aporte · ${tk}`:'Adicionar aporte');
   $('#posErr').textContent = '';
@@ -1949,11 +2010,11 @@ function openPosModal(tk, lotId){
   $('#posModal').classList.add('open');
   setTimeout(()=>{ const el = (lockTk?$('#posQt'):$('#posTk')); el && el.focus(); }, 60);
 }
-function closePosModal(){ $('#posModal').classList.remove('open'); $('#posModal').dataset.lot=''; }
+function closePosModal(){ $('#posModal').classList.remove('open'); $('#posModal').dataset.lot=''; const b=$('#posSug'); if(b) b.classList.remove('on'); }
 function savePos(){
-  const lotId=$('#posModal').dataset.lot;
-  const r = lotId ? editLot(lotId, $('#posQt').value, $('#posPm').value, $('#posDt').value)
-                  : addPosition($('#posTk').value, $('#posQt').value, $('#posPm').value, $('#posDt').value);
+  const lotId=$('#posModal').dataset.lot; const pm=parseBRL($('#posPm').value);
+  const r = lotId ? editLot(lotId, $('#posQt').value, pm, $('#posDt').value)
+                  : addPosition($('#posTk').value, $('#posQt').value, pm, $('#posDt').value);
   if(!r.ok){
     const err=$('#posErr');
     err.innerHTML = r.premium ? `${r.msg} <a onclick="closePosModal();goPricing()" style="color:var(--accent);cursor:pointer;font-weight:600">Ver planos →</a>` : r.msg;
