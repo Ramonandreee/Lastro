@@ -1730,6 +1730,35 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .sug-tk { font-family:var(--mono); font-weight:600; font-size:13.5px; color:var(--ink); }
 .sug-nm { font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sug-k { flex:none; font-size:10.5px; font-weight:600; color:var(--ink-3); background:var(--surface-3); padding:2px 8px; border-radius:20px; }
+/* comparador: slots de ativo */
+.cmp-filters { gap:12px; }
+.cmp-slot { flex:1 1 200px; min-width:160px; height:56px; box-sizing:border-box; }
+.cmp-input { width:100%; height:100%; box-sizing:border-box; background:var(--surface); border:1px dashed var(--line-2); border-radius:var(--r); padding:0 15px; font-size:14px; font-weight:500; color:var(--ink); transition:border-color .16s var(--ease); }
+.cmp-input:focus { border-style:solid; border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-l); }
+.cmp-chip { display:flex; align-items:center; gap:11px; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r); padding:0 12px; box-shadow:var(--sh-sm); }
+.cmp-chip-id { min-width:0; flex:1; }
+.cmp-chip-tk { font-family:var(--mono); font-weight:600; font-size:14px; }
+.cmp-chip-nm { font-size:11px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cmp-x { flex:none; width:26px; height:26px; border-radius:7px; border:none; background:var(--surface-3); color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
+.cmp-x:hover { background:var(--down-l); color:var(--down); }
+.sel-locked.cmp-slot { display:inline-flex; align-items:center; justify-content:center; gap:8px; border-style:dashed; }
+@media (max-width:640px){ .cmp-slot { flex:1 1 100%; } }
+/* extrato de proventos */
+.pex-total { text-align:right; }
+.pex-total-v { font-family:var(--mono); font-size:18px; font-weight:700; color:var(--up); }
+.pex-total-l { font-size:10.5px; color:var(--ink-3); }
+.prov-extract { display:grid; grid-template-columns:1fr 1fr; gap:4px 22px; }
+.pex-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 4px; border-top:1px solid var(--line); cursor:pointer; transition:background .12s var(--ease); border-radius:6px; }
+.pex-row:hover { background:var(--surface-2); }
+.pex-l { display:flex; align-items:center; gap:11px; min-width:0; }
+.pex-id { min-width:0; }
+.pex-tk { font-family:var(--mono); font-weight:600; font-size:13.5px; }
+.pex-d { font-size:11.5px; color:var(--ink-3); }
+.pex-d i { color:var(--ink-4); margin-right:4px; }
+.pex-r { text-align:right; flex:none; }
+.pex-v { font-family:var(--mono); font-weight:600; font-size:13.5px; }
+.pex-s { font-size:11px; color:var(--ink-3); }
+@media (max-width:760px){ .prov-extract { grid-template-columns:1fr; gap:0; } }
 .pos-preview { display:none; margin-top:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:13px 15px; }
 .pos-preview.on { display:block; animation:fadeIn .2s var(--ease); }
 .pp-h { display:flex; align-items:center; gap:10px; padding-bottom:10px; margin-bottom:8px; border-bottom:1px solid var(--line); }
@@ -1909,16 +1938,27 @@ function editLot(id, cotas, pm, date){
 }
 function removeLot(id){ CARTEIRA=CARTEIRA.filter(c=>c.id!==id); savePortfolio(); toast('Aporte removido'); if(currentView==='carteira') render('carteira'); }
 function removePosition(tk){ CARTEIRA = CARTEIRA.filter(c=>c.tk!==tk); savePortfolio(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); }
-/* proventos estimados recebidos desde a data de cada aporte (ilustrativo) */
-function provReceived(tk,k,a,cotas,sinceISO){
-  if(!cotas) return 0;
-  let months;
-  if(sinceISO){ const d=new Date(sinceISO); months=isNaN(d)?12:Math.max(0, Math.floor((Date.now()-d.getTime())/(30.44*864e5))); }
-  else months=12;
-  months=Math.min(months,180);
-  const perMonth = (k==='fiis' && typeof a.div==='number') ? a.div : (typeof a.dy==='number' && a.px ? a.px*(a.dy/100)/12 : 0);
-  return perMonth*cotas*months;
+/* provento mensal por cota (FIIs: rendimento real; ações: DY/12 estimado) */
+function provPerCota(k,a){ return (k==='fiis' && typeof a.div==='number') ? a.div : (typeof a.dy==='number' && a.px ? a.px*(a.dy/100)/12 : 0); }
+/* pagamentos mensais de um ativo desde a data de cada aporte (dia 15) */
+function groupPayments(g){
+  const a=g.f.a, k=g.f.k, perCota=provPerCota(k,a); const pays=[];
+  if(perCota<=0) return pays;
+  const now=new Date(), monthMap=new Map();
+  g.lots.forEach(l=>{
+    let base = l.date ? new Date(l.date) : new Date(now.getFullYear(), now.getMonth()-6, 15); // sem data: estima 6 meses
+    if(isNaN(base)) base = new Date(now.getFullYear(), now.getMonth()-6, 15);
+    const buyDay=base.getDate();
+    let d=new Date(base.getFullYear(), base.getMonth()+(buyDay>15?1:0), 15);   // 1º pgto elegível
+    let guard=0;
+    while(d<=now && guard++<240){ const key=d.getFullYear()+'-'+String(d.getMonth()).padStart(2,'0'); monthMap.set(key,(monthMap.get(key)||0)+l.cotas); d=new Date(d.getFullYear(), d.getMonth()+1, 15); }
+  });
+  monthMap.forEach((cotas,key)=>{ const [y,m]=key.split('-').map(Number); pays.push({ tk:g.tk, k, date:new Date(y,m,15), cotas, perCota, valor:perCota*cotas, pm:g.pm }); });
+  pays.sort((x,y)=>y.date-x.date);
+  return pays;
 }
+/* extrato consolidado de proventos da carteira */
+function provPayments(){ const out=[]; portfolioByTicker().forEach(g=>{ (g.pays||groupPayments(g)).forEach(p=>out.push(p)); }); out.sort((a,b)=>b.date-a.date); return out; }
 function portfolioByTicker(){
   const map=new Map();
   CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(!f) return;
@@ -1927,7 +1967,7 @@ function portfolioByTicker(){
   const out=[];
   map.forEach(g=>{ const a=g.f.a,k=g.f.k;
     g.pm=g.cotas?g.custo/g.cotas:0; g.val=g.cotas*(a.px||0); g.lucro=g.val-g.custo; g.lp=g.custo?g.lucro/g.custo*100:0;
-    g.prov=g.lots.reduce((s,l)=>s+provReceived(g.tk,k,a,l.cotas,l.date),0);
+    g.pays=groupPayments(g); g.prov=g.pays.reduce((s,p)=>s+p.valor,0);
     g.lucroProv=g.lucro+g.prov; g.lpProv=g.custo?g.lucroProv/g.custo*100:0;
     g.mensal=(k==='fiis'&&typeof a.div==='number')?g.cotas*a.div:(typeof a.dy==='number'?g.val*(a.dy/100)/12:0);
     g.lots.sort((x,y)=> (y.date||'').localeCompare(x.date||''));
@@ -2901,6 +2941,16 @@ function viewCarteira(){
     </div>
   </div>
 
+  ${(()=>{ const pays=provPayments(); if(!pays.length) return ''; const total=pays.reduce((s,p)=>s+p.valor,0);
+    const rows=pays.slice(0,18).map(p=>{ const yoc=p.pm?p.perCota/p.pm*100:0; return `<div class="pex-row" onclick="quickView('${p.tk}')">
+      <div class="pex-l">${assetLogo(p.tk,p.k,'sm')}<div class="pex-id"><div class="pex-tk">${p.tk}</div><div class="pex-d"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(p.date.toISOString().slice(0,10))}</div></div></div>
+      <div class="pex-r"><div class="pex-v up">${brl(p.valor)}</div><div class="pex-s">${p.cotas} cota${p.cotas!==1?'s':''} · YoC ${pc(yoc,2)}%</div></div></div>`; }).join('');
+    return `<div class="card card-pad" style="margin-top:16px">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Extrato de proventos <span class="card-sub" style="margin-left:6px">· ${pays.length} pagamentos</span></div><div class="pex-total"><div class="pex-total-v">${brl(total)}</div><div class="pex-total-l">líquido no período</div></div></div>
+      <div class="prov-extract">${rows}</div>
+      <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Pagamentos mensais estimados a partir do rendimento atual e da data de cada aporte. Conecte o provedor de proventos por data-com para valores exatos.</div>
+    </div>`; })()}
+
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-h" style="margin-bottom:14px"><span class="ico" style="background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff"><i class="fa-solid fa-stethoscope"></i></span> Diagnóstico da carteira · Inteligência Lastro</div>
     <div id="diagBody" style="font-size:13.5px;line-height:1.7;color:var(--ink-2)"><span class="faint">Diagnosticando sua carteira…</span></div>
@@ -3121,22 +3171,48 @@ function gbRow(label, pct){
    ══════════════════════════════════════════════════════════ */
 const ALL_ASSETS_FLAT = ()=>[...FIIS.map(a=>({...a,_k:'fiis'})), ...ACOES.map(a=>({...a,_k:'acoes'}))];
 let cmpSel = ['KNCR11','HGLG11','VGIR11'];
+function cmpSlot(i){
+  const pro=isPremium(), cap=pro?4:PLAN_LIMITS.comparador;
+  if(i>=cap) return `<button class="sel sel-locked cmp-slot" onclick="upsell()" title="Premium"><i class="fa-solid fa-lock" style="font-size:10px"></i> + Ativo ${i+1} <span class="pro-tag">PRO</span></button>`;
+  const tk=cmpSel[i];
+  if(tk){ const lk=assetLookup(tk), k=lk?lk.k:'acoes', a=lk?lk.a:{};
+    return `<div class="cmp-chip cmp-slot">${assetLogo(tk,k,'sm')}<div class="cmp-chip-id"><div class="cmp-chip-tk">${tk}</div><div class="cmp-chip-nm">${esc(a.nm||'')}</div></div><button class="cmp-x" title="Remover" onclick="clearCmp(${i})"><i class="fa-solid fa-xmark"></i></button></div>`;
+  }
+  return `<div class="fld-rel cmp-slot"><input id="cmpIn${i}" class="cmp-input" placeholder="+ Ativo ${i+1}" autocomplete="off" oninput="this.value=this.value.toUpperCase();cmpSuggest(${i})" onfocus="cmpSuggest(${i})" onblur="cmpHide(${i})" onkeydown="cmpKey(event,${i})"><div id="cmpSug${i}" class="pos-sug"></div></div>`;
+}
 function viewComparador(){
-  const opts = ALL_ASSETS_FLAT().map(a=>`<option value="${a.tk}">${a.tk} · ${a.nm}</option>`).join('');
   const pro = isPremium();
-  const lockedSel = (n)=>`<button class="sel sel-locked" onclick="upsell()" style="flex:1" title="Premium"><i class="fa-solid fa-lock" style="font-size:10px"></i> + Ativo ${n} <span class="pro-tag">PRO</span></button>`;
   return `
   <div class="sec-title">Comparador de ativos</div>
   <div class="sec-desc">Compare ativos lado a lado pelos principais fundamentos e pelo Score Lastro. ${pro?'Até 4 ativos.':'No plano Gratuito você compara 2 — faça upgrade para 4.'}</div>
-  <div class="filters">
-    <select class="sel" id="cmp0" onchange="setCmp(0,this.value)" style="flex:1"><option value="">+ Ativo 1</option>${opts}</select>
-    <select class="sel" id="cmp1" onchange="setCmp(1,this.value)" style="flex:1"><option value="">+ Ativo 2</option>${opts}</select>
-    ${pro?`<select class="sel" id="cmp2" onchange="setCmp(2,this.value)" style="flex:1"><option value="">+ Ativo 3</option>${opts}</select>`:lockedSel(3)}
-    ${pro?`<select class="sel" id="cmp3" onchange="setCmp(3,this.value)" style="flex:1"><option value="">+ Ativo 4</option>${opts}</select>`:lockedSel(4)}
-  </div>
+  <div class="filters cmp-filters">${[0,1,2,3].map(cmpSlot).join('')}</div>
   <div class="card card-pad"><div id="cmpBody"></div></div>`;
 }
-function setCmp(i,v){ if(i>=PLAN_LIMITS.comparador && !isPremium()){ upsell(); return; } cmpSel[i]=v||null; cmpSel=cmpSel.filter(Boolean); initComparador(); }
+let _cmpSug=[], _cmpIdx=-1;
+function cmpSuggest(i){
+  const box=$('#cmpSug'+i), inp=$('#cmpIn'+i); if(!box||!inp) return;
+  const q=(inp.value||'').toUpperCase().trim();
+  if(!q){ box.classList.remove('on'); return; }
+  const pool=searchPool(); const st=[],inc=[];
+  for(const a of pool){ if(cmpSel.includes(a.tk)) continue; const tk=a.tk, nm=(a.nm||'').toUpperCase();
+    if(tk.startsWith(q)) st.push(a); else if(tk.includes(q)||nm.includes(q)) inc.push(a); if(st.length>=10) break; }
+  _cmpSug=[...st,...inc].slice(0,6); _cmpIdx=-1;
+  if(!_cmpSug.length){ box.classList.remove('on'); return; }
+  box.innerHTML=_cmpSug.map((a,j)=>{ const lk=assetLookup(a.tk), k=lk?lk.k:'acoes';
+    return `<div class="sug-row" data-j="${j}" onmousedown="event.preventDefault();pickCmp(${i},'${a.tk}')">${assetLogo(a.tk,k,'sm')}<div class="sug-id"><div class="sug-tk">${a.tk}</div><div class="sug-nm">${esc(a.nm||'')}</div></div><span class="sug-k">${ASSET_CLASS[k]?ASSET_CLASS[k].label:''}</span></div>`; }).join('');
+  box.classList.add('on');
+}
+function cmpHide(i){ const b=$('#cmpSug'+i); if(b) setTimeout(()=>b.classList.remove('on'),120); }
+function cmpHl(i){ document.querySelectorAll('#cmpSug'+i+' .sug-row').forEach((r,j)=>r.classList.toggle('on', j===_cmpIdx)); }
+function cmpKey(e,i){ const box=$('#cmpSug'+i), open=box&&box.classList.contains('on')&&_cmpSug.length;
+  if(e.key==='ArrowDown'&&open){ e.preventDefault(); _cmpIdx=Math.min(_cmpIdx+1,_cmpSug.length-1); cmpHl(i); }
+  else if(e.key==='ArrowUp'&&open){ e.preventDefault(); _cmpIdx=Math.max(_cmpIdx-1,0); cmpHl(i); }
+  else if(e.key==='Enter'&&open&&_cmpIdx>=0){ e.preventDefault(); pickCmp(i,_cmpSug[_cmpIdx].tk); }
+  else if(e.key==='Escape'){ box&&box.classList.remove('on'); }
+}
+function pickCmp(i,tk){ setCmp(i,tk); }
+function clearCmp(i){ cmpSel.splice(i,1); cmpSel=cmpSel.filter(Boolean); render('comparador'); }
+function setCmp(i,v){ if(i>=PLAN_LIMITS.comparador && !isPremium()){ upsell(); return; } cmpSel[i]=v||null; cmpSel=cmpSel.filter(Boolean); render('comparador'); }
 function initComparador(){
   const cap = isPremium()?4:PLAN_LIMITS.comparador;
   if(cmpSel.length>cap) cmpSel = cmpSel.slice(0,cap);
