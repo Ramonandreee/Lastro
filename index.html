@@ -364,14 +364,28 @@ a { color: inherit; text-decoration: none; }
 .topbar-brand .tb-name { font-size:20px; font-weight:700; letter-spacing:-.02em; color:var(--ink); }
 body.view-inicio .page-title { visibility:hidden; }
 body.view-inicio .topbar-brand { display:flex; }
-/* coroa premium (não assinantes) */
+/* ações do cabeçalho: só ícones (coroa + perfil) */
 .hdr-actions { display:flex; align-items:center; gap:8px; }
 .hdr-crown i { color:var(--gold); }
 .hdr-crown { border-color:color-mix(in srgb,var(--gold) 40%,transparent) !important; background:var(--gold-l) !important; }
 .hdr-crown:hover { box-shadow:0 0 0 3px var(--gold-l); }
-.hdr-sub { background:linear-gradient(135deg,var(--gold),#8a6420) !important; border:none !important; color:#fff !important; }
-.hdr-sub i { color:#fff; }
-@media (max-width:460px){ .hdr-login { display:none; } }
+.hdr-profile i { font-size:17px; }
+/* paginação da lista de ativos */
+.pager { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+.pg-info { font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:8px; }
+.pg-sel { height:34px; padding:0 30px 0 12px; font-size:12.5px; font-weight:600; border-radius:9px; }
+.pg-nav { display:flex; align-items:center; gap:6px; }
+.pg-btn { min-width:38px; height:38px; padding:0 11px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; cursor:pointer; transition:all .14s var(--ease); }
+.pg-btn:hover:not(:disabled) { border-color:var(--line-2); color:var(--ink); }
+.pg-btn.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
+.pg-btn:disabled { opacity:.4; cursor:not-allowed; }
+.pg-arrow { color:var(--ink-3); }
+.pg-ell { color:var(--ink-4); padding:0 2px; }
+@media (max-width:640px){
+  .pager { justify-content:center; }
+  .pg-nav { width:100%; justify-content:center; }
+  .pg-btn { min-width:42px; height:42px; }
+}
 /* feedback visual do swipe-back (mobile) */
 .swipe-hint { position:fixed; top:50%; left:0; transform:translateY(-50%) translateX(-44px); width:40px; height:40px; border-radius:50%; background:var(--surface); box-shadow:var(--sh-lg); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--brand); z-index:120; opacity:0; pointer-events:none; }
 #content.swiping { transition:none; }
@@ -547,11 +561,10 @@ img, svg, canvas, video { max-width: 100%; }
 @media (max-width: 760px) {
   .content { padding: 18px 18px 22px; }
   .topbar { padding: 0 18px; gap: 10px; height: 64px; }
-  .topbar-left { gap: 12px; min-width: 0; flex: 1; }
-  .topbar-left > div { min-width: 0; }
-  .page-title { font-size: 19px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .page-sub { font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .topbar-right { gap: 8px; flex: none; }
+  .topbar-left { gap: 12px; min-width: 0; flex: 0 0 auto; }
+  .topbar-left > div { display: none; }                 /* esconde o título: a logo é a identidade no mobile */
+  .topbar-brand { display: flex !important; }            /* logo sempre centralizada no mobile */
+  .topbar-right { gap: 8px; flex: 0 0 auto; }
   /* qualquer grid de layout vira coluna única */
   .grid, .dt-grid, .about-grid, .sim-grid { grid-template-columns: 1fr !important; }
   .grid[style], .dt-grid[style] { grid-template-columns: 1fr !important; }
@@ -926,12 +939,14 @@ img, svg, canvas, video { max-width: 100%; }
   box-shadow: var(--sh-sm);
   transition: transform .2s var(--ease), box-shadow .2s var(--ease);
   cursor: default;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
 }
 .mcell:hover { transform: translateY(-2px); box-shadow: var(--sh); }
+.mcell-l { min-width: 0; }
 .mcell .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
-.mcell .nm { font-size: 11.5px; color: var(--ink-3); font-weight: 500; }
-.mcell .spark-mini { width: 44px; height: 18px; }
-.mcell .vl { font-family: var(--mono); font-size: 17px; font-weight: 500; letter-spacing: -.01em; }
+.mcell .nm { font-size: 11.5px; color: var(--ink-3); font-weight: 500; margin-bottom: 6px; }
+.mcell .spark-mini { width: 56px; height: 34px; flex: none; align-self: center; }
+.mcell .vl { font-family: var(--mono); font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
 .mcell .dl { font-size: 11px; margin-top: 2px; font-family: var(--mono); }
 
 /* dividend timeline */
@@ -1549,7 +1564,18 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .auth-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
 
 /* ── cards de indicador — componentes premium ── */
-.ind-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
+.ind-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
+/* tablet: 2–3 colunas conforme largura; celular: sempre 2 colunas */
+@media (max-width:900px){ .ind-grid { grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); } }
+@media (max-width:640px){
+  .ind-grid { grid-template-columns:1fr 1fr; gap:10px; }
+  .ind-card { padding:13px 13px 14px; }
+  .ind-card .ind-top { gap:7px; margin-bottom:10px; }
+  .ind-ico { width:28px; height:28px; font-size:12px; }
+  .ind-l { font-size:11.5px; }
+  .ind-v { font-size:19px; }
+  .ind-tag { font-size:9.5px; padding:2px 6px; }
+}
 .ind-card { position:relative; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:16px 18px 17px; box-shadow:var(--sh-sm); overflow:hidden; transition:transform .22s var(--ease-out), box-shadow .22s var(--ease-out), border-color .22s var(--ease); will-change:transform; }
 .ind-card::before { content:''; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:3px; background:var(--st,var(--ink-4)); opacity:.0; transition:opacity .22s var(--ease); }
 .ind-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
@@ -2340,21 +2366,20 @@ function refreshPlanUI(){
   const up = document.getElementById('upgradeBtn'); if(up) up.style.display = pro?'none':'flex';
   updateHeaderAction();
 }
-/* cabeçalho reflete o estado do usuário:
-   - não logado: CTA Entrar + Assinar (sem sino)
-   - logado free: coroa Premium (sem sino)
-   - logado premium: sino de notificações */
+/* cabeçalho: Menu | Logo | Coroa | Perfil — só ícones, logo sempre centralizada (mobile) */
 function updateHeaderAction(){
   const el = document.getElementById('hdrActions'); if(!el) return;
-  if(!isAuthed()){
-    el.innerHTML = `<button class="btn btn-ghost btn-sm hdr-login" onclick="openAuth('login')">Entrar</button>`
-      + `<button class="btn btn-primary btn-sm hdr-sub" onclick="goPricing()"><i class="fa-solid fa-crown" style="font-size:11px"></i> Assinar</button>`;
-  } else if(isPremium()){
-    el.innerHTML = `<button class="icon-btn" title="Notificações"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></button>`;
+  const authed=isAuthed(), pro=isPremium();
+  let html='';
+  if(authed && pro){
+    html += `<button class="icon-btn" title="Notificações"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></button>`;
   } else {
-    el.innerHTML = `<button class="icon-btn hdr-crown" title="Premium — desbloqueie notificações e mais" onclick="goPricing()"><i class="fa-solid fa-crown"></i></button>`;
+    html += `<button class="icon-btn hdr-crown" title="Premium — desbloqueie recursos" onclick="goPricing()"><i class="fa-solid fa-crown"></i></button>`;
   }
+  html += `<button class="icon-btn hdr-profile" title="${authed?'Sua conta':'Entrar ou criar conta'}" onclick="${authed?'openAccount()':"openAuth('login')"}"><i class="fa-${authed?'solid':'regular'} fa-circle-user"></i></button>`;
+  el.innerHTML = html;
 }
+function openAccount(){ openSidebar(); }
 /* uso de IA no dia (limite do plano free) */
 function aiUsedToday(){ try{ const o=JSON.parse(localStorage.getItem('lastro_ai')||'{}'); const d=new Date().toISOString().slice(0,10); return o.d===d?(o.n||0):0; }catch(e){ return 0; } }
 function aiInc(){ const d=new Date().toISOString().slice(0,10); localStorage.setItem('lastro_ai', JSON.stringify({ d, n: aiUsedToday()+1 })); }
@@ -2669,9 +2694,12 @@ function viewPainel(){
     const col = m.up===true?'var(--up)': m.up===false?'var(--down)':'var(--ink-3)';
     const cls = m.up===true?'up': m.up===false?'down':'faint';
     return `<div class="mcell">
-      <div class="top"><span class="nm">${m.nm}</span><span class="spark-mini">${spark(m.spark,44,18,col,false)}</span></div>
-      <div class="vl">${m.nm==='Dólar'?'R$ ':''}${m.vl}</div>
-      <div class="dl ${cls}">${m.dl}</div>
+      <div class="mcell-l">
+        <div class="nm">${m.nm}</div>
+        <div class="vl">${m.nm==='Dólar'?'R$ ':''}${m.vl}</div>
+        <div class="dl ${cls}">${m.dl}</div>
+      </div>
+      <span class="spark-mini">${spark(m.spark,56,34,col,true)}</span>
     </div>`;
   }).join('');
 
@@ -2879,7 +2907,8 @@ const ASSET_CFG = {
 
 let tableState = {};
 let universeLoaded = false;
-Object.keys(ASSET_CFG).forEach(k=> tableState[k] = {q:'', seg:'', reg:'', sort:ASSET_CFG[k].sorts[0][0], dir:(ASSET_CFG[k].sorts[0][0]==='pvp'||ASSET_CFG[k].sorts[0][0]==='pl')?1:-1});
+function assetPageSize(){ const n=+sessionStorage.getItem('lastro_pgsize'); return [30,50,100].includes(n)?n:30; }
+Object.keys(ASSET_CFG).forEach(k=> tableState[k] = {q:'', seg:'', reg:'', sort:ASSET_CFG[k].sorts[0][0], dir:(ASSET_CFG[k].sorts[0][0]==='pvp'||ASSET_CFG[k].sorts[0][0]==='pl')?1:-1, page:1, pageSize:assetPageSize()});
 
 function viewAssets(kind){
   const cfg = ASSET_CFG[kind];
@@ -2907,6 +2936,7 @@ function viewAssets(kind){
       ${badge}
     </div>
     <div class="tbl-wrap"><table class="tbl" id="dataTbl"></table></div>
+    <div id="tblPager"></div>
   </div>
   <div class="card card-pad" style="margin-top:16px; background:var(--surface-2)">
     <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff"><i class="fa-solid fa-sparkles"></i></span> Análise IA</div>
@@ -2926,11 +2956,17 @@ function renderAssets(kind){
   if(st.reg && cfg.regOf) data = data.filter(a=> cfg.regOf(a)===st.reg);
   data.sort((a,b)=> ((a[st.sort]??0)-(b[st.sort]??0))*st.dir );
 
+  // paginação (performance: renderiza só a página atual)
+  const total=data.length, ps=st.pageSize||assetPageSize(), pages=Math.max(1,Math.ceil(total/ps));
+  if(st.page>pages) st.page=pages; if(st.page<1) st.page=1;
+  const start=(st.page-1)*ps;
+  const pageData=data.slice(start, start+ps);
+
   // alinhamento do cabeçalho segue o da coluna (corrige Setor/Segmento desalinhados)
-  const sample = data[0];
+  const sample = pageData[0];
   const thCls = c => (sample && /class="[^"]*cell-left/.test(c.f(sample))) ? ' class="cell-left"' : '';
   const thead = `<tr><th class="cell-left">Ativo</th>${cfg.cols.map(c=>`<th${thCls(c)}>${c.h}</th>`).join('')}<th>Var. ${cfg.customVar==='v24'?'24h':'hoje'}</th></tr>`;
-  const rows = data.map(a=>{
+  const rows = pageData.map(a=>{
     const vfield = cfg.customVar || 'var';
     const vv = a[vfield];
     const vcell = `<td class="mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</td>`;
@@ -2941,11 +2977,30 @@ function renderAssets(kind){
     </tr>`;
   }).join('');
   const colspan = cfg.cols.length + 2;
-  const body = data.length ? `<tbody>${rows}</tbody>`
+  const body = total ? `<tbody>${rows}</tbody>`
     : `<tbody><tr class="no-hover"><td colspan="${colspan}">${emptyState('fa-magnifying-glass','Nenhum ativo encontrado','Ajuste a busca ou os filtros para ver resultados.')}</td></tr></tbody>`;
   $('#dataTbl').innerHTML = `<thead>${thead}</thead>${body}`;
-  const cnt = $('#tblCount'); if(cnt) cnt.textContent = `· ${data.length} ${cfg.unit}`;
+  const cnt = $('#tblCount'); if(cnt) cnt.textContent = `· ${total} ${cfg.unit}`;
+  const pg = $('#tblPager'); if(pg) pg.innerHTML = total ? pagerHTML(kind, st.page, pages, total, ps, start, pageData.length) : '';
 }
+/* janela de números de página (1 … 4 5 6 … N) */
+function pageWindow(page, pages){
+  if(pages<=7) return Array.from({length:pages},(_,i)=>i+1);
+  const out=[1]; const lo=Math.max(2,page-1), hi=Math.min(pages-1,page+1);
+  if(lo>2) out.push('…'); for(let p=lo;p<=hi;p++) out.push(p); if(hi<pages-1) out.push('…'); out.push(pages);
+  return out;
+}
+function pagerHTML(kind, page, pages, total, ps, start, shown){
+  const btn=(p,lbl,extra)=>`<button class="pg-btn ${extra||''}" ${p?`onclick="gotoPage('${kind}',${p})"`:'disabled'}>${lbl}</button>`;
+  const nums = pageWindow(page,pages).map(p=> p==='…'?'<span class="pg-ell">…</span>': btn(p, p, p===page?'on':'')).join('');
+  const nav = pages>1 ? `<div class="pg-nav">${btn(page>1?page-1:0,'<i class="fa-solid fa-chevron-left"></i>','pg-arrow')}${nums}${btn(page<pages?page+1:0,'<i class="fa-solid fa-chevron-right"></i>','pg-arrow')}</div>` : '';
+  return `<div class="pager">
+    <div class="pg-info">${start+1}–${start+shown} de ${total} · <select class="sel pg-sel" onchange="setPageSize('${kind}',this.value)">${[30,50,100].map(n=>`<option value="${n}" ${n===ps?'selected':''}>${n}/pág.</option>`).join('')}</select></div>
+    ${nav}
+  </div>`;
+}
+function gotoPage(kind, p){ tableState[kind].page=+p; renderAssets(kind); const c=$('#content'); if(c) c.scrollTop=0; window.scrollTo({top:0,behavior:'smooth'}); }
+function setPageSize(kind, n){ n=+n||30; sessionStorage.setItem('lastro_pgsize', n); Object.keys(tableState).forEach(k=>{ tableState[k].pageSize=n; tableState[k].page=1; }); renderAssets(kind); }
 /* estado vazio reutilizável */
 function emptyState(icon, title, sub){
   return `<div class="empty-state"><div class="es-ic"><i class="fa-solid ${icon}"></i></div><div class="es-t">${title}</div>${sub?`<div class="es-s">${sub}</div>`:''}</div>`;
@@ -2954,6 +3009,7 @@ function emptyState(icon, title, sub){
 function tblFilter(kind, key, val){
   if(key==='sort'){ tableState[kind].sort=val; tableState[kind].dir = (val==='pvp'||val==='pl')?1:-1; }
   else tableState[kind][key]=val;
+  tableState[kind].page=1;   // filtro/busca volta para a 1ª página
   renderAssets(kind);
 }
 
@@ -3966,12 +4022,16 @@ function initDetailPriceChart(){
   const found=assetLookup(currentAssetTk); const a=found.a, k=found.k;
   const n=ASSET_RANGES[detailRange]||252;
   const data=genSeries(currentAssetTk+detailRange, a.px, n, 0.014);
-  const up=data[data.length-1]>=data[0]; const col=cssVar(up?'--up':'--down')||'#0E7C5A';
-  const g=ctx.getContext('2d'); const grad=g.createLinearGradient(0,0,0,280); grad.addColorStop(0,hexToRgba(col,.22)); grad.addColorStop(1,hexToRgba(col,0));
+  const open=data[0];                                   // referência: abertura do período
+  const up=data[data.length-1]>=open; const col=cssVar(up?'--up':'--down')||'#0E7C5A';
+  const g=ctx.getContext('2d'); const grad=g.createLinearGradient(0,0,0,280); grad.addColorStop(0,hexToRgba(col,.20)); grad.addColorStop(1,hexToRgba(col,0));
   const isUsd=k==='stocks';
-  charts.detailPrice=new Chart(ctx,{type:'line',data:{labels:data.map((_,i)=>i),datasets:[{data,borderColor:col,backgroundColor:grad,fill:true,borderWidth:2,tension:.32,pointRadius:0,pointHoverRadius:4,pointHoverBackgroundColor:col}]},
-    options:{responsive:true,maintainAspectRatio:false,animation:{duration:1000},
-      plugins:{legend:{display:false},tooltip:{enabled:true,displayColors:false,callbacks:{title:()=>'',label:c=>(isUsd?'US$ ':'R$ ')+c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}}},
+  const openLine=data.map(()=>open);                    // linha tracejada neutra na abertura
+  charts.detailPrice=new Chart(ctx,{type:'line',data:{labels:data.map((_,i)=>i),datasets:[
+      {data,borderColor:col,backgroundColor:grad,fill:true,borderWidth:2.4,tension:.42,cubicInterpolationMode:'monotone',pointRadius:0,pointHoverRadius:5,pointHoverBackgroundColor:'#fff',pointHoverBorderColor:col,pointHoverBorderWidth:2,order:1},
+      {data:openLine,borderColor:cssVar('--ink-4'),borderWidth:1.2,borderDash:[5,5],fill:false,pointRadius:0,pointHoverRadius:0,tension:0,order:2}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:1000,easing:'easeOutQuart'},
+      plugins:{legend:{display:false},tooltip:{enabled:true,displayColors:false,filter:i=>i.datasetIndex===0,callbacks:{title:()=>'',label:c=>(isUsd?'US$ ':'R$ ')+c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}}},
       scales:{x:{display:false},y:{position:'right',grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},maxTicksLimit:5},border:{display:false}}},
       interaction:{intersect:false,mode:'index'}}});
 }
@@ -4955,11 +5015,12 @@ function backFromAsset(){
 function closeAsset(){ if(currentView==='asset') backFromAsset(); }
 function quickView(tk){ openAsset(tk); }
 
-/* navegação "voltar" (botão e swipe) */
-function canGoBack(){ return currentView==='asset' || navStack.length>0; }
+/* navegação "voltar" — segue a HIERARQUIA do app, não o histórico:
+   Ativo → lista de origem → Início. Demais telas → Início. */
+function canGoBack(){ return currentView==='asset' || currentView!=='painel'; }
 function goBack(){
-  if(currentView==='asset'){ backFromAsset(); return true; }
-  if(navStack.length){ const v=navStack.pop(); const el=document.querySelector('.nav-item[data-view="'+v+'"]'); nav(v, el, true); return true; }
+  if(currentView==='asset'){ backFromAsset(); return true; }      // ativo → lista de origem (prevView)
+  if(currentView!=='painel'){ goView('painel'); return true; }    // qualquer tela → Início
   return false;
 }
 /* swipe-back na borda esquerda (mobile), estilo iOS/bancos */
