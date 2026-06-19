@@ -16,6 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="Lastro">
 <meta name="mobile-web-app-capable" content="yes">
 
+<script>(function(){try{var t=localStorage.getItem('lastro_theme')||'auto';var d=t==='dark'||(t!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
@@ -500,9 +501,19 @@ body.view-inicio .topbar-brand { display:flex; }
 
 /* segmented control */
 .chart-ctrls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.chart-type { display:inline-flex; background:var(--surface-3); border-radius:9px; padding:3px; gap:2px; }
-.chart-type button { width:32px; height:30px; border-radius:7px; color:var(--ink-3); cursor:pointer; font-size:13px; display:inline-flex; align-items:center; justify-content:center; transition:all .14s var(--ease); }
-.chart-type button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
+.chart-toggle { display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 13px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
+.chart-toggle:hover { border-color:var(--line-2); color:var(--ink); }
+.chart-toggle i { font-size:12px; color:var(--accent); }
+.tf-wrap { position:relative; }
+.tf-toggle { display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 13px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
+.tf-toggle:hover { border-color:var(--line-2); color:var(--ink); }
+.tf-toggle .tf-cv { font-size:9px; transition:transform .18s var(--ease); }
+.tf-panel.open ~ * .tf-cv, .tf-wrap:has(.tf-panel.open) .tf-cv { transform:rotate(180deg); }
+.tf-panel { position:absolute; right:0; top:calc(100% + 6px); z-index:30; display:none; grid-template-columns:repeat(3,1fr); gap:4px; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r); box-shadow:var(--sh-lg); padding:6px; min-width:180px; }
+.tf-panel.open { display:grid; animation:fadeIn .14s var(--ease); }
+.tf-panel button { padding:8px 6px; border-radius:7px; font-size:12.5px; font-weight:600; color:var(--ink-2); cursor:pointer; transition:all .12s var(--ease); }
+.tf-panel button:hover { background:var(--surface-3); color:var(--ink); }
+.tf-panel button.on { background:var(--ink); color:var(--canvas); }
 .segmented {
   display: inline-flex;
   background: var(--surface-3);
@@ -595,6 +606,19 @@ img, svg, canvas, video { max-width: 100%; }
   .filters { flex-wrap: wrap; gap: 10px; }
   .filters .search-inp { flex: 1 1 100%; min-width: 0; }
   .filters .sel-wrap.grow, .filters .sel-wrap.full { flex: 1 1 100%; width: 100%; }
+}
+/* iOS: campos com 16px no mobile evitam o zoom automático ao focar */
+@media (max-width: 760px) {
+  input, select, textarea, .sel, .search-inp input, .cmp-input, .pg-sel, .fld input, .insight-input input, .search-bar input { font-size: 16px !important; }
+}
+/* celular: lista de ativos em 2 colunas (Ativo + Setor) — sem rolagem nem corte */
+@media (max-width: 560px) {
+  table.tbl { width: 100%; min-width: 0; table-layout: fixed; }
+  table.tbl th:nth-child(n+3), table.tbl td:nth-child(n+3) { display: none; }
+  table.tbl th:nth-child(2), table.tbl td:nth-child(2) { text-align: right !important; white-space: normal; }
+  table.tbl td.cell-left:nth-child(2) { text-align: right !important; }
+  table.tbl th:first-child, table.tbl td:first-child { position: static; }
+  table.tbl .td-asset .ds { max-width: 150px; }
 }
 @media (max-width: 460px) {
   .content { padding: 15px 15px 20px; }
@@ -836,9 +860,9 @@ img, svg, canvas, video { max-width: 100%; }
 /* alternância de índice no hero */
 .hero-mkt-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .hero-mkt.clickable { cursor:pointer; }
-.hero-dots { display:flex; gap:6px; }
-.hero-dots .hd { width:7px; height:7px; border-radius:50%; background:var(--line-2); transition:all .2s var(--ease); }
-.hero-dots .hd.on { background:var(--brand); width:18px; border-radius:4px; }
+/* crossfade lento e contemplativo da troca de índice no hero */
+.hero-mkt .hero-mkt-head, .hero-mkt .hero-value, .hero-mkt .hero-delta, .hero-mkt .hero-spark { transition: opacity .6s var(--ease); }
+.hero-mkt.hero-swap .hero-mkt-head, .hero-mkt.hero-swap .hero-value, .hero-mkt.hero-swap .hero-delta, .hero-mkt.hero-swap .hero-spark { opacity:0; }
 .hero-eyebrow {
   font-size: 11.5px; font-weight: 600; letter-spacing: .08em;
   text-transform: uppercase; color: var(--ink-3);
@@ -1572,7 +1596,27 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .pt-lock .pw-ic { width:50px; height:50px; font-size:19px; margin-bottom:12px; }
 .pt-lock .pw-t { font-size:15.5px; } .pt-lock .pw-s { margin:7px 0 16px; font-size:12.5px; }
 /* abas de autenticação */
-.auth-tabs { display:flex; gap:4px; background:var(--surface-3); padding:4px; border-radius:var(--r-sm); margin-bottom:6px; }
+/* login premium */
+.auth-hero { text-align:center; margin-bottom:18px; animation:authIn .4s var(--ease-out) both; }
+.auth-logo { width:54px; height:54px; border-radius:16px; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; background:linear-gradient(150deg,#23B07E,#0E7C5A 55%,#09533C); box-shadow:inset 0 1px 1px rgba(255,255,255,.25), 0 8px 20px rgba(9,83,60,.32); }
+.auth-logo svg { width:28px; height:28px; }
+.auth-h { font-size:21px; font-weight:700; letter-spacing:-.02em; }
+.auth-sub { font-size:13px; color:var(--ink-2); line-height:1.55; margin-top:7px; max-width:340px; margin-left:auto; margin-right:auto; }
+.auth-fld { animation:authIn .45s var(--ease-out) both; }
+.auth-fld:nth-of-type(1){animation-delay:.05s}.auth-fld:nth-of-type(2){animation-delay:.1s}
+.auth-input { position:relative; display:flex; align-items:center; }
+.auth-input > i { position:absolute; left:13px; color:var(--ink-4); font-size:13px; pointer-events:none; }
+.auth-input input { width:100%; padding:12px 13px 12px 38px !important; border:1px solid var(--line) !important; border-radius:var(--r-sm); background:var(--surface-2) !important; transition:border-color .15s var(--ease), box-shadow .15s var(--ease), background .15s var(--ease); }
+.auth-input input:focus { border-color:var(--brand) !important; background:var(--surface) !important; box-shadow:0 0 0 3px var(--brand-l); }
+.auth-eye { position:absolute; right:8px; width:30px; height:30px; border-radius:7px; color:var(--ink-4); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.auth-eye:hover { color:var(--ink-2); background:var(--surface-3); }
+.auth-submit { width:100%; justify-content:center; margin-top:4px; height:46px; font-size:14.5px; gap:8px; }
+.auth-submit i { transition:transform .18s var(--ease); }
+.auth-submit:hover i { transform:translateX(3px); }
+.auth-foot { font-size:11.5px; color:var(--ink-3); text-align:center; margin-top:16px; line-height:1.5; display:flex; align-items:center; justify-content:center; gap:7px; }
+.auth-foot i { color:var(--brand); }
+@keyframes authIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+.auth-tabs { display:flex; gap:4px; background:var(--surface-3); padding:4px; border-radius:var(--r-sm); margin-bottom:14px; }
 .auth-tabs button { flex:1; padding:8px; border-radius:7px; font-size:13px; font-weight:500; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
 .auth-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
 
@@ -2472,8 +2516,13 @@ async function loadCloudState(){
       if(Array.isArray(d.carteira)){ CARTEIRA=d.carteira; normLots(); savePortfolio(); }
       if(Array.isArray(d.watch)) localStorage.setItem('lastro_watch', JSON.stringify(d.watch));
       if(d.plan) localStorage.setItem('lastro_plan', d.plan);
+      if(d.theme){ localStorage.setItem('lastro_theme', d.theme); applyTheme(false); }
+      const pf=d.prefs||{};
+      if([30,50,100].includes(+pf.pgsize)){ sessionStorage.setItem('lastro_pgsize', pf.pgsize); Object.keys(tableState).forEach(k=>tableState[k].pageSize=+pf.pgsize); }
+      if(pf.chartType) homeChartType=pf.chartType;
+      if(pf.chartPeriod) homeChartPeriod=pf.chartPeriod;
       refreshPlanUI();
-      if(['carteira','watchlist'].includes(currentView)) render(currentView);
+      render(currentView);   // reflete preferências (tema/visualização) imediatamente
     } else { await saveCloudState(); } // primeira vez: envia o estado local
   }catch(e){}
 }
@@ -2482,7 +2531,7 @@ function saveCloudState(){
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
   clearTimeout(_cloudT);
   return new Promise(res=>{ _cloudT=setTimeout(async()=>{
-    const data={ carteira:CARTEIRA, watch:watchlist(), plan:getPlan() };
+    const data={ carteira:CARTEIRA, watch:watchlist(), plan:getPlan(), theme:getThemePref(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod } };
     try{ await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data, updated_at:new Date().toISOString()})}); }catch(e){}
     res();
   }, 700); });
@@ -2495,6 +2544,7 @@ function updateAuthUI(){
   if(pl) pl.textContent = u ? (isPremium()?'Plano Premium':'Plano Gratuito') : 'Sincronize seus dados';
   updateHeaderAction();
 }
+function togglePass(btn){ const inp=$('#auPass'); if(!inp) return; const show=inp.type==='password'; inp.type=show?'text':'password'; btn.innerHTML=`<i class="fa-regular fa-eye${show?'-slash':''}"></i>`; inp.focus(); }
 function openAuth(mode){ renderAuth(mode||'login'); $('#authModal').classList.add('open'); }
 function closeAuth(){ $('#authModal').classList.remove('open'); }
 function accountClick(){ openAuth(); }
@@ -2511,14 +2561,19 @@ function renderAuth(mode){
       <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="authLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>`;
     return;
   }
-  $('#authTitle').textContent = mode==='signup'?'Criar conta grátis':'Entrar na Lastro';
+  $('#authTitle').textContent = '';
   body.innerHTML = `
+    <div class="auth-hero">
+      <div class="auth-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
+      <div class="auth-h">${mode==='signup'?'Crie sua conta grátis':'Bem-vindo de volta'}</div>
+      <div class="auth-sub">${mode==='signup'?'Comece em segundos — carteira, watchlist e preferências sincronizadas entre seus dispositivos.':'Acesse sua carteira, watchlist e preferências, sincronizadas onde você estiver.'}</div>
+    </div>
     <div class="auth-tabs"><button class="${mode==='login'?'on':''}" onclick="renderAuth('login')">Entrar</button><button class="${mode==='signup'?'on':''}" onclick="renderAuth('signup')">Criar conta</button></div>
-    <label class="fld"><span>E-mail</span><input id="auEmail" type="email" inputmode="email" placeholder="voce@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('#auPass').focus()"></label>
-    <label class="fld"><span>Senha</span><input id="auPass" type="password" placeholder="mínimo 6 caracteres" autocomplete="${mode==='signup'?'new-password':'current-password'}" onkeydown="if(event.key==='Enter')authSubmit('${mode}')"></label>
+    <label class="fld auth-fld"><span>E-mail</span><div class="auth-input"><i class="fa-regular fa-envelope"></i><input id="auEmail" type="email" inputmode="email" placeholder="voce@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('#auPass').focus()"></div></label>
+    <label class="fld auth-fld"><span>Senha</span><div class="auth-input"><i class="fa-solid fa-lock"></i><input id="auPass" type="password" placeholder="mínimo 6 caracteres" autocomplete="${mode==='signup'?'new-password':'current-password'}" onkeydown="if(event.key==='Enter')authSubmit('${mode}')"><button type="button" class="auth-eye" onclick="togglePass(this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
     <div id="auErr" class="fld-err"></div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="authSubmit('${mode}')">${mode==='signup'?'Criar conta grátis':'Entrar'}</button>
-    <div style="font-size:11.5px;color:var(--ink-3);text-align:center;margin-top:14px;line-height:1.5"><i class="fa-solid fa-lock" style="font-size:10px"></i> Seus dados ficam protegidos. Sincronize carteira e watchlist entre dispositivos.</div>`;
+    <button class="btn btn-primary auth-submit" onclick="authSubmit('${mode}')">${mode==='signup'?'Criar conta grátis':'Entrar'} <i class="fa-solid fa-arrow-right"></i></button>
+    <div class="auth-foot"><i class="fa-solid fa-shield-halved"></i> Conexão segura · seus dados ficam protegidos e sincronizados</div>`;
   setTimeout(()=>{ const e=$('#auEmail'); e&&e.focus(); }, 60);
 }
 async function authSubmit(mode){
@@ -2687,18 +2742,22 @@ function heroIndices(){
     { nm:'Nasdaq',   vl:'20.485', dl:'+0,74%', up:true, spark:nq },
   ];
 }
-function renderHeroIdx(){
+function renderHeroIdx(soft){
   const list=heroIndices(); const i=heroIdx%list.length, x=list[i];
   const lbl=$('#heroIdxLbl'); if(!lbl) return;
-  lbl.textContent=x.nm;
-  const v=$('#heroIdxVal'); if(v) v.textContent=x.vl;
-  const chip=$('#heroIdxChip'); if(chip){ chip.className='chip '+(x.up?'chip-up':'chip-down'); chip.innerHTML=`<i class="fa-solid fa-arrow-${x.up?'up':'down'}" style="font-size:9px"></i> ${x.dl}`; }
-  const hs=$('#heroSpark'); if(hs) hs.innerHTML=spark(x.spark,420,56,x.up?'var(--up)':'var(--down)',true).replace('width="420"','width="100%"').replace('viewBox="0 0 420 56"','viewBox="0 0 420 56" preserveAspectRatio="none"');
-  document.querySelectorAll('#heroDots .hd').forEach((d,j)=>d.classList.toggle('on', j===i));
+  const apply=()=>{
+    lbl.textContent=x.nm;
+    const v=$('#heroIdxVal'); if(v) v.textContent=x.vl;
+    const chip=$('#heroIdxChip'); if(chip){ chip.className='chip '+(x.up?'chip-up':'chip-down'); chip.innerHTML=`<i class="fa-solid fa-arrow-${x.up?'up':'down'}" style="font-size:9px"></i> ${x.dl}`; }
+    const hs=$('#heroSpark'); if(hs) hs.innerHTML=spark(x.spark,420,56,x.up?'var(--up)':'var(--down)',true).replace('width="420"','width="100%"').replace('viewBox="0 0 420 56"','viewBox="0 0 420 56" preserveAspectRatio="none"');
+  };
+  const main=document.querySelector('.hero-mkt');
+  if(soft && main){ main.classList.add('hero-swap'); setTimeout(()=>{ apply(); main.classList.remove('hero-swap'); }, 650); }
+  else apply();
 }
-function startHeroTimer(){ stopHeroTimer(); _heroTimer=setInterval(()=>{ if(currentView!=='painel'){ stopHeroTimer(); return; } heroIdx++; renderHeroIdx(); }, 6000); }
+function startHeroTimer(){ stopHeroTimer(); _heroTimer=setInterval(()=>{ if(currentView!=='painel'){ stopHeroTimer(); return; } heroIdx++; renderHeroIdx(true); }, 15000); }
 function stopHeroTimer(){ if(_heroTimer){ clearInterval(_heroTimer); _heroTimer=null; } }
-function cycleHero(){ heroIdx++; renderHeroIdx(); startHeroTimer(); }
+function cycleHero(){ heroIdx++; renderHeroIdx(true); startHeroTimer(); }
 
 function viewPainel(){
   const p = portfolioStats();
@@ -2754,7 +2813,6 @@ function viewPainel(){
       <div class="hero-eyebrow"><i class="fa-solid fa-tower-broadcast" style="color:var(--brand)"></i> ${greetingLabel()}</div>
       <div class="hero-mkt-head">
         <div class="hero-mkt-lbl" id="heroIdxLbl">${ib.nm}</div>
-        <div class="hero-dots" id="heroDots"><span class="hd on"></span><span class="hd"></span></div>
       </div>
       <div class="hero-value"><span id="heroIdxVal">${ib.vl}</span><span class="hero-pts">pts</span></div>
       <div class="hero-delta">
@@ -2796,19 +2854,14 @@ function viewPainel(){
       <div class="card-head">
         <div class="card-h"><span class="ico" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-chart-area"></i></span> Nasdaq</div>
         <div class="chart-ctrls">
-          <div class="chart-type" id="homeType">
-            <button data-t="line" class="on" onclick="setHomeType('line')" title="Linha"><i class="fa-solid fa-chart-line"></i></button>
-            <button data-t="candle" onclick="setHomeType('candle')" title="Candles"><i class="fa-solid fa-chart-simple"></i></button>
-          </div>
-          <div class="segmented" id="ibovSeg">
-            <button onclick="setIbov('7d',this)" class="active">7D</button>
-            <button onclick="setIbov('30d',this)">30D</button>
-            <button onclick="setIbov('6m',this)">6M</button>
-            <button onclick="setIbov('1a',this)">1A</button>
+          <button class="chart-toggle" id="homeTypeBtn" onclick="toggleHomeType()" title="Alternar Linha / Candles"></button>
+          <div class="tf-wrap">
+            <button class="tf-toggle" onclick="toggleTfPanel()"><i class="fa-regular fa-clock"></i> <span id="tfLabel">${homeChartPeriod}</span> <i class="fa-solid fa-chevron-down tf-cv"></i></button>
+            <div class="tf-panel" id="tfPanel">${HOME_TF.map(t=>`<button class="${t[0]===homeChartPeriod?'on':''}" onclick="setIbov('${t[0]}')">${t[0]}</button>`).join('')}</div>
           </div>
         </div>
       </div>
-      <div style="position:relative;height:240px"><canvas id="ibovChart" role="img" aria-label="Histórico do Nasdaq"></canvas></div>
+      <div style="position:relative;height:248px"><canvas id="ibovChart" role="img" aria-label="Histórico do Nasdaq"></canvas></div>
     </div>
 
     <div class="card card-pad">
@@ -3750,8 +3803,18 @@ const NASDAQ = {
   '1a': { l:['Jun/25','Ago','Out','Dez','Fev/26','Abr','Jun/26'], d:[15800,16700,17400,18100,19000,19700,20485] },
 };
 function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
-let homeChartPeriod='7d', homeChartType='line';
+/* timeframes da Home: rótulo → nº de candles (mais candles = mais contexto) */
+const HOME_TF = [['1D',30],['5D',40],['1M',24],['6M',28],['1A',52],['5A',60],['Máx',120]];
+let homeChartPeriod='1M', homeChartType='candle';
 const kfmt = v => (v/1000).toFixed(1).replace('.',',')+'k';   // ex.: 19,8k / 168,6k (evita "20k" repetido)
+/* série sintética determinística do índice para o timeframe (fechamentos + rótulos) */
+function indexSeries(period){
+  const tf=HOME_TF.find(t=>t[0]===period)||HOME_TF[2]; const n=tf[1];
+  const d=genSeries('NQ'+period, 20485, n, period==='1D'?0.006:0.013);
+  const now=new Date(); const step = period==='1D'?0 : period==='5D'?1 : period==='1M'?1 : period==='6M'?7 : period==='1A'?7 : period==='5A'?30 : 30;
+  const l=[]; for(let i=n-1;i>=0;i--){ if(period==='1D'){ l.push((10+Math.floor((n-1-i)/2.6))+'h'); } else { const dt=new Date(now); dt.setDate(now.getDate()-i*step); l.push(`${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`); } }
+  return {l,d};
+}
 /* deriva candles (OHLC) a partir da série de fechamento */
 function ohlcFrom(arr, key){
   const r=rngF(seedFrom(key||'ohlc')); const out=[];
@@ -3769,7 +3832,8 @@ function renderHomeChart(){
   const ctx = $('#ibovChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
   if(charts.ibov){ try{charts.ibov.destroy();}catch(e){} }
-  const p = NASDAQ[homeChartPeriod] || NASDAQ['7d'];
+  const btn=$('#homeTypeBtn'); if(btn) btn.innerHTML = homeChartType==='candle' ? '<i class="fa-solid fa-chart-line"></i> Linha' : '<i class="fa-solid fa-chart-simple"></i> Candles';
+  const p = indexSeries(homeChartPeriod);
   const baseScales = {
     x:{ grid:{display:false}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxRotation:0, autoSkipPadding:14 }, border:{display:false} },
     y:{ position:'right', grid:{color:cssVar('--line')}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxTicksLimit:6, callback:v=>kfmt(v) }, border:{display:false} }
@@ -3796,17 +3860,16 @@ function renderHomeChart(){
         interaction:{intersect:false,mode:'index'}, scales:baseScales } });
   }
 }
-function setIbov(p, btn){
+function setIbov(p){
   homeChartPeriod=p;
-  document.querySelectorAll('#ibovSeg button').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+  const lb=$('#tfLabel'); if(lb) lb.textContent=p;
+  document.querySelectorAll('#tfPanel button').forEach(b=>b.classList.toggle('on', b.textContent===p));
+  const panel=$('#tfPanel'); if(panel) panel.classList.remove('open');
   renderHomeChart();
 }
-function setHomeType(t){
-  homeChartType=t;
-  document.querySelectorAll('#homeType button').forEach(b=>b.classList.toggle('on', b.dataset.t===t));
-  renderHomeChart();
-}
+function toggleTfPanel(){ const p=$('#tfPanel'); if(p) p.classList.toggle('open'); }
+function toggleHomeType(){ homeChartType = homeChartType==='candle' ? 'line' : 'candle'; renderHomeChart(); }
+document.addEventListener('click', e=>{ if(!e.target.closest('.tf-wrap')){ const p=$('#tfPanel'); if(p) p.classList.remove('open'); } });
 
 /* Alloc chart */
 const ALLOC_COLORS = ['#0E7C5A','#2563EB','#8B4FB8','#A87C2A','#D14343','#0EA5A0','#E2761B','#5B7CFA','#16A34A','#B45309'];
@@ -5142,14 +5205,25 @@ function goBack(){
   });
 })();
 
-function toggleTheme(){
-  const html = document.documentElement;
-  const dark = html.getAttribute('data-theme')==='dark';
-  html.setAttribute('data-theme', dark?'light':'dark');
-  $('#themeIcon').className = dark?'fa-solid fa-moon':'fa-solid fa-sun';
-  $('#themeLabel').textContent = dark?'Modo escuro':'Modo claro';
-  render(currentView); // re-render charts with new theme colors
+/* tema: claro / escuro / automático (segue o SO em tempo real) */
+const THEME_SEQ = ['auto','light','dark'];
+function getThemePref(){ const t=localStorage.getItem('lastro_theme'); return THEME_SEQ.includes(t)?t:'auto'; }
+function systemDark(){ return matchMedia('(prefers-color-scheme: dark)').matches; }
+function effectiveTheme(){ const p=getThemePref(); return p==='auto' ? (systemDark()?'dark':'light') : p; }
+function applyTheme(reRender){
+  const eff=effectiveTheme();
+  document.documentElement.setAttribute('data-theme', eff);
+  const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content', eff==='dark'?'#0A0E13':'#0E7C5A');
+  const pref=getThemePref();
+  const ic=$('#themeIcon'), lb=$('#themeLabel');
+  if(ic) ic.className = pref==='auto' ? 'fa-solid fa-circle-half-stroke' : (eff==='dark'?'fa-solid fa-sun':'fa-solid fa-moon');
+  if(lb) lb.textContent = pref==='auto' ? 'Tema automático' : (eff==='dark'?'Modo claro':'Modo escuro');
+  if(reRender) render(currentView);
 }
+function setThemePref(p){ if(!THEME_SEQ.includes(p)) p='auto'; localStorage.setItem('lastro_theme', p); applyTheme(true); if(typeof saveCloudState==='function') saveCloudState(); }
+function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SEQ.indexOf(cur)+1)%THEME_SEQ.length]; setThemePref(next); toast(next==='auto'?'Tema: Automático':next==='dark'?'Tema: Escuro':'Tema: Claro'); }
+// segue o sistema em tempo real quando em "automático"
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(getThemePref()==='auto') applyTheme(true); });
 
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
@@ -5328,6 +5402,7 @@ async function loadUniverse(){
 }
 
 /* INIT */
+applyTheme(false);   // sincroniza ícone/rótulo do tema (data-theme já aplicado no <head>)
 normLots();          // garante id em cada aporte (migração de carteiras antigas)
 refreshPlanUI();
 updateAuthUI();
