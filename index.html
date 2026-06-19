@@ -18,7 +18,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script>window.LASTRO_CONFIG = window.LASTRO_CONFIG || {};</script>
 <script src="config.js" onerror="void 0"></script>
@@ -70,7 +70,7 @@
   /* Type */
   --serif: 'Plus Jakarta Sans', system-ui, sans-serif;
   --sans:  'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --mono:  'IBM Plex Mono', ui-monospace, monospace;
+  --mono:  'Plus Jakarta Sans', ui-monospace, monospace;
 
   /* Radius */
   --r-sm: 8px;
@@ -139,7 +139,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 input, select, textarea { font-family: inherit; outline: none; color: inherit; background: transparent; border: none; }
 .search-inp input { width: 100%; height: 22px; line-height: 22px; border: none; padding: 0; margin: 0; }
 a { color: inherit; text-decoration: none; }
-.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1, "lnum" 1; letter-spacing: -.01em; }
 .serif { font-family: var(--serif); }
 .tnum { font-variant-numeric: tabular-nums; }
 
@@ -687,12 +687,14 @@ img, svg, canvas, video { max-width: 100%; }
   <div class="modal-card" role="dialog" aria-label="Posição da carteira">
     <div class="modal-head"><span id="posTitle">Adicionar posição</span><button class="drawer-close" onclick="closePosModal()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
-      <label class="fld"><span>Ativo</span><input id="posTk" list="tkList" placeholder="Ex.: PETR4, HGLG11, IVV" autocomplete="off" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')savePos()"></label>
+      <label class="fld"><span>Ativo</span><input id="posTk" list="tkList" placeholder="Ex.: PETR4, HGLG11, IVV" autocomplete="off" oninput="this.value=this.value.toUpperCase();posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
       <datalist id="tkList"></datalist>
       <div class="fld-row">
-        <label class="fld"><span>Quantidade</span><input id="posQt" type="number" min="0" step="any" inputmode="decimal" placeholder="0" onkeydown="if(event.key==='Enter')savePos()"></label>
-        <label class="fld"><span>Preço médio (R$)</span><input id="posPm" type="number" min="0" step="any" inputmode="decimal" placeholder="0,00" onkeydown="if(event.key==='Enter')savePos()"></label>
+        <label class="fld"><span>Quantidade</span><input id="posQt" type="number" min="0" step="any" inputmode="decimal" placeholder="0" oninput="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
+        <label class="fld"><span>Preço do aporte (R$)</span><input id="posPm" type="number" min="0" step="any" inputmode="decimal" placeholder="0,00" oninput="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
       </div>
+      <label class="fld"><span>Data do aporte <small style="color:var(--ink-4);font-weight:400">(opcional · contabiliza proventos)</small></span><input id="posDt" type="date" onkeydown="if(event.key==='Enter')savePos()"></label>
+      <div id="posPreview" class="pos-preview"></div>
       <div id="posErr" class="fld-err"></div>
     </div>
     <div class="modal-foot"><button class="btn btn-ghost" onclick="closePosModal()">Cancelar</button><button class="btn btn-primary" onclick="savePos()"><i class="fa-solid fa-check"></i> Salvar</button></div>
@@ -1714,6 +1716,33 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
   .opp-grid { grid-template-columns:1fr; }
   .pat-card .btn { width:100%; justify-content:center; }
 }
+
+/* ════ CARTEIRA — prévia no modal e histórico de aportes ════ */
+.pos-preview { display:none; margin-top:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:13px 15px; }
+.pos-preview.on { display:block; animation:fadeIn .2s var(--ease); }
+.pp-h { display:flex; align-items:center; gap:10px; padding-bottom:10px; margin-bottom:8px; border-bottom:1px solid var(--line); }
+.pp-id { min-width:0; }
+.pp-tk { font-family:var(--mono); font-weight:600; font-size:14px; }
+.pp-nm { font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pp-row { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:12.5px; color:var(--ink-2); padding:5px 0; }
+.pp-row b { font-weight:600; color:var(--ink); display:inline-flex; align-items:center; }
+.lot-caret { display:inline-flex; width:16px; color:var(--ink-4); transition:transform .18s var(--ease); font-size:11px; }
+.lot-caret.open { transform:rotate(90deg); color:var(--brand); }
+.lot-badge { font-size:10px; font-weight:600; color:var(--accent); background:var(--accent-l); padding:1px 7px; border-radius:20px; vertical-align:middle; }
+.pos-row { cursor:pointer; }
+.lots-row > td { padding:0 !important; border-top:none !important; background:var(--surface-2); }
+.lots-box { padding:6px 16px 14px; }
+.lots-head { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-3); padding:10px 0 8px; }
+.lot-line { display:flex; align-items:center; gap:14px; padding:9px 0; border-top:1px solid var(--line); font-size:12.5px; }
+.lot-line > span { flex:1; }
+.lot-line .lot-dt { color:var(--ink-2); flex:1.4; }
+.lot-line .lot-dt i { color:var(--ink-4); margin-right:5px; }
+.lot-line .lot-q { color:var(--ink); }
+.lot-line .lot-acts { flex:none; display:flex; gap:4px; }
+@media (max-width:640px){
+  .lot-line { gap:10px; font-size:12px; flex-wrap:wrap; }
+  .lot-line .lot-dt { flex:1 1 100%; }
+}
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -1842,40 +1871,95 @@ function loadPortfolio(){
   return CARTEIRA_SEED.slice();
 }
 function savePortfolio(){ try{ localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} if(typeof saveCloudState==='function') saveCloudState(); }
-function addPosition(tk, cotas, pm){
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function normLots(){ if(!Array.isArray(CARTEIRA)){ CARTEIRA=[]; return; } let ch=false; CARTEIRA.forEach(c=>{ if(!c.id){ c.id=uid(); ch=true; } }); if(ch) savePortfolio(); }
+function uniqueTickers(){ return [...new Set(CARTEIRA.map(c=>c.tk))]; }
+/* cada aporte é um lote (lot) com data própria — preço médio é ponderado */
+function addPosition(tk, cotas, pm, date){
   tk=String(tk||'').toUpperCase().trim(); cotas=+cotas; pm=+pm;
   if(!tk || !assetLookup(tk)) return { ok:false, msg:'Ticker não encontrado' };
-  if(!(cotas>0) || !(pm>0)) return { ok:false, msg:'Informe quantidade e preço médio válidos' };
-  const ex = CARTEIRA.find(c=>c.tk===tk);
-  if(!ex && !isPremium() && CARTEIRA.length >= PLAN_LIMITS.carteira){
-    return { ok:false, premium:true, msg:`O plano Gratuito permite até ${PLAN_LIMITS.carteira} posições. Faça upgrade para carteira ilimitada.` };
+  if(!(cotas>0) || !(pm>0)) return { ok:false, msg:'Informe quantidade e preço válidos' };
+  const has = CARTEIRA.some(c=>c.tk===tk);
+  if(!has && !isPremium() && uniqueTickers().length >= PLAN_LIMITS.carteira){
+    return { ok:false, premium:true, msg:`O plano Gratuito permite até ${PLAN_LIMITS.carteira} ativos. Faça upgrade para carteira ilimitada.` };
   }
-  if(ex){ ex.cotas=cotas; ex.pm=pm; } else CARTEIRA.push({tk, cotas, pm});
+  CARTEIRA.push({ id:uid(), tk, cotas, pm, date: date||null });
   savePortfolio();
   return { ok:true };
 }
-function removePosition(tk){ CARTEIRA = CARTEIRA.filter(c=>c.tk!==tk); savePortfolio(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); }
-function fillTickerList(){ const dl=document.getElementById('tkList'); if(!dl) return; dl.innerHTML = searchPool().map(a=>`<option value="${a.tk}">${esc(a.nm||'')}</option>`).join(''); }
-function openPosModal(tk){
-  const editing = !!(tk && CARTEIRA.find(c=>c.tk===tk));
-  const c = editing ? CARTEIRA.find(x=>x.tk===tk) : null;
-  fillTickerList();
-  $('#posTk').value = tk||''; $('#posTk').disabled = editing;
-  $('#posQt').value = c? c.cotas : ''; $('#posPm').value = c? c.pm : '';
-  $('#posTitle').textContent = editing ? `Editar ${tk}` : (tk?`Adicionar ${tk}`:'Adicionar posição');
-  $('#posErr').textContent = '';
-  $('#posModal').classList.add('open');
-  setTimeout(()=>{ const el = (tk?$('#posQt'):$('#posTk')); el && el.focus(); }, 60);
+function editLot(id, cotas, pm, date){
+  const l=CARTEIRA.find(c=>c.id===id); if(!l) return { ok:false, msg:'Aporte não encontrado' };
+  cotas=+cotas; pm=+pm; if(!(cotas>0)||!(pm>0)) return { ok:false, msg:'Valores inválidos' };
+  l.cotas=cotas; l.pm=pm; l.date=date||null; savePortfolio(); return { ok:true };
 }
-function closePosModal(){ $('#posModal').classList.remove('open'); }
+function removeLot(id){ CARTEIRA=CARTEIRA.filter(c=>c.id!==id); savePortfolio(); toast('Aporte removido'); if(currentView==='carteira') render('carteira'); }
+function removePosition(tk){ CARTEIRA = CARTEIRA.filter(c=>c.tk!==tk); savePortfolio(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); }
+/* proventos estimados recebidos desde a data de cada aporte (ilustrativo) */
+function provReceived(tk,k,a,cotas,sinceISO){
+  if(!cotas) return 0;
+  let months;
+  if(sinceISO){ const d=new Date(sinceISO); months=isNaN(d)?12:Math.max(0, Math.floor((Date.now()-d.getTime())/(30.44*864e5))); }
+  else months=12;
+  months=Math.min(months,180);
+  const perMonth = (k==='fiis' && typeof a.div==='number') ? a.div : (typeof a.dy==='number' && a.px ? a.px*(a.dy/100)/12 : 0);
+  return perMonth*cotas*months;
+}
+function portfolioByTicker(){
+  const map=new Map();
+  CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(!f) return;
+    if(!map.has(c.tk)) map.set(c.tk,{tk:c.tk,f,lots:[],cotas:0,custo:0});
+    const g=map.get(c.tk); g.lots.push(c); g.cotas+=c.cotas; g.custo+=c.cotas*c.pm; });
+  const out=[];
+  map.forEach(g=>{ const a=g.f.a,k=g.f.k;
+    g.pm=g.cotas?g.custo/g.cotas:0; g.val=g.cotas*(a.px||0); g.lucro=g.val-g.custo; g.lp=g.custo?g.lucro/g.custo*100:0;
+    g.prov=g.lots.reduce((s,l)=>s+provReceived(g.tk,k,a,l.cotas,l.date),0);
+    g.lucroProv=g.lucro+g.prov; g.lpProv=g.custo?g.lucroProv/g.custo*100:0;
+    g.mensal=(k==='fiis'&&typeof a.div==='number')?g.cotas*a.div:(typeof a.dy==='number'?g.val*(a.dy/100)/12:0);
+    g.lots.sort((x,y)=> (y.date||'').localeCompare(x.date||''));
+    out.push(g); });
+  return out.sort((x,y)=>y.val-x.val);
+}
+function fmtDateBR(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return '—'; const p=x=>String(x).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`; }
+function toggleLots(tk){ const r=document.getElementById('lots-'+tk); if(r){ r.hidden=!r.hidden; const row=document.querySelector(`.pos-row[data-tk="${tk}"] .lot-caret`); if(row) row.classList.toggle('open', !r.hidden); } }
+function fillTickerList(){ const dl=document.getElementById('tkList'); if(!dl) return; dl.innerHTML = searchPool().map(a=>`<option value="${a.tk}">${esc(a.nm||'')}</option>`).join(''); }
+/* prévia ao vivo: Score, cotação e leitura do preço digitado */
+function posPreview(){
+  const el=$('#posPreview'); if(!el) return;
+  const tk=($('#posTk').value||'').toUpperCase().trim(); const f=assetLookup(tk);
+  if(!f){ el.innerHTML=''; el.classList.remove('on'); return; }
+  const a=f.a,k=f.k; const pm=+$('#posPm').value, qt=+$('#posQt').value;
+  const rows=[];
+  if(typeof a.score==='number') rows.push(`<div class="pp-row"><span>Score Lastro</span><b style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)};margin-right:6px"></span>${a.score}/100 · ${scoreTier(a.score)}</b></div>`);
+  rows.push(`<div class="pp-row"><span>Cotação atual</span><b class="mono">${fmtPx(a,k)}</b></div>`);
+  if(pm>0){ const diff=(pm-(a.px||0))/(a.px||1)*100; rows.push(`<div class="pp-row"><span>Seu preço vs. cotação</span><b class="mono ${diff<=0?'up':'down'}">${diff>0?'+':''}${pc(diff,1)}% ${diff<=0?'(abaixo)':'(acima)'}</b></div>`); }
+  if(pm>0&&qt>0) rows.push(`<div class="pp-row"><span>Custo do aporte</span><b class="mono">${brl(pm*qt)}</b></div>`);
+  el.innerHTML=`<div class="pp-h">${assetLogo(tk,k,'sm')}<div class="pp-id"><div class="pp-tk">${tk}</div><div class="pp-nm">${esc(a.nm||'')}</div></div></div>${rows.join('')}`;
+  el.classList.add('on');
+}
+function openPosModal(tk, lotId){
+  const lot = lotId ? CARTEIRA.find(c=>c.id===lotId) : null;
+  fillTickerList();
+  const lockTk = !!lot || !!tk;
+  $('#posTk').value = (lot?lot.tk:tk)||''; $('#posTk').disabled = lockTk;
+  $('#posQt').value = lot? lot.cotas : ''; $('#posPm').value = lot? lot.pm : ''; $('#posDt').value = (lot&&lot.date)||'';
+  $('#posModal').dataset.lot = lot? lot.id : '';
+  $('#posTitle').textContent = lot? `Editar aporte · ${lot.tk}` : (tk?`Novo aporte · ${tk}`:'Adicionar aporte');
+  $('#posErr').textContent = '';
+  posPreview();
+  $('#posModal').classList.add('open');
+  setTimeout(()=>{ const el = (lockTk?$('#posQt'):$('#posTk')); el && el.focus(); }, 60);
+}
+function closePosModal(){ $('#posModal').classList.remove('open'); $('#posModal').dataset.lot=''; }
 function savePos(){
-  const r = addPosition($('#posTk').value, $('#posQt').value, $('#posPm').value);
+  const lotId=$('#posModal').dataset.lot;
+  const r = lotId ? editLot(lotId, $('#posQt').value, $('#posPm').value, $('#posDt').value)
+                  : addPosition($('#posTk').value, $('#posQt').value, $('#posPm').value, $('#posDt').value);
   if(!r.ok){
     const err=$('#posErr');
     err.innerHTML = r.premium ? `${r.msg} <a onclick="closePosModal();goPricing()" style="color:var(--accent);cursor:pointer;font-weight:600">Ver planos →</a>` : r.msg;
     return;
   }
-  closePosModal(); toast('Posição salva ✓');
+  closePosModal(); toast(lotId?'Aporte atualizado ✓':'Aporte adicionado ✓');
   if(currentView==='carteira') render('carteira');
 }
 
@@ -2062,20 +2146,17 @@ function toast(msg){
 
 /* portfolio computed */
 function portfolioStats(){
-  let invest=0, atual=0, renda=0, dyNum=0;
-  CARTEIRA.forEach(c => {
-    const f = assetLookup(c.tk); if(!f) return;
-    const a = f.a, val = c.cotas*(a.px||0);
-    invest += c.cotas*c.pm;
-    atual  += val;
-    // renda mensal: FIIs pelo rendimento/cota; demais estimam DY anual/12
-    renda  += (f.k==='fiis' && typeof a.div==='number') ? c.cotas*a.div : (typeof a.dy==='number' ? val*(a.dy/100)/12 : 0);
-    dyNum  += (a.dy||0)*val;
-  });
+  const byT = portfolioByTicker();
+  let invest=0, atual=0, renda=0, dyNum=0, prov=0;
+  byT.forEach(g=>{ invest+=g.custo; atual+=g.val; renda+=g.mensal; dyNum+=(g.f.a.dy||0)*g.val; prov+=g.prov; });
   const dyMed = atual ? dyNum/atual : 0;
-  return { invest, atual, renda, dyMed, lucro: atual-invest, lucroP: invest ? (atual-invest)/invest*100 : 0 };
+  return { invest, atual, renda, dyMed, prov,
+    lucro: atual-invest, lucroP: invest ? (atual-invest)/invest*100 : 0,
+    lucroProv: (atual-invest)+prov, lucroProvP: invest ? ((atual-invest)+prov)/invest*100 : 0,
+    nAtivos: byT.length, _byT: byT };
 }
-function posWeight(c){ const f=assetLookup(c.tk); const p=portfolioStats(); return (f && p.atual) ? c.cotas*f.a.px/p.atual*100 : 0; }
+/* peso (%) de um ativo no patrimônio — aceita um grupo agregado ou um lote */
+function posWeight(g){ const p=portfolioStats(); if(!p.atual) return 0; const grp=p._byT.find(x=>x.tk===(g.tk)); return grp? grp.val/p.atual*100 : 0; }
 
 /* ══════════════════════════════════════════════════════════
    NAVIGATION
@@ -2190,7 +2271,7 @@ async function loadCloudState(){
     if(!r.ok) return; const rows=await r.json();
     const d = rows[0] && rows[0].data;
     if(d){
-      if(Array.isArray(d.carteira)){ CARTEIRA=d.carteira; savePortfolio(); }
+      if(Array.isArray(d.carteira)){ CARTEIRA=d.carteira; normLots(); savePortfolio(); }
       if(Array.isArray(d.watch)) localStorage.setItem('lastro_watch', JSON.stringify(d.watch));
       if(d.plan) localStorage.setItem('lastro_plan', d.plan);
       refreshPlanUI();
@@ -2425,7 +2506,7 @@ function viewPainel(){
       <div class="pat-l">
         <div class="pat-eyebrow"><i class="fa-solid fa-wallet"></i> Sua carteira</div>
         <div class="pat-val">R$ <span id="patVal">0</span></div>
-        <div class="pat-sub"><span class="chip ${p.lucro>=0?'chip-up':'chip-down'}">${p.lucro>=0?'+':''}${brl(p.lucro)} (${p.lucroP.toFixed(1).replace('.',',')}%)</span> · ${CARTEIRA.length} ativo${CARTEIRA.length!==1?'s':''} · renda ~${brl(p.renda)}/mês</div>
+        <div class="pat-sub"><span class="chip ${p.lucro>=0?'chip-up':'chip-down'}">${p.lucro>=0?'+':''}${brl(p.lucro)} (${p.lucroP.toFixed(1).replace('.',',')}%)</span> · ${p.nAtivos} ativo${p.nAtivos!==1?'s':''} · renda ~${brl(p.renda)}/mês</div>
       </div>
       <button class="btn btn-ghost" onclick="goView('carteira')">Ver carteira <i class="fa-solid fa-arrow-right"></i></button>
     </div>` : `
@@ -2486,7 +2567,7 @@ function viewPainel(){
   <div class="grid" style="grid-template-columns: 1.4fr 1fr;">
     <div class="card card-pad">
       <div class="card-head">
-        <div class="card-h"><span class="ico"><i class="fa-solid fa-chart-area"></i></span> Ibovespa</div>
+        <div class="card-h"><span class="ico" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-chart-area"></i></span> Nasdaq</div>
         <div class="segmented" id="ibovSeg">
           <button onclick="setIbov('7d',this)" class="active">7D</button>
           <button onclick="setIbov('30d',this)">30D</button>
@@ -2494,7 +2575,7 @@ function viewPainel(){
           <button onclick="setIbov('1a',this)">1A</button>
         </div>
       </div>
-      <div style="position:relative;height:240px"><canvas id="ibovChart" role="img" aria-label="Histórico do Ibovespa"></canvas></div>
+      <div style="position:relative;height:240px"><canvas id="ibovChart" role="img" aria-label="Histórico do Nasdaq"></canvas></div>
     </div>
 
     <div class="card card-pad">
@@ -2695,50 +2776,63 @@ function tblFilter(kind, key, val){
    ══════════════════════════════════════════════════════════ */
 function viewCarteira(){
   const p = portfolioStats();
-  const n = CARTEIRA.length;
-  const concentracao = n ? Math.max(...CARTEIRA.map(posWeight)) : 0;
+  const byT = p._byT;
+  const n = byT.length;
+  const concentracao = n ? Math.max(...byT.map(g=>p.atual? g.val/p.atual*100 : 0)) : 0;
   const saude = n ? Math.max(0, Math.round(100 - (concentracao>30?15:6) - (n<6?12:0) - (n<3?10:0))) : 0;
-  const addBtn = `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar</button>`;
+  const addBtn = `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar aporte</button>`;
 
   if(!n){
     return `
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-wallet"></i></span> Minha Carteira</div>${addBtn}</div>
-      ${emptyState('fa-wallet','Sua carteira está vazia','Adicione suas posições (ativo, quantidade e preço médio) para acompanhar patrimônio, renda e saúde da carteira em tempo real.')}
+      ${emptyState('fa-wallet','Sua carteira está vazia','Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.')}
     </div>`;
   }
 
-  const holdings = CARTEIRA.map(c=>{
-    const f = assetLookup(c.tk); if(!f) return '';
-    const a = f.a, val = c.cotas*(a.px||0), custo=c.cotas*c.pm, lucro=val-custo, lp=custo?lucro/custo*100:0;
-    const mensal = (f.k==='fiis' && typeof a.div==='number') ? c.cotas*a.div : (typeof a.dy==='number' ? val*(a.dy/100)/12 : 0);
-    return `<tr onclick="quickView('${a.tk}')">
-      <td><div class="td-asset">${assetLogo(a.tk,f.k,'sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${esc(a.nm||a.seg||ASSET_CLASS[f.k].label)}</div></div></div></td>
-      <td class="mono">${c.cotas}</td>
-      <td class="mono">${brl(c.pm)}</td>
-      <td class="mono">${fmtPx(a,f.k)}</td>
-      <td class="mono">${brl(val)}</td>
-      <td class="mono ${lucro>=0?'up':'down'}">${lucro>=0?'+':''}${pc(lp,1)}%</td>
-      <td class="mono up">${brl(mensal)}</td>
-      <td class="row-acts"><button class="row-act" title="Editar" onclick="event.stopPropagation();openPosModal('${a.tk}')"><i class="fa-solid fa-pen"></i></button><button class="row-act danger" title="Remover" onclick="event.stopPropagation();removePosition('${a.tk}')"><i class="fa-solid fa-trash-can"></i></button></td>
-    </tr>`;
+  const holdings = byT.map(g=>{
+    const a=g.f.a, k=g.f.k;
+    const lotsHtml = g.lots.map(l=>{
+      const lcusto=l.cotas*l.pm, lval=l.cotas*(a.px||0), llp=lcusto?(lval-lcusto)/lcusto*100:0;
+      return `<div class="lot-line">
+        <span class="lot-dt"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(l.date)}</span>
+        <span class="lot-q">${l.cotas} cota${l.cotas!==1?'s':''}</span>
+        <span class="mono">${brl(l.pm)}</span>
+        <span class="mono faint">${brl(lcusto)}</span>
+        <span class="mono ${llp>=0?'up':'down'}">${llp>=0?'+':''}${pc(llp,1)}%</span>
+        <span class="lot-acts"><button class="row-act" title="Editar aporte" onclick="event.stopPropagation();openPosModal('${g.tk}','${l.id}')"><i class="fa-solid fa-pen"></i></button><button class="row-act danger" title="Remover aporte" onclick="event.stopPropagation();removeLot('${l.id}')"><i class="fa-solid fa-trash-can"></i></button></span>
+      </div>`;
+    }).join('');
+    return `<tr class="pos-row" data-tk="${g.tk}" onclick="toggleLots('${g.tk}')">
+      <td class="cell-left"><div class="td-asset"><span class="lot-caret"><i class="fa-solid fa-chevron-right"></i></span>${assetLogo(g.tk,k,'sm')}<div class="nm"><div class="tk">${g.tk}${g.lots.length>1?` <span class="lot-badge">${g.lots.length} aportes</span>`:''}</div><div class="ds">${esc(a.nm||a.seg||ASSET_CLASS[k].label)}</div></div></div></td>
+      <td class="mono">${g.cotas}</td>
+      <td class="mono">${brl(g.pm)}</td>
+      <td class="mono">${fmtPx(a,k)}</td>
+      <td class="mono">${brl(g.val)}</td>
+      <td class="mono ${g.lucro>=0?'up':'down'}">${g.lucro>=0?'+':''}${pc(g.lp,1)}%</td>
+      <td class="mono up">${brl(g.prov)}</td>
+      <td class="mono ${g.lucroProv>=0?'up':'down'}"><b>${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</b></td>
+      <td class="row-acts"><button class="row-act" title="Novo aporte" onclick="event.stopPropagation();openPosModal('${g.tk}')"><i class="fa-solid fa-plus"></i></button><button class="row-act" title="Ver ativo" onclick="event.stopPropagation();quickView('${g.tk}')"><i class="fa-solid fa-arrow-up-right-from-square"></i></button><button class="row-act danger" title="Remover ativo" onclick="event.stopPropagation();removePosition('${g.tk}')"><i class="fa-solid fa-trash-can"></i></button></td>
+    </tr>
+    <tr class="lots-row" id="lots-${g.tk}" hidden><td colspan="9"><div class="lots-box"><div class="lots-head">Histórico de aportes · preço médio ponderado ${brl(g.pm)}</div>${lotsHtml}</div></td></tr>`;
   }).join('');
 
   return `
   <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl">${brl(p.atual)}</div><div class="dl ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}%</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Renda mensal</div><div class="vl up">${brl(p.renda)}</div><div class="dl faint">${p.atual?pc(p.renda*12/p.atual*100,1):'0,0'}% a.a.</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Lucro/Prejuízo</div><div class="vl ${p.lucro>=0?'up':'down'}">${brl(p.lucro)}</div><div class="dl faint">desde aporte</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl">${brl(p.atual)}</div><div class="dl ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}% s/ prov.</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Resultado c/ proventos</div><div class="vl ${p.lucroProv>=0?'up':'down'}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div><div class="dl ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos recebidos</div><div class="vl up">${brl(p.prov)}</div><div class="dl faint">renda ~${brl(p.renda)}/mês</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Saúde da carteira</div><div class="vl" style="color:${scoreColor(saude)}">${saude}<span style="font-size:12px;color:var(--ink-3)">/100</span></div><div class="dl" style="color:${scoreColor(saude)}">${scoreTier(saude)}</div></div>
   </div>
 
   <div class="grid" style="grid-template-columns: 1fr 360px">
     <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n}</span></div>${addBtn}</div>
+      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n} ativo${n!==1?'s':''}</span></div>${addBtn}</div>
       <div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>Ativo</th><th>Qtde</th><th>Preço médio</th><th>Atual</th><th>Posição</th><th>Result.</th><th>Renda/mês</th><th></th></tr></thead>
+        <thead><tr><th class="cell-left">Ativo</th><th>Qtde</th><th>Preço médio</th><th>Atual</th><th>Posição</th><th>Result.</th><th>Proventos</th><th>c/ Prov.</th><th></th></tr></thead>
         <tbody>${holdings}</tbody>
       </table></div>
+      <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Toque numa linha para ver o histórico de aportes. Proventos estimados desde a data de cada aporte (informe a data para maior precisão).</div>
     </div>
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-chart-pie"></i></span> Alocação</div></div>
@@ -3075,7 +3169,7 @@ function runScreener(){
 function viewAgenda(){
   // gera proventos do mercado a partir dos FIIs
   const mkt = FIIS.filter(f=>f.div>0).map((f,i)=>({ tk:f.tk, nm:f.nm, dia:10+(i%18), valor:f.div, dy:f.dy })).sort((a,b)=>a.dia-b.dia);
-  const meus = CARTEIRA.map(c=>{ const a=FIIS.find(f=>f.tk===c.tk); return { tk:a.tk, dia:[16,18,20,14][CARTEIRA.indexOf(c)], valor:a.div, cotas:c.cotas, total:c.cotas*a.div }; });
+  const meus = portfolioByTicker().filter(g=>g.f.k==='fiis' && typeof g.f.a.div==='number').map((g,i)=>({ tk:g.tk, dia:[16,18,20,14,12,22][i%6], valor:g.f.a.div, cotas:g.cotas, total:g.cotas*g.f.a.div }));
   const totalMes = meus.reduce((s,m)=>s+m.total,0);
 
   const meusRows = meus.sort((a,b)=>a.dia-b.dia).map(m=>`
@@ -3314,12 +3408,19 @@ const IBOV = {
   '6m': { l:['Dez','Jan','Fev','Mar','Abr','Mai','Jun'], d:[145000,151000,155000,158000,163000,165000,168619] },
   '1a': { l:['Jun/25','Ago','Out','Dez','Fev/26','Abr','Jun/26'], d:[128000,135000,141000,148000,158000,163000,168619] },
 };
+/* Nasdaq Composite — segundo índice na home (complementa o Ibovespa do hero) */
+const NASDAQ = {
+  '7d': { l:['09/06','10/06','11/06','12/06','13/06','14/06','15/06'], d:[19720,19910,19840,20180,20060,20330,20485] },
+  '30d':{ l:['16/05','19/05','22/05','26/05','29/05','02/06','05/06','09/06','12/06','15/06'], d:[18900,19120,19260,19050,19480,19610,19880,20010,20240,20485] },
+  '6m': { l:['Dez','Jan','Fev','Mar','Abr','Mai','Jun'], d:[17600,18250,18700,18420,19300,19850,20485] },
+  '1a': { l:['Jun/25','Ago','Out','Dez','Fev/26','Abr','Jun/26'], d:[15800,16700,17400,18100,19000,19700,20485] },
+};
 function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
 function initIbov(){
   const ctx = $('#ibovChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
-  const br = cssVar('--brand');
-  const p = IBOV['7d'];
+  const br = cssVar('--accent');
+  const p = NASDAQ['7d'];
   const grd = ctx.getContext('2d').createLinearGradient(0,0,0,240);
   grd.addColorStop(0, br+'33'); grd.addColorStop(1, br+'00');
   charts.ibov = new Chart(ctx,{
@@ -3336,7 +3437,7 @@ function setIbov(p, btn){
   document.querySelectorAll('#ibovSeg button').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if(!charts.ibov) return;
-  charts.ibov.data.labels = IBOV[p].l; charts.ibov.data.datasets[0].data = IBOV[p].d; charts.ibov.update();
+  charts.ibov.data.labels = NASDAQ[p].l; charts.ibov.data.datasets[0].data = NASDAQ[p].d; charts.ibov.update();
 }
 
 /* Alloc chart */
@@ -3345,7 +3446,7 @@ function initAlloc(){
   const ctx = $('#allocChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
   // ordena por valor atual e agrupa o excedente em "Outros"
-  const items = CARTEIRA.map(c=>{ const f=assetLookup(c.tk); return { tk:c.tk, val: f? c.cotas*(f.a.px||0):0 }; })
+  const items = portfolioByTicker().map(g=>({ tk:g.tk, val:g.val }))
     .filter(x=>x.val>0).sort((a,b)=>b.val-a.val);
   const top = items.slice(0,8); const rest = items.slice(8).reduce((s,x)=>s+x.val,0);
   const labels = top.map(x=>x.tk).concat(rest>0?['Outros']:[]);
@@ -3458,8 +3559,8 @@ function askAICart(){
 }
 /* diagnóstico determinístico da carteira (instantâneo, gratuito) */
 function portfolioInsights(){
-  const p = portfolioStats(); const n = CARTEIRA.length;
-  const pos = CARTEIRA.map(c=>{ const f=assetLookup(c.tk); return f?{tk:c.tk, k:f.k, a:f.a, w:posWeight(c)}:null; }).filter(Boolean);
+  const p = portfolioStats(); const n = p.nAtivos;
+  const pos = p._byT.map(g=>({ tk:g.tk, k:g.f.k, a:g.f.a, w: p.atual? g.val/p.atual*100 : 0 }));
   const pros=[], cons=[];
   if(!pos.length) return { pros, cons, summary:'Adicione posições para ver o diagnóstico.' };
   // concentração
@@ -4810,6 +4911,7 @@ async function loadUniverse(){
 }
 
 /* INIT */
+normLots();          // garante id em cada aporte (migração de carteiras antigas)
 refreshPlanUI();
 updateAuthUI();
 if(isAuthed()) loadCloudState();   // retoma sessão e sincroniza
