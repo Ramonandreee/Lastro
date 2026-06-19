@@ -1938,22 +1938,34 @@ function editLot(id, cotas, pm, date){
 }
 function removeLot(id){ CARTEIRA=CARTEIRA.filter(c=>c.id!==id); savePortfolio(); toast('Aporte removido'); if(currentView==='carteira') render('carteira'); }
 function removePosition(tk){ CARTEIRA = CARTEIRA.filter(c=>c.tk!==tk); savePortfolio(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); }
-/* provento mensal por cota (FIIs: rendimento real; ações: DY/12 estimado) */
+/* provento-base mensal por cota (FIIs: rendimento real; ações: DY/12 estimado) */
 function provPerCota(k,a){ return (k==='fiis' && typeof a.div==='number') ? a.div : (typeof a.dy==='number' && a.px ? a.px*(a.dy/100)/12 : 0); }
-/* pagamentos mensais de um ativo desde a data de cada aporte (dia 15) */
+/* dia de pagamento estável por ativo (cada fundo paga sempre por volta do mesmo dia) */
+function provPayDay(tk){ return 8 + (seedFrom(tk+'payday') % 12); }   // dia 8..19, fixo por ativo
+/* valor por cota daquele mês — varia mês a mês em torno do rendimento-base (determinístico) */
+function provPerCotaMonth(tk, base, y, m){
+  if(base<=0) return 0;
+  const r = rngF(seedFrom(tk+'|'+y+'|'+m));
+  const factor = 0.84 + r()*0.34;   // ~0,84..1,18 do rendimento-base
+  return base*factor;
+}
+/* pagamentos mensais de um ativo desde a data de cada aporte (dia e valor realistas por ativo) */
 function groupPayments(g){
-  const a=g.f.a, k=g.f.k, perCota=provPerCota(k,a); const pays=[];
-  if(perCota<=0) return pays;
-  const now=new Date(), monthMap=new Map();
+  const a=g.f.a, k=g.f.k, base=provPerCota(k,a); const pays=[];
+  if(base<=0) return pays;
+  const now=new Date(), payDay=provPayDay(g.tk), monthMap=new Map();
   g.lots.forEach(l=>{
-    let base = l.date ? new Date(l.date) : new Date(now.getFullYear(), now.getMonth()-6, 15); // sem data: estima 6 meses
-    if(isNaN(base)) base = new Date(now.getFullYear(), now.getMonth()-6, 15);
-    const buyDay=base.getDate();
-    let d=new Date(base.getFullYear(), base.getMonth()+(buyDay>15?1:0), 15);   // 1º pgto elegível
+    let dt = l.date ? new Date(l.date) : new Date(now.getFullYear(), now.getMonth()-6, payDay);
+    if(isNaN(dt)) dt = new Date(now.getFullYear(), now.getMonth()-6, payDay);
+    const buyDay=dt.getDate();
+    // 1º pagamento elegível: data-com após a compra → quem comprou depois do dia de pagamento só recebe no mês seguinte
+    let d=new Date(dt.getFullYear(), dt.getMonth()+(buyDay>payDay?1:0), payDay);
     let guard=0;
-    while(d<=now && guard++<240){ const key=d.getFullYear()+'-'+String(d.getMonth()).padStart(2,'0'); monthMap.set(key,(monthMap.get(key)||0)+l.cotas); d=new Date(d.getFullYear(), d.getMonth()+1, 15); }
+    while(d<=now && guard++<240){ const key=d.getFullYear()+'-'+String(d.getMonth()).padStart(2,'0'); monthMap.set(key,(monthMap.get(key)||0)+l.cotas); d=new Date(d.getFullYear(), d.getMonth()+1, payDay); }
   });
-  monthMap.forEach((cotas,key)=>{ const [y,m]=key.split('-').map(Number); pays.push({ tk:g.tk, k, date:new Date(y,m,15), cotas, perCota, valor:perCota*cotas, pm:g.pm }); });
+  monthMap.forEach((cotas,key)=>{ const [y,m]=key.split('-').map(Number);
+    const perCota = provPerCotaMonth(g.tk, base, y, m);
+    pays.push({ tk:g.tk, k, date:new Date(y,m,payDay), cotas, perCota, valor:perCota*cotas, pm:g.pm }); });
   pays.sort((x,y)=>y.date-x.date);
   return pays;
 }
