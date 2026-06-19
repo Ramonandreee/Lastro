@@ -365,9 +365,17 @@ a { color: inherit; text-decoration: none; }
 body.view-inicio .page-title { visibility:hidden; }
 body.view-inicio .topbar-brand { display:flex; }
 /* coroa premium (não assinantes) */
+.hdr-actions { display:flex; align-items:center; gap:8px; }
 .hdr-crown i { color:var(--gold); }
 .hdr-crown { border-color:color-mix(in srgb,var(--gold) 40%,transparent) !important; background:var(--gold-l) !important; }
 .hdr-crown:hover { box-shadow:0 0 0 3px var(--gold-l); }
+.hdr-sub { background:linear-gradient(135deg,var(--gold),#8a6420) !important; border:none !important; color:#fff !important; }
+.hdr-sub i { color:#fff; }
+@media (max-width:460px){ .hdr-login { display:none; } }
+/* feedback visual do swipe-back (mobile) */
+.swipe-hint { position:fixed; top:50%; left:0; transform:translateY(-50%) translateX(-44px); width:40px; height:40px; border-radius:50%; background:var(--surface); box-shadow:var(--sh-lg); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--brand); z-index:120; opacity:0; pointer-events:none; }
+#content.swiping { transition:none; }
+#content.swipe-snap { transition:transform .26s var(--ease-out); }
 .search-trigger {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 14px;
@@ -537,8 +545,8 @@ img, svg, canvas, video { max-width: 100%; }
 
 /* telas estreitas: empilhar grids, tabelas roláveis, topbar compacto */
 @media (max-width: 760px) {
-  .content { padding: 16px; }
-  .topbar { padding: 0 16px; gap: 10px; height: 64px; }
+  .content { padding: 18px 18px 22px; }
+  .topbar { padding: 0 18px; gap: 10px; height: 64px; }
   .topbar-left { gap: 12px; min-width: 0; flex: 1; }
   .topbar-left > div { min-width: 0; }
   .page-title { font-size: 19px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -571,7 +579,7 @@ img, svg, canvas, video { max-width: 100%; }
   .filters .sel-wrap.grow, .filters .sel-wrap.full { flex: 1 1 100%; width: 100%; }
 }
 @media (max-width: 460px) {
-  .content { padding: 12px; }
+  .content { padding: 15px 15px 20px; }
   .mstrip { grid-template-columns: repeat(2,1fr) !important; }
   .data-status #dataStatusLabel { display:none; }
   .topbar-right { gap:6px; }
@@ -672,7 +680,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="topbar-right">
         <div class="market-status"><span class="pulse"></span> Mercado aberto</div>
         <button class="data-status demo" id="dataStatus" onclick="refreshQuotes(true)" title="Fonte de dados — clique para atualizar"><span class="ds-dot"></span><span id="dataStatusLabel">Demonstração</span></button>
-        <button class="icon-btn" id="hdrAction" title="Notificações"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></button>
+        <div class="hdr-actions" id="hdrActions"></div>
       </div>
     </header>
 
@@ -2332,15 +2340,19 @@ function refreshPlanUI(){
   const up = document.getElementById('upgradeBtn'); if(up) up.style.display = pro?'none':'flex';
   updateHeaderAction();
 }
-/* cabeçalho: sino (assinante) ou coroa Premium (não assinante) */
+/* cabeçalho reflete o estado do usuário:
+   - não logado: CTA Entrar + Assinar (sem sino)
+   - logado free: coroa Premium (sem sino)
+   - logado premium: sino de notificações */
 function updateHeaderAction(){
-  const b = document.getElementById('hdrAction'); if(!b) return;
-  if(isPremium()){
-    b.className='icon-btn'; b.title='Notificações'; b.onclick=null;
-    b.innerHTML='<i class="fa-regular fa-bell"></i><span class="notif-dot"></span>';
+  const el = document.getElementById('hdrActions'); if(!el) return;
+  if(!isAuthed()){
+    el.innerHTML = `<button class="btn btn-ghost btn-sm hdr-login" onclick="openAuth('login')">Entrar</button>`
+      + `<button class="btn btn-primary btn-sm hdr-sub" onclick="goPricing()"><i class="fa-solid fa-crown" style="font-size:11px"></i> Assinar</button>`;
+  } else if(isPremium()){
+    el.innerHTML = `<button class="icon-btn" title="Notificações"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></button>`;
   } else {
-    b.className='icon-btn hdr-crown'; b.title='Premium — desbloqueie notificações e mais'; b.onclick=goPricing;
-    b.innerHTML='<i class="fa-solid fa-crown"></i>';
+    el.innerHTML = `<button class="icon-btn hdr-crown" title="Premium — desbloqueie notificações e mais" onclick="goPricing()"><i class="fa-solid fa-crown"></i></button>`;
   }
 }
 /* uso de IA no dia (limite do plano free) */
@@ -2443,6 +2455,7 @@ function updateAuthUI(){
   if(av) av.textContent = u ? (u.email[0]||'?').toUpperCase() : '+';
   if(nm) nm.textContent = u ? u.email.split('@')[0] : 'Entrar ou criar conta';
   if(pl) pl.textContent = u ? (isPremium()?'Plano Premium':'Plano Gratuito') : 'Sincronize seus dados';
+  updateHeaderAction();
 }
 function openAuth(mode){ renderAuth(mode||'login'); $('#authModal').classList.add('open'); }
 function closeAuth(){ $('#authModal').classList.remove('open'); }
@@ -2539,7 +2552,10 @@ document.addEventListener('mouseout', e=>{ if(!matchMedia('(hover:hover)').match
 window.addEventListener('scroll', hideTip, {passive:true});
 window.addEventListener('resize', hideTip);
 
-function nav(v, el){
+let navStack = [];
+function nav(v, el, noHist){
+  if(!noHist && currentView && currentView!==v) navStack.push(currentView);
+  if(navStack.length>30) navStack.shift();
   currentView = v;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if(el) el.classList.add('active');
@@ -3543,6 +3559,14 @@ async function loadNewsFeed(){
 let charts = {};
 let newsTimer = null;
 const HAS_CHART = typeof Chart !== 'undefined';
+/* animações de gráfico premium — mais lentas, easing suave, entrada progressiva */
+if(HAS_CHART){
+  Chart.defaults.animation.duration = 1000;
+  Chart.defaults.animation.easing = 'easeOutQuart';
+  Chart.defaults.animations.numbers = { duration: 1000, easing: 'easeOutQuart' };
+  Chart.defaults.transitions = Chart.defaults.transitions || {};
+  Chart.defaults.transitions.active = { animation: { duration: 300, easing: 'easeOutQuart' } };
+}
 function destroyCharts(){ Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}}); charts={}; }
 
 function afterRender(v, soft){
@@ -3946,7 +3970,7 @@ function initDetailPriceChart(){
   const g=ctx.getContext('2d'); const grad=g.createLinearGradient(0,0,0,280); grad.addColorStop(0,hexToRgba(col,.22)); grad.addColorStop(1,hexToRgba(col,0));
   const isUsd=k==='stocks';
   charts.detailPrice=new Chart(ctx,{type:'line',data:{labels:data.map((_,i)=>i),datasets:[{data,borderColor:col,backgroundColor:grad,fill:true,borderWidth:2,tension:.32,pointRadius:0,pointHoverRadius:4,pointHoverBackgroundColor:col}]},
-    options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:1000},
       plugins:{legend:{display:false},tooltip:{enabled:true,displayColors:false,callbacks:{title:()=>'',label:c=>(isUsd?'US$ ':'R$ ')+c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}}},
       scales:{x:{display:false},y:{position:'right',grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},maxTicksLimit:5},border:{display:false}}},
       interaction:{intersect:false,mode:'index'}}});
@@ -3967,7 +3991,7 @@ function initDetailDivChart(){
   const s=dividendSeries(currentAssetTk,a,k,f);
   const col=cssVar('--brand')||'#0E7C5A';
   charts.detailDiv=new Chart(ctx,{type:'bar',data:{labels:s.labels,datasets:[{data:s.data,backgroundColor:hexToRgba(col,.55),hoverBackgroundColor:col,borderRadius:5,maxBarThickness:34}]},
-    options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:1000},
       plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{label:c=>'R$ '+c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}}},
       scales:{x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
               y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v},border:{display:false}}}}});
@@ -4221,7 +4245,7 @@ function initHistChart(){
     : {type:'line', label:'v', data, borderColor:gold, backgroundColor:grad, fill:true, borderWidth:2.4, tension:.25, pointRadius:4, pointHoverRadius:6, pointBackgroundColor:'#fff', pointBorderColor:gold, pointBorderWidth:2};
   const avg = {type:'line', label:'média', data:h.labels.map(()=>mean), borderColor:cssVar('--ink-4'), borderDash:[5,5], borderWidth:1.4, pointRadius:0, fill:false};
   charts.hist=new Chart(ctx,{ data:{labels:h.labels, datasets:[main, avg]},
-    options:{responsive:true,maintainAspectRatio:false,animation:{duration:450},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:950},
       plugins:{legend:{display:false}, tooltip:{filter:i=>i.datasetIndex===0, displayColors:false, callbacks:{title:items=>items[0].label, label:c=>fmtMetric(id,c.parsed.y)}}},
       interaction:{intersect:false,mode:'index'},
       scales:{x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:11}},border:{display:false}},
@@ -4849,7 +4873,7 @@ function initDyHistChart(){
   const lk=assetLookup(currentAssetTk); if(!lk) return; const a=lk.a;
   const h=indHistory('dy',currentAssetTk,a.dy,10); const col=cssVar('--brand')||'#0E7C5A';
   charts.dyHist=new Chart(ctx,{type:'bar',data:{labels:h.labels,datasets:[{data:h.data,backgroundColor:hexToRgba(col,.6),hoverBackgroundColor:col,borderRadius:5,maxBarThickness:30}]},
-    options:{responsive:true,maintainAspectRatio:false,animation:{duration:550},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:950},
       plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{label:c=>c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'}}},
       scales:{x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
               y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>v+'%'},border:{display:false},beginAtZero:true}}}});
@@ -4860,7 +4884,7 @@ function initResultChart(){
   charts.result=new Chart(ctx,{data:{labels:s.years,datasets:[
       {type:'bar',label:'Receita',data:s.rec,backgroundColor:hexToRgba(brand,.55),hoverBackgroundColor:brand,borderRadius:4,maxBarThickness:26,order:2},
       {type:'line',label:'Lucro',data:s.luc,borderColor:gold,backgroundColor:gold,borderWidth:2.4,tension:.3,pointRadius:3,pointBackgroundColor:'#fff',pointBorderColor:gold,pointBorderWidth:2,order:1}]},
-    options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:1000},
       plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:c=>`${c.dataset.label}: R$ ${c.parsed.y} bi`}}},
       scales:{x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
               y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>v+'B'},border:{display:false}}}}});
@@ -4868,7 +4892,7 @@ function initResultChart(){
 function donutChart(id, items){
   const ctx=document.getElementById(id); if(!ctx||typeof Chart==='undefined'||!items) return null;
   return new Chart(ctx,{type:'doughnut',data:{labels:items.map(i=>i.n),datasets:[{data:items.map(i=>+i.v*100),backgroundColor:items.map(i=>i.c),borderWidth:0,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'66%',animation:{duration:600},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'66%',animation:{duration:1000},
       plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(2)}%`}}}}});
 }
 function initRecDonuts(){ charts.recTipo=donutChart('recTipoChart', window._RECT); charts.recReg=donutChart('recRegiaoChart', window._RECR); }
@@ -4930,6 +4954,50 @@ function backFromAsset(){
 }
 function closeAsset(){ if(currentView==='asset') backFromAsset(); }
 function quickView(tk){ openAsset(tk); }
+
+/* navegação "voltar" (botão e swipe) */
+function canGoBack(){ return currentView==='asset' || navStack.length>0; }
+function goBack(){
+  if(currentView==='asset'){ backFromAsset(); return true; }
+  if(navStack.length){ const v=navStack.pop(); const el=document.querySelector('.nav-item[data-view="'+v+'"]'); nav(v, el, true); return true; }
+  return false;
+}
+/* swipe-back na borda esquerda (mobile), estilo iOS/bancos */
+(function(){
+  if(!('ontouchstart' in window)) return;
+  let sx=0, sy=0, dx=0, tracking=false, decided=false;
+  const EDGE=30, THRESH=78;
+  let hint;
+  const getHint=()=>{ if(!hint){ hint=document.createElement('div'); hint.className='swipe-hint'; hint.innerHTML='<i class="fa-solid fa-arrow-left"></i>'; document.body.appendChild(hint); } return hint; };
+  const content=()=>document.getElementById('content');
+  function reset(){ const c=content(); if(c){ c.classList.remove('swiping'); c.classList.add('swipe-snap'); c.style.transform=''; setTimeout(()=>c.classList.remove('swipe-snap'),280); } const h=getHint(); h.style.opacity='0'; h.style.transform='translateY(-50%) translateX(-44px)'; }
+  document.addEventListener('touchstart', e=>{
+    if(e.touches.length!==1 || !canGoBack()) return;
+    if(document.querySelector('.modal-scrim.open, .search-modal.open, .tip.sheet.show')) return; // não interferir com modais
+    const t=e.touches[0];
+    if(t.clientX<=EDGE){ sx=t.clientX; sy=t.clientY; dx=0; tracking=true; decided=false; }
+  }, {passive:true});
+  document.addEventListener('touchmove', e=>{
+    if(!tracking) return;
+    const t=e.touches[0]; dx=t.clientX-sx; const dy=t.clientY-sy;
+    if(!decided){
+      if(Math.abs(dy)>Math.abs(dx) && Math.abs(dy)>8){ tracking=false; return; } // rolagem vertical: ignora
+      if(dx>10){ decided=true; const c=content(); if(c) c.classList.add('swiping'); }
+      else return;
+    }
+    if(dx<0) dx=0;
+    e.preventDefault();
+    const x=Math.min(dx*0.5, window.innerWidth*0.35);
+    const c=content(); if(c) c.style.transform=`translateX(${x}px)`;
+    const h=getHint(); const p=Math.min(dx/THRESH,1);
+    h.style.opacity=String(p); h.style.transform=`translateY(-50%) translateX(${ -44 + p*60 }px) scale(${.8+p*.2})`;
+  }, {passive:false});
+  document.addEventListener('touchend', ()=>{
+    if(!tracking) return; tracking=false;
+    if(decided && dx>THRESH){ reset(); goBack(); } else reset();
+    decided=false;
+  });
+})();
 
 function toggleTheme(){
   const html = document.documentElement;
