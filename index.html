@@ -802,9 +802,17 @@ img, svg, canvas, video { max-width: 100%; }
   top: -40%; right: -10%;
   width: 380px; height: 380px;
   background: radial-gradient(circle, var(--brand-l) 0%, transparent 68%);
-  opacity: .7;
+  opacity: .5;
   pointer-events: none;
+  z-index: 0;
 }
+.hero-main > * { position: relative; z-index: 1; }
+/* alternância de índice no hero */
+.hero-mkt-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.hero-mkt.clickable { cursor:pointer; }
+.hero-dots { display:flex; gap:6px; }
+.hero-dots .hd { width:7px; height:7px; border-radius:50%; background:var(--line-2); transition:all .2s var(--ease); }
+.hero-dots .hd.on { background:var(--brand); width:18px; border-radius:4px; }
 .hero-eyebrow {
   font-size: 11.5px; font-weight: 600; letter-spacing: .08em;
   text-transform: uppercase; color: var(--ink-3);
@@ -2615,6 +2623,29 @@ function oppCard(o){
 }
 function goView(v){ const el=document.querySelector('.nav-item[data-view="'+v+'"]'); nav(v, el); }
 
+/* hero alterna entre Ibovespa e Nasdaq */
+let heroIdx = 0, _heroTimer = null;
+function heroIndices(){
+  const ib = MARKET[0];
+  const nq = (typeof NASDAQ!=='undefined') ? NASDAQ['7d'].d : [19720,19910,19840,20180,20060,20330,20485];
+  return [
+    { nm:'Ibovespa', vl:ib.vl, dl:ib.dl, up:ib.up, spark:ib.spark },
+    { nm:'Nasdaq',   vl:'20.485', dl:'+0,74%', up:true, spark:nq },
+  ];
+}
+function renderHeroIdx(){
+  const list=heroIndices(); const i=heroIdx%list.length, x=list[i];
+  const lbl=$('#heroIdxLbl'); if(!lbl) return;
+  lbl.textContent=x.nm;
+  const v=$('#heroIdxVal'); if(v) v.textContent=x.vl;
+  const chip=$('#heroIdxChip'); if(chip){ chip.className='chip '+(x.up?'chip-up':'chip-down'); chip.innerHTML=`<i class="fa-solid fa-arrow-${x.up?'up':'down'}" style="font-size:9px"></i> ${x.dl}`; }
+  const hs=$('#heroSpark'); if(hs) hs.innerHTML=spark(x.spark,420,56,x.up?'var(--up)':'var(--down)',true).replace('width="420"','width="100%"').replace('viewBox="0 0 420 56"','viewBox="0 0 420 56" preserveAspectRatio="none"');
+  document.querySelectorAll('#heroDots .hd').forEach((d,j)=>d.classList.toggle('on', j===i));
+}
+function startHeroTimer(){ stopHeroTimer(); _heroTimer=setInterval(()=>{ if(currentView!=='painel'){ stopHeroTimer(); return; } heroIdx++; renderHeroIdx(); }, 6000); }
+function stopHeroTimer(){ if(_heroTimer){ clearInterval(_heroTimer); _heroTimer=null; } }
+function cycleHero(){ heroIdx++; renderHeroIdx(); startHeroTimer(); }
+
 function viewPainel(){
   const p = portfolioStats();
   // Ibovespa já é o destaque do hero — a faixa abaixo mostra os demais índices (sem repetir)
@@ -2662,12 +2693,15 @@ function viewPainel(){
 
   return `
   <div class="hero">
-    <div class="hero-main hero-mkt">
+    <div class="hero-main hero-mkt clickable" onclick="cycleHero()" title="Toque para alternar Ibovespa / Nasdaq">
       <div class="hero-eyebrow"><i class="fa-solid fa-tower-broadcast" style="color:var(--brand)"></i> ${greetingLabel()}</div>
-      <div class="hero-mkt-lbl">Ibovespa</div>
-      <div class="hero-value"><span id="ibovHeroVal">${ib.vl}</span><span class="hero-pts">pts</span></div>
+      <div class="hero-mkt-head">
+        <div class="hero-mkt-lbl" id="heroIdxLbl">${ib.nm}</div>
+        <div class="hero-dots" id="heroDots"><span class="hd on"></span><span class="hd"></span></div>
+      </div>
+      <div class="hero-value"><span id="heroIdxVal">${ib.vl}</span><span class="hero-pts">pts</span></div>
       <div class="hero-delta">
-        <span class="chip ${ib.up?'chip-up':'chip-down'}"><i class="fa-solid fa-arrow-${ib.up?'up':'down'}" style="font-size:9px"></i> ${ib.dl}</span>
+        <span class="chip ${ib.up?'chip-up':'chip-down'}" id="heroIdxChip"><i class="fa-solid fa-arrow-${ib.up?'up':'down'}" style="font-size:9px"></i> ${ib.dl}</span>
         <span class="faint" style="font-size:12.5px">no pregão de hoje</span>
       </div>
       <div class="hero-spark" id="heroSpark"></div>
@@ -3517,16 +3551,15 @@ function afterRender(v, soft){
   if(newsTimer){ clearInterval(newsTimer); newsTimer = null; }   // pausa o feed ao sair de Notícias
   if(v==='painel'){
     const p = portfolioStats();
-    // hero = pulso de mercado: sparkline do Ibovespa
-    const ib = MARKET[0];
-    const hs = $('#heroSpark');
-    if(hs) hs.innerHTML = spark(ib.spark, 420, 56, ib.up?'var(--up)':'var(--down)', true).replace('width="420"','width="100%"').replace('viewBox="0 0 420 56"','viewBox="0 0 420 56" preserveAspectRatio="none"');
+    // hero = pulso de mercado: alterna entre Ibovespa e Nasdaq
+    renderHeroIdx();
+    if(!soft) startHeroTimer();
     // carteira (card compacto, só quando existe)
     const pv = $('#patVal');
     if(pv){ if(soft) pv.textContent = Math.floor(p.atual).toLocaleString('pt-BR'); else animateNum(pv, Math.floor(p.atual), {dec:0}); }
     initIbov();
     if(!soft) askAI(true);
-  }
+  } else { stopHeroTimer(); }
   if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)){ renderAssets(v); }
   // atualiza cotações/selo da tela atual, sob demanda (proxy /api/quotes).
   // telas sem ativos brapi só ajustam o selo p/ "Demonstração" (refreshQuotes trata).
