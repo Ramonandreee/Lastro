@@ -592,7 +592,7 @@ img, svg, canvas, video { max-width: 100%; }
     <div class="nav-scroll">
     <nav class="nav-section">
       <div class="nav-label">Mercado</div>
-      <div class="nav-item active" data-view="painel" onclick="nav('painel',this)"><i class="fa-solid fa-gauge-high"></i><span>Painel</span></div>
+      <div class="nav-item active" data-view="painel" onclick="nav('painel',this)"><i class="fa-solid fa-house"></i><span>Início</span></div>
       <div class="nav-item" data-view="acoes" onclick="nav('acoes',this)"><i class="fa-solid fa-chart-column"></i><span>Ações</span></div>
       <div class="nav-item" data-view="fiis" onclick="nav('fiis',this)"><i class="fa-solid fa-building"></i><span>Fundos Imobiliários</span></div>
       <div class="nav-item" data-view="bdrs" onclick="nav('bdrs',this)"><i class="fa-solid fa-globe"></i><span>BDRs</span></div>
@@ -644,7 +644,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="topbar-left">
         <button class="menu-btn" onclick="toggleSidebar()" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
         <div>
-          <div class="page-title" id="pageTitle">Painel</div>
+          <div class="page-title" id="pageTitle">Início</div>
           <div class="page-sub" id="pageSub">Visão geral do seu patrimônio e do mercado</div>
         </div>
       </div>
@@ -1675,6 +1675,36 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
   .ckl-top { gap:16px; }
   .ckl-ring { width:84px; height:84px; }
 }
+
+/* ════ HOME: hero de mercado, destaques e carteira compacta ════ */
+.hero-mkt-lbl { font-size:13px; color:var(--ink-3); font-weight:500; margin-bottom:4px; }
+.hero-pts { font-family:var(--sans); font-size:20px; font-weight:500; color:var(--ink-3); margin-left:6px; align-self:center; }
+.btn-sm { padding:7px 13px; font-size:12.5px; }
+.opp-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.opp-card { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-lg); padding:14px; cursor:pointer; transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .2s var(--ease); }
+.opp-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
+.opp-top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.opp-id { min-width:0; }
+.opp-id .tk { font-family:var(--mono); font-weight:600; font-size:14px; color:var(--ink); }
+.opp-id .nm { font-size:11px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.opp-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+.opp-px { font-size:13px; font-weight:600; color:var(--ink); }
+.opp-meta { font-size:11.5px; color:var(--ink-3); font-family:var(--mono); }
+.pat-card { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:18px 22px; margin-bottom:16px; }
+.pat-card.pat-empty { background:linear-gradient(120deg, var(--brand-l), transparent 70%); border-color:color-mix(in srgb,var(--brand) 20%,transparent); }
+.pat-eyebrow { font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+.pat-eyebrow i { color:var(--brand); }
+.pat-val { font-family:var(--serif); font-size:30px; font-weight:500; letter-spacing:-.02em; line-height:1; color:var(--ink); }
+.pat-empty-t { font-size:19px; font-weight:600; letter-spacing:-.01em; color:var(--ink); }
+.pat-sub { font-size:12.5px; color:var(--ink-2); margin-top:8px; max-width:560px; }
+@media (max-width:760px){
+  .opp-grid { grid-template-columns:1fr 1fr; }
+  .pat-card { padding:16px; }
+}
+@media (max-width:460px){
+  .opp-grid { grid-template-columns:1fr; }
+  .pat-card .btn { width:100%; justify-content:center; }
+}
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -2042,7 +2072,7 @@ function posWeight(c){ const f=assetLookup(c.tk); const p=portfolioStats(); retu
    NAVIGATION
    ══════════════════════════════════════════════════════════ */
 const PAGES = {
-  painel:       { t:'Painel',                s:'Visão geral do seu patrimônio e do mercado' },
+  painel:       { t:'Início',                s:'Mercado, oportunidades e inteligência Lastro' },
   acoes:        { t:'Ações',                 s:'Análise fundamentalista das principais ações da B3' },
   fiis:         { t:'Fundos Imobiliários',   s:'Indicadores e Score Lastro de FIIs' },
   bdrs:         { t:'BDRs',                   s:'Recibos de ações estrangeiras negociados na B3' },
@@ -2334,6 +2364,27 @@ function moverRow(a){
     <span class="mv-pct ${a.var>=0?'up':'down'}">${a.var>=0?'+':''}${pc(a.var)}%</span>
   </div>`;
 }
+function greetingLabel(){
+  const h=new Date().getHours();
+  const g = h<12?'Bom dia': h<18?'Boa tarde':'Boa noite';
+  const dd=new Date().toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'long'});
+  return `${g} · ${dd}`;
+}
+function topOpportunities(n=4){
+  const pool=[...ACOES.map(a=>({a,k:'acoes'})), ...FIIS.map(a=>({a,k:'fiis'}))].filter(o=>typeof o.a.score==='number' && o.a.px>0);
+  return pool.sort((x,y)=>y.a.score-x.a.score).slice(0,n);
+}
+function oppCard(o){
+  const a=o.a, k=o.k;
+  const metric = k==='fiis' ? `DY ${pc(a.dy,1)}% · P/VP ${pc(a.pvp,2)}` : `DY ${pc(a.dy,1)}% · P/L ${pc(a.pl,1)}x`;
+  return `<div class="opp-card" onclick="quickView('${a.tk}')">
+    <div class="opp-top">${assetLogo(a.tk,k,'sm')}<div class="opp-id"><div class="tk">${a.tk}</div><div class="nm">${esc(a.nm||'')}</div></div></div>
+    <div class="opp-row"><span class="score-pill" style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)}"></span>Score ${a.score}</span><span class="opp-px mono">${brl(a.px)}</span></div>
+    <div class="opp-meta">${metric}</div>
+  </div>`;
+}
+function goView(v){ const el=document.querySelector('.nav-item[data-view="'+v+'"]'); nav(v, el); }
+
 function viewPainel(){
   const p = portfolioStats();
   const mstrip = MARKET.map(m=>{
@@ -2356,23 +2407,43 @@ function viewPainel(){
   const altasRows = topMovers('up').map(moverRow).join('') || '<div class="drawer-empty" style="padding:14px 0">Carregando mercado…</div>';
   const baixasRows = topMovers('down').map(moverRow).join('') || '<div class="drawer-empty" style="padding:14px 0">Carregando mercado…</div>';
 
-  const intReais = Math.floor(p.atual);
-  const cents = Math.round((p.atual-intReais)*100).toString().padStart(2,'0');
+  const ib = MARKET[0]; // Ibovespa como destaque de mercado
+  const opps = topOpportunities(4).map(oppCard).join('');
+
+  // carteira: resumo compacto quando existe; convite quando vazia (sem expor patrimônio na 1ª impressão)
+  const patCard = CARTEIRA.length ? `
+    <div class="pat-card">
+      <div class="pat-l">
+        <div class="pat-eyebrow"><i class="fa-solid fa-wallet"></i> Sua carteira</div>
+        <div class="pat-val">R$ <span id="patVal">0</span></div>
+        <div class="pat-sub"><span class="chip ${p.lucro>=0?'chip-up':'chip-down'}">${p.lucro>=0?'+':''}${brl(p.lucro)} (${p.lucroP.toFixed(1).replace('.',',')}%)</span> · ${CARTEIRA.length} ativo${CARTEIRA.length!==1?'s':''} · renda ~${brl(p.renda)}/mês</div>
+      </div>
+      <button class="btn btn-ghost" onclick="goView('carteira')">Ver carteira <i class="fa-solid fa-arrow-right"></i></button>
+    </div>` : `
+    <div class="pat-card pat-empty">
+      <div class="pat-l">
+        <div class="pat-eyebrow"><i class="fa-solid fa-wallet"></i> Comece agora</div>
+        <div class="pat-empty-t">Monte sua carteira</div>
+        <div class="pat-sub faint">Acompanhe patrimônio, renda mensal e a saúde da carteira em tempo real — com o Score Lastro de cada ativo.</div>
+      </div>
+      <button class="btn btn-primary" onclick="goView('carteira')"><i class="fa-solid fa-plus"></i> Criar carteira</button>
+    </div>`;
 
   return `
   <div class="hero">
-    <div class="hero-main">
-      <div class="hero-eyebrow"><i class="fa-solid fa-wallet" style="color:var(--brand)"></i> Patrimônio total</div>
-      <div class="hero-value"><span class="cur">R$</span><span id="heroVal">0</span><span class="cents">,${cents}</span></div>
+    <div class="hero-main hero-mkt">
+      <div class="hero-eyebrow"><i class="fa-solid fa-tower-broadcast" style="color:var(--brand)"></i> ${greetingLabel()}</div>
+      <div class="hero-mkt-lbl">Ibovespa</div>
+      <div class="hero-value"><span id="ibovHeroVal">${ib.vl}</span><span class="hero-pts">pts</span></div>
       <div class="hero-delta">
-        <span class="chip chip-up"><i class="fa-solid fa-arrow-up" style="font-size:9px"></i> ${brl(p.lucro)} (${p.lucroP.toFixed(1).replace('.',',')}%)</span>
-        <span class="faint" style="font-size:12.5px">desde o aporte inicial</span>
+        <span class="chip ${ib.up?'chip-up':'chip-down'}"><i class="fa-solid fa-arrow-${ib.up?'up':'down'}" style="font-size:9px"></i> ${ib.dl}</span>
+        <span class="faint" style="font-size:12.5px">no pregão de hoje</span>
       </div>
       <div class="hero-spark" id="heroSpark"></div>
       <div class="hero-stats">
-        <div class="hero-stat"><div class="lbl">Renda mensal estimada</div><div class="val up">${brl(p.renda)}</div><div class="sub faint">${p.atual?pc(p.renda*12/p.atual*100,1)+'% a.a.':''}</div></div>
-        <div class="hero-stat"><div class="lbl">DY médio ponderado</div><div class="val">${pc(p.dyMed,1)}%</div><div class="sub ${p.dyMed>=8?'up':'faint'}">${p.dyMed>=8?'renda robusta':'da carteira'}</div></div>
-        <div class="hero-stat"><div class="lbl">Total investido</div><div class="val">${brl(p.invest)}</div><div class="sub faint">${CARTEIRA.length} ativo${CARTEIRA.length!==1?'s':''}</div></div>
+        <div class="hero-stat"><div class="lbl">IFIX</div><div class="val ${MARKET[1].up?'up':'down'}">${MARKET[1].vl}</div><div class="sub ${MARKET[1].up?'up':'down'}">${MARKET[1].dl}</div></div>
+        <div class="hero-stat"><div class="lbl">Dólar</div><div class="val">R$ ${MARKET[2].vl}</div><div class="sub ${MARKET[2].up?'up':'down'}">${MARKET[2].dl}</div></div>
+        <div class="hero-stat"><div class="lbl">Selic</div><div class="val">${MARKET[3].vl}</div><div class="sub faint">meta a.a.</div></div>
       </div>
     </div>
 
@@ -2382,16 +2453,26 @@ function viewPainel(){
         <div class="insight-title">Inteligência Lastro<span class="tag">Análise por IA · Claude</span></div>
       </div>
       <div class="insight-body" id="insightBody">
-        <span class="faint">Analisando sua carteira e o mercado…</span>
+        <span class="faint">Lendo o mercado de hoje…</span>
       </div>
       <div class="insight-input">
-        <input id="insightInput" placeholder="Pergunte sobre sua carteira ou o mercado…" onkeydown="if(event.key==='Enter')askAI()">
+        <input id="insightInput" placeholder="Pergunte sobre o mercado ou um ativo…" onkeydown="if(event.key==='Enter')askAI()">
         <button class="insight-send" onclick="askAI()"><i class="fa-solid fa-arrow-up"></i></button>
       </div>
     </div>
   </div>
 
   <div class="mstrip">${mstrip}</div>
+
+  <div class="card card-pad" style="margin-bottom:16px">
+    <div class="card-head">
+      <div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></span> Destaques Lastro <span class="card-sub" style="margin-left:6px">maiores Scores agora</span></div>
+      <button class="btn btn-ghost btn-sm" onclick="goView('score')">Ver ranking <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+    <div class="opp-grid">${opps}</div>
+  </div>
+
+  ${patCard}
 
   <div class="grid" style="grid-template-columns: 1.4fr 1fr;">
     <div class="card card-pad">
@@ -3160,12 +3241,13 @@ function afterRender(v, soft){
   if(newsTimer){ clearInterval(newsTimer); newsTimer = null; }   // pausa o feed ao sair de Notícias
   if(v==='painel'){
     const p = portfolioStats();
-    // em soft refresh (atualização de cotações) define direto, sem re-animar do zero
-    if(soft) $('#heroVal').textContent = Math.floor(p.atual).toLocaleString('pt-BR');
-    else animateNum($('#heroVal'), Math.floor(p.atual), {dec:0});
-    const base = p.atual/1000;
-    const sparkData = [base*0.905, base*0.918, base*0.93, base*0.922, base*0.945, base*0.958, base*0.951, base*0.972, base*0.986, base];
-    $('#heroSpark').innerHTML = spark(sparkData, 420, 56, 'var(--brand)', true).replace('width="420"','width="100%"').replace('viewBox="0 0 420 56"','viewBox="0 0 420 56" preserveAspectRatio="none"');
+    // hero = pulso de mercado: sparkline do Ibovespa
+    const ib = MARKET[0];
+    const hs = $('#heroSpark');
+    if(hs) hs.innerHTML = spark(ib.spark, 420, 56, ib.up?'var(--up)':'var(--down)', true).replace('width="420"','width="100%"').replace('viewBox="0 0 420 56"','viewBox="0 0 420 56" preserveAspectRatio="none"');
+    // carteira (card compacto, só quando existe)
+    const pv = $('#patVal');
+    if(pv){ if(soft) pv.textContent = Math.floor(p.atual).toLocaleString('pt-BR'); else animateNum(pv, Math.floor(p.atual), {dec:0}); }
     initIbov();
     if(!soft) askAI(true);
   }
@@ -3352,7 +3434,7 @@ async function callAI(msg, el){
 }
 function askAI(initial){
   const inp = $('#insightInput'), out = $('#insightBody');
-  const msg = initial ? 'Dê um insight rápido (2 frases) sobre minha carteira de FIIs e o mercado hoje.' : (inp?inp.value.trim():'');
+  const msg = initial ? 'Em 2 frases, dê um panorama do mercado brasileiro de renda variável hoje (Ibovespa, Selic e oportunidades em dividendos/FIIs).' : (inp?inp.value.trim():'');
   if(!initial && !msg){ inp&&inp.focus(); return; }
   if(inp && !initial) inp.value='';
   callAI(msg, out);
