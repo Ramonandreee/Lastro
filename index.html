@@ -392,6 +392,7 @@ body.view-inicio .topbar-brand { display:flex; }
 .acct-theme-btns { display:flex; gap:3px; background:var(--surface-3); padding:3px; border-radius:9px; }
 .acct-theme-btns button { width:30px; height:28px; border-radius:6px; color:var(--ink-3); cursor:pointer; font-size:12px; display:inline-flex; align-items:center; justify-content:center; transition:all .12s var(--ease); }
 .acct-theme-btns button.on { background:var(--surface); color:var(--gold); box-shadow:var(--sh-sm); }
+.acct-login { width:100%; justify-content:center; margin:4px 2px 2px; }
 /* paginação da lista de ativos */
 .pager { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
 .pg-info { font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:8px; }
@@ -633,14 +634,18 @@ img, svg, canvas, video { max-width: 100%; }
 @media (max-width: 760px) {
   input, select, textarea, .sel, .search-inp input, .cmp-input, .pg-sel, .fld input, .insight-input input, .search-bar input { font-size: 16px !important; }
 }
-/* mobile: tabela rola na horizontal (1ª coluna fixa); colunas extras via scroll */
-@media (max-width: 560px) {
-  table.tbl .td-asset .ds { max-width: 140px; }
-  /* listas de ativos: padrão único no mobile = Ativo · Setor · Cotação (sem rolagem) */
-  #dataTbl { width: 100%; min-width: 0; }
+/* listas de ativos (#dataTbl): no mobile cabem 3 colunas — Ativo · Setor · Cotação — SEM rolar */
+@media (max-width: 760px) {
+  #dataTbl { width: 100% !important; min-width: 0 !important; table-layout: fixed; }
   #dataTbl th:nth-child(n+4), #dataTbl td:nth-child(n+4) { display: none; }
-  #dataTbl th:first-child, #dataTbl td:first-child { position: static; }
-  #dataTbl .td-asset .ds { max-width: 110px; }
+  #dataTbl th, #dataTbl td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 8px; padding-right: 8px; }
+  #dataTbl th:first-child, #dataTbl td:first-child { position: static; width: 46%; }
+  #dataTbl th:nth-child(2), #dataTbl td:nth-child(2) { width: 30%; }
+  #dataTbl th:nth-child(3), #dataTbl td:nth-child(3) { width: 24%; }
+  #dataTbl .td-asset { gap: 9px; min-width: 0; }
+  #dataTbl .td-asset .nm { min-width: 0; overflow: hidden; }
+  #dataTbl .td-asset .tk { font-size: 13.5px; }
+  #dataTbl .td-asset .ds { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
 @media (max-width: 460px) {
   .content { padding: 15px 15px 20px; }
@@ -1660,6 +1665,31 @@ body.priv .priv-blur { filter:blur(9px); user-select:none; pointer-events:none; 
 .priv-eye { width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; transition:all .14s var(--ease); flex:none; }
 .priv-eye:hover { color:var(--ink); border-color:var(--line-2); }
 .cart-sum-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+/* posições em cartões (estilo app financeiro) */
+.pos-section { margin-top:16px; }
+.pos-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+@media (max-width:760px){ .pos-grid { grid-template-columns:1fr; } }
+.pos-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:16px 18px; }
+.pc-head { display:flex; align-items:center; gap:12px; padding-bottom:13px; border-bottom:1px solid var(--line); margin-bottom:4px; cursor:pointer; }
+.pc-id { flex:1; min-width:0; }
+.pc-nm { font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pc-tk { font-family:var(--mono); font-size:12px; color:var(--ink-3); margin-top:1px; }
+.pc-px { text-align:right; flex:none; }
+.pc-cot { font-weight:600; font-size:14.5px; }
+.pc-var { font-size:12px; margin-top:1px; }
+.pc-rows, .pc-extra { display:flex; flex-direction:column; }
+.pc-row { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13.5px; color:var(--ink-2); }
+.pc-row:last-child { border-bottom:none; }
+.pc-row b { color:var(--ink); font-weight:600; }
+.pc-more { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:8px; padding:11px; border-radius:10px; font-size:13px; font-weight:600; color:var(--brand); cursor:pointer; transition:background .14s var(--ease); }
+.pc-more:hover { background:var(--surface-2); }
+.pc-more i { transition:transform .2s var(--ease); font-size:11px; }
+.pc-more.open i { transform:rotate(180deg); }
+.pc-extra { padding-top:6px; }
+.pc-extra-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); margin:8px 0 4px; }
+.pc-actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+.pc-actions .btn { flex:1; justify-content:center; }
+.pc-actions .danger { color:var(--down); }
 /* login premium */
 .auth-hero { text-align:center; margin-bottom:18px; animation:authIn .4s var(--ease-out) both; }
 .auth-logo { width:54px; height:54px; border-radius:16px; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; background:linear-gradient(150deg,#23B07E,#0E7C5A 55%,#09533C); box-shadow:inset 0 1px 1px rgba(255,255,255,.25), 0 8px 20px rgba(9,83,60,.32); }
@@ -2530,8 +2560,8 @@ function acctMenuHTML(){
       <div class="acct-sep"></div>
       ${item('fa-arrow-right-from-bracket','Sair',"closeAcctMenu();confirmLogout()",'danger')}`;
   }
-  return `<div class="acct-head guest"><div class="avatar">+</div><div class="acct-id"><div class="acct-nm">Bem-vindo à Lastro</div><div class="acct-pl">Entre para sincronizar seus dados</div></div></div>
-    ${item('fa-right-to-bracket','Entrar ou criar conta',"closeAcctMenu();openAuth('login')")}
+  return `<button class="btn btn-primary acct-login" onclick="closeAcctMenu();openAuth('login')"><i class="fa-solid fa-right-to-bracket"></i> Entrar ou criar conta</button>
+    <div class="acct-sep"></div>
     ${item('fa-crown','Assinar Premium',"closeAcctMenu();goPricing()")}
     ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
     ${themeRow}`;
@@ -2659,7 +2689,15 @@ async function authLogin(email, pass){
 function authLogout(){
   const s=getSession(), c=_sb();
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
-  clearSession(); toast('Você saiu da conta'); closeAuth();
+  clearSession();
+  // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
+  ['lastro_carteira','lastro_watch','lastro_priv'].forEach(k=>localStorage.removeItem(k));
+  localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
+  CARTEIRA = CARTEIRA_SEED.slice(); normLots();         // volta ao conteúdo de demonstração
+  refreshPlanUI(); updateAuthUI(); applyPriv();
+  closeAuth(); closeAcctMenu();
+  toast('Você saiu da conta');
+  render(currentView==='asset'?'painel':currentView);
 }
 /* sync nuvem: tabela user_state (user_id pk, data jsonb). Falha graciosa p/ localStorage. */
 async function loadCloudState(){
@@ -3259,6 +3297,52 @@ function tblFilter(kind, key, val){
 /* ══════════════════════════════════════════════════════════
    VIEW: CARTEIRA
    ══════════════════════════════════════════════════════════ */
+/* cartão de posição (estilo app financeiro) */
+function posCard(g){
+  const a=g.f.a, k=g.f.k; const vv=(k==='cripto'?a.v24:a.var)??0;
+  const pmProv=g.cotas?(g.custo-g.prov)/g.cotas:0;
+  const lotsHtml = g.lots.map(l=>{
+    const lcusto=l.cotas*l.pm, lval=l.cotas*(a.px||0), llp=lcusto?(lval-lcusto)/lcusto*100:0;
+    return `<div class="lot-line">
+      <span class="lot-dt"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(l.date)}</span>
+      <span class="lot-q">${l.cotas} cota${l.cotas!==1?'s':''}</span>
+      <span class="mono priv-blur">${brl(l.pm)}</span>
+      <span class="mono ${llp>=0?'up':'down'}">${llp>=0?'+':''}${pc(llp,1)}%</span>
+      <span class="lot-acts"><button class="row-act" onclick="event.stopPropagation();openPosModal('${g.tk}','${l.id}')"><i class="fa-solid fa-pen"></i></button><button class="row-act danger" onclick="event.stopPropagation();removeLot('${l.id}')"><i class="fa-solid fa-trash-can"></i></button></span>
+    </div>`;
+  }).join('');
+  const row=(lbl,val,cls)=>`<div class="pc-row"><span>${lbl}</span><b class="${cls||''}">${val}</b></div>`;
+  return `<div class="pos-card" data-tk="${g.tk}">
+    <div class="pc-head" onclick="quickView('${g.tk}')">
+      ${assetLogo(g.tk,k,'md')}
+      <div class="pc-id"><div class="pc-nm">${esc(a.nm||g.tk)}</div><div class="pc-tk">${g.tk}${g.lots.length>1?` · ${g.lots.length} aportes`:''}</div></div>
+      <div class="pc-px"><div class="pc-cot mono">${fmtPx(a,k)}</div><div class="pc-var mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</div></div>
+    </div>
+    <div class="pc-rows">
+      ${row('Categoria', ASSET_CLASS[k].label)}
+      ${row('Quantidade', `<span class="mono">${g.cotas}</span>`)}
+      ${row('Preço médio', `<span class="mono priv-blur">${brl(g.pm)}</span>`)}
+      ${row('Proventos da posição', `<span class="mono up priv-blur">${brl(g.prov)}</span>`)}
+      ${row('Resultado com proventos', `<span class="mono ${g.lucroProv>=0?'up':'down'}">${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</span>`)}
+      ${row('Saldo bruto', `<span class="mono priv-blur">${brl(g.val)}</span>`)}
+    </div>
+    <button class="pc-more" onclick="togglePosMore('${g.tk}')"><span>Mais detalhes</span> <i class="fa-solid fa-chevron-down"></i></button>
+    <div class="pc-extra" id="more-${g.tk}" hidden>
+      <div class="pc-extra-t">Dados complementares</div>
+      ${row('Valor investido', `<span class="mono priv-blur">${brl(g.custo)}</span>`)}
+      ${row('Preço médio com proventos', `<span class="mono priv-blur">${brl(pmProv)}</span>`)}
+      ${row('Resultado sem proventos', `<span class="mono ${g.lucro>=0?'up':'down'}">${g.lucro>=0?'+':''}${pc(g.lp,1)}%</span>`)}
+      <div class="pc-extra-t" style="margin-top:14px">Histórico de aportes</div>
+      ${lotsHtml}
+      <div class="pc-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openPosModal('${g.tk}')"><i class="fa-solid fa-plus"></i> Aporte</button>
+        <button class="btn btn-ghost btn-sm" onclick="quickView('${g.tk}')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ativo</button>
+        <button class="btn btn-ghost btn-sm danger" onclick="removePosition('${g.tk}')"><i class="fa-solid fa-trash-can"></i> Remover</button>
+      </div>
+    </div>
+  </div>`;
+}
+function togglePosMore(tk){ const m=document.getElementById('more-'+tk); if(!m) return; m.hidden=!m.hidden; const c=document.querySelector(`.pos-card[data-tk="${tk}"] .pc-more`); if(c) c.classList.toggle('open', !m.hidden); }
 function viewCarteira(){
   const p = portfolioStats();
   const byT = p._byT;
@@ -3275,32 +3359,7 @@ function viewCarteira(){
     </div>`;
   }
 
-  const holdings = byT.map(g=>{
-    const a=g.f.a, k=g.f.k;
-    const lotsHtml = g.lots.map(l=>{
-      const lcusto=l.cotas*l.pm, lval=l.cotas*(a.px||0), llp=lcusto?(lval-lcusto)/lcusto*100:0;
-      return `<div class="lot-line">
-        <span class="lot-dt"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(l.date)}</span>
-        <span class="lot-q">${l.cotas} cota${l.cotas!==1?'s':''}</span>
-        <span class="mono">${brl(l.pm)}</span>
-        <span class="mono faint">${brl(lcusto)}</span>
-        <span class="mono ${llp>=0?'up':'down'}">${llp>=0?'+':''}${pc(llp,1)}%</span>
-        <span class="lot-acts"><button class="row-act" title="Editar aporte" onclick="event.stopPropagation();openPosModal('${g.tk}','${l.id}')"><i class="fa-solid fa-pen"></i></button><button class="row-act danger" title="Remover aporte" onclick="event.stopPropagation();removeLot('${l.id}')"><i class="fa-solid fa-trash-can"></i></button></span>
-      </div>`;
-    }).join('');
-    return `<tr class="pos-row" data-tk="${g.tk}" onclick="toggleLots('${g.tk}')">
-      <td class="cell-left"><div class="td-asset"><span class="lot-caret"><i class="fa-solid fa-chevron-right"></i></span>${assetLogo(g.tk,k,'sm')}<div class="nm"><div class="tk">${g.tk}${g.lots.length>1?` <span class="lot-badge">${g.lots.length} aportes</span>`:''}</div><div class="ds">${esc(a.nm||a.seg||ASSET_CLASS[k].label)}</div></div></div></td>
-      <td class="mono">${g.cotas}</td>
-      <td class="mono">${brl(g.pm)}</td>
-      <td class="mono">${fmtPx(a,k)}</td>
-      <td class="mono">${brl(g.val)}</td>
-      <td class="mono ${g.lucro>=0?'up':'down'}">${g.lucro>=0?'+':''}${pc(g.lp,1)}%</td>
-      <td class="mono up">${brl(g.prov)}</td>
-      <td class="mono ${g.lucroProv>=0?'up':'down'}"><b>${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</b></td>
-      <td class="row-acts"><button class="row-act" title="Novo aporte" onclick="event.stopPropagation();openPosModal('${g.tk}')"><i class="fa-solid fa-plus"></i></button><button class="row-act" title="Ver ativo" onclick="event.stopPropagation();quickView('${g.tk}')"><i class="fa-solid fa-arrow-up-right-from-square"></i></button><button class="row-act danger" title="Remover ativo" onclick="event.stopPropagation();removePosition('${g.tk}')"><i class="fa-solid fa-trash-can"></i></button></td>
-    </tr>
-    <tr class="lots-row" id="lots-${g.tk}" hidden><td colspan="9"><div class="lots-box"><div class="lots-head">Histórico de aportes · preço médio ponderado ${brl(g.pm)}</div>${lotsHtml}</div></td></tr>`;
-  }).join('');
+  const holdings = byT.map(posCard).join('');
 
   return `
   <div class="cart-sum-head"><div class="sec-title" style="margin:0;font-size:19px">Minha carteira</div><button class="priv-eye" onclick="togglePriv()" title="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
@@ -3311,19 +3370,14 @@ function viewCarteira(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Saúde da carteira</div><div class="vl" style="color:${scoreColor(saude)}">${saude}<span style="font-size:12px;color:var(--ink-3)">/100</span></div><div class="dl" style="color:${scoreColor(saude)}">${scoreTier(saude)}</div></div>
   </div>
 
-  <div class="grid" style="grid-template-columns: 1fr 360px">
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n} ativo${n!==1?'s':''}</span></div>${addBtn}</div>
-      <div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th class="cell-left">Ativo</th><th>Qtde</th><th>Preço médio</th><th>Atual</th><th>Posição</th><th>Result.</th><th>Proventos</th><th>c/ Prov.</th><th></th></tr></thead>
-        <tbody>${holdings}</tbody>
-      </table></div>
-      <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Toque numa linha para ver o histórico de aportes. Proventos estimados desde a data de cada aporte (informe a data para maior precisão).</div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-chart-pie"></i></span> Alocação</div></div>
-      <div style="position:relative;height:200px"><canvas id="allocChart" role="img" aria-label="Alocação da carteira"></canvas></div>
-    </div>
+  <div class="pos-section">
+    <div class="card-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n} ativo${n!==1?'s':''}</span></div>${addBtn}</div>
+    <div class="pos-grid">${holdings}</div>
+  </div>
+
+  <div class="card card-pad" style="margin-top:16px">
+    <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-chart-pie"></i></span> Alocação da carteira</div></div>
+    <div style="position:relative;height:220px"><canvas id="allocChart" role="img" aria-label="Alocação da carteira"></canvas></div>
   </div>
 
   ${(()=>{ const pays=provPayments(); if(!pays.length) return ''; const total=pays.reduce((s,p)=>s+p.valor,0);
@@ -5404,7 +5458,11 @@ function applyTheme(reRender){
 function setThemePref(p){ if(!THEME_SEQ.includes(p)) p='auto'; localStorage.setItem('lastro_theme', p); applyTheme(true); const m=$('#acctMenu'); if(m&&m.classList.contains('open')) m.innerHTML=acctMenuHTML(); if(typeof saveCloudState==='function') saveCloudState(); }
 function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SEQ.indexOf(cur)+1)%THEME_SEQ.length]; setThemePref(next); toast(next==='auto'?'Tema: Automático':next==='dark'?'Tema: Escuro':'Tema: Claro'); }
 // segue o sistema em tempo real quando em "automático"
-(function(){ const mq=matchMedia('(prefers-color-scheme: dark)'); const fn=()=>{ if(getThemePref()==='auto') applyTheme(true); }; if(mq.addEventListener) mq.addEventListener('change', fn); else if(mq.addListener) mq.addListener(fn); })();
+(function(){ const mq=matchMedia('(prefers-color-scheme: dark)'); const fn=()=>{ if(getThemePref()==='auto') applyTheme(true); }; if(mq.addEventListener) mq.addEventListener('change', fn); else if(mq.addListener) mq.addListener(fn);
+  // iOS/PWA: ao trocar o tema do sistema com o app em segundo plano, o evento não dispara — reaplica ao voltar
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && getThemePref()==='auto') applyTheme(true); });
+  window.addEventListener('focus', ()=>{ if(getThemePref()==='auto') applyTheme(true); });
+})();
 
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
