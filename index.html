@@ -532,6 +532,16 @@ body.view-inicio .topbar-brand { display:flex; }
 .tf-toggle:hover { border-color:var(--line-2); color:var(--ink); }
 .tf-toggle .tf-cv { font-size:9px; transition:transform .18s var(--ease); }
 .tf-panel.open ~ * .tf-cv, .tf-wrap:has(.tf-panel.open) .tf-cv { transform:rotate(180deg); }
+/* seletor de ativo do gráfico principal */
+.ap-wrap { position:relative; }
+.ap-trigger { display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
+.ap-trigger .ap-cv { font-size:10px; color:var(--ink-3); transition:transform .18s var(--ease); }
+.ap-wrap:has(.ap-panel.open) .ap-cv { transform:rotate(180deg); }
+.ap-panel { position:absolute; left:0; top:calc(100% + 8px); z-index:31; display:none; grid-template-columns:repeat(2,1fr); gap:4px; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r); box-shadow:var(--sh-lg); padding:6px; min-width:220px; }
+.ap-panel.open { display:grid; animation:fadeIn .14s var(--ease); }
+.ap-panel button { padding:9px 10px; border-radius:8px; font-size:13px; font-weight:600; color:var(--ink-2); cursor:pointer; text-align:left; transition:all .12s var(--ease); }
+.ap-panel button:hover { background:var(--surface-3); color:var(--ink); }
+.ap-panel button.on { background:var(--accent-l); color:var(--accent); }
 .tf-panel { position:absolute; right:0; top:calc(100% + 6px); z-index:30; display:none; grid-template-columns:repeat(3,1fr); gap:4px; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r); box-shadow:var(--sh-lg); padding:6px; min-width:180px; }
 .tf-panel.open { display:grid; animation:fadeIn .14s var(--ease); }
 .tf-panel button { padding:8px 6px; border-radius:7px; font-size:12.5px; font-weight:600; color:var(--ink-2); cursor:pointer; transition:all .12s var(--ease); }
@@ -805,6 +815,12 @@ img, svg, canvas, video { max-width: 100%; }
 </div>
 
 <!-- ════════ HISTÓRICO DE INDICADORES ════════ -->
+<div class="modal-scrim" id="carModal" onclick="if(event.target===this)closeCarteira()">
+  <div class="modal-card hist-card" role="dialog" aria-label="Carteira recomendada">
+    <div class="modal-head"><span><i class="fa-solid fa-star" style="color:var(--gold);margin-right:8px"></i><span id="carTitle">Carteira</span></span><button class="drawer-close" onclick="closeCarteira()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="hist-body" id="carBody"></div>
+  </div>
+</div>
 <div class="modal-scrim" id="indModal" onclick="if(event.target===this)closeIndHistory()">
   <div class="modal-card hist-card" role="dialog" aria-label="Histórico de indicadores">
     <div class="modal-head"><span><i class="fa-solid fa-chart-column" style="color:var(--gold);margin-right:8px"></i><span id="indMTitle">Histórico de Indicadores</span></span><button class="drawer-close" onclick="closeIndHistory()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
@@ -1649,7 +1665,14 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .btn-danger:hover { filter:brightness(1.06); }
 /* área de perfil */
 .prof-head { display:flex; align-items:center; gap:13px; padding-bottom:16px; border-bottom:1px solid var(--line); margin-bottom:6px; }
-.prof-av { width:50px; height:50px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:19px; color:#fff; background:linear-gradient(150deg,#23B07E,#0E7C5A 60%,#09533C); }
+.prof-av { width:54px; height:54px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px; color:#fff; background:linear-gradient(150deg,#23B07E,#0E7C5A 60%,#09533C); overflow:hidden; position:relative; }
+.prof-av-edit { cursor:pointer; border:none; }
+.prof-av-cam { position:absolute; right:-2px; bottom:-2px; width:22px; height:22px; border-radius:50%; background:var(--ink); color:var(--canvas); display:flex; align-items:center; justify-content:center; font-size:9px; border:2px solid var(--surface); }
+.av-img { width:100%; height:100%; object-fit:cover; border-radius:inherit; }
+.hdr-profile.has-av { padding:0; overflow:hidden; }
+.hdr-profile.has-av .av-img { width:100%; height:100%; }
+.acct-head .avatar { overflow:hidden; }
+.prof-actions { display:flex; gap:8px; margin-top:12px; }
 .prof-id { flex:1; min-width:0; } .prof-nm { font-weight:600; font-size:15px; } .prof-em { font-size:12px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .prof-sec { padding:14px 0; border-bottom:1px solid var(--line); }
 .prof-sec-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:10px; }
@@ -1665,6 +1688,50 @@ body.priv .priv-blur { filter:blur(9px); user-select:none; pointer-events:none; 
 .priv-eye { width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; transition:all .14s var(--ease); flex:none; }
 .priv-eye:hover { color:var(--ink); border-color:var(--line-2); }
 .cart-sum-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+/* carteiras recomendadas */
+.rec-filters { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:6px; margin-bottom:16px; }
+.rec-filters::-webkit-scrollbar { display:none; }
+.rec-chip { flex:none; padding:8px 15px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .15s var(--ease); }
+.rec-chip:hover { border-color:var(--line-2); color:var(--ink); }
+.rec-chip.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
+.rec-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+@media (max-width:760px){ .rec-grid { grid-template-columns:1fr; } }
+.rec-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:20px; cursor:pointer; transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .2s var(--ease); }
+.rec-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
+.rec-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
+.rec-nm { font-size:18px; font-weight:700; letter-spacing:-.01em; }
+.rec-tags { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.rec-ret { text-align:right; flex:none; }
+.rec-ret .faint { font-size:10.5px; } .rec-ret .mono { font-size:18px; font-weight:700; }
+.rec-desc { font-size:13px; color:var(--ink-2); line-height:1.6; margin-bottom:14px; }
+.rec-stats { display:flex; gap:20px; padding:13px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-bottom:13px; }
+.rec-stats > div { display:flex; flex-direction:column; gap:3px; }
+.rec-stats span { font-size:11px; color:var(--ink-3); } .rec-stats b { font-size:15px; font-weight:600; }
+.rec-tks { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
+.rec-tk { font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink-2); background:var(--surface-3); padding:3px 8px; border-radius:7px; }
+.rec-tk.rec-more { color:var(--brand); }
+.rec-cta { font-size:13px; font-weight:600; color:var(--brand); display:flex; align-items:center; gap:7px; }
+.rec-card:hover .rec-cta i { transform:translateX(3px); } .rec-cta i { transition:transform .18s var(--ease); }
+/* detalhe */
+.rc-head { display:flex; gap:7px; margin-bottom:16px; }
+.rc-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+.rc-kpi { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:12px; text-align:center; }
+.rc-kpi .l { font-size:11px; color:var(--ink-3); margin-bottom:5px; } .rc-kpi .v { font-size:17px; font-weight:600; }
+.rc-sec { margin-bottom:18px; } .rc-sec-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:9px; }
+.rc-sec p { font-size:13.5px; color:var(--ink-2); line-height:1.7; margin:0; }
+.rc-assets { display:flex; flex-direction:column; }
+.rc-asset { display:flex; align-items:center; gap:11px; padding:9px 0; border-top:1px solid var(--line); cursor:pointer; }
+.rc-asset:first-child { border-top:none; }
+.rc-a-id { flex:1; min-width:0; } .rc-a-tk { font-family:var(--mono); font-weight:600; font-size:13.5px; } .rc-a-nm { font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rc-a-w { font-weight:600; color:var(--ink); }
+.rc-risks { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+.rc-risks li { display:flex; gap:9px; align-items:flex-start; font-size:13px; color:var(--ink-2); line-height:1.5; }
+.rc-risks li i { color:var(--warn); margin-top:2px; font-size:12px; flex:none; }
+.rc-scen { border-radius:var(--r); padding:14px 16px; }
+.rc-scen.up { background:var(--up-l); } .rc-scen.down { background:var(--down-l); }
+.rc-scen-t { font-size:12px; font-weight:700; display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+.rc-scen.up .rc-scen-t { color:var(--up); } .rc-scen.down .rc-scen-t { color:var(--down); }
+.rc-scen p { font-size:12.5px; color:var(--ink-2); line-height:1.6; margin:0; }
 /* posições em cartões (estilo app financeiro) */
 .pos-section { margin-top:16px; }
 .pos-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
@@ -2428,10 +2495,48 @@ const NEWS = [
 
 /* ─── CARTEIRAS RECOMENDADAS ─── */
 const RECOMENDADAS = [
-  { nome:'Renda Mensal FIIs',    perfil:'Conservador', dy:11.4, ret:12.8, n:8,  desc:'Foco em proventos mensais com FIIs de papel e tijolo de qualidade.', ativos:['KNCR11','HGLG11','XPML11','VGIR11','BTLG11','KNIP11','VISC11','TRXF11'] },
-  { nome:'Dividendos Ações',     perfil:'Moderado',    dy:9.2,  ret:18.4, n:7,  desc:'Ações pagadoras consistentes para renda e crescimento.', ativos:['PETR4','BBAS3','VALE3','ITUB4','BBDC4','CXSE3','TAEE11'] },
-  { nome:'Crescimento BR',       perfil:'Arrojado',    dy:3.1,  ret:24.6, n:6,  desc:'Empresas com alto ROE e potencial de valorização.', ativos:['WEGE3','PRIO3','BPAC11','RADL3','TOTS3','RAIL3'] },
-  { nome:'Global Tech (BDRs)',   perfil:'Arrojado',    dy:0.6,  ret:31.2, n:6,  desc:'Exposição às gigantes de tecnologia via BDRs.', ativos:['AAPL34','MSFT34','NVDC34','GOGL34','AMZO34','META34'] },
+  { id:'fii-renda', nome:'Renda Mensal FIIs', perfil:'Conservador', cat:'FIIs', dy:11.4, ret:12.8, vol:'Baixa', n:8,
+    desc:'Foco em proventos mensais com FIIs de papel e tijolo de qualidade.',
+    objetivo:'Gerar renda passiva mensal estável com baixa volatilidade.',
+    estrategia:'Combina FIIs de papel (CRIs indexados ao IPCA/CDI) para renda previsível e FIIs de tijolo bem localizados para proteção do patrimônio. Rebalanceamento trimestral.',
+    riscos:['Sensibilidade à Selic e ao crédito (FIIs de papel)','Vacância e inadimplência (FIIs de tijolo)','Liquidez menor que ações'],
+    bull:'Queda de juros valoriza as cotas e mantém os rendimentos.', bear:'Alta de juros pressiona o preço das cotas no curto prazo.',
+    ativos:['KNCR11','HGLG11','XPML11','VGIR11','BTLG11','KNIP11','VISC11','TRXF11'] },
+  { id:'acoes-div', nome:'Dividendos Ações', perfil:'Moderado', cat:'Dividendos', dy:9.2, ret:18.4, vol:'Média', n:7,
+    desc:'Ações pagadoras consistentes para renda e crescimento.',
+    objetivo:'Renda crescente com empresas sólidas e bom histórico de dividendos.',
+    estrategia:'Seleciona empresas líderes, lucrativas e com payout sustentável. Equilíbrio entre setores defensivos (bancos, energia) e cíclicos de qualidade.',
+    riscos:['Oscilação do preço das ações','Cortes de dividendos em crises','Risco regulatório/político (estatais)'],
+    bull:'Lucros fortes elevam dividendos e a cotação.', bear:'Recessão reduz lucros e proventos.',
+    ativos:['PETR4','BBAS3','VALE3','ITUB4','BBDC4','CXSE3','TAEE11'] },
+  { id:'cresc-br', nome:'Crescimento BR', perfil:'Arrojado', cat:'Arrojada', dy:3.1, ret:24.6, vol:'Alta', n:6,
+    desc:'Empresas com alto ROE e potencial de valorização.',
+    objetivo:'Maximizar valorização de capital no longo prazo.',
+    estrategia:'Concentra em empresas de alto ROE, vantagens competitivas e reinvestimento eficiente do lucro. Menos foco em dividendo, mais em crescimento.',
+    riscos:['Alta volatilidade','Múltiplos exigentes','Sensível a juros e ao ciclo econômico'],
+    bull:'Crescimento de lucros acima do mercado expande os múltiplos.', bear:'Juros altos comprimem ações de crescimento.',
+    ativos:['WEGE3','PRIO3','BPAC11','RADL3','TOTS3','RAIL3'] },
+  { id:'global-tech', nome:'Global Tech', perfil:'Arrojado', cat:'Internacional', dy:0.6, ret:31.2, vol:'Alta', n:6,
+    desc:'Exposição às gigantes de tecnologia via BDRs.',
+    objetivo:'Diversificação internacional e exposição ao dólar e à inovação.',
+    estrategia:'Investe nas líderes globais de tecnologia via BDRs negociados na B3, capturando crescimento e a variação cambial.',
+    riscos:['Risco cambial (real/dólar)','Volatilidade do setor de tecnologia','Liquidez dos BDRs'],
+    bull:'Inovação (IA, nuvem) impulsiona receitas; dólar forte ajuda.', bear:'Correção de tech e real forte reduzem o retorno em reais.',
+    ativos:['AAPL34','MSFT34','NVDC34','GOGL34','AMZO34','META34'] },
+  { id:'aposent', nome:'Aposentadoria', perfil:'Conservador', cat:'Aposentadoria', dy:8.6, ret:13.5, vol:'Baixa', n:8,
+    desc:'Renda perpétua com FIIs e blue-chips defensivas, foco em consistência.',
+    objetivo:'Construir uma renda passiva crescente e resiliente para o longo prazo.',
+    estrategia:'Mistura FIIs de renda, ações perenes de dividendos e setores defensivos (energia, saneamento, bancos). Reinvestimento de proventos.',
+    riscos:['Inflação corroendo a renda real','Concentração em poucos setores','Mudanças tributárias sobre dividendos'],
+    bull:'Juros em queda e dividendos reinvestidos aceleram a bola de neve.', bear:'Inflação alta exige reforço de aportes.',
+    ativos:['KNCR11','HGLG11','TAEE11','BBAS3','SAPR11','CPLE6','VISC11','ITSA4'] },
+  { id:'equil', nome:'Carteira Equilibrada', perfil:'Moderado', cat:'Moderada', dy:6.8, ret:16.9, vol:'Média', n:8,
+    desc:'Mix de ações, FIIs e internacional para crescer com proteção.',
+    objetivo:'Crescimento consistente com diversificação entre classes.',
+    estrategia:'Aloca entre ações de qualidade, FIIs de renda e BDRs internacionais, equilibrando risco e retorno. Rebalanceamento semestral.',
+    riscos:['Exposição a múltiplas classes (risco de mercado amplo)','Risco cambial parcial','Necessita disciplina de rebalanceamento'],
+    bull:'Diversificação captura altas de diferentes mercados.', bear:'Quedas amplas afetam várias classes ao mesmo tempo.',
+    ativos:['ITUB4','WEGE3','KNCR11','HGLG11','AAPL34','VALE3','TAEE11','BTLG11'] },
 ];
 
 /* ══════════════════════════════════════════════════════════
@@ -2540,7 +2645,8 @@ function updateHeaderAction(){
   const authed=isAuthed(), pro=isPremium();
   let html='';
   if(!pro){ html += `<button class="icon-btn hdr-crown" title="Premium — desbloqueie recursos" onclick="goPricing()"><i class="fa-solid fa-crown"></i></button>`; }
-  html += `<div class="acct-wrap"><button class="icon-btn hdr-profile" title="Conta" onclick="toggleAcctMenu(event)"><i class="fa-${authed?'solid':'regular'} fa-circle-user"></i></button><div class="acct-menu" id="acctMenu"></div></div>`;
+  const avInner = authed && profilePhoto() ? `<img class="av-img" src="${profilePhoto()}" alt="">` : `<i class="fa-${authed?'solid':'regular'} fa-circle-user"></i>`;
+  html += `<div class="acct-wrap"><button class="icon-btn hdr-profile ${authed&&profilePhoto()?'has-av':''}" title="Conta" onclick="toggleAcctMenu(event)">${avInner}</button><div class="acct-menu" id="acctMenu"></div></div>`;
   el.innerHTML = html;
 }
 function acctMenuHTML(){
@@ -2552,7 +2658,7 @@ function acctMenuHTML(){
     <button class="${pref==='auto'?'on':''}" onclick="setThemePref('auto')" title="Automático"><i class="fa-solid fa-circle-half-stroke"></i></button>
   </div></div>`;
   if(authed){
-    return `<div class="acct-head"><div class="avatar">${(u.email[0]||'?').toUpperCase()}</div><div class="acct-id"><div class="acct-nm">${esc(u.email.split('@')[0])}</div><div class="acct-pl">${isPremium()?'Plano Premium 👑':'Plano Gratuito'}</div></div></div>
+    return `<div class="acct-head"><div class="avatar">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</div><div class="acct-id"><div class="acct-nm">${esc(profileName())}</div><div class="acct-pl">${isPremium()?'Plano Premium 👑':'Plano Gratuito'}</div></div></div>
       ${item('fa-user','Meu perfil',"closeAcctMenu();openProfile()")}
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();goPricing()")}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
@@ -2592,15 +2698,35 @@ function privOn(){ const v=localStorage.getItem('lastro_priv'); return v===null 
 function applyPriv(){ document.body.classList.toggle('priv', privOn()); document.querySelectorAll('.priv-eye i').forEach(i=>{ i.className='fa-solid '+(privOn()?'fa-eye-slash':'fa-eye'); }); }
 function togglePriv(){ localStorage.setItem('lastro_priv', privOn()?'0':'1'); applyPriv(); }
 /* área de perfil (gerenciamento da conta) */
+/* perfil local (nome de exibição + foto), sincronizado na nuvem */
+function getProfile(){ try{ return JSON.parse(localStorage.getItem('lastro_profile')||'{}'); }catch(e){ return {}; } }
+function saveProfile(p){ localStorage.setItem('lastro_profile', JSON.stringify(p)); if(typeof saveCloudState==='function') saveCloudState(); }
+function profileName(){ const u=currentUser(); const p=getProfile(); return p.name || (u?u.email.split('@')[0]:''); }
+function profilePhoto(){ return getProfile().photo || ''; }
+function avatarInner(letter){ const ph=profilePhoto(); return ph ? `<img class="av-img" src="${ph}" alt="">` : esc(letter||'?'); }
+function pickProfilePhoto(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(!f) return; const r=new FileReader();
+    r.onload=()=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement('canvas'); c.width=c.height=256; const x=c.getContext('2d'); const s=Math.min(img.width,img.height); x.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,256,256); const p=getProfile(); p.photo=c.toDataURL('image/jpeg',0.85); saveProfile(p); updateAuthUI(); openProfile(); toast('Foto atualizada ✓'); }; img.src=r.result; };
+    r.readAsDataURL(f); };
+  inp.click();
+}
+function removeProfilePhoto(){ const p=getProfile(); delete p.photo; saveProfile(p); updateAuthUI(); openProfile(); }
+function saveProfileName(){ const v=($('#profName').value||'').trim(); const p=getProfile(); if(v) p.name=v; else delete p.name; saveProfile(p); updateAuthUI(); toast('Perfil atualizado ✓'); }
 function openProfile(){
   const u=currentUser(); if(!u){ openAuth('login'); return; }
   const pref=getThemePref();
   $('#authTitle').textContent='Meu perfil';
   $('#authBody').innerHTML=`
     <div class="prof-head">
-      <div class="prof-av">${(u.email[0]||'?').toUpperCase()}</div>
-      <div class="prof-id"><div class="prof-nm">${esc(u.email.split('@')[0])}</div><div class="prof-em">${esc(u.email)}</div></div>
+      <button class="prof-av prof-av-edit" onclick="pickProfilePhoto()" title="Trocar foto">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}<span class="prof-av-cam"><i class="fa-solid fa-camera"></i></span></button>
+      <div class="prof-id"><div class="prof-nm">${esc(profileName())}</div><div class="prof-em">${esc(u.email)}</div></div>
       <span class="chip ${isPremium()?'chip-gold':'chip-neu'}">${isPremium()?'Premium':'Gratuito'}</span>
+    </div>
+    <div class="prof-sec"><div class="prof-sec-t">Dados pessoais</div>
+      <label class="fld"><span>Nome de usuário</span><input id="profName" value="${esc(profileName())}" maxlength="32" placeholder="Seu nome"></label>
+      <label class="fld"><span>E-mail</span><input value="${esc(u.email)}" disabled></label>
+      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileName()"><i class="fa-solid fa-check"></i> Salvar</button>${profilePhoto()?`<button class="btn btn-ghost btn-sm" onclick="removeProfilePhoto()">Remover foto</button>`:''}</div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Conta</div>
       <div class="prof-row"><span><i class="fa-solid fa-crown"></i> Plano</span><b>${isPremium()?'Premium':'Gratuito'}</b></div>
@@ -2691,7 +2817,7 @@ function authLogout(){
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
-  ['lastro_carteira','lastro_watch','lastro_priv'].forEach(k=>localStorage.removeItem(k));
+  ['lastro_carteira','lastro_watch','lastro_priv','lastro_profile'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
   CARTEIRA = CARTEIRA_SEED.slice(); normLots();         // volta ao conteúdo de demonstração
   refreshPlanUI(); updateAuthUI(); applyPriv();
@@ -2711,6 +2837,7 @@ async function loadCloudState(){
       if(Array.isArray(d.watch)) localStorage.setItem('lastro_watch', JSON.stringify(d.watch));
       if(d.plan) localStorage.setItem('lastro_plan', d.plan);
       if(d.theme){ localStorage.setItem('lastro_theme', d.theme); applyTheme(false); }
+      if(d.profile && typeof d.profile==='object'){ localStorage.setItem('lastro_profile', JSON.stringify(d.profile)); }
       const pf=d.prefs||{};
       if([30,50,100].includes(+pf.pgsize)){ sessionStorage.setItem('lastro_pgsize', pf.pgsize); Object.keys(tableState).forEach(k=>tableState[k].pageSize=+pf.pgsize); }
       if(pf.chartType) homeChartType=pf.chartType;
@@ -2725,7 +2852,7 @@ function saveCloudState(){
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
   clearTimeout(_cloudT);
   return new Promise(res=>{ _cloudT=setTimeout(async()=>{
-    const data={ carteira:CARTEIRA, watch:watchlist(), plan:getPlan(), theme:getThemePref(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod } };
+    const data={ carteira:CARTEIRA, watch:watchlist(), plan:getPlan(), theme:getThemePref(), profile:getProfile(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod } };
     try{ await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data, updated_at:new Date().toISOString()})}); }catch(e){}
     res();
   }, 700); });
@@ -2913,7 +3040,7 @@ function moverRow(a){
   </div>`;
 }
 function greetingLabel(){
-  const u=currentUser(); const nome = u ? u.email.split('@')[0].replace(/[^a-zA-Zà-úÀ-Ú]+/g,' ').trim().split(' ')[0] : '';
+  const nome = isAuthed() ? (profileName()||'').replace(/[^a-zA-Zà-úÀ-Ú ]+/g,' ').trim().split(' ')[0] : '';
   const h=new Date().getHours();
   const g = h<12?'Bom dia': h<18?'Boa tarde':'Boa noite';
   return nome ? `${g}, ${nome.charAt(0).toUpperCase()+nome.slice(1)}` : g;
@@ -3061,7 +3188,10 @@ function viewPainel(){
   <div class="grid" style="grid-template-columns: 1.4fr 1fr;">
     <div class="card card-pad">
       <div class="card-head">
-        <div class="card-h"><span class="ico" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-chart-area"></i></span> Nasdaq</div>
+        <div class="ap-wrap">
+          <button class="card-h ap-trigger" onclick="toggleAssetPicker(event)"><span class="ico" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-chart-area"></i></span> <span id="homeAssetName">${homeAsset.nm}</span> <i class="fa-solid fa-chevron-down ap-cv"></i></button>
+          <div class="ap-panel" id="apPanel"></div>
+        </div>
         <div class="chart-ctrls">
           <button class="chart-toggle" id="homeTypeBtn" onclick="toggleHomeType()" title="Alternar Linha / Candles"></button>
           <div class="tf-wrap">
@@ -3802,28 +3932,70 @@ function viewAgenda(){
 /* ══════════════════════════════════════════════════════════
    VIEW: CARTEIRAS RECOMENDADAS
    ══════════════════════════════════════════════════════════ */
+let recFilter = 'Todas';
+const REC_CATS = ['Todas','Conservadora','Moderada','Arrojada','Dividendos','FIIs','Internacional','Aposentadoria'];
+function perfilCls(p){ return p==='Conservador'?'chip-up': p==='Moderado'?'chip-blue':'chip-gold'; }
+function recCard(c){
+  const ativos = c.ativos.slice(0,5).map(t=>`<span class="rec-tk">${t}</span>`).join('') + (c.ativos.length>5?`<span class="rec-tk rec-more">+${c.ativos.length-5}</span>`:'');
+  return `<div class="rec-card" onclick="openCarteira('${c.id}')">
+    <div class="rec-top">
+      <div class="rec-id"><div class="rec-nm">${c.nome}</div><div class="rec-tags"><span class="chip ${perfilCls(c.perfil)}">${c.perfil}</span> <span class="chip chip-neu">${c.cat}</span></div></div>
+      <div class="rec-ret"><div class="faint">retorno 12m</div><div class="mono up">+${pc(c.ret,1)}%</div></div>
+    </div>
+    <div class="rec-desc">${c.desc}</div>
+    <div class="rec-stats">
+      <div><span>DY médio</span><b class="mono" style="color:var(--brand)">${pc(c.dy,1)}%</b></div>
+      <div><span>Risco</span><b>${c.vol}</b></div>
+      <div><span>Ativos</span><b class="mono">${c.n}</b></div>
+    </div>
+    <div class="rec-tks">${ativos}</div>
+    <div class="rec-cta">Ver detalhes e composição <i class="fa-solid fa-arrow-right"></i></div>
+  </div>`;
+}
 function viewRecomendadas(){
-  const cards = RECOMENDADAS.map(c=>{
-    const perfilCls = c.perfil==='Conservador'?'chip-up': c.perfil==='Moderado'?'chip-blue':'chip-gold';
-    const ativos = c.ativos.map(t=>`<span class="seg seg-Papel" style="background:var(--surface-3);color:var(--ink-2)">${t}</span>`).join(' ');
-    return `<div class="card card-pad" style="display:flex;flex-direction:column;gap:0">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
-        <div><div style="font-family:var(--serif);font-size:19px;font-weight:500;letter-spacing:-.01em">${c.nome}</div><span class="chip ${perfilCls}" style="margin-top:6px">${c.perfil}</span></div>
-        <div style="text-align:right"><div class="faint" style="font-size:11px">retorno 12m</div><div class="mono up" style="font-size:18px;font-weight:600">+${pc(c.ret,1)}%</div></div>
-      </div>
-      <div style="font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:14px">${c.desc}</div>
-      <div style="display:flex;gap:18px;margin-bottom:14px">
-        <div><div class="faint" style="font-size:11px">DY médio</div><div class="mono" style="font-size:15px;font-weight:600;color:var(--brand)">${pc(c.dy,1)}%</div></div>
-        <div><div class="faint" style="font-size:11px">Ativos</div><div class="mono" style="font-size:15px;font-weight:600">${c.n}</div></div>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:auto">${ativos}</div>
-    </div>`;
-  }).join('');
+  const matches = c => recFilter==='Todas' || c.cat===recFilter || (recFilter==='Conservadora'&&c.perfil==='Conservador') || (recFilter==='Moderada'&&c.perfil==='Moderado') || (recFilter==='Arrojada'&&c.perfil==='Arrojado');
+  const list = RECOMENDADAS.filter(matches);
+  const chips = REC_CATS.map(cat=>`<button class="rec-chip ${cat===recFilter?'on':''}" onclick="setRecFilter('${cat}')">${cat}</button>`).join('');
   return `
   <div class="sec-title">Carteiras recomendadas</div>
-  <div class="sec-desc">Estratégias prontas montadas pela inteligência Lastro para diferentes perfis de investidor. Use como referência de alocação — não é recomendação personalizada de investimento.</div>
-  <div class="grid" style="grid-template-columns:1fr 1fr">${cards}</div>`;
+  <div class="sec-desc">Estratégias prontas montadas pela inteligência Lastro para diferentes perfis e objetivos. Referência de alocação — não é recomendação personalizada de investimento.</div>
+  <div class="rec-filters">${chips}</div>
+  <div class="rec-grid">${list.map(recCard).join('')||'<div class="search-empty">Nenhuma carteira nesta categoria.</div>'}</div>`;
 }
+function setRecFilter(c){ recFilter=c; render('recomendadas'); }
+/* detalhe da carteira recomendada (composição, estratégia, riscos, cenários) */
+function openCarteira(id){
+  const c = RECOMENDADAS.find(x=>x.id===id); if(!c) return;
+  const w = 100/c.ativos.length;
+  const comp = c.ativos.map((t,i)=>({ n:t, v:1/c.ativos.length, p:pc(w,1)+'%', c:['#0E7C5A','#2563EB','#8B4FB8','#A87C2A','#0EA5A0','#E2761B','#5B7CFA','#16A34A'][i%8] }));
+  window._RECCOMP = comp;
+  const ativosRows = c.ativos.map((t,i)=>{ const lk=assetLookup(t); const a=lk?lk.a:null, k=lk?lk.k:'acoes';
+    return `<div class="rc-asset" onclick="closeCarteira();quickView('${t}')">${assetLogo(t,k,'sm')}<div class="rc-a-id"><div class="rc-a-tk">${t}</div><div class="rc-a-nm">${esc(a?(a.nm||''):'')}</div></div><span class="rc-a-w mono">${pc(w,1)}%</span></div>`; }).join('');
+  $('#carTitle').textContent = c.nome;
+  $('#carBody').innerHTML = `
+    <div class="rc-head"><span class="chip ${perfilCls(c.perfil)}">${c.perfil}</span> <span class="chip chip-neu">${c.cat}</span></div>
+    <div class="rc-kpis">
+      <div class="rc-kpi"><div class="l">Retorno 12m</div><div class="v up mono">+${pc(c.ret,1)}%</div></div>
+      <div class="rc-kpi"><div class="l">DY médio</div><div class="v mono" style="color:var(--brand)">${pc(c.dy,1)}%</div></div>
+      <div class="rc-kpi"><div class="l">Risco</div><div class="v">${c.vol}</div></div>
+      <div class="rc-kpi"><div class="l">Ativos</div><div class="v mono">${c.n}</div></div>
+    </div>
+    <div class="rc-sec"><div class="rc-sec-t">Objetivo</div><p>${c.objetivo}</p></div>
+    <div class="dt-grid" style="margin-top:4px">
+      <div class="rc-sec"><div class="rc-sec-t">Composição</div><div class="donut-wrap" style="height:200px"><canvas id="recCompChart"></canvas></div></div>
+      <div class="rc-sec"><div class="rc-sec-t">Ativos · peso</div><div class="rc-assets">${ativosRows}</div></div>
+    </div>
+    <div class="rc-sec"><div class="rc-sec-t">Estratégia</div><p>${c.estrategia}</p></div>
+    <div class="rc-sec"><div class="rc-sec-t">Riscos</div><ul class="rc-risks">${c.riscos.map(r=>`<li><i class="fa-solid fa-triangle-exclamation"></i> ${r}</li>`).join('')}</ul></div>
+    <div class="dt-grid">
+      <div class="rc-scen up"><div class="rc-scen-t"><i class="fa-solid fa-arrow-trend-up"></i> Cenário favorável</div><p>${c.bull}</p></div>
+      <div class="rc-scen down"><div class="rc-scen-t"><i class="fa-solid fa-arrow-trend-down"></i> Cenário desfavorável</div><p>${c.bear}</p></div>
+    </div>
+    <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Retornos e composição ilustrativos, para fins educacionais. Não constitui recomendação personalizada.</div>`;
+  $('#carModal').classList.add('open');
+  setTimeout(()=>{ charts.recComp=donutChart('recCompChart', window._RECCOMP); }, 50);
+}
+function closeCarteira(){ $('#carModal').classList.remove('open'); if(charts.recComp){ try{charts.recComp.destroy()}catch(e){} delete charts.recComp; } }
 
 /* ══════════════════════════════════════════════════════════
    VIEW: NOTÍCIAS
@@ -4032,11 +4204,21 @@ function cssVar(n){ return getComputedStyle(document.documentElement).getPropert
 /* timeframes da Home: rótulo → nº de candles (mais candles = mais contexto) */
 const HOME_TF = [['1D',30],['5D',40],['1M',24],['6M',28],['1A',52],['5A',60],['Máx',120]];
 let homeChartPeriod='1M', homeChartType='candle';
-const kfmt = v => (v/1000).toFixed(1).replace('.',',')+'k';   // ex.: 19,8k / 168,6k (evita "20k" repetido)
-/* série sintética determinística do índice para o timeframe (fechamentos + rótulos) */
+/* ativos disponíveis no gráfico principal (índices + tickers) */
+const HOME_ASSETS = [
+  {k:'NASDAQ', nm:'Nasdaq', base:20485}, {k:'SP500', nm:'S&P 500', base:5430},
+  {k:'IBOV', nm:'Ibovespa', base:168619}, {k:'IFIX', nm:'IFIX', base:3777},
+  {k:'PETR4', nm:'PETR4', tk:'PETR4'}, {k:'VALE3', nm:'VALE3', tk:'VALE3'},
+  {k:'AAPL34', nm:'Apple', tk:'AAPL34'}, {k:'NVDC34', nm:'NVIDIA', tk:'NVDC34'},
+  {k:'BTC', nm:'Bitcoin', tk:'BTC'}, {k:'ETH', nm:'Ethereum', tk:'ETH'},
+];
+function resolveHomeAsset(a){ if(a.tk){ const lk=assetLookup(a.tk); return {k:a.k, nm:a.nm, base:(lk&&lk.a.px)||100, price:true}; } return {k:a.k, nm:a.nm, base:a.base, price:false}; }
+let homeAsset = resolveHomeAsset(HOME_ASSETS[0]);
+const kfmt = v => homeAsset.price ? (v>=1000 ? (v/1000).toFixed(1).replace('.',',')+'k' : brl(v)) : (v/1000).toFixed(1).replace('.',',')+'k';
+/* série sintética determinística do ativo para o timeframe (fechamentos + rótulos) */
 function indexSeries(period){
   const tf=HOME_TF.find(t=>t[0]===period)||HOME_TF[2]; const n=tf[1];
-  const d=genSeries('NQ'+period, 20485, n, period==='1D'?0.006:0.013);
+  const d=genSeries(homeAsset.k+period, homeAsset.base, n, period==='1D'?0.006:0.013);
   const now=new Date(); const step = period==='1D'?0 : period==='5D'?1 : period==='1M'?1 : period==='6M'?7 : period==='1A'?7 : period==='5A'?30 : 30;
   const l=[]; for(let i=n-1;i>=0;i--){ if(period==='1D'){ l.push((10+Math.floor((n-1-i)/2.6))+'h'); } else { const dt=new Date(now); dt.setDate(now.getDate()-i*step); l.push(`${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`); } }
   return {l,d};
@@ -4067,7 +4249,7 @@ function renderHomeChart(){
     y:{ position:'right', min:lo-pad, max:hi+pad, grid:{color:cssVar('--line')}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxTicksLimit:6, callback:v=>kfmt(v) }, border:{display:false} }
   };
   if(homeChartType==='candle'){
-    const ohlc=ohlcFrom(p.d, 'nq'+homeChartPeriod);
+    const ohlc=ohlcFrom(p.d, homeAsset.k+homeChartPeriod);
     const upc=cssVar('--up')||'#0E7C5A', downc=cssVar('--down')||'#D14343';
     const colors=ohlc.map(x=> x.c>=x.o?upc:downc);
     charts.ibov=new Chart(ctx,{ data:{ labels:p.l, datasets:[
@@ -4097,7 +4279,12 @@ function setIbov(p){
 }
 function toggleTfPanel(){ const p=$('#tfPanel'); if(p) p.classList.toggle('open'); }
 function toggleHomeType(){ homeChartType = homeChartType==='candle' ? 'line' : 'candle'; renderHomeChart(); }
-document.addEventListener('click', e=>{ if(!e.target.closest('.tf-wrap')){ const p=$('#tfPanel'); if(p) p.classList.remove('open'); } });
+function toggleAssetPicker(e){ if(e) e.stopPropagation(); const p=$('#apPanel'); if(!p) return; if(p.classList.contains('open')){ p.classList.remove('open'); return; }
+  p.innerHTML = HOME_ASSETS.map(a=>`<button class="${a.k===homeAsset.k?'on':''}" onclick="setHomeAsset('${a.k}')">${a.nm}</button>`).join('');
+  p.classList.add('open');
+}
+function setHomeAsset(k){ const a=HOME_ASSETS.find(x=>x.k===k); if(!a) return; homeAsset=resolveHomeAsset(a); const n=$('#homeAssetName'); if(n) n.textContent=homeAsset.nm; const p=$('#apPanel'); if(p) p.classList.remove('open'); renderHomeChart(); }
+document.addEventListener('click', e=>{ if(!e.target.closest('.tf-wrap')){ const p=$('#tfPanel'); if(p) p.classList.remove('open'); } if(!e.target.closest('.ap-wrap')){ const p=$('#apPanel'); if(p) p.classList.remove('open'); } });
 
 /* Alloc chart */
 const ALLOC_COLORS = ['#0E7C5A','#2563EB','#8B4FB8','#A87C2A','#D14343','#0EA5A0','#E2761B','#5B7CFA','#16A34A','#B45309'];
