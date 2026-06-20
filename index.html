@@ -394,20 +394,21 @@ body.view-inicio .topbar-brand { display:flex; }
 .acct-theme-btns button.on { background:var(--surface); color:var(--gold); box-shadow:var(--sh-sm); }
 .acct-login { width:100%; justify-content:center; margin:4px 2px 2px; }
 /* paginação da lista de ativos */
-.pager { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
-.pg-info { font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:8px; }
-.pg-sel { height:34px; padding:0 30px 0 12px; font-size:12.5px; font-weight:600; border-radius:9px; }
-.pg-nav { display:flex; align-items:center; gap:6px; }
-.pg-btn { min-width:38px; height:38px; padding:0 11px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; cursor:pointer; transition:all .14s var(--ease); }
-.pg-btn:hover:not(:disabled) { border-color:var(--line-2); color:var(--ink); }
-.pg-btn.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
-.pg-btn:disabled { opacity:.4; cursor:not-allowed; }
+.pager { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+.pg-info { font-size:12px; color:var(--ink-4); display:inline-flex; align-items:center; gap:10px; }
+.pg-info .pg-range { color:var(--ink-3); font-variant-numeric:tabular-nums; }
+.pg-sel { appearance:none; -webkit-appearance:none; height:32px; padding:0 28px 0 12px; font-size:12.5px; font-weight:600; color:var(--ink-2); border:1px solid var(--line); border-radius:999px; background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238A93A0' stroke-width='3' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 11px center; cursor:pointer; transition:border-color .14s var(--ease); }
+.pg-sel:hover { border-color:var(--line-2); color:var(--ink); }
+.pg-nav { display:inline-flex; align-items:center; gap:4px; background:var(--surface-3); padding:4px; border-radius:12px; }
+.pg-btn { min-width:34px; height:34px; padding:0 10px; border-radius:9px; background:transparent; color:var(--ink-2); font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; cursor:pointer; transition:all .14s var(--ease); }
+.pg-btn:hover:not(:disabled) { background:var(--surface); color:var(--ink); }
+.pg-btn.on { background:var(--ink); color:var(--canvas); box-shadow:var(--sh-sm); }
+.pg-btn:disabled { opacity:.35; cursor:not-allowed; }
 .pg-arrow { color:var(--ink-3); }
-.pg-ell { color:var(--ink-4); padding:0 2px; }
+.pg-ell { color:var(--ink-4); padding:0 2px; align-self:center; }
 @media (max-width:640px){
-  .pager { justify-content:center; }
-  .pg-nav { width:100%; justify-content:center; }
-  .pg-btn { min-width:42px; height:42px; }
+  .pager { justify-content:space-between; }
+  .pg-btn { min-width:38px; height:38px; }
 }
 /* feedback visual do swipe-back (mobile) */
 .swipe-hint { position:fixed; top:50%; left:0; transform:translateY(-50%) translateX(-44px); width:40px; height:40px; border-radius:50%; background:var(--surface); box-shadow:var(--sh-lg); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--brand); z-index:120; opacity:0; pointer-events:none; }
@@ -649,9 +650,10 @@ img, svg, canvas, video { max-width: 100%; }
   #dataTbl { width: 100% !important; min-width: 0 !important; table-layout: fixed; }
   #dataTbl th:nth-child(n+4), #dataTbl td:nth-child(n+4) { display: none; }
   #dataTbl th, #dataTbl td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 8px; padding-right: 8px; }
-  #dataTbl th:first-child, #dataTbl td:first-child { position: static; width: 46%; }
-  #dataTbl th:nth-child(2), #dataTbl td:nth-child(2) { width: 30%; }
-  #dataTbl th:nth-child(3), #dataTbl td:nth-child(3) { width: 24%; }
+  #dataTbl th:first-child, #dataTbl td:first-child { position: static; width: 42%; }
+  #dataTbl th:nth-child(2), #dataTbl td:nth-child(2) { width: 26%; }
+  /* Cotação: NUNCA truncar — largura suficiente e sem reticências */
+  #dataTbl th:nth-child(3), #dataTbl td:nth-child(3) { width: 32%; overflow: visible; text-overflow: clip; font-size: 12.5px; padding-left: 4px; }
   #dataTbl .td-asset { gap: 9px; min-width: 0; }
   #dataTbl .td-asset .nm { min-width: 0; overflow: hidden; }
   #dataTbl .td-asset .tk { font-size: 13.5px; }
@@ -728,17 +730,6 @@ img, svg, canvas, video { max-width: 100%; }
         <div class="uc-top"><i class="fa-solid fa-crown"></i> Seja Premium</div>
         <div class="uc-sub">Análises, alertas e rastreador completos</div>
       </button>
-      <button class="theme-toggle" onclick="toggleTheme()">
-        <i class="fa-solid fa-moon" id="themeIcon"></i><span id="themeLabel">Modo escuro</span>
-      </button>
-      <div class="user-chip" onclick="accountClick()" style="cursor:pointer">
-        <div class="avatar">+</div>
-        <div class="user-meta">
-          <div class="nm">Entrar ou criar conta</div>
-          <div class="pl">Sincronize seus dados</div>
-        </div>
-        <i class="fa-solid fa-chevron-right" style="margin-left:auto;color:var(--ink-4);font-size:11px"></i>
-      </div>
     </div>
   </aside>
 
@@ -815,6 +806,17 @@ img, svg, canvas, video { max-width: 100%; }
 </div>
 
 <!-- ════════ HISTÓRICO DE INDICADORES ════════ -->
+<div class="modal-scrim" id="cropModal" onclick="if(event.target===this)closeCropper()">
+  <div class="modal-card" role="dialog" aria-label="Ajustar foto" style="width:340px">
+    <div class="modal-head"><span>Ajustar foto</span><button class="drawer-close" onclick="closeCropper()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="crop-stage"><canvas id="cropCanvas" width="256" height="256"></canvas><div class="crop-ring"></div></div>
+      <div class="crop-zoom"><i class="fa-solid fa-magnifying-glass-minus"></i><input id="cropZoom" type="range" min="1" max="3" step="0.01" value="1" oninput="cropZoom(this.value)"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+      <div class="crop-hint">Arraste para posicionar · use o controle para o zoom</div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeCropper()">Cancelar</button><button class="btn btn-primary" onclick="saveCrop()"><i class="fa-solid fa-check"></i> Salvar foto</button></div>
+  </div>
+</div>
 <div class="modal-scrim" id="carModal" onclick="if(event.target===this)closeCarteira()">
   <div class="modal-card hist-card" role="dialog" aria-label="Carteira recomendada">
     <div class="modal-head"><span><i class="fa-solid fa-star" style="color:var(--gold);margin-right:8px"></i><span id="carTitle">Carteira</span></span><button class="drawer-close" onclick="closeCarteira()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
@@ -1503,7 +1505,8 @@ table.tbl tbody tr.no-hover td { border:none; }
 .row-act.danger:hover { color:var(--down); border-color:var(--down); background:var(--down-l); }
 
 /* modal genérico (posição) */
-.modal-scrim { position:fixed; inset:0; z-index:260; background:rgba(15,20,25,.45); backdrop-filter:blur(3px); display:none; align-items:flex-start; justify-content:center; padding-top:12vh; }
+.modal-scrim { position:fixed; inset:0; z-index:260; background:rgba(10,14,19,.55); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; padding:20px; }
+.modal-scrim .modal-card { margin:auto; max-height:calc(100vh - 40px); overflow-y:auto; }
 .modal-scrim.open { display:flex; animation:fadeIn .2s var(--ease); }
 .modal-card { width:440px; max-width:94vw; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-lg); box-shadow:var(--sh-xl); overflow:hidden; animation:panelIn .28s var(--ease-out); }
 .modal-head { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--line); font-size:15px; font-weight:600; }
@@ -1649,8 +1652,6 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .pt-lock .pw-t { font-size:15.5px; } .pt-lock .pw-s { margin:7px 0 16px; font-size:12.5px; }
 /* abas de autenticação */
 /* modais centralizados vertical e horizontalmente */
-#authModal, #posModal, #indModal { align-items:center; padding-top:0; padding-bottom:0; }
-#authModal .modal-card, #posModal .modal-card, #indModal .modal-card { margin:auto; }
 /* trava o scroll do fundo quando qualquer camada está aberta */
 body:has(.modal-scrim.open), body:has(.search-modal.open), body.nav-open { overflow:hidden; }
 html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
@@ -1673,6 +1674,14 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .hdr-profile.has-av .av-img { width:100%; height:100%; }
 .acct-head .avatar { overflow:hidden; }
 .prof-actions { display:flex; gap:8px; margin-top:12px; }
+/* cropper de foto */
+.crop-stage { position:relative; width:256px; max-width:100%; aspect-ratio:1; margin:0 auto 16px; border-radius:14px; overflow:hidden; background:#0a0e13; touch-action:none; }
+.crop-stage canvas { width:100%; height:100%; display:block; cursor:grab; }
+.crop-stage canvas:active { cursor:grabbing; }
+.crop-ring { position:absolute; inset:0; pointer-events:none; box-shadow:0 0 0 9999px rgba(10,14,19,.45); border-radius:50%; }
+.crop-zoom { display:flex; align-items:center; gap:12px; color:var(--ink-3); }
+.crop-zoom input[type=range] { flex:1; }
+.crop-hint { font-size:11.5px; color:var(--ink-4); text-align:center; margin-top:10px; }
 .prof-id { flex:1; min-width:0; } .prof-nm { font-weight:600; font-size:15px; } .prof-em { font-size:12px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .prof-sec { padding:14px 0; border-bottom:1px solid var(--line); }
 .prof-sec-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:10px; }
@@ -2704,15 +2713,53 @@ function saveProfile(p){ localStorage.setItem('lastro_profile', JSON.stringify(p
 function profileName(){ const u=currentUser(); const p=getProfile(); return p.name || (u?u.email.split('@')[0]:''); }
 function profilePhoto(){ return getProfile().photo || ''; }
 function avatarInner(letter){ const ph=profilePhoto(); return ph ? `<img class="av-img" src="${ph}" alt="">` : esc(letter||'?'); }
+let _crop=null;
 function pickProfilePhoto(){
   const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
   inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(!f) return; const r=new FileReader();
-    r.onload=()=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement('canvas'); c.width=c.height=256; const x=c.getContext('2d'); const s=Math.min(img.width,img.height); x.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,256,256); const p=getProfile(); p.photo=c.toDataURL('image/jpeg',0.85); saveProfile(p); updateAuthUI(); openProfile(); toast('Foto atualizada ✓'); }; img.src=r.result; };
+    r.onload=()=>{ const img=new Image(); img.onload=()=>openCropper(img); img.src=r.result; };
     r.readAsDataURL(f); };
   inp.click();
 }
+function openCropper(img){
+  const S=256, base=S/Math.min(img.width,img.height);
+  _crop={img, base, scale:1, x:0, y:0};
+  $('#cropZoom').value=1;
+  drawCrop(); $('#cropModal').classList.add('open');
+  setTimeout(bindCropDrag, 30);
+}
+function drawCrop(){ if(!_crop) return; const cv=$('#cropCanvas'), ctx=cv.getContext('2d'), S=256; const {img,base,scale,x,y}=_crop;
+  const dw=img.width*base*scale, dh=img.height*base*scale;
+  ctx.clearRect(0,0,S,S); ctx.fillStyle='#0a0e13'; ctx.fillRect(0,0,S,S);
+  ctx.drawImage(img, (S-dw)/2+x, (S-dh)/2+y, dw, dh);
+}
+function cropZoom(v){ if(!_crop) return; _crop.scale=+v; drawCrop(); }
+function bindCropDrag(){ const cv=$('#cropCanvas'); if(!cv||cv._bound) return; cv._bound=1; let dragging=false, px=0, py=0;
+  const rectScale=()=>256/cv.getBoundingClientRect().width;
+  const down=e=>{ dragging=true; const t=e.touches?e.touches[0]:e; px=t.clientX; py=t.clientY; };
+  const move=e=>{ if(!dragging) return; e.preventDefault(); const t=e.touches?e.touches[0]:e; const k=rectScale(); _crop.x+=(t.clientX-px)*k; _crop.y+=(t.clientY-py)*k; px=t.clientX; py=t.clientY; drawCrop(); };
+  const up=()=>{ dragging=false; };
+  cv.addEventListener('mousedown',down); window.addEventListener('mousemove',move); window.addEventListener('mouseup',up);
+  cv.addEventListener('touchstart',down,{passive:false}); cv.addEventListener('touchmove',move,{passive:false}); cv.addEventListener('touchend',up);
+}
+function closeCropper(){ $('#cropModal').classList.remove('open'); }
+function saveCrop(){ if(!_crop) return; const data=$('#cropCanvas').toDataURL('image/jpeg',0.85); const p=getProfile(); p.photo=data; saveProfile(p); closeCropper(); updateAuthUI(); openProfile(); toast('Foto atualizada ✓'); }
 function removeProfilePhoto(){ const p=getProfile(); delete p.photo; saveProfile(p); updateAuthUI(); openProfile(); }
-function saveProfileName(){ const v=($('#profName').value||'').trim(); const p=getProfile(); if(v) p.name=v; else delete p.name; saveProfile(p); updateAuthUI(); toast('Perfil atualizado ✓'); }
+async function saveProfileName(){
+  const v=($('#profName').value||'').trim(); const p=getProfile(); if(v) p.name=v; else delete p.name; saveProfile(p);
+  const msg=$('#profMsg'); const u=currentUser(); const newEmail=($('#profEmail')&&$('#profEmail').value||'').trim().toLowerCase();
+  if(u && newEmail && newEmail!==u.email){
+    if(!/.+@.+\..+/.test(newEmail)){ if(msg) msg.textContent='E-mail inválido.'; return; }
+    const c=_sb(), s=getSession();
+    if(c.SUPABASE_URL && s){
+      try{ const r=await fetch(`${c.SUPABASE_URL}/auth/v1/user`, {method:'PUT', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json'}, body:JSON.stringify({email:newEmail})});
+        if(r.ok){ if(msg){ msg.style.color='var(--ink-3)'; msg.textContent='Enviamos um link para confirmar o novo e-mail.'; } }
+        else { const d=await r.json().catch(()=>({})); if(msg) msg.textContent=d.msg||d.error_description||'Não foi possível alterar o e-mail.'; }
+      }catch(e){ if(msg) msg.textContent='Sem conexão para alterar o e-mail.'; }
+    }
+  }
+  updateAuthUI(); toast('Perfil atualizado ✓');
+}
 function openProfile(){
   const u=currentUser(); if(!u){ openAuth('login'); return; }
   const pref=getThemePref();
@@ -2725,13 +2772,9 @@ function openProfile(){
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Dados pessoais</div>
       <label class="fld"><span>Nome de usuário</span><input id="profName" value="${esc(profileName())}" maxlength="32" placeholder="Seu nome"></label>
-      <label class="fld"><span>E-mail</span><input value="${esc(u.email)}" disabled></label>
+      <label class="fld"><span>E-mail</span><input id="profEmail" type="email" value="${esc(u.email)}" placeholder="voce@email.com"></label>
       <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileName()"><i class="fa-solid fa-check"></i> Salvar</button>${profilePhoto()?`<button class="btn btn-ghost btn-sm" onclick="removeProfilePhoto()">Remover foto</button>`:''}</div>
-    </div>
-    <div class="prof-sec"><div class="prof-sec-t">Conta</div>
-      <div class="prof-row"><span><i class="fa-solid fa-crown"></i> Plano</span><b>${isPremium()?'Premium':'Gratuito'}</b></div>
-      <div class="prof-row"><span><i class="fa-regular fa-calendar"></i> Próxima cobrança</span><b>${isPremium()?'—':'sem cobrança'}</b></div>
-      <button class="btn btn-ghost prof-btn" onclick="closeAuth();goPricing()"><i class="fa-solid fa-sliders"></i> Gerenciar assinatura</button>
+      <div id="profMsg" class="fld-err" style="margin-top:4px"></div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Preferências</div>
       <div class="prof-row"><span><i class="fa-solid fa-circle-half-stroke"></i> Tema</span>
@@ -3406,7 +3449,7 @@ function pagerHTML(kind, page, pages, total, ps, start, shown){
   const nums = pageWindow(page,pages).map(p=> p==='…'?'<span class="pg-ell">…</span>': btn(p, p, p===page?'on':'')).join('');
   const nav = pages>1 ? `<div class="pg-nav">${btn(page>1?page-1:0,'<i class="fa-solid fa-chevron-left"></i>','pg-arrow')}${nums}${btn(page<pages?page+1:0,'<i class="fa-solid fa-chevron-right"></i>','pg-arrow')}</div>` : '';
   return `<div class="pager">
-    <div class="pg-info">${start+1}–${start+shown} de ${total} · <select class="sel pg-sel" onchange="setPageSize('${kind}',this.value)">${[30,50,100].map(n=>`<option value="${n}" ${n===ps?'selected':''}>${n}/pág.</option>`).join('')}</select></div>
+    <div class="pg-info"><span class="pg-range">${start+1}–${start+shown}</span> de ${total} <select class="pg-sel" onchange="setPageSize('${kind}',this.value)">${[30,50,100].map(n=>`<option value="${n}" ${n===ps?'selected':''}>${n} / pág.</option>`).join('')}</select></div>
     ${nav}
   </div>`;
 }
@@ -5646,9 +5689,10 @@ function setThemePref(p){ if(!THEME_SEQ.includes(p)) p='auto'; localStorage.setI
 function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SEQ.indexOf(cur)+1)%THEME_SEQ.length]; setThemePref(next); toast(next==='auto'?'Tema: Automático':next==='dark'?'Tema: Escuro':'Tema: Claro'); }
 // segue o sistema em tempo real quando em "automático"
 (function(){ const mq=matchMedia('(prefers-color-scheme: dark)'); const fn=()=>{ if(getThemePref()==='auto') applyTheme(true); }; if(mq.addEventListener) mq.addEventListener('change', fn); else if(mq.addListener) mq.addListener(fn);
-  // iOS/PWA: ao trocar o tema do sistema com o app em segundo plano, o evento não dispara — reaplica ao voltar
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && getThemePref()==='auto') applyTheme(true); });
   window.addEventListener('focus', ()=>{ if(getThemePref()==='auto') applyTheme(true); });
+  // iOS/PWA standalone às vezes NÃO dispara o evento de mudança de tema — polling leve garante atualização em tempo real
+  setInterval(()=>{ if(getThemePref()!=='auto') return; const sysDark=matchMedia('(prefers-color-scheme: dark)').matches; const curDark=document.documentElement.getAttribute('data-theme')==='dark'; if(sysDark!==curDark) applyTheme(true); }, 1200);
 })();
 
 document.addEventListener('keydown', e=>{
