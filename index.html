@@ -636,6 +636,11 @@ img, svg, canvas, video { max-width: 100%; }
 /* mobile: tabela rola na horizontal (1ª coluna fixa); colunas extras via scroll */
 @media (max-width: 560px) {
   table.tbl .td-asset .ds { max-width: 140px; }
+  /* listas de ativos: padrão único no mobile = Ativo · Setor · Cotação (sem rolagem) */
+  #dataTbl { width: 100%; min-width: 0; }
+  #dataTbl th:nth-child(n+4), #dataTbl td:nth-child(n+4) { display: none; }
+  #dataTbl th:first-child, #dataTbl td:first-child { position: static; }
+  #dataTbl .td-asset .ds { max-width: 110px; }
 }
 @media (max-width: 460px) {
   .content { padding: 15px 15px 20px; }
@@ -1623,8 +1628,11 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .pt-lock .pw-t { font-size:15.5px; } .pt-lock .pw-s { margin:7px 0 16px; font-size:12.5px; }
 /* abas de autenticação */
 /* modais centralizados vertical e horizontalmente */
-#authModal, #posModal { align-items:center; padding-top:0; padding-bottom:0; }
-#authModal .modal-card, #posModal .modal-card { margin:auto; }
+#authModal, #posModal, #indModal { align-items:center; padding-top:0; padding-bottom:0; }
+#authModal .modal-card, #posModal .modal-card, #indModal .modal-card { margin:auto; }
+/* trava o scroll do fundo quando qualquer camada está aberta */
+body:has(.modal-scrim.open), body:has(.search-modal.open), body.nav-open { overflow:hidden; }
+html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .modal-scrim { background:rgba(10,14,19,.55) !important; backdrop-filter:blur(5px); }
 /* diálogo de confirmação */
 .confirm-card { width:380px; max-width:92vw; padding:24px 24px 20px; text-align:center; }
@@ -1861,6 +1869,10 @@ body.priv .priv-blur { filter:blur(9px); user-select:none; pointer-events:none; 
 }
 
 /* ════ HOME: hero de mercado, destaques e carteira compacta ════ */
+.hero-greet { display:flex; align-items:center; gap:11px; margin-bottom:18px; }
+.hero-greet-ic { width:38px; height:38px; flex:none; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--gold); background:linear-gradient(150deg,var(--gold-l),transparent); }
+.hero-greet-t { font-size:15px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
+.hero-greet-d { font-size:12px; color:var(--ink-3); text-transform:capitalize; margin-top:1px; }
 .hero-mkt-lbl { font-size:13px; color:var(--ink-3); font-weight:500; margin-bottom:4px; }
 .hero-pts { font-family:var(--sans); font-size:20px; font-weight:500; color:var(--ink-3); margin-left:6px; align-self:center; }
 .btn-sm { padding:7px 13px; font-size:12.5px; }
@@ -2141,6 +2153,19 @@ function groupPayments(g){
 }
 /* extrato consolidado de proventos da carteira */
 function provPayments(){ const out=[]; portfolioByTicker().forEach(g=>{ (g.pays||groupPayments(g)).forEach(p=>out.push(p)); }); out.sort((a,b)=>b.date-a.date); return out; }
+/* próximos proventos da CARTEIRA do usuário (estimado) */
+function upcomingProventos(){
+  const now=new Date(), out=[];
+  portfolioByTicker().forEach(g=>{
+    const a=g.f.a,k=g.f.k, base=provPerCota(k,a); if(base<=0||!g.cotas) return;
+    const day=provPayDay(g.tk);
+    let d=new Date(now.getFullYear(), now.getMonth(), day);
+    if(d < now) d=new Date(now.getFullYear(), now.getMonth()+1, day);
+    const perCota=provPerCotaMonth(g.tk, base, d.getFullYear(), d.getMonth());
+    out.push({ tk:g.tk, date:d, cotas:g.cotas, total:perCota*g.cotas, tipo:k==='fiis'?'Rendimento':'Dividendo' });
+  });
+  return out.sort((a,b)=>a.date-b.date).slice(0,6);
+}
 function portfolioByTicker(){
   const map=new Map();
   CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(!f) return;
@@ -2592,6 +2617,7 @@ function upsell(){ toast('Recurso Premium — faça upgrade para desbloquear'); 
 
 /* mock de assinatura (billing real entra depois) */
 function subscribePremium(){
+  if(!isAuthed()){ toast('Entre na sua conta para assinar'); closePosModal(); openAuth('login'); return; }   // bloqueia assinatura sem login
   setPlan('premium');
   toast('Bem-vindo ao Premium 👑');
   goPricing();
@@ -2773,6 +2799,12 @@ document.addEventListener('click', e=>{
 });
 document.addEventListener('mouseover', e=>{ if(!matchMedia('(hover:hover)').matches) return; const t=e.target.closest('[data-tip]'); if(t) showTip(t); });
 document.addEventListener('mouseout', e=>{ if(!matchMedia('(hover:hover)').matches) return; const t=e.target.closest('[data-tip]'); if(t) hideTip(); });
+/* iOS: impede a rolagem do fundo quando há modal/sidebar aberta (interação só na camada ativa) */
+document.addEventListener('touchmove', e=>{
+  const open = document.querySelector('.modal-scrim.open, .search-modal.open') || document.body.classList.contains('nav-open');
+  if(!open) return;
+  if(!e.target.closest('.modal-card, .search-panel, .sidebar, .tipcard, .tip.sheet, .acct-menu')) e.preventDefault();
+}, {passive:false});
 window.addEventListener('scroll', hideTip, {passive:true});
 window.addEventListener('resize', hideTip);
 
@@ -2843,11 +2875,13 @@ function moverRow(a){
   </div>`;
 }
 function greetingLabel(){
+  const u=currentUser(); const nome = u ? u.email.split('@')[0].replace(/[^a-zA-Zà-úÀ-Ú]+/g,' ').trim().split(' ')[0] : '';
   const h=new Date().getHours();
   const g = h<12?'Bom dia': h<18?'Boa tarde':'Boa noite';
-  const dd=new Date().toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'long'});
-  return `${g} · ${dd}`;
+  return nome ? `${g}, ${nome.charAt(0).toUpperCase()+nome.slice(1)}` : g;
 }
+function greetingIcon(){ const h=new Date().getHours(); return h<6?'fa-moon': h<12?'fa-mug-hot': h<18?'fa-sun':'fa-moon'; }
+function todayLabel(){ return new Date().toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'long'}); }
 function topOpportunities(n=4){
   const pool=[...ACOES.map(a=>({a,k:'acoes'})), ...FIIS.map(a=>({a,k:'fiis'}))].filter(o=>typeof o.a.score==='number' && o.a.px>0);
   return pool.sort((x,y)=>y.a.score-x.a.score).slice(0,n);
@@ -2906,12 +2940,15 @@ function viewPainel(){
     </div>`;
   }).join('');
 
-  const timeline = DIVIDENDS.map(d=>`
-    <div class="tl-item">
-      <div class="tl-date"><div class="d">${d.d}</div><div class="m">${d.m}</div></div>
-      <div class="tl-info"><div class="tk">${d.tk}</div><div class="ds">${d.ds}</div></div>
-      <div class="tl-val"><div class="v">${d.v}</div><div class="t">${d.t}</div></div>
-    </div>`).join('');
+  const upc = upcomingProventos();
+  const totalUpc = upc.reduce((s,x)=>s+x.total,0);
+  const MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const timeline = upc.length ? upc.map(x=>`
+    <div class="tl-item" onclick="quickView('${x.tk}')">
+      <div class="tl-date"><div class="d">${String(x.date.getDate()).padStart(2,'0')}</div><div class="m">${MES[x.date.getMonth()]}</div></div>
+      <div class="tl-info"><div class="tk">${x.tk}</div><div class="ds">${x.tipo} · ${x.cotas} cota${x.cotas!==1?'s':''}</div></div>
+      <div class="tl-val"><div class="v priv-blur">${brl(x.total)}</div><div class="t">estimado</div></div>
+    </div>`).join('') : `<div class="tl-empty">${emptyState('fa-regular fa-calendar-check','Sem proventos previstos','Você não possui proventos previstos para os próximos dias. Adicione ativos pagadores de dividendos à carteira.')}</div>`;
 
   const altasRows = topMovers('up').map(moverRow).join('') || '<div class="drawer-empty" style="padding:14px 0">Carregando mercado…</div>';
   const baixasRows = topMovers('down').map(moverRow).join('') || '<div class="drawer-empty" style="padding:14px 0">Carregando mercado…</div>';
@@ -2941,7 +2978,10 @@ function viewPainel(){
   return `
   <div class="hero">
     <div class="hero-main hero-mkt clickable" onclick="cycleHero()" title="Toque para alternar Ibovespa / Nasdaq">
-      <div class="hero-eyebrow"><i class="fa-solid fa-tower-broadcast" style="color:var(--brand)"></i> ${greetingLabel()}</div>
+      <div class="hero-greet">
+        <span class="hero-greet-ic"><i class="fa-solid ${greetingIcon()}"></i></span>
+        <div><div class="hero-greet-t">${greetingLabel()}</div><div class="hero-greet-d">${todayLabel()}</div></div>
+      </div>
       <div class="hero-mkt-head">
         <div class="hero-mkt-lbl" id="heroIdxLbl">${ib.nm}</div>
       </div>
@@ -2998,7 +3038,7 @@ function viewPainel(){
     <div class="card card-pad">
       <div class="card-head">
         <div class="card-h"><span class="ico"><i class="fa-regular fa-calendar"></i></span> Próximos proventos</div>
-        <span class="chip chip-up">${brl(DIVIDENDS.reduce((s,d)=>s+parseFloat(d.t.split('R$ ')[1].replace('.','').replace(',','.')),0))}</span>
+        ${upc.length?`<span class="chip chip-up priv-blur">${brl(totalUpc)}</span>`:''}
       </div>
       <div class="timeline">${timeline}</div>
     </div>
@@ -3033,8 +3073,8 @@ const ASSET_CFG = {
     sorts:[['score','Score Lastro'],['dy','Maior DY'],['pvp','Menor P/VP'],['liq','Maior liquidez']],
     cols:[
       {h:'Segmento', f:a=>`<td class="cell-left"><span class="seg seg-${a.seg}">${a.seg}</span></td>`},
-      {h:'Score', f:scoreCell},
       {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
+      {h:'Score', f:scoreCell},
       {h:'DY 12M', f:a=>`<td class="mono up">${pc(a.dy,1)}%</td>`},
       {h:'P/VP', f:a=>`<td class="mono ${a.pvp<1?'up':''}">${pc(a.pvp)}</td>`},
       {h:'Div/cota', f:a=>`<td class="mono up">${brl(a.div)}</td>`},
@@ -3048,8 +3088,8 @@ const ASSET_CFG = {
     sorts:[['score','Score Lastro'],['dy','Maior DY'],['pl','Menor P/L'],['roe','Maior ROE']],
     cols:[
       {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
-      {h:'Score', f:scoreCell},
       {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
+      {h:'Score', f:scoreCell},
       {h:'P/L', f:a=>`<td class="mono ${a.pl<10?'up':''}">${pc(a.pl,1)}x</td>`},
       {h:'P/VP', f:a=>`<td class="mono">${pc(a.pvp,1)}x</td>`},
       {h:'DY', f:a=>`<td class="mono ${a.dy>5?'up':''}">${pc(a.dy,1)}%</td>`},
@@ -3072,8 +3112,8 @@ const ASSET_CFG = {
   etfs: {
     data:()=>ETFS, icon:'fa-layer-group', label:'ETFs', unit:'ETFs', score:false,
     segs:['Renda Variável BR','Exterior','Small Caps BR','Dividendos BR','Criptoativos','Commodities','Financeiro BR','Renda Fixa'],
-    regions:['Brasil','Internacional'],
-    regOf:a=> /11$/.test(a.tk) ? 'Brasil' : 'Internacional',
+    regions:['Nacional','Internacional'],
+    regOf:a=> /11$/.test(a.tk) ? 'Nacional' : 'Internacional',
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
       {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
@@ -3118,7 +3158,7 @@ function viewAssets(kind){
   const segOpts = cfg.segs.length ? ['<option value="">Todos os segmentos</option>', ...cfg.segs.map(s=>`<option>${s}</option>`)].join('') : '';
   const sortOpts = cfg.sorts.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('');
   const segSelect = cfg.segs.length ? `<div class="sel-wrap grow"><select class="sel" onchange="tblFilter('${kind}','seg',this.value)">${segOpts}</select><i class="fa-solid fa-chevron-down chev"></i></div>` : '';
-  const regSelect = cfg.regions ? `<div class="sel-wrap grow"><select class="sel" onchange="tblFilter('${kind}','reg',this.value)"><option value="">Brasil + Internacional</option>${cfg.regions.map(r=>`<option>${r}</option>`).join('')}</select><i class="fa-solid fa-chevron-down chev"></i></div>` : '';
+  const regSelect = cfg.regions ? `<div class="sel-wrap grow"><select class="sel" onchange="tblFilter('${kind}','reg',this.value)"><option value="">Nacional + Internacional</option>${cfg.regions.map(r=>`<option>${r}</option>`).join('')}</select><i class="fa-solid fa-chevron-down chev"></i></div>` : '';
   // ordenação: quando o primeiro critério é o Score Lastro, vira componente proprietário em destaque
   const sortIsScore = cfg.sorts[0] && cfg.sorts[0][0]==='score';
   const sortSelect = `<div class="sel-wrap full has-lead ${sortIsScore?'sel-score':''}"><i class="fa-solid ${sortIsScore?'fa-award':'fa-arrow-down-wide-short'} lead"></i><select class="sel" onchange="tblFilter('${kind}','sort',this.value)">${sortOpts}</select><i class="fa-solid fa-chevron-down chev"></i></div>`;
@@ -3977,7 +4017,7 @@ function renderHomeChart(){
     const upc=cssVar('--up')||'#0E7C5A', downc=cssVar('--down')||'#D14343';
     const colors=ohlc.map(x=> x.c>=x.o?upc:downc);
     charts.ibov=new Chart(ctx,{ data:{ labels:p.l, datasets:[
-        { type:'bar', label:'wick', data:ohlc.map(x=>[x.l,x.h]), backgroundColor:colors, barThickness:2, grouped:false, order:2 },
+        { type:'bar', label:'wick', data:ohlc.map(x=>[x.l,x.h]), backgroundColor:colors, barThickness:1.4, grouped:false, order:2 },
         { type:'bar', label:'corpo', data:ohlc.map(x=>[Math.min(x.o,x.c),Math.max(x.o,x.c)]), backgroundColor:colors, borderRadius:2, barPercentage:0.55, categoryPercentage:0.9, grouped:false, order:1 },
       ]},
       options:{ responsive:true, maintainAspectRatio:false, animation:{duration:900,easing:'easeOutQuart'},
