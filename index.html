@@ -372,6 +372,26 @@ body.view-inicio .topbar-brand { display:flex; }
 .hdr-crown { border-color:color-mix(in srgb,var(--gold) 40%,transparent) !important; background:var(--gold-l) !important; }
 .hdr-crown:hover { box-shadow:0 0 0 3px var(--gold-l); }
 .hdr-profile i { font-size:17px; }
+/* menu dropdown da conta */
+.acct-wrap { position:relative; }
+.acct-menu { position:absolute; right:0; top:calc(100% + 8px); z-index:120; width:248px; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-lg); box-shadow:var(--sh-xl); padding:7px; display:none; transform-origin:top right; }
+.acct-menu.open { display:block; animation:acctIn .16s var(--ease-out); }
+@keyframes acctIn { from{opacity:0; transform:translateY(-6px) scale(.97);} to{opacity:1; transform:none;} }
+.acct-head { display:flex; align-items:center; gap:11px; padding:9px 10px 11px; }
+.acct-head .avatar { width:38px; height:38px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; color:#fff; background:linear-gradient(150deg,#23B07E,#0E7C5A 60%,#09533C); }
+.acct-head.guest .avatar { background:var(--surface-3); color:var(--ink-3); }
+.acct-id { min-width:0; }
+.acct-nm { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.acct-pl { font-size:11.5px; color:var(--ink-3); }
+.acct-item { display:flex; align-items:center; gap:11px; width:100%; padding:10px 11px; border-radius:9px; font-size:13.5px; font-weight:500; color:var(--ink); cursor:pointer; transition:background .12s var(--ease); text-align:left; }
+.acct-item:hover { background:var(--surface-3); }
+.acct-item i { width:16px; text-align:center; color:var(--ink-3); font-size:13px; }
+.acct-item.danger { color:var(--down); } .acct-item.danger i { color:var(--down); }
+.acct-sep { height:1px; background:var(--line); margin:5px 8px; }
+.acct-theme { display:flex; align-items:center; justify-content:space-between; padding:9px 11px 4px; font-size:12.5px; color:var(--ink-3); }
+.acct-theme-btns { display:flex; gap:3px; background:var(--surface-3); padding:3px; border-radius:9px; }
+.acct-theme-btns button { width:30px; height:28px; border-radius:6px; color:var(--ink-3); cursor:pointer; font-size:12px; display:inline-flex; align-items:center; justify-content:center; transition:all .12s var(--ease); }
+.acct-theme-btns button.on { background:var(--surface); color:var(--gold); box-shadow:var(--sh-sm); }
 /* paginação da lista de ativos */
 .pager { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
 .pg-info { font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:8px; }
@@ -611,14 +631,9 @@ img, svg, canvas, video { max-width: 100%; }
 @media (max-width: 760px) {
   input, select, textarea, .sel, .search-inp input, .cmp-input, .pg-sel, .fld input, .insight-input input, .search-bar input { font-size: 16px !important; }
 }
-/* celular: lista de ativos em 2 colunas (Ativo + Setor) — sem rolagem nem corte */
+/* mobile: tabela rola na horizontal (1ª coluna fixa); colunas extras via scroll */
 @media (max-width: 560px) {
-  table.tbl { width: 100%; min-width: 0; table-layout: fixed; }
-  table.tbl th:nth-child(n+3), table.tbl td:nth-child(n+3) { display: none; }
-  table.tbl th:nth-child(2), table.tbl td:nth-child(2) { text-align: right !important; white-space: normal; }
-  table.tbl td.cell-left:nth-child(2) { text-align: right !important; }
-  table.tbl th:first-child, table.tbl td:first-child { position: static; }
-  table.tbl .td-asset .ds { max-width: 150px; }
+  table.tbl .td-asset .ds { max-width: 140px; }
 }
 @media (max-width: 460px) {
   .content { padding: 15px 15px 20px; }
@@ -1257,7 +1272,9 @@ input[type=range]::-moz-range-thumb {
 .logo { position:relative; display:inline-flex; align-items:center; justify-content:center; flex:none; overflow:hidden; border:none; background:#fff; }
 /* logo preenche o quadrado arredondado (cobre o fundo branco) no formato da marca oficial */
 .logo-img { width:100%; height:100%; object-fit:cover; background:#fff; }
-.logo-mono { width:100%; height:100%; align-items:center; justify-content:center; font-family:var(--mono); font-weight:600; color:var(--brand); background:var(--surface-3); }
+.logo-mono { width:100%; height:100%; align-items:center; justify-content:center; font-family:var(--sans); font-weight:700; letter-spacing:-.03em; color:#fff; background:var(--surface-3); text-transform:uppercase; }
+.logo.sm .logo-mono, .logo.xs .logo-mono { font-size:10px; }
+.logo.md .logo-mono { font-size:12px; } .logo.lg .logo-mono { font-size:14px; }
 .logo.lg { width:52px; height:52px; border-radius:14px; font-size:13px; }
 .logo.md { width:42px; height:42px; border-radius:12px; font-size:11px; }
 .logo.sm { width:34px; height:34px; border-radius:10px; font-size:9.5px; }
@@ -1350,7 +1367,11 @@ input[type=range]::-moz-range-thumb {
   .mstrip { grid-template-columns: repeat(2,1fr); }
   .hero-value { font-size: 40px; }
   .sim-result { grid-template-columns: 1fr; }
-  .gauge-card { flex-direction: column; align-items: flex-start; }
+  .gauge-card { flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+  .gauge-break { width: 100%; }
+  .gauge-break > div:first-child { text-align: center; }
+  .sec-title { font-size: 21px; }
+  .sec-desc { font-size: 13px; }
 }
 
 /* news feed */
@@ -2432,15 +2453,39 @@ function updateHeaderAction(){
   const el = document.getElementById('hdrActions'); if(!el) return;
   const authed=isAuthed(), pro=isPremium();
   let html='';
-  if(authed && pro){
-    html += `<button class="icon-btn" title="Notificações"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></button>`;
-  } else {
-    html += `<button class="icon-btn hdr-crown" title="Premium — desbloqueie recursos" onclick="goPricing()"><i class="fa-solid fa-crown"></i></button>`;
-  }
-  html += `<button class="icon-btn hdr-profile" title="${authed?'Sua conta':'Entrar ou criar conta'}" onclick="${authed?'openAccount()':"openAuth('login')"}"><i class="fa-${authed?'solid':'regular'} fa-circle-user"></i></button>`;
+  if(!pro){ html += `<button class="icon-btn hdr-crown" title="Premium — desbloqueie recursos" onclick="goPricing()"><i class="fa-solid fa-crown"></i></button>`; }
+  html += `<div class="acct-wrap"><button class="icon-btn hdr-profile" title="Conta" onclick="toggleAcctMenu(event)"><i class="fa-${authed?'solid':'regular'} fa-circle-user"></i></button><div class="acct-menu" id="acctMenu"></div></div>`;
   el.innerHTML = html;
 }
-function openAccount(){ openSidebar(); }
+function acctMenuHTML(){
+  const authed=isAuthed(), u=currentUser(), pref=getThemePref();
+  const item=(ic,label,act,extra='')=>`<button class="acct-item ${extra}" onclick="${act}"><i class="fa-solid ${ic}"></i> ${label}</button>`;
+  const themeRow=`<div class="acct-theme"><span>Tema</span><div class="acct-theme-btns">
+    <button class="${pref==='light'?'on':''}" onclick="setThemePref('light')" title="Claro"><i class="fa-solid fa-sun"></i></button>
+    <button class="${pref==='dark'?'on':''}" onclick="setThemePref('dark')" title="Escuro"><i class="fa-solid fa-moon"></i></button>
+    <button class="${pref==='auto'?'on':''}" onclick="setThemePref('auto')" title="Automático"><i class="fa-solid fa-circle-half-stroke"></i></button>
+  </div></div>`;
+  if(authed){
+    return `<div class="acct-head"><div class="avatar">${(u.email[0]||'?').toUpperCase()}</div><div class="acct-id"><div class="acct-nm">${esc(u.email.split('@')[0])}</div><div class="acct-pl">${isPremium()?'Plano Premium 👑':'Plano Gratuito'}</div></div></div>
+      ${item('fa-user','Meu perfil',"closeAcctMenu();openAuth()")}
+      ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();goPricing()")}
+      ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
+      ${themeRow}
+      <div class="acct-sep"></div>
+      ${item('fa-arrow-right-from-bracket','Sair',"closeAcctMenu();authLogout()",'danger')}`;
+  }
+  return `<div class="acct-head guest"><div class="avatar">+</div><div class="acct-id"><div class="acct-nm">Bem-vindo</div><div class="acct-pl">Entre para sincronizar</div></div></div>
+    ${item('fa-right-to-bracket','Entrar',"closeAcctMenu();openAuth('login')")}
+    ${item('fa-user-plus','Criar conta grátis',"closeAcctMenu();openAuth('signup')")}
+    ${item('fa-crown','Assinar Premium',"closeAcctMenu();goPricing()")}
+    ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
+    ${themeRow}`;
+}
+function toggleAcctMenu(e){ if(e) e.stopPropagation(); const m=$('#acctMenu'); if(!m) return; if(m.classList.contains('open')){ m.classList.remove('open'); return; } m.innerHTML=acctMenuHTML(); m.classList.add('open'); }
+function closeAcctMenu(){ const m=$('#acctMenu'); if(m) m.classList.remove('open'); }
+function openSupport(){ try{ window.location.href='mailto:suporte@lastro.app?subject=Suporte%20Lastro'; }catch(e){ toast('Suporte: suporte@lastro.app'); } }
+document.addEventListener('click', e=>{ if(!e.target.closest('.acct-wrap')) closeAcctMenu(); });
+function openAccount(){ toggleAcctMenu(); }
 /* uso de IA no dia (limite do plano free) */
 function aiUsedToday(){ try{ const o=JSON.parse(localStorage.getItem('lastro_ai')||'{}'); const d=new Date().toISOString().slice(0,10); return o.d===d?(o.n||0):0; }catch(e){ return 0; } }
 function aiInc(){ const d=new Date().toISOString().slice(0,10); localStorage.setItem('lastro_ai', JSON.stringify({ d, n: aiUsedToday()+1 })); }
@@ -4100,9 +4145,16 @@ function logoErr(img, fb){
   if(fb && !img.dataset.fb){ img.dataset.fb='1'; img.src=fb; return; }
   img.style.display='none'; const m=img.nextElementSibling; if(m) m.style.display='flex';
 }
+/* avatar padronizado quando não há logo real: iniciais + cor por setor */
+const AVA_COLORS = ['#0E7C5A','#2563EB','#8B4FB8','#A87C2A','#0EA5A0','#E2761B','#5B7CFA','#16A34A','#B45309','#0891B2','#BE185D','#4338CA','#0D9488','#9333EA'];
+function avatarColor(key){ let h=2166136261; const s=String(key||'·'); for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return AVA_COLORS[(h>>>0)%AVA_COLORS.length]; }
+function avatarInitials(tk){ const m=String(tk||'').match(/^[A-Za-z]+/); return (m?m[0]:String(tk)).slice(0,4).toUpperCase(); }
+const _segCache={};
+function segOf(tk){ if(tk in _segCache) return _segCache[tk]; const lk=assetLookup(tk); return _segCache[tk]=(lk?(lk.a.seg||lk.a.sub||''):''); }
 function assetLogo(tk,k,cls){
   const src=logoSrc(tk,k), fb=logoFallback(tk,k);
-  const mono=`<span class="logo-mono" ${src?'style="display:none"':''}>${String(tk).slice(0,4)}</span>`;
+  const col=avatarColor(segOf(tk)||k||tk), ini=avatarInitials(tk);
+  const mono=`<span class="logo-mono" style="background:${col};color:#fff${src?';display:none':''}">${ini}</span>`;
   const img=src?`<img class="logo-img" src="${src}" alt="${tk}" loading="lazy" onerror="logoErr(this,'${fb}')">`:'';
   return `<span class="logo ${cls||''}">${img}${mono}</span>`;
 }
@@ -5224,10 +5276,10 @@ function applyTheme(reRender){
   if(lb) lb.textContent = pref==='auto' ? 'Tema automático' : (eff==='dark'?'Modo claro':'Modo escuro');
   if(reRender) render(currentView);
 }
-function setThemePref(p){ if(!THEME_SEQ.includes(p)) p='auto'; localStorage.setItem('lastro_theme', p); applyTheme(true); if(typeof saveCloudState==='function') saveCloudState(); }
+function setThemePref(p){ if(!THEME_SEQ.includes(p)) p='auto'; localStorage.setItem('lastro_theme', p); applyTheme(true); const m=$('#acctMenu'); if(m&&m.classList.contains('open')) m.innerHTML=acctMenuHTML(); if(typeof saveCloudState==='function') saveCloudState(); }
 function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SEQ.indexOf(cur)+1)%THEME_SEQ.length]; setThemePref(next); toast(next==='auto'?'Tema: Automático':next==='dark'?'Tema: Escuro':'Tema: Claro'); }
 // segue o sistema em tempo real quando em "automático"
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(getThemePref()==='auto') applyTheme(true); });
+(function(){ const mq=matchMedia('(prefers-color-scheme: dark)'); const fn=()=>{ if(getThemePref()==='auto') applyTheme(true); }; if(mq.addEventListener) mq.addEventListener('change', fn); else if(mq.addListener) mq.addListener(fn); })();
 
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
