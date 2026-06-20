@@ -520,6 +520,8 @@ body.view-inicio .topbar-brand { display:flex; }
 .divider { height: 1px; background: var(--line); margin: 18px 0; }
 
 /* segmented control */
+.home-chart { position:relative; height:300px; width:100%; }
+@media (max-width:760px){ .home-chart { height:260px; } }
 .chart-ctrls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .chart-toggle { display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 13px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
 .chart-toggle:hover { border-color:var(--line-2); color:var(--ink); }
@@ -979,12 +981,13 @@ img, svg, canvas, video { max-width: 100%; }
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r);
-  padding: 14px 16px;
+  padding: 16px 17px;
   box-shadow: var(--sh-sm);
   transition: transform .2s var(--ease), box-shadow .2s var(--ease);
   cursor: default;
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
 }
+/* só os cartões de índice da Home (com mini-gráfico) usam layout em linha */
+.mcell:has(.spark-mini) { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .mcell:hover { transform: translateY(-2px); box-shadow: var(--sh); }
 .mcell-l { min-width: 0; }
 .mcell .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
@@ -1522,9 +1525,10 @@ table.tbl tbody tr.no-hover td { border:none; }
 .pricing-title { font-family:var(--serif); font-size:30px; font-weight:600; letter-spacing:-.02em; line-height:1.15; text-wrap:balance; }
 .pricing-sub { font-size:14px; color:var(--ink-2); line-height:1.6; margin-top:12px; }
 /* carrossel de planos */
-.plan-carousel { display:flex; gap:18px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:18px 4px 8px; scroll-padding:4px; }
+.plan-carousel { display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:18px 16px 8px; scroll-padding:16px; }
 .plan-carousel::-webkit-scrollbar { display:none; }
-.plan-card { flex:0 0 86%; max-width:340px; scroll-snap-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); padding:26px 24px; position:relative; box-shadow:var(--sh-sm); transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
+.plan-carousel::-webkit-scrollbar { display:none; }
+.plan-card { flex:0 0 80%; max-width:330px; scroll-snap-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); padding:26px 24px; position:relative; box-shadow:var(--sh-sm); transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 @media (min-width:760px){ .plan-carousel { justify-content:center; flex-wrap:nowrap; } .plan-card { flex:0 0 320px; } }
 .plan-card.featured { border:1.5px solid var(--gold); background:linear-gradient(180deg, color-mix(in srgb,var(--gold) 7%,transparent), var(--surface) 30%); box-shadow:0 18px 44px rgba(168,124,42,.18); }
 .plan-card.featured:hover { transform:translateY(-4px); }
@@ -1618,9 +1622,36 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .pt-lock .pw-ic { width:50px; height:50px; font-size:19px; margin-bottom:12px; }
 .pt-lock .pw-t { font-size:15.5px; } .pt-lock .pw-s { margin:7px 0 16px; font-size:12.5px; }
 /* abas de autenticação */
-/* login centralizado verticalmente */
-#authModal { align-items:center; padding-top:0; padding-bottom:0; }
-#authModal .modal-card { margin:auto; }
+/* modais centralizados vertical e horizontalmente */
+#authModal, #posModal { align-items:center; padding-top:0; padding-bottom:0; }
+#authModal .modal-card, #posModal .modal-card { margin:auto; }
+.modal-scrim { background:rgba(10,14,19,.55) !important; backdrop-filter:blur(5px); }
+/* diálogo de confirmação */
+.confirm-card { width:380px; max-width:92vw; padding:24px 24px 20px; text-align:center; }
+.confirm-t { font-size:17px; font-weight:700; letter-spacing:-.01em; }
+.confirm-m { font-size:13.5px; color:var(--ink-2); line-height:1.6; margin:10px 0 20px; }
+.confirm-acts { display:flex; gap:10px; }
+.confirm-acts .btn { flex:1; justify-content:center; }
+.btn-danger { background:var(--down); color:#fff; border:none; }
+.btn-danger:hover { filter:brightness(1.06); }
+/* área de perfil */
+.prof-head { display:flex; align-items:center; gap:13px; padding-bottom:16px; border-bottom:1px solid var(--line); margin-bottom:6px; }
+.prof-av { width:50px; height:50px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:19px; color:#fff; background:linear-gradient(150deg,#23B07E,#0E7C5A 60%,#09533C); }
+.prof-id { flex:1; min-width:0; } .prof-nm { font-weight:600; font-size:15px; } .prof-em { font-size:12px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.prof-sec { padding:14px 0; border-bottom:1px solid var(--line); }
+.prof-sec-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:10px; }
+.prof-row { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:13.5px; color:var(--ink-2); padding:7px 0; }
+.prof-row span i { color:var(--ink-3); width:18px; text-align:center; margin-right:4px; }
+.prof-row b { color:var(--ink); font-weight:600; }
+.prof-row.sub b { font-weight:500; color:var(--ink-3); }
+.prof-btn { width:100%; justify-content:flex-start; margin-top:8px; }
+.prof-out { width:100%; justify-content:center; margin-top:16px; }
+/* privacidade: borra valores monetários */
+body.priv .priv-blur { filter:blur(9px); user-select:none; pointer-events:none; transition:filter .2s var(--ease); }
+.priv-blur { transition:filter .2s var(--ease); }
+.priv-eye { width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; transition:all .14s var(--ease); flex:none; }
+.priv-eye:hover { color:var(--ink); border-color:var(--line-2); }
+.cart-sum-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
 /* login premium */
 .auth-hero { text-align:center; margin-bottom:18px; animation:authIn .4s var(--ease-out) both; }
 .auth-logo { width:54px; height:54px; border-radius:16px; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; background:linear-gradient(150deg,#23B07E,#0E7C5A 55%,#09533C); box-shadow:inset 0 1px 1px rgba(255,255,255,.25), 0 8px 20px rgba(9,83,60,.32); }
@@ -2467,25 +2498,75 @@ function acctMenuHTML(){
   </div></div>`;
   if(authed){
     return `<div class="acct-head"><div class="avatar">${(u.email[0]||'?').toUpperCase()}</div><div class="acct-id"><div class="acct-nm">${esc(u.email.split('@')[0])}</div><div class="acct-pl">${isPremium()?'Plano Premium 👑':'Plano Gratuito'}</div></div></div>
-      ${item('fa-user','Meu perfil',"closeAcctMenu();openAuth()")}
+      ${item('fa-user','Meu perfil',"closeAcctMenu();openProfile()")}
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();goPricing()")}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
       ${themeRow}
       <div class="acct-sep"></div>
-      ${item('fa-arrow-right-from-bracket','Sair',"closeAcctMenu();authLogout()",'danger')}`;
+      ${item('fa-arrow-right-from-bracket','Sair',"closeAcctMenu();confirmLogout()",'danger')}`;
   }
-  return `<div class="acct-head guest"><div class="avatar">+</div><div class="acct-id"><div class="acct-nm">Bem-vindo</div><div class="acct-pl">Entre para sincronizar</div></div></div>
-    ${item('fa-right-to-bracket','Entrar',"closeAcctMenu();openAuth('login')")}
-    ${item('fa-user-plus','Criar conta grátis',"closeAcctMenu();openAuth('signup')")}
+  return `<div class="acct-head guest"><div class="avatar">+</div><div class="acct-id"><div class="acct-nm">Bem-vindo à Lastro</div><div class="acct-pl">Entre para sincronizar seus dados</div></div></div>
+    ${item('fa-right-to-bracket','Entrar ou criar conta',"closeAcctMenu();openAuth('login')")}
     ${item('fa-crown','Assinar Premium',"closeAcctMenu();goPricing()")}
     ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
     ${themeRow}`;
 }
 function toggleAcctMenu(e){ if(e) e.stopPropagation(); const m=$('#acctMenu'); if(!m) return; if(m.classList.contains('open')){ m.classList.remove('open'); return; } m.innerHTML=acctMenuHTML(); m.classList.add('open'); }
 function closeAcctMenu(){ const m=$('#acctMenu'); if(m) m.classList.remove('open'); }
-function openSupport(){ try{ window.location.href='mailto:suporte@lastro.app?subject=Suporte%20Lastro'; }catch(e){ toast('Suporte: suporte@lastro.app'); } }
+const APP_VERSION='1.0.0';
+function openSupport(){
+  const u=currentUser(); const plan=isPremium()?'Premium':'Gratuito';
+  let msg='Olá! Preciso de ajuda com minha conta no Lastro.';
+  if(u) msg+=`\n\nUsuário: ${u.email}\nPlano: ${plan}\nVersão: ${APP_VERSION}`;
+  window.open(`https://wa.me/5547992464048?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+}
 document.addEventListener('click', e=>{ if(!e.target.closest('.acct-wrap')) closeAcctMenu(); });
 function openAccount(){ toggleAcctMenu(); }
+/* confirmação genérica (evita logout acidental, etc.) */
+function showConfirm(title, msg, yesLabel, onYes, danger){
+  let el=document.getElementById('confirmModal');
+  if(!el){ el=document.createElement('div'); el.id='confirmModal'; el.className='modal-scrim'; document.body.appendChild(el); }
+  el.innerHTML=`<div class="modal-card confirm-card"><div class="confirm-t">${esc(title)}</div><div class="confirm-m">${esc(msg)}</div><div class="confirm-acts"><button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button><button class="btn ${danger?'btn-danger':'btn-primary'}" id="confirmYes">${esc(yesLabel)}</button></div></div>`;
+  el.classList.add('open'); el.onclick=ev=>{ if(ev.target===el) closeConfirm(); };
+  document.getElementById('confirmYes').onclick=()=>{ closeConfirm(); onYes&&onYes(); };
+}
+function closeConfirm(){ const el=document.getElementById('confirmModal'); if(el) el.classList.remove('open'); }
+function confirmLogout(){ showConfirm('Sair da sua conta?','Tem certeza que deseja sair? Você precisará entrar novamente para sincronizar seus dados.','Sair', authLogout, true); }
+/* privacidade: oculta valores monetários (inicia oculto ao logar) */
+function privOn(){ const v=localStorage.getItem('lastro_priv'); return v===null ? isAuthed() : v==='1'; }
+function applyPriv(){ document.body.classList.toggle('priv', privOn()); document.querySelectorAll('.priv-eye i').forEach(i=>{ i.className='fa-solid '+(privOn()?'fa-eye-slash':'fa-eye'); }); }
+function togglePriv(){ localStorage.setItem('lastro_priv', privOn()?'0':'1'); applyPriv(); }
+/* área de perfil (gerenciamento da conta) */
+function openProfile(){
+  const u=currentUser(); if(!u){ openAuth('login'); return; }
+  const pref=getThemePref();
+  $('#authTitle').textContent='Meu perfil';
+  $('#authBody').innerHTML=`
+    <div class="prof-head">
+      <div class="prof-av">${(u.email[0]||'?').toUpperCase()}</div>
+      <div class="prof-id"><div class="prof-nm">${esc(u.email.split('@')[0])}</div><div class="prof-em">${esc(u.email)}</div></div>
+      <span class="chip ${isPremium()?'chip-gold':'chip-neu'}">${isPremium()?'Premium':'Gratuito'}</span>
+    </div>
+    <div class="prof-sec"><div class="prof-sec-t">Conta</div>
+      <div class="prof-row"><span><i class="fa-solid fa-crown"></i> Plano</span><b>${isPremium()?'Premium':'Gratuito'}</b></div>
+      <div class="prof-row"><span><i class="fa-regular fa-calendar"></i> Próxima cobrança</span><b>${isPremium()?'—':'sem cobrança'}</b></div>
+      <button class="btn btn-ghost prof-btn" onclick="closeAuth();goPricing()"><i class="fa-solid fa-sliders"></i> Gerenciar assinatura</button>
+    </div>
+    <div class="prof-sec"><div class="prof-sec-t">Preferências</div>
+      <div class="prof-row"><span><i class="fa-solid fa-circle-half-stroke"></i> Tema</span>
+        <div class="acct-theme-btns">
+          <button class="${pref==='light'?'on':''}" onclick="setThemePref('light')"><i class="fa-solid fa-sun"></i></button>
+          <button class="${pref==='dark'?'on':''}" onclick="setThemePref('dark')"><i class="fa-solid fa-moon"></i></button>
+          <button class="${pref==='auto'?'on':''}" onclick="setThemePref('auto')"><i class="fa-solid fa-circle-half-stroke"></i></button>
+        </div></div>
+    </div>
+    <div class="prof-sec"><div class="prof-sec-t">Segurança</div>
+      <button class="btn btn-ghost prof-btn" onclick="toast('Em breve: alteração de senha')"><i class="fa-solid fa-key"></i> Alterar senha</button>
+      <div class="prof-row sub"><span><i class="fa-solid fa-mobile-screen"></i> Sessão atual</span><b>este dispositivo</b></div>
+    </div>
+    <button class="btn btn-danger prof-out" onclick="closeAuth();confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>`;
+  $('#authModal').classList.add('open');
+}
 /* uso de IA no dia (limite do plano free) */
 function aiUsedToday(){ try{ const o=JSON.parse(localStorage.getItem('lastro_ai')||'{}'); const d=new Date().toISOString().slice(0,10); return o.d===d?(o.n||0):0; }catch(e){ return 0; } }
 function aiInc(){ const d=new Date().toISOString().slice(0,10); localStorage.setItem('lastro_ai', JSON.stringify({ d, n: aiUsedToday()+1 })); }
@@ -2592,6 +2673,7 @@ function updateAuthUI(){
   if(nm) nm.textContent = u ? u.email.split('@')[0] : 'Entrar ou criar conta';
   if(pl) pl.textContent = u ? (isPremium()?'Plano Premium':'Plano Gratuito') : 'Sincronize seus dados';
   updateHeaderAction();
+  if(typeof applyPriv==='function') applyPriv();
 }
 function togglePass(btn){ const inp=$('#auPass'); if(!inp) return; const show=inp.type==='password'; inp.type=show?'text':'password'; btn.innerHTML=`<i class="fa-regular fa-eye${show?'-slash':''}"></i>`; inp.focus(); }
 function openAuth(mode){ renderAuth(mode||'login'); $('#authModal').classList.add('open'); }
@@ -2841,9 +2923,9 @@ function viewPainel(){
   const patCard = CARTEIRA.length ? `
     <div class="pat-card">
       <div class="pat-l">
-        <div class="pat-eyebrow"><i class="fa-solid fa-wallet"></i> Sua carteira</div>
-        <div class="pat-val">R$ <span id="patVal">0</span></div>
-        <div class="pat-sub"><span class="chip ${p.lucro>=0?'chip-up':'chip-down'}">${p.lucro>=0?'+':''}${brl(p.lucro)} (${p.lucroP.toFixed(1).replace('.',',')}%)</span> · ${p.nAtivos} ativo${p.nAtivos!==1?'s':''} · renda ~${brl(p.renda)}/mês</div>
+        <div class="pat-eyebrow"><i class="fa-solid fa-wallet"></i> Sua carteira <button class="priv-eye" style="width:26px;height:26px;font-size:11px;margin-left:6px" onclick="event.stopPropagation();togglePriv()" title="Mostrar/ocultar"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
+        <div class="pat-val priv-blur">R$ <span id="patVal">0</span></div>
+        <div class="pat-sub priv-blur"><span class="chip ${p.lucro>=0?'chip-up':'chip-down'}">${p.lucro>=0?'+':''}${brl(p.lucro)} (${p.lucroP.toFixed(1).replace('.',',')}%)</span> · ${p.nAtivos} ativo${p.nAtivos!==1?'s':''} · renda ~${brl(p.renda)}/mês</div>
       </div>
       <button class="btn btn-ghost" onclick="goView('carteira')">Ver carteira <i class="fa-solid fa-arrow-right"></i></button>
     </div>` : `
@@ -2910,7 +2992,7 @@ function viewPainel(){
           </div>
         </div>
       </div>
-      <div style="position:relative;height:248px"><canvas id="ibovChart" role="img" aria-label="Histórico do Nasdaq"></canvas></div>
+      <div class="home-chart"><canvas id="ibovChart" role="img" aria-label="Histórico do Nasdaq"></canvas></div>
     </div>
 
     <div class="card card-pad">
@@ -3181,10 +3263,11 @@ function viewCarteira(){
   }).join('');
 
   return `
+  <div class="cart-sum-head"><div class="sec-title" style="margin:0;font-size:19px">Minha carteira</div><button class="priv-eye" onclick="togglePriv()" title="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
   <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl">${brl(p.atual)}</div><div class="dl ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}% s/ prov.</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Resultado c/ proventos</div><div class="vl ${p.lucroProv>=0?'up':'down'}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div><div class="dl ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos recebidos</div><div class="vl up">${brl(p.prov)}</div><div class="dl faint">renda ~${brl(p.renda)}/mês</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl priv-blur">${brl(p.atual)}</div><div class="dl priv-blur ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}% s/ prov.</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Resultado c/ proventos</div><div class="vl priv-blur ${p.lucroProv>=0?'up':'down'}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div><div class="dl priv-blur ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos recebidos</div><div class="vl priv-blur up">${brl(p.prov)}</div><div class="dl priv-blur faint">renda ~${brl(p.renda)}/mês</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Saúde da carteira</div><div class="vl" style="color:${scoreColor(saude)}">${saude}<span style="font-size:12px;color:var(--ink-3)">/100</span></div><div class="dl" style="color:${scoreColor(saude)}">${scoreTier(saude)}</div></div>
   </div>
 
@@ -3883,9 +3966,11 @@ function renderHomeChart(){
   if(charts.ibov){ try{charts.ibov.destroy();}catch(e){} }
   const btn=$('#homeTypeBtn'); if(btn) btn.innerHTML = homeChartType==='candle' ? '<i class="fa-solid fa-chart-line"></i> Linha' : '<i class="fa-solid fa-chart-simple"></i> Candles';
   const p = indexSeries(homeChartPeriod);
+  // escala inteligente: nunca começa em zero — enquadra a faixa de preços para destacar o movimento
+  const lo=Math.min(...p.d), hi=Math.max(...p.d), pad=Math.max((hi-lo)*0.18, hi*0.006);
   const baseScales = {
     x:{ grid:{display:false}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxRotation:0, autoSkipPadding:14 }, border:{display:false} },
-    y:{ position:'right', grid:{color:cssVar('--line')}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxTicksLimit:6, callback:v=>kfmt(v) }, border:{display:false} }
+    y:{ position:'right', min:lo-pad, max:hi+pad, grid:{color:cssVar('--line')}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxTicksLimit:6, callback:v=>kfmt(v) }, border:{display:false} }
   };
   if(homeChartType==='candle'){
     const ohlc=ohlcFrom(p.d, 'nq'+homeChartPeriod);
@@ -5269,7 +5354,7 @@ function effectiveTheme(){ const p=getThemePref(); return p==='auto' ? (systemDa
 function applyTheme(reRender){
   const eff=effectiveTheme();
   document.documentElement.setAttribute('data-theme', eff);
-  const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content', eff==='dark'?'#0A0E13':'#0E7C5A');
+  const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content', eff==='dark'?'#0A0E13':'#F4F5F7');
   const pref=getThemePref();
   const ic=$('#themeIcon'), lb=$('#themeLabel');
   if(ic) ic.className = pref==='auto' ? 'fa-solid fa-circle-half-stroke' : (eff==='dark'?'fa-solid fa-sun':'fa-solid fa-moon');
@@ -5459,6 +5544,7 @@ async function loadUniverse(){
 
 /* INIT */
 applyTheme(false);   // sincroniza ícone/rótulo do tema (data-theme já aplicado no <head>)
+applyPriv();         // privacidade dos valores
 normLots();          // garante id em cada aporte (migração de carteiras antigas)
 refreshPlanUI();
 updateAuthUI();
