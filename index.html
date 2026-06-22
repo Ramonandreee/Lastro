@@ -1641,6 +1641,7 @@ table.tbl tbody tr.no-hover td { border:none; }
 .pm-close { position:absolute; top:12px; right:12px; z-index:2; width:30px; height:30px; border-radius:50%; border:none; background:color-mix(in srgb,var(--ink) 8%,transparent); color:var(--ink-2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; }
 .pm-close:hover { background:color-mix(in srgb,var(--ink) 14%,transparent); color:var(--ink); }
 .pm-hero { text-align:center; padding:28px 24px 16px; background:linear-gradient(180deg, var(--gold-l), transparent); }
+.pm-hero-pro { background:linear-gradient(180deg, color-mix(in srgb,var(--gold) 16%,transparent), transparent); }
 .pm-crown { width:56px; height:56px; border-radius:16px; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#C8911F,#A87C2A 60%,#8a6420); color:#fff; font-size:24px; box-shadow:0 10px 26px rgba(168,124,42,.42); }
 .pm-badge { display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--gold); background:var(--gold-l); padding:3px 11px; border-radius:20px; }
 .pm-badge i { font-size:9px; }
@@ -1791,6 +1792,9 @@ table.tbl tbody tr.no-hover td { border:none; }
 .ie-row b { color:var(--ink); font-size:15px; }
 .ie-row b.up { color:var(--up); }
 .ie-note { font-size:12px; color:var(--ink-2); line-height:1.5; margin-top:10px; }
+.ind-pro-up { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:14px; padding:12px 14px; border-radius:12px; background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 28%,transparent); font-size:13px; color:var(--ink-2); }
+.ind-pro-up > div { flex:1; min-width:200px; }
+.ind-pro-up i { color:var(--gold); }
 .ref-link { display:flex; gap:8px; margin-top:6px; }
 .ref-link input { flex:1; min-width:0; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--ink); font-size:13px; font-family:var(--mono); }
 .ref-link .btn { flex:none; }
@@ -2934,24 +2938,29 @@ const PREMIUM_FEATURES = {
   comparador:{ name:'Comparador Completo', icon:'fa-code-compare', desc:'Compare até 4 ativos lado a lado pelos principais fundamentos e pelo Score Lastro.', why:'Decida entre vários ativos com tudo na mesma tela.' },
   watchlist: { name:'Watchlist Ilimitada', icon:'fa-star', desc:'Acompanhe quantos ativos quiser, sem limite.', why:'Monitore todas as suas ideias de investimento em um só lugar.' },
   export:    { name:'Exportar Carteira', icon:'fa-file-csv', desc:'Baixe sua carteira completa em CSV para usar onde quiser.', why:'Leve seus dados com você, com total liberdade.' },
+  relatorio: { name:'Relatório Mensal da Carteira', icon:'fa-file-lines', pro:true, desc:'Um relatório completo e imprimível da sua carteira: patrimônio, resultado, proventos do mês e alocação.', why:'Acompanhe sua evolução com um documento profissional — ideal para guardar ou compartilhar com seu contador.' },
 };
 const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço e IA ilimitada','Watchlist ilimitada e exportação CSV'];
-/* tela de apresentação Premium (usada no modal e como paywall inline) */
+const PRO_BENEFITS = ['Tudo do Premium, sem limites','Relatório mensal da carteira (imprimível)','Comissão de indicação dobrada — 40%','Análises aprofundadas por IA prioritárias','Carteiras recomendadas exclusivas','Acesso antecipado a novos recursos','Suporte prioritário'];
+/* tela de apresentação Premium / Investidor Pro (usada no modal e como paywall inline) */
 function premiumPresentation(key){
   const f = PREMIUM_FEATURES[key] || { name:'Recurso Premium', icon:'fa-crown', desc:'Desbloqueie todo o poder da plataforma Lastro.', why:'' };
-  const anon = !isAuthed();
+  const anon = !isAuthed(), proFeat = !!f.pro;
+  const badge = proFeat ? 'Investidor Pro' : 'Recurso Premium';
+  const benefits = proFeat ? PRO_BENEFITS : PREMIUM_BENEFITS;
+  const cta = anon ? 'Criar conta · 7 dias grátis' : (proFeat ? 'Assinar Investidor Pro' : 'Desbloquear Premium');
   return `
-  <div class="pm-hero">
+  <div class="pm-hero${proFeat?' pm-hero-pro':''}">
     <div class="pm-crown"><i class="fa-solid fa-crown"></i></div>
-    <span class="pm-badge"><i class="fa-solid fa-crown"></i> Recurso Premium</span>
+    <span class="pm-badge"><i class="fa-solid fa-crown"></i> ${badge}</span>
     <h3 class="pm-name"><i class="fa-solid ${f.icon}"></i> ${f.name}</h3>
     <p class="pm-desc">${f.desc}</p>
   </div>
   ${f.why?`<div class="pm-why"><i class="fa-solid fa-lightbulb"></i><span>${f.why}</span></div>`:''}
-  <div class="pm-bt">Tudo o que você desbloqueia</div>
-  <ul class="pm-benefits">${PREMIUM_BENEFITS.map(b=>`<li><i class="fa-solid fa-check"></i> ${b}</li>`).join('')}</ul>
+  <div class="pm-bt">${proFeat?'Exclusivo do Investidor Pro':'Tudo o que você desbloqueia'}</div>
+  <ul class="pm-benefits">${benefits.map(b=>`<li><i class="fa-solid fa-check"></i> ${b}</li>`).join('')}</ul>
   <div class="pm-actions">
-    <button class="btn btn-premium" onclick="proUnlock()"><i class="fa-solid fa-crown"></i> ${anon?'Criar conta · 7 dias grátis':'Desbloquear Premium'}</button>
+    <button class="btn btn-premium" onclick="proUnlock()"><i class="fa-solid fa-crown"></i> ${cta}</button>
     <button class="btn btn-ghost" onclick="closePremiumModal();goPricing()">Conhecer os planos</button>
   </div>
   <div class="pm-trust">${anon?'7 dias grátis ao criar conta · sem cartão':'Sem fidelidade · cancele quando quiser'}</div>`;
@@ -2969,6 +2978,10 @@ const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','sc
 function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
+/* tier do plano pago: 'free' | 'premium' | 'pro' (Pro = assinante do tier superior) */
+function planTier(){ if(!isPremium()) return 'free'; const s=getSub(); return (s&&s.tier==='pro')?'pro':'premium'; }
+function isProTier(){ return planTier()==='pro'; }
+const REF_RATE = 0.20, REF_RATE_PRO = 0.40;   // comissão de indicação (Pro dobra)
 function refreshPlanUI(){
   const pro = isPremium();
   document.body.classList.toggle('is-premium', pro);   // selos PRO seguem visíveis no teste; somem só para assinantes
@@ -3954,7 +3967,7 @@ function viewCarteira(){
   </div>
 
   <div class="pos-section">
-    <div class="card-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n} ativo${n!==1?'s':''}</span></div><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-ghost btn-sm" onclick="importCarteiraCSV()" title="Importar aportes de um arquivo CSV"><i class="fa-solid fa-file-import"></i> Importar</button><button class="btn btn-ghost btn-sm" onclick="exportCarteiraCSV()" title="Exportar carteira em CSV"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">Premium</span>'}</button>${addBtn}</div></div>
+    <div class="card-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n} ativo${n!==1?'s':''}</span></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="gerarRelatorioMensal()" title="Relatório mensal da carteira (Investidor Pro)"><i class="fa-solid fa-file-lines"></i> Relatório${isProTier()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:10px"></i>'}</button><button class="btn btn-ghost btn-sm" onclick="importCarteiraCSV()" title="Importar aportes de um arquivo CSV"><i class="fa-solid fa-file-import"></i> Importar</button><button class="btn btn-ghost btn-sm" onclick="exportCarteiraCSV()" title="Exportar carteira em CSV"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">Premium</span>'}</button>${addBtn}</div></div>
     <div class="pos-grid">${holdings}</div>
   </div>
 
@@ -4043,7 +4056,7 @@ const PLANS = {
     feats:['Tudo do Gratuito, sem limites','Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço + IA ilimitada','Watchlist ilimitada + exportação CSV'] },
   pro: { key:'pro', name:'Investidor Pro', popular:false, desc:'Tudo do Premium, com análises, relatórios e prioridade.',
     anual:39.90, mensal:49.90, anchorA:54.90, anchorM:64.90, anualTotal:478.80,
-    feats:['Tudo do Premium','Análises aprofundadas por IA ilimitadas','Carteiras recomendadas exclusivas','Relatório mensal da sua carteira','Indicação turbinada: recompensas em dobro','Acesso antecipado a novos recursos','Suporte prioritário'] },
+    feats:['Tudo do Premium, sem limites','Relatório mensal da carteira (imprimível)','Comissão de indicação dobrada — 40%','Análises por IA prioritárias','Acesso antecipado a novos recursos','Suporte prioritário'] },
 };
 let planCycle = 'anual';
 function setPlanCycle(c){ planCycle = c==='mensal'?'mensal':'anual'; render('planos'); }
@@ -4106,13 +4119,12 @@ function viewPlanos(){
       ['Proventos · Aporte · FIRE · IR', false, true, true],
       ['Rastreador + Score completo', false, true, true],
       ['Alertas de preço', false, true, true],
-      ['Análises de IA', PLAN_LIMITS.aiDay+'/dia', 'Ilimitada', 'Ilimitada'],
+      ['Análises de IA', PLAN_LIMITS.aiDay+'/dia', 'Ilimitada', 'Prioritária'],
       ['Watchlist', PLAN_LIMITS.watchlist, 'Ilimitada', 'Ilimitada'],
       ['Comparador', PLAN_LIMITS.comparador, '4 ativos', '4 ativos'],
-      ['Análises aprofundadas por IA', false, false, true],
-      ['Carteiras recomendadas exclusivas', false, false, true],
+      ['Comissão de indicação', '20%', '20%', '40%'],
       ['Relatório mensal da carteira', false, false, true],
-      ['Indicação turbinada (em dobro)', false, false, true],
+      ['Acesso antecipado a novidades', false, false, true],
       ['Suporte', 'Padrão', 'Padrão', 'Prioritário'],
     ].map(([f,g,p,pr])=>`<div class="cmp-row cmp-row-3"><span class="cmp-f">${f}</span><span>${cmpCell(g)}</span><span class="cmp-pro">${cmpCell(p)}</span><span>${cmpCell(pr)}</span></div>`).join('')}
   </div>
@@ -4157,7 +4169,8 @@ function viewIndicar(){
     <div class="card card-pad">${emptyState('fa-user-plus','Crie sua conta para participar','Gere seu link exclusivo e ganhe 20% da assinatura de cada amigo que você indicar — recorrente, direto na sua conta via PIX.', `<button class="btn btn-premium" onclick="openAuth('signup')"><i class="fa-solid fa-rocket"></i> Criar conta grátis</button>`)}</div>`;
   }
   const link=refLink();
-  const comM=PLANS.premium.mensal*0.20, comA=PLANS.premium.anualTotal*0.20;
+  const proRef=isProTier(), rate=proRef?REF_RATE_PRO:REF_RATE, ratePct=Math.round(rate*100);
+  const comM=PLANS.premium.mensal*rate, comA=PLANS.premium.anualTotal*rate;
   const step=(n,t,d)=>`<div class="ind-step"><span class="is-n">${n}</span><div><div class="is-t">${t}</div><div class="is-d">${d}</div></div></div>`;
   return `<div class="ind-page">
   ${hero}
@@ -4171,22 +4184,23 @@ function viewIndicar(){
   </div>
 
   <div class="card card-pad">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-sack-dollar"></i></span> Quanto você ganha?</div></div>
-    <p class="sec-desc" style="margin:6px 0 14px">Você recebe <strong>20% do valor da assinatura</strong> do seu indicado. Veja quanto rende em cada plano:</p>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-sack-dollar"></i></span> Quanto você ganha?</div>${proRef?'<span class="chip chip-gold"><i class="fa-solid fa-crown"></i> Pro · comissão dobrada</span>':''}</div>
+    <p class="sec-desc" style="margin:6px 0 14px">Você recebe <strong>${ratePct}% do valor da assinatura</strong> do seu indicado. Veja quanto rende em cada plano:</p>
     <div class="ind-earn-grid">
       <div class="ind-earn ie-blue">
         <div class="ie-head"><span>Plano Mensal</span><span class="chip chip-blue">${brlc(PLANS.premium.mensal)}/mês</span></div>
         <div class="ie-row"><span>Valor da assinatura</span><b>${brlc(PLANS.premium.mensal)}</b></div>
-        <div class="ie-row"><span>Sua comissão (20%)</span><b class="up">${brlc(comM)}</b></div>
+        <div class="ie-row"><span>Sua comissão (${ratePct}%)</span><b class="up">${brlc(comM)}</b></div>
         <div class="ie-note"><strong>${brlc(comM)} todo mês</strong> enquanto o indicado permanecer com a assinatura ativa.</div>
       </div>
       <div class="ind-earn ie-green">
         <div class="ie-head"><span>Plano Anual</span><span class="chip chip-up">${brlc(PLANS.premium.anualTotal)}/ano</span></div>
         <div class="ie-row"><span>Valor da assinatura</span><b>${brlc(PLANS.premium.anualTotal)}</b></div>
-        <div class="ie-row"><span>Sua comissão (20%)</span><b class="up">${brlc(comA)}</b></div>
+        <div class="ie-row"><span>Sua comissão (${ratePct}%)</span><b class="up">${brlc(comA)}</b></div>
         <div class="ie-note"><strong>${brlc(comA)}</strong> quando o indicado assinar o plano anual.</div>
       </div>
     </div>
+    ${proRef?'':`<div class="ind-pro-up"><div><i class="fa-solid fa-crown"></i> <strong>Assinante Investidor Pro ganha o dobro:</strong> comissão de ${Math.round(REF_RATE_PRO*100)}% em vez de ${Math.round(REF_RATE*100)}%.</div><button class="btn btn-premium btn-sm" onclick="goPricing()">Conhecer o Pro</button></div>`}
   </div>
 
   <div class="card card-pad">
@@ -4214,7 +4228,7 @@ function viewIndicar(){
     <div class="it-t"><i class="fa-solid fa-circle-info"></i> Informações importantes</div>
     <ul>
       <li>O pagamento é feito mensalmente enquanto o indicado estiver com assinatura ativa.</li>
-      <li>A comissão é de 20% sobre o valor da assinatura do indicado.</li>
+      <li>A comissão é de ${ratePct}% sobre o valor da assinatura do indicado${proRef?' — dobrada por você ser Investidor Pro':''}.</li>
       <li>Os pagamentos são feitos via PIX automaticamente.</li>
       <li>Você pode indicar quantas pessoas quiser — não há limite.</li>
       <li>Para dúvidas sobre pagamentos, fale com o nosso suporte.</li>
@@ -5736,6 +5750,30 @@ function downloadFile(name, text, mime){
 }
 function csvCell(v){ const s=String(v==null?'':v); return /[";\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
 function csvNum(n){ return (typeof n==='number'&&isFinite(n)) ? n.toFixed(2).replace('.',',') : ''; }
+/* Relatório mensal da carteira (exclusivo Investidor Pro) — abre versão imprimível (salvar como PDF) */
+function gerarRelatorioMensal(){
+  if(!isProTier()){ openPremiumModal('relatorio'); return; }
+  const p=portfolioStats(); const groups=portfolioByTicker().filter(g=>g.cotas>0).sort((a,b)=>b.val-a.val);
+  if(!groups.length){ toast('Adicione posições para gerar o relatório'); return; }
+  const now=new Date(), mes=now.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}), up='#1AA571', down='#E5484D';
+  const rows=groups.map(g=>`<tr><td><strong>${g.tk}</strong></td><td class="r">${g.cotas}</td><td class="r">${brl(g.pm)}</td><td class="r">${brl(g.val)}</td><td class="r" style="color:${g.lp>=0?up:down}">${g.lp>=0?'+':''}${pc(g.lp,1)}%</td><td class="r">${p.atual?pc(g.val/p.atual*100,1):0}%</td></tr>`).join('');
+  const css=`*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif}body{padding:40px;color:#16202B;max-width:820px;margin:auto}.hd{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #1AA571;padding-bottom:16px;margin-bottom:24px}.brand{font-size:22px;font-weight:800;color:#0E7C5A}.brand span{color:#16202B}.sub{color:#64707C;font-size:13px;text-transform:capitalize}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px}.kpi{border:1px solid #E5E8EC;border-radius:10px;padding:14px}.kpi .l{font-size:11px;color:#64707C;text-transform:uppercase;letter-spacing:.04em}.kpi .v{font-size:18px;font-weight:700;margin-top:4px}h2{font-size:14px;margin:26px 0 10px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 10px;border-bottom:1px solid #EEF0F2;text-align:left}th{font-size:11px;color:#64707C;text-transform:uppercase;letter-spacing:.03em}.r{text-align:right}.ft{margin-top:28px;font-size:11px;color:#9AA3AD;border-top:1px solid #EEF0F2;padding-top:12px;line-height:1.5}@media print{body{padding:0}}`;
+  const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório Lastro · ${mes}</title><style>${css}</style></head><body>
+    <div class="hd"><div><div class="brand">Lastro<span> · Relatório da Carteira</span></div><div class="sub">${mes}</div></div><div class="sub">Investidor Pro 👑</div></div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">Patrimônio</div><div class="v">${brl(p.atual)}</div></div>
+      <div class="kpi"><div class="l">Resultado c/ prov.</div><div class="v" style="color:${p.lucroProv>=0?up:down}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div></div>
+      <div class="kpi"><div class="l">Renda mensal</div><div class="v">${brl(p.renda)}</div></div>
+      <div class="kpi"><div class="l">DY médio</div><div class="v">${pc(p.dyMed,1)}%</div></div>
+    </div>
+    <h2>Posições · ${groups.length} ativos</h2>
+    <table><thead><tr><th>Ativo</th><th class="r">Qtd</th><th class="r">Preço médio</th><th class="r">Valor atual</th><th class="r">Resultado</th><th class="r">% Carteira</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="ft">Gerado pela Lastro em ${now.toLocaleDateString('pt-BR')} para o assinante Investidor Pro. Valores estimados/ilustrativos — este relatório não constitui recomendação de investimento.</div>
+  </body></html>`;
+  const w=window.open('','_blank'); if(!w){ toast('Permita pop-ups para gerar o relatório'); return; }
+  w.document.write(html); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} }, 500);
+  toast('Relatório gerado ✓');
+}
 function exportCarteiraCSV(){
   if(!proGate('export')) return;
   const groups=portfolioByTicker();
