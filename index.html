@@ -3741,6 +3741,12 @@ function viewCarteira(){
     <div style="position:relative;height:220px"><canvas id="allocChart" role="img" aria-label="Alocação da carteira"></canvas></div>
   </div>
 
+  <div class="card card-pad" style="margin-top:16px">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução do patrimônio <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div></div>
+    <div style="position:relative;height:240px;margin-top:6px"><canvas id="patrEvolChart" role="img" aria-label="Evolução do patrimônio comparada a CDI e IBOV"></canvas></div>
+    <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Reconstrução ilustrativa do valor da carteira mês a mês a partir das datas e valores dos seus aportes, comparada a aplicar os mesmos aportes no CDI (Selic 14,5% a.a.) e no IBOV. Conecte o histórico de preços para valores exatos.</div>
+  </div>
+
   ${(()=>{ const pays=provPayments(); if(!pays.length) return ''; const total=pays.reduce((s,p)=>s+p.valor,0);
     const rows=pays.slice(0,18).map(p=>{ const yoc=p.pm?p.perCota/p.pm*100:0; return `<div class="pex-row" onclick="quickView('${p.tk}')">
       <div class="pex-l">${assetLogo(p.tk,p.k,'sm')}<div class="pex-id"><div class="pex-tk">${p.tk}</div><div class="pex-d"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(p.date.toISOString().slice(0,10))}</div></div></div>
@@ -3749,6 +3755,19 @@ function viewCarteira(){
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Extrato de proventos <span class="card-sub" style="margin-left:6px">· ${pays.length} pagamentos</span></div><div class="pex-total"><div class="pex-total-v">${brl(total)}</div><div class="pex-total-l">líquido no período</div></div></div>
       <div class="prov-extract">${rows}</div>
       <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Pagamentos mensais estimados a partir do rendimento atual e da data de cada aporte. Conecte o provedor de proventos por data-com para valores exatos.</div>
+    </div>`; })()}
+
+  ${(()=>{ const sal=salaryProjection(); if(!(sal.totalAno>0)) return ''; const meta=getRendaMeta(); const prog=Math.min(100, sal.media/meta*100);
+    return `<div class="card card-pad" style="margin-top:16px">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Salário de dividendos</div><div class="pex-total"><div class="pex-total-v priv-blur">${brl(sal.media)}</div><div class="pex-total-l">média/mês · 12 meses</div></div></div>
+      <div style="position:relative;height:200px;margin:8px 0 16px"><canvas id="salaryChart" role="img" aria-label="Projeção de proventos mensais"></canvas></div>
+      <div class="sim-control" style="margin-bottom:6px">
+        <div class="lbl"><span class="n">Meta de salário mensal</span><span class="v" id="metaRendaV">${brl0(meta)}</span></div>
+        <input type="range" id="metaRenda" min="500" max="30000" step="250" value="${meta}" oninput="updateRendaMeta()">
+      </div>
+      <div style="height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:10px 0 8px"><div id="metaProgBar" style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .4s"></div></div>
+      <div id="metaProgTxt" style="font-size:12.5px;color:var(--ink-2);line-height:1.6">${metaProgText(sal.media,meta)}</div>
+      <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Projeção dos próximos 12 meses mantendo as cotas atuais, a partir do rendimento corrente. Reinvestir os proventos acelera o crescimento — simule no Simulador de Renda.</div>
     </div>`; })()}
 
   <div class="card card-pad" style="margin-top:16px">
@@ -4452,7 +4471,7 @@ function afterRender(v, soft){
   // telas sem ativos brapi só ajustam o selo p/ "Demonstração" (refreshQuotes trata).
   // soft=true vem do próprio softRefreshView pós-cotação → não rebuscar (evita loop)
   if(!soft){ refreshQuotes(); }
-  if(v==='carteira'){ initAlloc(); if(!soft) diagnose(); }
+  if(v==='carteira'){ initAlloc(); initPatrEvol(); initSalary(); if(!soft) diagnose(); }
   if(v==='comparador'){ initComparador(); }
   if(v==='screener'){ runScreener(); }
   if(v==='noticias'){
@@ -4655,6 +4674,91 @@ function initAlloc(){
   });
 }
 
+/* ── Salário de dividendos: projeção dos próximos 12 meses (cotas atuais, sem reinvestir) ── */
+function salaryProjection(){
+  const now=new Date(), labels=[], values=[];
+  const groups=portfolioByTicker().filter(g=>g.cotas>0);
+  for(let i=0;i<12;i++){ const d=new Date(now.getFullYear(), now.getMonth()+i, 1); let tot=0;
+    groups.forEach(g=>{ const base=provPerCota(g.f.k,g.f.a); if(base>0) tot+=provPerCotaMonth(g.tk, base, d.getFullYear(), d.getMonth())*g.cotas; });
+    labels.push(d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','')); values.push(tot);
+  }
+  const totalAno=values.reduce((s,v)=>s+v,0);
+  return { labels, values, media: totalAno/12, totalAno };
+}
+function getRendaMeta(){ const v=+localStorage.getItem('lastro_renda_meta'); return v>0?v:5000; }
+function setRendaMeta(v){ try{ localStorage.setItem('lastro_renda_meta', v); }catch(e){} }
+function metaProgText(media,meta){
+  if(!meta) return '';
+  if(media>=meta) return `🎉 Meta atingida: sua renda projetada de <strong>${brl0(media)}/mês</strong> supera os ${brl0(meta)} desejados.`;
+  const falta=meta-media, capital=falta*12/0.11;
+  return `Você recebe ${pc(media/meta*100,0)}% da meta. Faltam <strong>${brl0(falta)}/mês</strong> — cerca de ${brl0(capital)} a investir (DY ~11% a.a.).`;
+}
+function updateRendaMeta(){
+  const v=+$('#metaRenda').value; setRendaMeta(v);
+  const ve=$('#metaRendaV'); if(ve) ve.textContent=brl0(v);
+  const media=salaryProjection().media, bar=$('#metaProgBar'), txt=$('#metaProgTxt');
+  if(bar) bar.style.width=Math.min(100, media/v*100)+'%';
+  if(txt) txt.innerHTML=metaProgText(media,v);
+}
+function initSalary(){
+  const ctx=$('#salaryChart'); if(!ctx) return;
+  if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
+  const sal=salaryProjection(), br=cssVar('--brand');
+  charts.salary = new Chart(ctx,{
+    type:'bar',
+    data:{ labels:sal.labels, datasets:[{ data:sal.values, backgroundColor:br+'cc', borderRadius:5, maxBarThickness:30 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>brl(c.parsed.y) } } },
+      scales:{ x:{ grid:{display:false}, ticks:{color:cssVar('--ink-3'),font:{size:10}}, border:{display:false} },
+               y:{ grid:{color:cssVar('--line')}, ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v.toFixed(0)}, border:{display:false} } } }
+  });
+}
+
+/* ── Evolução do patrimônio vs CDI/IBOV (reconstrução ilustrativa a partir dos aportes) ── */
+function patrimonioEvolution(){
+  const lots=[]; portfolioByTicker().forEach(g=>{ g.lots.forEach(l=>{ let d=l.date?new Date(l.date):null; if(!d||isNaN(d)) d=new Date(); lots.push({ tk:g.tk, cotas:l.cotas, pm:l.pm, px:g.f.a.px, date:d }); }); });
+  if(!lots.length) return null;
+  const now=new Date();
+  let first=lots.reduce((m,l)=> l.date<m?l.date:m, lots[0].date);
+  const minStart=new Date(now.getFullYear(), now.getMonth()-23, 1);
+  if(first<minStart) first=minStart;
+  const months=[]; let d=new Date(first.getFullYear(), first.getMonth(), 1);
+  while(d<=now){ months.push(new Date(d)); d=new Date(d.getFullYear(), d.getMonth()+1, 1); }
+  const n=months.length;
+  const monthIdx=date=>{ const i=(date.getFullYear()-months[0].getFullYear())*12 + (date.getMonth()-months[0].getMonth()); return Math.max(0, Math.min(n-1, i)); };
+  const tickers=[...new Set(lots.map(l=>l.tk))], priceSeries={};
+  tickers.forEach(tk=>{ const px=lots.find(l=>l.tk===tk).px; priceSeries[tk]=genSeries('patr'+tk, px, n, 0.045); });
+  const ibovLvl=genSeries('IBOVpatr', 168619, n, 0.05), cdiM=Math.pow(1.145,1/12)-1;
+  const contrib=new Array(n).fill(0); lots.forEach(l=>{ contrib[monthIdx(l.date)] += l.cotas*l.pm; });
+  const cart=[], cdi=[], ibov=[]; let cdiV=0, ibovV=0;
+  months.forEach((mo,i)=>{
+    let cv=0; lots.forEach(l=>{ if(monthIdx(l.date)<=i) cv += l.cotas*priceSeries[l.tk][i]; }); cart.push(cv);
+    const r = i===0?0:(ibovLvl[i]/ibovLvl[i-1]-1);
+    cdiV = cdiV*(1+cdiM) + contrib[i]; ibovV = ibovV*(1+r) + contrib[i];
+    cdi.push(cdiV); ibov.push(ibovV);
+  });
+  return { labels: months.map(m=>m.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.','')), cart, cdi, ibov };
+}
+function initPatrEvol(){
+  const ctx=$('#patrEvolChart'); if(!ctx) return;
+  if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
+  const d=patrimonioEvolution(); if(!d) return;
+  const br=cssVar('--brand'), ac=cssVar('--accent'), ink4=cssVar('--ink-4');
+  charts.patrEvol = new Chart(ctx,{
+    type:'line',
+    data:{ labels:d.labels, datasets:[
+      { label:'Sua carteira', data:d.cart, borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, pointRadius:0, borderWidth:2.5 },
+      { label:'CDI', data:d.cdi, borderColor:ink4, borderDash:[5,4], fill:false, tension:.35, pointRadius:0, borderWidth:1.8 },
+      { label:'IBOV', data:d.ibov, borderColor:ac, borderDash:[2,3], fill:false, tension:.35, pointRadius:0, borderWidth:1.8 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, crosshair:true, crosshairFmt:v=>'R$'+(v/1000).toFixed(0)+'k', interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{ display:true, position:'top', align:'end', labels:{ color:cssVar('--ink-2'), font:{size:11}, usePointStyle:true, pointStyleWidth:9, boxHeight:7 } },
+                tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+brl0(c.parsed.y) } } },
+      scales:{ x:{ grid:{display:false}, ticks:{color:cssVar('--ink-3'),font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:8}, border:{display:false} },
+               y:{ grid:{color:cssVar('--line')}, ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'}, border:{display:false} } } }
+  });
+}
+
 /* Simulador */
 function runSim(){
   const cap = +$('#simCap').value, ap = +$('#simAp').value, dy = +$('#simDy').value/100, yr = +$('#simYr').value, goal = +$('#simGoal').value;
@@ -4781,22 +4885,38 @@ function portfolioInsights(){
   }
   // renda
   if(p.dyMed>=8) pros.push(`Renda passiva robusta: DY médio de <strong>${pc(p.dyMed,1)}%</strong> ao ano.`);
+  // qualidade média — Score Lastro ponderado pelo peso de cada posição
+  const scoreMed = pos.reduce((s,x)=> s + (x.a.score||0)*x.w/100, 0);
+  if(scoreMed>=70) pros.push(`Qualidade alta: Score Lastro médio ponderado de <strong>${Math.round(scoreMed)}/100</strong>.`);
+  else if(scoreMed>0 && scoreMed<55) cons.push(`Score Lastro médio de ${Math.round(scoreMed)}/100 — há ativos de menor qualidade puxando a carteira.`);
+  // concentração setorial
+  const bySeg={}; pos.forEach(x=>{ const s=(x.a.seg)||'Outros'; bySeg[s]=(bySeg[s]||0)+x.w; });
+  const topSeg=Object.entries(bySeg).sort((a,b)=>b[1]-a[1])[0];
+  if(topSeg && topSeg[1]>45 && Object.keys(bySeg).length>1) cons.push(`Setor <strong>${topSeg[0]}</strong> concentra ${pc(topSeg[1],0)}% da carteira — exposição setorial elevada.`);
+  // sugestões de rebalanceamento
+  const rebal=[];
+  pos.slice().filter(x=>x.w>25).sort((a,b)=>b.w-a.w).forEach(x=> rebal.push(`Reduzir <strong>${x.tk}</strong> (${pc(x.w,0)}%) para diluir a concentração.`));
+  const fraco = pos.slice().sort((a,b)=>(a.a.score||0)-(b.a.score||0))[0];
+  if(fraco && (fraco.a.score||0)>0 && (fraco.a.score||0)<55) rebal.push(`Revisar <strong>${fraco.tk}</strong> — menor Score da carteira (${fraco.a.score||0}/100).`);
+  if(classes.length>1){ const minK=Object.entries(byK).sort((a,b)=>a[1]-b[1])[0]; if(minK[1]<15) rebal.push(`Aumentar exposição a <strong>${ASSET_CLASS[minK[0]].label}s</strong> (hoje ${pc(minK[1],0)}%) para equilibrar as classes.`); }
   // resultado
   const summary = p.lucro>=0
     ? `Patrimônio de <strong>${brl(p.atual)}</strong>, com ganho de ${pc(p.lucroP,1)}% desde o aporte e renda de ${brl(p.renda)}/mês.`
     : `Patrimônio de <strong>${brl(p.atual)}</strong> (${pc(p.lucroP,1)}% desde o aporte). Renda de ${brl(p.renda)}/mês ajuda a compor o retorno.`;
-  return { pros:pros.slice(0,3), cons:cons.slice(0,3), summary };
+  return { pros:pros.slice(0,4), cons:cons.slice(0,4), summary, rebal:rebal.slice(0,3), scoreMed };
 }
 function renderDiag(){
   const el=$('#diagBody'); if(!el) return;
   const d = portfolioInsights();
   const pros = d.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> ${t}</li>`).join('');
   const cons = d.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> ${t}</li>`).join('');
+  const reb = (d.rebal||[]).map(t=>`<li style="display:flex;gap:9px;align-items:flex-start;padding:5px 0;font-size:13px;color:var(--ink-2);line-height:1.5;list-style:none"><i class="fa-solid fa-arrow-right-arrow-left" style="color:var(--accent);margin-top:3px"></i><span>${t}</span></li>`).join('');
   el.innerHTML = `<div style="margin-bottom:14px">${d.summary}</div>
     <div class="proscons">
       <div class="pc-col"><div class="pc-t pos"><i class="fa-solid fa-thumbs-up"></i> Pontos fortes</div><ul>${pros||'<li class="muted">—</li>'}</ul></div>
       <div class="pc-col"><div class="pc-t neg"><i class="fa-solid fa-circle-exclamation"></i> Atenção</div><ul>${cons||'<li class="muted">Sem alertas relevantes.</li>'}</ul></div>
-    </div>`;
+    </div>
+    ${reb?`<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line)"><div class="pc-t" style="color:var(--accent);margin-bottom:6px"><i class="fa-solid fa-scale-balanced"></i> Sugestões de rebalanceamento</div><ul style="margin:0;padding:0">${reb}</ul></div>`:''}`;
 }
 function diagnose(){ renderDiag(); }
 
@@ -5796,7 +5916,51 @@ function tabIndicadores(tk,a,k,f){
     <div class="ds-title" style="margin-bottom:6px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold)"></i> Inteligência de indicadores</div>
     <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">Toque no <i class="fa-regular fa-circle-question"></i> de cada indicador para a explicação completa (fórmula, faixa e exemplo) e no <i class="fa-solid fa-chart-column"></i> para o histórico com comparação ao setor e insights automáticos — algo que as plataformas tradicionais não entregam.</p>
   </div>
+  ${valuationHTML(a,k)}
   ${fundamentalsHTML(a,k,f)}`;
+}
+
+/* ── Preço-teto & valuation (faixas de preço justo a partir dos indicadores atuais) ── */
+function valuationHTML(a,k){
+  if(k!=='acoes' && k!=='fiis') return '';
+  const px=a.px; if(!(px>0)) return '';
+  const methods=[];
+  if(k==='acoes'){
+    const dpa = (typeof a.dy==='number') ? px*a.dy/100 : 0;                 // dividendo por ação (12m)
+    if(dpa>0) methods.push({ nm:'Bazin', sub:'DY desejado 6%', val:dpa/0.06, ico:'fa-hand-holding-dollar' });
+    const lpa = a.pl>0 ? px/a.pl : 0, vpa = a.pvp>0 ? px/a.pvp : 0;
+    if(lpa>0 && vpa>0) methods.push({ nm:'Graham', sub:'√(22,5 × LPA × VPA)', val:Math.sqrt(22.5*lpa*vpa), ico:'fa-scale-balanced' });
+  } else {
+    const dpaA = (typeof a.div==='number') ? a.div*12 : 0;                  // rendimento anual por cota
+    if(dpaA>0) methods.push({ nm:'Bazin', sub:'DY desejado 8%', val:dpaA/0.08, ico:'fa-hand-holding-dollar' });
+    const vpa = a.pvp>0 ? px/a.pvp : 0;
+    if(vpa>0) methods.push({ nm:'Valor patrimonial', sub:'P/VP = 1,00', val:vpa, ico:'fa-building-columns' });
+  }
+  if(!methods.length) return '';
+  const justo = methods.reduce((s,m)=>s+m.val,0)/methods.length;
+  const margem = (justo/px-1)*100;                                          // >0 = desconto sobre o preço atual
+  const verdict = margem>=5 ? {t:'Abaixo do preço-teto', c:'var(--brand)', ic:'fa-circle-check'}
+                : margem>=-5 ? {t:'No preço justo', c:'var(--gold)', ic:'fa-circle-minus'}
+                : {t:'Acima do preço-teto', c:'var(--down)', ic:'fa-triangle-exclamation'};
+  const cards = methods.map(m=>{ const mg=(m.val/px-1)*100; return `
+    <div style="border:1px solid var(--line);border-radius:12px;padding:12px 14px">
+      <div style="font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:6px;margin-bottom:6px"><i class="fa-solid ${m.ico}" style="color:var(--brand)"></i> ${m.nm}</div>
+      <div style="font-size:18px;font-weight:700;color:var(--ink)">${brl(m.val)}</div>
+      <div style="font-size:11px;color:var(--ink-4);margin-top:2px">${m.sub}</div>
+      <div style="font-size:11.5px;font-weight:600;margin-top:4px;color:${mg>=0?'var(--brand)':'var(--down)'}">${mg>=0?'+':''}${pc(mg,1)}% vs atual</div>
+    </div>`; }).join('');
+  return `
+  <div class="card card-pad" style="margin-bottom:16px">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-ruler-vertical"></i></span> Preço-teto & valuation</div>
+      <span class="chip" style="background:${verdict.c}1a;color:${verdict.c};border:1px solid ${verdict.c}40"><i class="fa-solid ${verdict.ic}"></i> ${verdict.t}</span></div>
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:8px 0 16px">
+      <div><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px">Preço justo estimado</div>
+        <div style="font-size:26px;font-weight:700;color:var(--ink);line-height:1.1">${brl(justo)}</div></div>
+      <div style="font-size:13px;font-weight:600;color:${margem>=0?'var(--brand)':'var(--down)'}">${margem>=0?'+':''}${pc(margem,1)}% de margem · atual ${brl(px)}</div>
+    </div>
+    <div class="ind-grid">${cards}</div>
+    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Faixas de preço-teto calculadas a partir dos indicadores atuais (DY, LPA, VPA). Não são recomendação de compra ou venda — use-as como referência e ajuste as premissas ao seu perfil.</div>
+  </div>`;
 }
 
 /* ── Proventos ── */
