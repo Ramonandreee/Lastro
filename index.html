@@ -773,6 +773,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item premium-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="alertas" onclick="nav('alertas',this)"><i class="fa-solid fa-bell"></i><span>Alertas de Preço</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
     </nav>
     </div>
 
@@ -1933,7 +1934,10 @@ body.priv .priv-blur { filter:blur(9px); user-select:none; pointer-events:none; 
 .rec-chip.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
 .rec-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
 @media (max-width:760px){ .rec-grid { grid-template-columns:1fr; } }
-.rec-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:20px; cursor:pointer; transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .2s var(--ease); }
+.rec-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:20px; cursor:pointer; transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .2s var(--ease); position:relative; }
+.rec-card-pro { border-color:color-mix(in srgb,var(--gold) 38%,transparent); background:linear-gradient(180deg, color-mix(in srgb,var(--gold) 6%,transparent), var(--surface) 26%); }
+.rec-pro-flag { position:absolute; top:14px; right:14px; display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; letter-spacing:.03em; color:#fff; background:linear-gradient(135deg,#C8911F,#A87C2A); padding:3px 9px; border-radius:20px; box-shadow:0 4px 12px rgba(168,124,42,.3); }
+body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2A); }
 .rec-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
 .rec-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
 .rec-nm { font-size:18px; font-weight:700; letter-spacing:-.01em; }
@@ -2810,6 +2814,20 @@ const RECOMENDADAS = [
     riscos:['Exposição a múltiplas classes (risco de mercado amplo)','Risco cambial parcial','Necessita disciplina de rebalanceamento'],
     bull:'Diversificação captura altas de diferentes mercados.', bear:'Quedas amplas afetam várias classes ao mesmo tempo.',
     ativos:['ITUB4','WEGE3','KNCR11','HGLG11','AAPL34','VALE3','TAEE11','BTLG11'] },
+  { id:'pro-alfa', nome:'Alfa Quant Pro', perfil:'Arrojado', cat:'Arrojada', dy:7.8, ret:24.6, vol:'Alta', n:9, pro:true,
+    desc:'Carteira quantitativa exclusiva Pro, com seleção por Score e momentum.',
+    objetivo:'Maximizar retorno ajustado ao risco combinando qualidade e tendência.',
+    estrategia:'Seleção sistemática dos ativos de maior Score Lastro com filtro de momentum e controle de concentração setorial. Rebalanceamento mensal disciplinado.',
+    riscos:['Maior rotatividade e custos','Volatilidade elevada','Sensível a reversões de tendência'],
+    bull:'Tendências fortes amplificam o retorno da carteira.', bear:'Reversões bruscas penalizam estratégias de momentum.',
+    ativos:['WEGE3','PETR4','ITUB4','VALE3','BBAS3','HGLG11','KNCR11','TAEE11','BTLG11'] },
+  { id:'pro-global', nome:'Global Renda Pro', perfil:'Moderado', cat:'Internacional', dy:6.4, ret:19.2, vol:'Média', n:8, pro:true,
+    desc:'Renda e crescimento global exclusivo Pro, via BDRs e FIIs de qualidade.',
+    objetivo:'Diversificação internacional com renda em reais e exposição ao dólar.',
+    estrategia:'Combina BDRs de gigantes globais pagadoras de dividendos com FIIs de papel para renda mensal e proteção cambial parcial. Rebalanceamento semestral.',
+    riscos:['Risco cambial','Tributação de dividendos no exterior','Liquidez de BDRs'],
+    bull:'Dólar forte e lucros globais elevam o patrimônio.', bear:'Real forte reduz o retorno em reais.',
+    ativos:['AAPL34','MSFT34','JNJB34','KO34','KNCR11','HGLG11','VGIR11','BTLG11'] },
 ];
 
 /* ══════════════════════════════════════════════════════════
@@ -2901,6 +2919,7 @@ const PAGES = {
   noticias:     { t:'Notícias',              s:'Fatos relevantes e mercado em tempo real' },
   simulador:    { t:'Simulador de Renda',    s:'Projete quanto precisa para viver de dividendos' },
   score:        { t:'Score Lastro',          s:'Ranking proprietário de qualidade dos ativos' },
+  backtest:     { t:'Backtest da Carteira',  s:'Simulação histórica da sua carteira vs CDI e IBOV' },
   planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
   indicar:      { t:'Indique e Ganhe',       s:'Ganhe 20% da assinatura de cada amigo que você indicar, via PIX' },
 };
@@ -2939,9 +2958,11 @@ const PREMIUM_FEATURES = {
   watchlist: { name:'Watchlist Ilimitada', icon:'fa-star', desc:'Acompanhe quantos ativos quiser, sem limite.', why:'Monitore todas as suas ideias de investimento em um só lugar.' },
   export:    { name:'Exportar Carteira', icon:'fa-file-csv', desc:'Baixe sua carteira completa em CSV para usar onde quiser.', why:'Leve seus dados com você, com total liberdade.' },
   relatorio: { name:'Relatório Mensal da Carteira', icon:'fa-file-lines', pro:true, desc:'Um relatório completo e imprimível da sua carteira: patrimônio, resultado, proventos do mês e alocação.', why:'Acompanhe sua evolução com um documento profissional — ideal para guardar ou compartilhar com seu contador.' },
+  backtest:  { name:'Backtest da Carteira', icon:'fa-chart-line', pro:true, desc:'Simule como a sua carteira teria se comportado no passado: retorno, volatilidade e maior queda, comparados ao CDI e ao IBOV.', why:'Entenda o risco e o retorno histórico da sua estratégia antes de tomar decisões.' },
+  carteiras: { name:'Carteiras Recomendadas Exclusivas', icon:'fa-layer-group', pro:true, desc:'Estratégias premium montadas pela inteligência Lastro, disponíveis apenas para assinantes Investidor Pro.', why:'Acesse alocações mais sofisticadas, com composição e estratégia detalhadas.' },
 };
 const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço e IA ilimitada','Watchlist ilimitada e exportação CSV'];
-const PRO_BENEFITS = ['Tudo do Premium, sem limites','Relatório mensal da carteira (imprimível)','Comissão de indicação dobrada — 40%','Análises aprofundadas por IA prioritárias','Carteiras recomendadas exclusivas','Acesso antecipado a novos recursos','Suporte prioritário'];
+const PRO_BENEFITS = ['Tudo do Premium, sem limites','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas','Relatório mensal da carteira (imprimível)','Comissão de indicação dobrada — 40%','Suporte prioritário'];
 /* tela de apresentação Premium / Investidor Pro (usada no modal e como paywall inline) */
 function premiumPresentation(key){
   const f = PREMIUM_FEATURES[key] || { name:'Recurso Premium', icon:'fa-crown', desc:'Desbloqueie todo o poder da plataforma Lastro.', why:'' };
@@ -2974,7 +2995,7 @@ function proGate(key){ if(isPro()) return true; openPremiumModal(key); return fa
 function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias Premium grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
 function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
 function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
-const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score'];
+const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest'];
 function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
@@ -3466,6 +3487,7 @@ function render(v, soft){
   else if(v==='score')       c.innerHTML = viewScore();
   else if(v==='planos')      c.innerHTML = viewPlanos();
   else if(v==='indicar')     c.innerHTML = viewIndicar();
+  else if(v==='backtest')    c.innerHTML = viewBacktest();
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
 }
@@ -4056,7 +4078,7 @@ const PLANS = {
     feats:['Tudo do Gratuito, sem limites','Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço + IA ilimitada','Watchlist ilimitada + exportação CSV'] },
   pro: { key:'pro', name:'Investidor Pro', popular:false, desc:'Tudo do Premium, com análises, relatórios e prioridade.',
     anual:39.90, mensal:49.90, anchorA:54.90, anchorM:64.90, anualTotal:478.80,
-    feats:['Tudo do Premium, sem limites','Relatório mensal da carteira (imprimível)','Comissão de indicação dobrada — 40%','Análises por IA prioritárias','Acesso antecipado a novos recursos','Suporte prioritário'] },
+    feats:['Tudo do Premium, sem limites','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas','Relatório mensal da carteira (imprimível)','Comissão de indicação dobrada — 40%','Suporte prioritário'] },
 };
 let planCycle = 'anual';
 function setPlanCycle(c){ planCycle = c==='mensal'?'mensal':'anual'; render('planos'); }
@@ -4123,8 +4145,9 @@ function viewPlanos(){
       ['Watchlist', PLAN_LIMITS.watchlist, 'Ilimitada', 'Ilimitada'],
       ['Comparador', PLAN_LIMITS.comparador, '4 ativos', '4 ativos'],
       ['Comissão de indicação', '20%', '20%', '40%'],
+      ['Backtest histórico da carteira', false, false, true],
+      ['Carteiras recomendadas exclusivas', false, false, true],
       ['Relatório mensal da carteira', false, false, true],
-      ['Acesso antecipado a novidades', false, false, true],
       ['Suporte', 'Padrão', 'Padrão', 'Prioritário'],
     ].map(([f,g,p,pr])=>`<div class="cmp-row cmp-row-3"><span class="cmp-f">${f}</span><span>${cmpCell(g)}</span><span class="cmp-pro">${cmpCell(p)}</span><span>${cmpCell(pr)}</span></div>`).join('')}
   </div>
@@ -4802,7 +4825,9 @@ const REC_CATS = ['Todas','Conservadora','Moderada','Arrojada','Dividendos','FII
 function perfilCls(p){ return p==='Conservador'?'chip-up': p==='Moderado'?'chip-blue':'chip-gold'; }
 function recCard(c){
   const ativos = c.ativos.slice(0,5).map(t=>`<span class="rec-tk">${t}</span>`).join('') + (c.ativos.length>5?`<span class="rec-tk rec-more">+${c.ativos.length-5}</span>`:'');
-  return `<div class="rec-card" onclick="openCarteira('${c.id}')">
+  const proLock = c.pro && !isProTier();
+  return `<div class="rec-card${c.pro?' rec-card-pro':''}" onclick="openCarteira('${c.id}')">
+    ${c.pro?`<div class="rec-pro-flag"><i class="fa-solid fa-crown"></i> Pro${proLock?' · exclusiva':''}</div>`:''}
     <div class="rec-top">
       <div class="rec-id"><div class="rec-nm">${c.nome}</div><div class="rec-tags"><span class="chip ${perfilCls(c.perfil)}">${c.perfil}</span> <span class="chip chip-neu">${c.cat}</span></div></div>
       <div class="rec-ret"><div class="faint">retorno 12m</div><div class="mono up">+${pc(c.ret,1)}%</div></div>
@@ -4833,7 +4858,7 @@ let currentRecId=null;
 const REC_PALETTE=['#0E7C5A','#2563EB','#8B4FB8','#A87C2A','#0EA5A0','#E2761B','#5B7CFA','#16A34A','#0891B2','#BE185D'];
 /* classifica o ativo num "grupo" para a quebra por classe/segmento */
 function recGroupOf(tk){ const lk=assetLookup(tk); if(!lk) return 'Outros'; if(lk.k==='fiis') return 'FIIs'; if(lk.k==='bdrs') return 'Internacional'; if(lk.k==='stocks') return 'Internacional'; return lk.a.seg||'Ações'; }
-function openCarteira(id){ currentRecId=id; currentView='recdetail'; document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); render('recdetail'); animateContent(); $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'}); closeSidebar(); }
+function openCarteira(id){ const _c=RECOMENDADAS.find(x=>x.id===id); if(_c&&_c.pro&&!isProTier()){ openPremiumModal('carteiras'); return; } currentRecId=id; currentView='recdetail'; document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); render('recdetail'); animateContent(); $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'}); closeSidebar(); }
 function viewCarteiraDetail(){
   const c = RECOMENDADAS.find(x=>x.id===currentRecId); if(!c) return '<div class="card card-pad">Carteira não encontrada.</div>';
   const w = 100/c.ativos.length;
@@ -5068,6 +5093,7 @@ function afterRender(v, soft){
   if(v==='proventos'){ initProventosCharts(); }
   if(v==='aporte'){ runAporte(); }
   if(v==='fire'){ runFire(); }
+  if(v==='backtest'){ initBacktest(); }
   if(v==='comparador'){ initComparador(); }
   if(v==='screener'){ runScreener(); }
   if(v==='noticias'){
@@ -5346,6 +5372,62 @@ function initPatrEvol(){
   if(charts.patrEvol) charts.patrEvol.destroy();
   charts.patrEvol = new Chart(ctx,{
     type:'line',
+    data:{ labels:d.labels, datasets:[
+      { label:'Sua carteira', data:d.cart, borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, pointRadius:0, borderWidth:2.5 },
+      { label:'CDI', data:d.cdi, borderColor:ink4, borderDash:[5,4], fill:false, tension:.35, pointRadius:0, borderWidth:1.8 },
+      { label:'IBOV', data:d.ibov, borderColor:ac, borderDash:[2,3], fill:false, tension:.35, pointRadius:0, borderWidth:1.8 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, crosshair:true, crosshairFmt:v=>'R$'+(v/1000).toFixed(0)+'k', interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{ display:true, position:'top', align:'end', labels:{ color:cssVar('--ink-2'), font:{size:11}, usePointStyle:true, pointStyleWidth:9, boxHeight:7 } },
+                tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+brl0(c.parsed.y) } } },
+      scales:{ x:{ grid:{display:false}, ticks:{color:cssVar('--ink-3'),font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:8}, border:{display:false} },
+               y:{ grid:{color:cssVar('--line')}, ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'}, border:{display:false} } } }
+  });
+}
+
+/* ── Backtest da carteira (Investidor Pro) ── */
+function backtestMetrics(d){
+  const p=portfolioStats(), invest=p.invest||0, cart=d.cart, n=cart.length;
+  const cdiF=d.cdi[n-1]||0, ibovF=d.ibov[n-1]||0, cartF=cart[n-1]||0;
+  const ret = invest? (cartF/invest-1)*100 : 0, retCdi = invest? (cdiF/invest-1)*100 : 0, retIbov = invest? (ibovF/invest-1)*100 : 0;
+  let rs=[]; for(let i=1;i<n;i++){ if(cart[i-1]>0) rs.push(cart[i]/cart[i-1]-1); }
+  const mean=rs.reduce((a,b)=>a+b,0)/(rs.length||1);
+  const vol=Math.sqrt(rs.reduce((a,b)=>a+(b-mean)*(b-mean),0)/(rs.length||1))*Math.sqrt(12)*100;
+  let peak=cart[0]||0, mdd=0; cart.forEach(v=>{ if(v>peak) peak=v; if(peak>0){ const dd=(v-peak)/peak*100; if(dd<mdd) mdd=dd; } });
+  return { ret, retCdi, retIbov, vol, mdd, meses:n-1 };
+}
+function viewBacktest(){
+  if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('backtest')}</div>`;
+  const d=patrimonioEvolution();
+  if(!d || d.cart.length<2) return `<div class="card card-pad">${emptyState('fa-chart-line','Sem dados para o backtest','Adicione aportes à sua carteira para simular o desempenho histórico dela.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
+  const m=backtestMetrics(d), vs=m.ret-m.retCdi, vsi=m.ret-m.retIbov, venceu=m.ret>=m.retCdi&&m.ret>=m.retIbov;
+  return `
+  <div class="sec-title">Backtest da sua carteira</div>
+  <div class="sec-desc">Como a sua carteira teria se comportado ao longo do período, comparada a aplicar os mesmos aportes no CDI e no IBOV.</div>
+  <div class="mstrip" style="grid-template-columns:repeat(5,1fr)">
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Retorno no período</div><div class="vl ${m.ret>=0?'up':'down'}">${m.ret>=0?'+':''}${pc(m.ret,1)}%</div><div class="dl faint">${m.meses} meses</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">vs CDI</div><div class="vl ${vs>=0?'up':'down'}">${vs>=0?'+':''}${pc(vs,1)} p.p.</div><div class="dl faint">CDI ${pc(m.retCdi,1)}%</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">vs IBOV</div><div class="vl ${vsi>=0?'up':'down'}">${vsi>=0?'+':''}${pc(vsi,1)} p.p.</div><div class="dl faint">IBOV ${pc(m.retIbov,1)}%</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Volatilidade</div><div class="vl">${pc(m.vol,1)}%</div><div class="dl faint">anualizada</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Maior queda</div><div class="vl down">${pc(m.mdd,1)}%</div><div class="dl faint">pico → vale</div></div>
+  </div>
+  <div class="card card-pad" style="margin-top:16px">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução simulada <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div><span class="chip ilus"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
+    <div style="position:relative;height:280px;margin-top:6px"><canvas id="backtestChart" role="img" aria-label="Backtest da carteira"></canvas></div>
+  </div>
+  <div class="card card-pad" style="margin-top:16px">
+    <div class="card-h" style="margin-bottom:8px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Leitura</div>
+    <p style="font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0">${venceu? `No período simulado, sua carteira <strong>superou o CDI e o IBOV</strong>, com retorno de ${pc(m.ret,1)}% e maior queda de ${pc(m.mdd,1)}%.` : `No período simulado, sua carteira rendeu <strong>${pc(m.ret,1)}%</strong> — ${vs>=0?'acima':'abaixo'} do CDI (${pc(m.retCdi,1)}%). Volatilidade de ${pc(m.vol,1)}% e maior queda de ${pc(m.mdd,1)}% mostram o risco assumido.`} Resultados passados não garantem retornos futuros.</p>
+  </div>
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Reconstrução ilustrativa a partir das datas dos seus aportes — conecte o histórico real de preços para um backtest exato.</div>`;
+}
+function initBacktest(){
+  const ctx=$('#backtestChart'); if(!ctx) return;
+  if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
+  const d=patrimonioEvolution(); if(!d) return;
+  const br=cssVar('--brand'), ac=cssVar('--accent'), ink4=cssVar('--ink-4');
+  if(charts.backtest) charts.backtest.destroy();
+  charts.backtest = new Chart(ctx,{ type:'line',
     data:{ labels:d.labels, datasets:[
       { label:'Sua carteira', data:d.cart, borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, pointRadius:0, borderWidth:2.5 },
       { label:'CDI', data:d.cdi, borderColor:ink4, borderDash:[5,4], fill:false, tension:.35, pointRadius:0, borderWidth:1.8 },
