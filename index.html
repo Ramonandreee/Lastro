@@ -1488,10 +1488,12 @@ table.tbl tbody tr:hover .logo, .sr:hover .logo { transform: scale(1.05); }
 /* logos: borda some quando carrega imagem real (visual mais limpo) */
 
 /* empty states */
-.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:44px 20px; }
-.empty-state .es-ic { width:52px; height:52px; border-radius:14px; background:var(--surface-3); color:var(--ink-3); display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:14px; }
-.empty-state .es-t { font-size:14.5px; font-weight:600; color:var(--ink); }
-.empty-state .es-s { font-size:12.5px; color:var(--ink-3); margin-top:5px; max-width:320px; line-height:1.5; }
+.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:52px 22px; animation:authIn .45s var(--ease-out) both; }
+.empty-state .es-ic { width:64px; height:64px; border-radius:50%; background:radial-gradient(circle at 50% 40%, var(--brand-l), transparent 72%); color:var(--brand); display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:16px; position:relative; }
+.empty-state .es-ic::after { content:''; position:absolute; inset:0; border-radius:50%; border:1.5px dashed color-mix(in srgb,var(--brand) 30%,transparent); }
+.empty-state .es-t { font-size:16px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
+.empty-state .es-s { font-size:13px; color:var(--ink-3); margin-top:7px; max-width:340px; line-height:1.6; }
+.empty-state .es-cta { margin-top:18px; }
 table.tbl tbody tr.no-hover { cursor:default; }
 table.tbl tbody tr.no-hover:hover { background:transparent; }
 table.tbl tbody tr.no-hover td { border:none; }
@@ -3570,8 +3572,8 @@ function pagerHTML(kind, page, pages, total, ps, start, shown){
 function gotoPage(kind, p){ tableState[kind].page=+p; renderAssets(kind); const c=$('#content'); if(c) c.scrollTop=0; window.scrollTo({top:0,behavior:'smooth'}); }
 function setPageSize(kind, n){ n=+n||30; sessionStorage.setItem('lastro_pgsize', n); Object.keys(tableState).forEach(k=>{ tableState[k].pageSize=n; tableState[k].page=1; }); renderAssets(kind); }
 /* estado vazio reutilizável */
-function emptyState(icon, title, sub){
-  return `<div class="empty-state"><div class="es-ic"><i class="fa-solid ${icon}"></i></div><div class="es-t">${title}</div>${sub?`<div class="es-s">${sub}</div>`:''}</div>`;
+function emptyState(icon, title, sub, cta){
+  return `<div class="empty-state"><div class="es-ic"><i class="fa-solid ${icon}"></i></div><div class="es-t">${title}</div>${sub?`<div class="es-s">${sub}</div>`:''}${cta?`<div class="es-cta">${cta}</div>`:''}</div>`;
 }
 
 function tblFilter(kind, key, val){
@@ -3642,7 +3644,7 @@ function viewCarteira(){
     return `
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-wallet"></i></span> Minha Carteira</div>${addBtn}</div>
-      ${emptyState('fa-wallet','Sua carteira está vazia','Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.')}
+      ${emptyState('fa-wallet','Sua carteira está vazia','Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.', `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar aporte</button>`)}
     </div>`;
   }
 
@@ -3696,7 +3698,7 @@ function viewWatchlist(){
   if(!items.length){
     return `<div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-star"></i></span> Watchlist</div>${cta}</div>
-      ${emptyState('fa-star','Sua watchlist está vazia','Abra qualquer ativo e toque em ★ Watchlist para acompanhá-lo aqui — cotações ao vivo e Score num só lugar.')}
+      ${emptyState('fa-star','Sua watchlist está vazia','Abra qualquer ativo e toque em ★ Watchlist para acompanhá-lo aqui — cotações ao vivo e Score num só lugar.', `<button class="btn btn-primary" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i> Buscar ativo</button>`)}
     </div>`;
   }
   const rows = items.map(({a,k})=>{
@@ -3988,7 +3990,7 @@ function initComparador(){
   ['cmp0','cmp1','cmp2','cmp3'].forEach((id,i)=>{ const el=$('#'+id); if(el&&cmpSel[i]) el.value=cmpSel[i]; });
   const items = cmpSel.slice(0,cap).map(tk=>ALL_ASSETS_FLAT().find(a=>a.tk===tk)).filter(Boolean);
   const body = $('#cmpBody'); if(!body) return;
-  if(items.length<2){ body.innerHTML='<div class="search-empty">Selecione ao menos dois ativos para comparar.</div>'; return; }
+  if(items.length<2){ body.innerHTML=emptyState('fa-scale-balanced','Compare lado a lado','Selecione ao menos dois ativos acima para ver fundamentos, Score Lastro e o melhor valor de cada indicador destacado.'); return; }
   const metrics = [
     ['Score Lastro', a=>`<span style="color:${scoreColor(a.score)};font-weight:600">${a.score}</span>`, a=>a.score, true],
     ['Cotação', a=>brl(a.px), a=>-a.px, false],
