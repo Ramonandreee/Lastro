@@ -750,6 +750,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item" data-view="watchlist" onclick="nav('watchlist',this)"><i class="fa-solid fa-star"></i><span>Watchlist</span></div>
       <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
       <div class="nav-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span><span class="nav-badge nav-badge-pro">PRO</span></div>
+      <div class="nav-item" data-view="alertas" onclick="nav('alertas',this)"><i class="fa-solid fa-bell"></i><span>Alertas</span><span class="nav-badge nav-badge-pro">PRO</span></div>
       <div class="nav-item" data-view="agenda" onclick="nav('agenda',this)"><i class="fa-solid fa-calendar-day"></i><span>Agenda de Dividendos</span></div>
       <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-star"></i><span>Carteiras Recomendadas</span></div>
       <div class="nav-item" data-view="noticias" onclick="nav('noticias',this)"><i class="fa-solid fa-newspaper"></i><span>Notícias</span><span class="nav-badge" style="background:var(--down-l);color:var(--down)">LIVE</span></div>
@@ -831,6 +832,26 @@ img, svg, canvas, video { max-width: 100%; }
       <div id="posErr" class="fld-err"></div>
     </div>
     <div class="modal-foot"><button class="btn btn-ghost" onclick="closePosModal()">Cancelar</button><button class="btn btn-primary" onclick="savePos()"><i class="fa-solid fa-check"></i> Salvar</button></div>
+  </div>
+</div>
+
+<!-- ════════ ALERTA DE PREÇO ════════ -->
+<div class="modal-scrim" id="alertModal" onclick="if(event.target===this)closeAlertModal()">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Criar alerta de preço">
+    <div class="modal-head"><span id="alertTitle">Criar alerta</span><button class="drawer-close" onclick="closeAlertModal()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div id="alertAsset" class="al-asset"></div>
+      <div class="fld"><span>Quando o preço estiver</span>
+        <div class="al-dir" id="alertDir">
+          <button type="button" data-dir="acima" class="on" onclick="setAlertDir('acima')"><i class="fa-solid fa-arrow-trend-up"></i> Acima de</button>
+          <button type="button" data-dir="abaixo" onclick="setAlertDir('abaixo')"><i class="fa-solid fa-arrow-trend-down"></i> Abaixo de</button>
+        </div>
+      </div>
+      <label class="fld"><span>Preço-alvo (R$)</span><input id="alertPx" type="text" inputmode="decimal" placeholder="0,00" oninput="maskAlertPrice(this)" onkeydown="if(event.key==='Enter')saveAlert()"></label>
+      <div id="alertHint" class="al-hint"></div>
+      <div id="alertErr" class="fld-err"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeAlertModal()">Cancelar</button><button class="btn btn-primary" onclick="saveAlert()"><i class="fa-solid fa-bell"></i> Criar alerta</button></div>
   </div>
 </div>
 
@@ -1587,6 +1608,31 @@ table.tbl tbody tr.no-hover td { border:none; }
 .ai-locked a { color:var(--accent); cursor:pointer; font-weight:600; }
 .sel-locked { display:inline-flex; align-items:center; gap:7px; justify-content:center; color:var(--ink-3); cursor:pointer; border-style:dashed !important; }
 .sel-locked:hover { color:var(--ink); border-color:var(--gold) !important; }
+
+/* alertas de preço */
+.al-asset { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:12px 14px; margin-bottom:14px; }
+.al-nm { font-weight:700; font-size:14px; }
+.al-cur { font-size:12px; color:var(--ink-3); margin-top:3px; }
+.al-cur strong { color:var(--ink); }
+.al-dir { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:7px; }
+.al-dir button { display:flex; align-items:center; justify-content:center; gap:7px; padding:11px; border:1.5px solid var(--line-2); background:var(--surface); border-radius:var(--r); font:inherit; font-size:13px; font-weight:600; color:var(--ink-3); cursor:pointer; transition:border-color .15s var(--ease), color .15s var(--ease), background .15s var(--ease); }
+.al-dir button.on { border-color:var(--brand); color:var(--brand); background:var(--brand-l); }
+.al-hint { font-size:12px; color:var(--ink-3); margin-top:10px; min-height:16px; line-height:1.5; }
+.al-hint strong { color:var(--ink); }
+.alert-list { display:flex; flex-direction:column; }
+.alert-row { display:flex; align-items:center; gap:12px; padding:12px 2px; border-bottom:1px solid var(--line); }
+.alert-row:last-child { border-bottom:none; }
+.ar-ic { width:38px; height:38px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; background:var(--brand-l); color:var(--brand); font-size:14px; }
+.alert-row.fired .ar-ic { background:var(--up-l); color:var(--up); }
+.ar-main { flex:1; min-width:0; }
+.ar-tk { font-weight:700; font-size:14px; }
+.ar-cls { font-size:10.5px; font-weight:600; color:var(--ink-3); background:var(--surface-2); padding:1px 6px; border-radius:6px; margin-left:4px; }
+.ar-cond { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
+.ar-cond strong { color:var(--ink); }
+.ar-fired { font-size:11.5px; color:var(--up); margin-top:3px; font-weight:600; }
+.ar-act { display:flex; gap:4px; flex:none; }
+.al-note { font-size:11.5px; color:var(--ink-4); margin-top:14px; display:flex; align-items:center; gap:7px; line-height:1.5; }
+.btn-sm { padding:7px 12px; font-size:12.5px; }
 
 /* página de preços */
 .pricing-hero { text-align:center; max-width:640px; margin:8px auto 28px; }
@@ -2716,6 +2762,7 @@ const PAGES = {
   watchlist:    { t:'Watchlist',             s:'Ativos que você acompanha de perto' },
   comparador:   { t:'Comparador',            s:'Compare ativos lado a lado pelos fundamentos' },
   screener:     { t:'Rastreador',            s:'Filtre ativos por critérios fundamentalistas' },
+  alertas:      { t:'Alertas de Preço',      s:'Seja avisado quando um ativo atingir o preço-alvo' },
   agenda:       { t:'Agenda de Dividendos',  s:'Calendário de proventos dos seus ativos e do mercado' },
   recomendadas: { t:'Carteiras Recomendadas',s:'Estratégias montadas pela inteligência Lastro' },
   recdetail:    { t:'Carteira recomendada',  s:'Composição, desempenho e estratégia' },
@@ -2917,7 +2964,7 @@ function openAssinatura(){ closeAcctMenu(); currentView='assinatura'; document.q
 function viewAssinatura(){
   const pro=isPremium(); let s=getSub();
   if(pro && !s){ s={ cycle:'anual', since:new Date().toISOString(), card:'4242', brand:'Visa', amount:298.80 }; setSub(s); }
-  const benefits=['Carteira e watchlist ilimitadas','Rastreador avançado','Score Lastro completo + ranking','Comparador de 4 ativos','Análises de IA ilimitadas','Alertas de preço e proventos','Relatórios e exportação'];
+  const benefits=['Carteira e watchlist ilimitadas','Rastreador avançado','Score Lastro completo + ranking','Comparador de 4 ativos','Análises de IA ilimitadas','Alertas de preço','Exportação da carteira (CSV)'];
   if(!pro){
     return `
     <button class="dt-back" onclick="goView('painel')"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
@@ -2996,7 +3043,7 @@ function authLogout(){
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
-  ['lastro_carteira','lastro_watch','lastro_priv','lastro_profile','lastro_sub'].forEach(k=>localStorage.removeItem(k));
+  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
   CARTEIRA = []; localStorage.setItem('lastro_sub',''); localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
   refreshPlanUI(); updateAuthUI(); applyPriv();
@@ -3014,6 +3061,7 @@ async function loadCloudState(){
     if(d){
       if(Array.isArray(d.carteira)){ CARTEIRA=d.carteira; normLots(); savePortfolio(); }
       if(Array.isArray(d.watch)) localStorage.setItem('lastro_watch', JSON.stringify(d.watch));
+      if(Array.isArray(d.alerts)) localStorage.setItem('lastro_alerts', JSON.stringify(d.alerts));
       if(d.plan) localStorage.setItem('lastro_plan', d.plan);
       if(d.theme){ localStorage.setItem('lastro_theme', d.theme); applyTheme(false); }
       if(d.profile && typeof d.profile==='object'){ localStorage.setItem('lastro_profile', JSON.stringify(d.profile)); }
@@ -3032,7 +3080,7 @@ function saveCloudState(){
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
   clearTimeout(_cloudT);
   return new Promise(res=>{ _cloudT=setTimeout(async()=>{
-    const data={ carteira:CARTEIRA, watch:watchlist(), plan:getPlan(), theme:getThemePref(), profile:getProfile(), sub:getSub(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod } };
+    const data={ carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), plan:getPlan(), theme:getThemePref(), profile:getProfile(), sub:getSub(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod } };
     try{ await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data, updated_at:new Date().toISOString()})}); }catch(e){}
     res();
   }, 700); });
@@ -3181,6 +3229,7 @@ function render(v, soft){
   else if(v==='watchlist')   c.innerHTML = viewWatchlist();
   else if(v==='comparador')  c.innerHTML = viewComparador();
   else if(v==='screener')    c.innerHTML = viewScreener();
+  else if(v==='alertas')     c.innerHTML = viewAlertas();
   else if(v==='agenda')      c.innerHTML = viewAgenda();
   else if(v==='recomendadas')c.innerHTML = viewRecomendadas();
   else if(v==='recdetail')   c.innerHTML = viewCarteiraDetail();
@@ -3683,7 +3732,7 @@ function viewCarteira(){
   </div>
 
   <div class="pos-section">
-    <div class="card-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n} ativo${n!==1?'s':''}</span></div>${addBtn}</div>
+    <div class="card-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n} ativo${n!==1?'s':''}</span></div><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-ghost btn-sm" onclick="exportCarteiraCSV()" title="Exportar carteira em CSV"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">PRO</span>'}</button>${addBtn}</div></div>
     <div class="pos-grid">${holdings}</div>
   </div>
 
@@ -3786,8 +3835,8 @@ function viewPlanos(){
         ${feat('Score Lastro completo + ranking', true, true)}
         ${feat('Comparador de 4 ativos', true, true)}
         ${feat('Análises de IA ilimitadas', true, true)}
-        ${feat('Alertas de preço e proventos', true, true)}
-        ${feat('Relatórios e exportação (PDF/CSV)', true, true)}
+        ${feat('Alertas de preço dos seus ativos', true, true)}
+        ${feat('Exportação da carteira (CSV)', true, true)}
         ${feat('Suporte prioritário', true, true)}
       </ul>
       <button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium('anual')"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':'<i class="fa-solid fa-bolt"></i> Assinar anual'}</button>
@@ -3805,7 +3854,7 @@ function viewPlanos(){
         ${feat('Score Lastro completo + ranking', true, true)}
         ${feat('Comparador de 4 ativos', true, true)}
         ${feat('Análises de IA ilimitadas', true, true)}
-        ${feat('Alertas de preço e proventos', true, true)}
+        ${feat('Alertas de preço dos seus ativos', true, true)}
       </ul>
       <button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium('mensal')"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':'<i class="fa-solid fa-bolt"></i> Assinar mensal'}</button>
       <div class="plan-trust">7 dias grátis · sem fidelidade · cancele quando quiser</div>
@@ -3824,8 +3873,8 @@ function viewPlanos(){
       ['Comparador de ativos', PLAN_LIMITS.comparador, '4 ativos'],
       ['Análises de IA por dia', PLAN_LIMITS.aiDay, 'Ilimitadas'],
       ['Rastreador avançado', false, true],
-      ['Alertas de preço e proventos', false, true],
-      ['Relatórios e exportação (PDF/CSV)', false, true],
+      ['Alertas de preço', false, true],
+      ['Exportação da carteira (CSV)', false, true],
       ['Suporte prioritário', false, true],
     ].map(([f,g,p])=>`<div class="cmp-row"><span class="cmp-f">${f}</span><span>${cmpCell(g)}</span><span class="cmp-pro">${cmpCell(p)}</span></div>`).join('')}
   </div>
@@ -4844,6 +4893,144 @@ function toggleWatch(tk){
   const b=document.getElementById('watchBtn'); if(b) b.innerHTML = watchBtnInner(tk);
 }
 
+/* ══════════════════════════════════════════════════════════
+   ALERTAS DE PREÇO (Premium) — monitora cotações ao vivo
+   ══════════════════════════════════════════════════════════ */
+function getAlerts(){ try{ const a=JSON.parse(localStorage.getItem('lastro_alerts')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function setAlerts(list){ try{ localStorage.setItem('lastro_alerts', JSON.stringify(list)); }catch(e){} if(typeof saveCloudState==='function') saveCloudState(); }
+function activeAlerts(){ return getAlerts().filter(a=>a.status==='ativo'); }
+function alertFmt(tk, n){ const r=assetLookup(tk); return (r && ASSET_CLASS[r.k] && (ASSET_CLASS[r.k].cur==='usd' || r.a.usd)) ? usd(n) : brl(n); }
+let _alertCtx=null, _alertDir='acima';
+function openAlertModal(tk){
+  if(!isPremium()){ toast('Alertas de preço são um recurso Premium'); goPricing(); return; }
+  const r=assetLookup(tk); if(!r){ toast('Ativo não encontrado'); return; }
+  if(r.k==='stocks'){ toast('Alertas disponíveis para ativos da B3 e cripto'); return; }
+  _alertCtx={tk:r.a.tk, k:r.k}; _alertDir='acima';
+  $('#alertTitle').textContent='Criar alerta · '+r.a.tk;
+  $('#alertAsset').innerHTML=`<div class="al-nm">${esc(r.a.nm||r.a.tk)}</div><div class="al-cur">Cotação atual <strong>${fmtPx(r.a,r.k)}</strong></div>`;
+  $('#alertPx').value=''; $('#alertErr').textContent=''; $('#alertHint').textContent='';
+  document.querySelectorAll('#alertDir button').forEach(b=>b.classList.toggle('on', b.dataset.dir==='acima'));
+  const m=$('#alertModal'); m.classList.add('open'); setTimeout(()=>{ const i=$('#alertPx'); if(i) i.focus(); }, 60);
+}
+function closeAlertModal(){ const m=$('#alertModal'); if(m) m.classList.remove('open'); _alertCtx=null; }
+function setAlertDir(d){ _alertDir=(d==='abaixo')?'abaixo':'acima'; document.querySelectorAll('#alertDir button').forEach(b=>b.classList.toggle('on', b.dataset.dir===_alertDir)); alertHint(); }
+function maskAlertPrice(input){
+  let d=String(input.value||'').replace(/\D/g,'');
+  if(!d){ input.value=''; alertHint(); return; }
+  d=d.replace(/^0+(?=\d)/,''); if(d.length<3) d=d.padStart(3,'0');
+  input.value=d.slice(0,-2).replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+d.slice(-2); alertHint();
+}
+function alertHint(){
+  const el=$('#alertHint'); if(!el||!_alertCtx) return;
+  const r=assetLookup(_alertCtx.tk); const px=parseBRL($('#alertPx').value);
+  if(!r||!(px>0)){ el.textContent=''; return; }
+  const cur=r.a.px||0; const diff=cur? (px-cur)/cur*100 : 0;
+  el.innerHTML=`Dispara quando <strong>${r.a.tk}</strong> ficar ${_alertDir==='acima'?'≥':'≤'} <strong>${alertFmt(_alertCtx.tk,px)}</strong>${cur?` · ${diff>=0?'+':''}${pc(diff,1)}% vs atual`:''}`;
+}
+function saveAlert(){
+  if(!_alertCtx){ return; }
+  if(!isPremium()){ closeAlertModal(); goPricing(); return; }
+  const px=parseBRL($('#alertPx').value);
+  if(!(px>0)){ $('#alertErr').textContent='Informe um preço-alvo válido'; return; }
+  const list=getAlerts();
+  if(list.some(a=>a.status==='ativo' && a.tk===_alertCtx.tk && a.dir===_alertDir && Math.abs(a.price-px)<1e-6)){
+    $('#alertErr').textContent='Você já tem um alerta igual a este'; return;
+  }
+  list.push({ id:uid(), tk:_alertCtx.tk, k:_alertCtx.k, dir:_alertDir, price:px, created:Date.now(), status:'ativo' });
+  setAlerts(list);
+  toast(`Alerta criado · ${_alertCtx.tk} ${_alertDir} ${alertFmt(_alertCtx.tk,px)} 🔔`);
+  closeAlertModal();
+  if(currentView==='alertas') render('alertas', true);
+}
+function deleteAlert(id){ setAlerts(getAlerts().filter(a=>a.id!==id)); if(currentView==='alertas') render('alertas', true); }
+function clearFiredAlerts(){ setAlerts(getAlerts().filter(a=>a.status!=='disparado')); if(currentView==='alertas') render('alertas', true); }
+function reactivateAlert(id){ const list=getAlerts(); const al=list.find(a=>a.id===id); if(al){ al.status='ativo'; delete al.firedAt; delete al.firedPx; setAlerts(list); if(currentView==='alertas') render('alertas', true); } }
+/* checa alertas ativos contra as cotações recém-atualizadas */
+function checkAlerts(){
+  const list=getAlerts(); if(!list.length) return; let changed=false;
+  list.forEach(al=>{
+    if(al.status!=='ativo') return;
+    const r=assetLookup(al.tk); if(!r) return; const px=r.a.px; if(!(px>0)) return;
+    const hit = al.dir==='acima' ? px>=al.price : px<=al.price;
+    if(hit){ al.status='disparado'; al.firedAt=Date.now(); al.firedPx=px; changed=true;
+      toast(`🔔 ${al.tk} atingiu ${alertFmt(al.tk,px)} (alvo ${al.dir} ${alertFmt(al.tk,al.price)})`);
+      notifyAlert(al, px);
+    }
+  });
+  if(changed){ setAlerts(list); if(currentView==='alertas') render('alertas', true); }
+}
+function notifyAlert(al, px){
+  try{ if('Notification' in window && Notification.permission==='granted'){
+    new Notification('Lastro · Alerta de preço', { body:`${al.tk} atingiu ${alertFmt(al.tk,px)} (alvo ${al.dir} ${alertFmt(al.tk,al.price)})`, icon:'/icon-192.png' });
+  } }catch(e){}
+}
+function viewAlertas(){
+  if(!isPremium()){
+    return `<div class="card card-pad">${paywall('Alertas de preço são Premium','Crie alertas e seja avisado assim que um ativo atingir o preço-alvo. Monitora as cotações ao vivo da B3 e de cripto enquanto o app está aberto.')}</div>`;
+  }
+  try{ if('Notification' in window && Notification.permission==='default') Notification.requestPermission(); }catch(e){}
+  const list=getAlerts();
+  if(!list.length){
+    return `<div class="card card-pad">${emptyState('fa-bell','Você ainda não tem alertas','Abra a página de um ativo e toque em “Alerta” para ser avisado quando o preço subir ou cair até o valor que você definir.', `<button class="btn btn-primary" onclick="nav('acoes')"><i class="fa-solid fa-magnifying-glass"></i> Explorar ativos</button>`)}</div>`;
+  }
+  const ativos=list.filter(a=>a.status==='ativo').sort((a,b)=>b.created-a.created);
+  const disp=list.filter(a=>a.status==='disparado').sort((a,b)=>(b.firedAt||0)-(a.firedAt||0));
+  const row=(al)=>{
+    const r=assetLookup(al.tk); const cur=r?r.a.px:null; const fired=al.status==='disparado';
+    return `<div class="alert-row ${fired?'fired':''}">
+      <div class="ar-ic"><i class="fa-solid fa-${al.dir==='acima'?'arrow-trend-up':'arrow-trend-down'}"></i></div>
+      <div class="ar-main">
+        <div class="ar-tk">${al.tk} <span class="ar-cls">${ASSET_CLASS[al.k]?ASSET_CLASS[al.k].label:''}</span></div>
+        <div class="ar-cond">${al.dir==='acima'?'Acima de':'Abaixo de'} <strong>${alertFmt(al.tk,al.price)}</strong>${cur!=null?` · atual ${alertFmt(al.tk,cur)}`:''}</div>
+        ${fired?`<div class="ar-fired"><i class="fa-solid fa-circle-check"></i> Disparado${al.firedPx!=null?' em '+alertFmt(al.tk,al.firedPx):''} · ${fmtDateBR(new Date(al.firedAt).toISOString())}</div>`:''}
+      </div>
+      <div class="ar-act">
+        ${fired?`<button class="icon-btn" title="Reativar alerta" aria-label="Reativar alerta" onclick="reactivateAlert('${al.id}')"><i class="fa-solid fa-rotate-right"></i></button>`:''}
+        <button class="icon-btn" title="Excluir alerta" aria-label="Excluir alerta" onclick="deleteAlert('${al.id}')"><i class="fa-solid fa-trash-can"></i></button>
+      </div>
+    </div>`;
+  };
+  return `
+    <div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-bell"></i></span> Alertas ativos <span class="card-sub">· ${ativos.length}</span></div></div>
+      ${ativos.length? `<div class="alert-list">${ativos.map(row).join('')}</div>` : `<div class="muted" style="padding:10px 2px;font-size:13px">Nenhum alerta ativo no momento.</div>`}
+      <div class="al-note"><i class="fa-solid fa-circle-info"></i> Os alertas são verificados com as cotações ao vivo enquanto o app está aberto.</div>
+    </div>
+    ${disp.length?`<div class="card card-pad" style="margin-top:16px">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-circle-check"></i></span> Disparados <span class="card-sub">· ${disp.length}</span></div><button class="btn btn-ghost btn-sm" onclick="clearFiredAlerts()"><i class="fa-solid fa-broom"></i> Limpar</button></div>
+      <div class="alert-list">${disp.map(row).join('')}</div>
+    </div>`:''}`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   EXPORTAÇÃO CSV (Premium) — relatório da carteira
+   ══════════════════════════════════════════════════════════ */
+function downloadFile(name, text, mime){
+  try{
+    const blob=new Blob([text], {type:mime||'text/plain;charset=utf-8'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 100);
+  }catch(e){ toast('Não foi possível exportar'); }
+}
+function csvCell(v){ const s=String(v==null?'':v); return /[";\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
+function csvNum(n){ return (typeof n==='number'&&isFinite(n)) ? n.toFixed(2).replace('.',',') : ''; }
+function exportCarteiraCSV(){
+  if(!isPremium()){ toast('Exportar a carteira é um recurso Premium'); goPricing(); return; }
+  const groups=portfolioByTicker();
+  if(!groups.length){ toast('Sua carteira está vazia'); return; }
+  const head=['Ativo','Nome','Classe','Quantidade','Preço médio (R$)','Cotação atual','Valor investido','Valor atual','Resultado (R$)','Resultado (%)','Proventos recebidos (R$)'];
+  const rows=groups.map(g=>[
+    g.tk, g.f.a.nm||'', (ASSET_CLASS[g.f.k]?ASSET_CLASS[g.f.k].label:g.f.k),
+    csvNum(g.cotas), csvNum(g.pm), csvNum(g.f.a.px||0), csvNum(g.custo), csvNum(g.val),
+    csvNum(g.lucro), csvNum(g.lp), csvNum(g.prov)
+  ]);
+  const lines=[head, ...rows].map(r=>r.map(csvCell).join(';'));
+  const stamp=new Date().toISOString().slice(0,10);
+  downloadFile(`lastro-carteira-${stamp}.csv`, '﻿'+lines.join('\r\n'), 'text/csv;charset=utf-8');
+  toast('Carteira exportada em CSV ✓');
+}
+
 /* série histórica determinística (ilustrativa) ancorada no preço atual */
 function seedFrom(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
 function rngF(seed){ return function(){ let t=seed+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }; }
@@ -5857,6 +6044,7 @@ function viewAssetDetail(tk){
       <div class="d ${vv>=0?'up':'down'}"><i class="fa-solid fa-caret-${vv>=0?'up':'down'}"></i> ${vv>=0?'+':''}${pc(vv)}% hoje</div>
       <div class="dt-actions">
         <button class="btn btn-ghost" id="watchBtn" onclick="toggleWatch('${tk}')">${watchBtnInner(tk)}</button>
+        ${k==='stocks'?'':`<button class="btn btn-ghost" onclick="openAlertModal('${tk}')" title="Criar alerta de preço"><i class="fa-solid fa-bell"></i> Alerta</button>`}
         <button class="btn btn-primary" onclick="openPosModal('${tk}')"><i class="fa-solid fa-plus"></i> Carteira</button>
       </div>
     </div>
@@ -6036,6 +6224,8 @@ function screenSymbols(){
     }
     // 'stocks' (EUA) e demais telas não têm cotação na brapi
   }
+  // sempre inclui ativos com alerta ativo, para dispararem em qualquer tela
+  try{ activeAlerts().forEach(al=>{ const f=assetLookup(al.tk); if(!f) return; if(f.k==='cripto') crypto.add(al.tk); else if(f.k!=='stocks') b3.add(al.tk); }); }catch(e){}
   return { b3:[...b3], crypto:[...crypto] };
 }
 
@@ -6091,7 +6281,7 @@ function softRefreshView(){
   if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)){
     if(typing) return;            // não recriar a tabela enquanto o usuário digita/filtra
     renderAssets(v);
-  } else if(['painel','carteira','score','asset','watchlist'].includes(v) && !typing){
+  } else if(['painel','carteira','score','asset','watchlist','alertas'].includes(v) && !typing){
     render(v, true);             // soft: re-renderiza sem re-disparar buscas (evita loop)
   }
 }
@@ -6114,6 +6304,7 @@ async function refreshQuotes(manual){
     if(!r.ok){ const body = await r.text().catch(()=> ''); throw new Error(`quotes ${r.status}: ${body.slice(0,160)}`); }
     const data = await r.json();
     const updated = applyQuotes(data);
+    checkAlerts();
     if(updated > 0){
       LIVE.on = true; LIVE.ts = new Date(); LIVE.fails = 0; LIVE.lastError = null;
       setDataStatus('live', `Ao vivo · ${LIVE.ts.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);
@@ -6173,6 +6364,15 @@ if(isAuthed()) loadCloudState();   // retoma sessão e sincroniza
 render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
 animateContent();
 loadUniverse();
+/* poller de alertas: enquanto houver alerta ativo e o app visível, atualiza
+   as cotações dos ativos monitorados a cada 60s e dispara os que baterem o alvo */
+setInterval(()=>{
+  try{
+    if(document.visibilityState!=='visible') return;
+    if(!activeAlerts().length) return;
+    refreshQuotes();
+  }catch(e){}
+}, 60000);
 /* abertura do app (splash) — exibe por um tempo mínimo e some revelando a Home */
 (function(){
   const sp=document.getElementById('splash'); if(!sp){ maybeOnboard(); return; }
