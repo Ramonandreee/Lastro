@@ -1541,7 +1541,7 @@ table.tbl tbody tr:hover .logo, .sr:hover .logo { transform: scale(1.05); }
 .empty-state .es-ic::after { content:''; position:absolute; inset:0; border-radius:50%; border:1.5px dashed color-mix(in srgb,var(--brand) 30%,transparent); }
 .empty-state .es-t { font-size:16px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
 .empty-state .es-s { font-size:13px; color:var(--ink-3); margin-top:7px; max-width:340px; line-height:1.6; }
-.empty-state .es-cta { margin-top:18px; }
+.empty-state .es-cta { margin-top:18px; display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
 table.tbl tbody tr.no-hover { cursor:default; }
 table.tbl tbody tr.no-hover:hover { background:transparent; }
 table.tbl tbody tr.no-hover td { border:none; }
@@ -2354,7 +2354,7 @@ function loadPortfolio(){
   try{ const s=JSON.parse(localStorage.getItem('lastro_carteira')); if(Array.isArray(s)) return s; }catch(e){}
   return [];
 }
-function savePortfolio(){ try{ localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} if(typeof saveCloudState==='function') saveCloudState(); }
+function savePortfolio(){ if(demoMode) return; try{ localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} if(typeof saveCloudState==='function') saveCloudState(); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function normLots(){ if(!Array.isArray(CARTEIRA)){ CARTEIRA=[]; return; } let ch=false; CARTEIRA.forEach(c=>{ if(!c.id){ c.id=uid(); ch=true; } }); if(ch) savePortfolio(); }
 function uniqueTickers(){ return [...new Set(CARTEIRA.map(c=>c.tk))]; }
@@ -2505,6 +2505,8 @@ function posPreview(){
   el.classList.add('on');
 }
 function openPosModal(tk, lotId){
+  // carteira real é Premium — no plano Gratuito qualquer tentativa de adicionar/editar leva à assinatura
+  if(!isPremium()){ goPricing(); return; }
   const lot = lotId ? CARTEIRA.find(c=>c.id===lotId) : null;
   const lockTk = !!lot || !!tk;
   $('#posSug').classList.remove('on'); _sugList=[]; _sugIdx=-1;
@@ -2800,6 +2802,7 @@ let currentView = 'painel';
    PLANOS (SaaS Free / Premium) + soft paywall
    ══════════════════════════════════════════════════════════ */
 const PLAN_LIMITS = { carteira: 6, watchlist: 8, comparador: 2, aiDay: 5 };
+let demoMode = false;   // carteira de demonstração (efêmera, só em memória — some ao recarregar)
 function getPlan(){ return localStorage.getItem('lastro_plan')==='premium' ? 'premium' : 'free'; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
@@ -3740,20 +3743,27 @@ function viewCarteira(){
   const n = byT.length;
   const concentracao = n ? Math.max(...byT.map(g=>p.atual? g.val/p.atual*100 : 0)) : 0;
   const saude = n ? Math.max(0, Math.round(100 - (concentracao>30?15:6) - (n<6?12:0) - (n<3?10:0))) : 0;
-  const addBtn = `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar aporte</button>`;
+  // Carteira real é Premium: no plano Gratuito o botão vira "Desbloquear"; o usuário só explora via demonstração
+  const addBtn = isPremium()
+    ? `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar aporte</button>`
+    : `<button class="btn btn-premium" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Desbloquear minha carteira</button>`;
 
   if(!n){
+    const emptyCta = isPremium()
+      ? `${addBtn} <button class="btn btn-ghost" onclick="importCarteiraCSV()"><i class="fa-solid fa-file-import"></i> Importar CSV</button>`
+      : `${addBtn} <button class="btn btn-ghost" onclick="loadDemoCarteira()"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver com dados de exemplo</button>`;
     return `
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-wallet"></i></span> Minha Carteira</div>${addBtn}</div>
-      ${emptyState('fa-wallet','Sua carteira está vazia','Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.', `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar aporte</button> <button class="btn btn-ghost" onclick="loadDemoCarteira()"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver com dados de exemplo</button> <button class="btn btn-ghost" onclick="importCarteiraCSV()"><i class="fa-solid fa-file-import"></i> Importar CSV</button>`)}
+      ${emptyState('fa-wallet','Sua carteira está vazia', isPremium()?'Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.':'Veja como a carteira funciona com dados de exemplo. Para acompanhar a sua de verdade — com sincronização, proventos, Imposto de Renda e mais — desbloqueie o Premium.', emptyCta)}
     </div>`;
   }
 
   const holdings = byT.map(posCard).join('');
 
   return `
-  <div class="cart-sum-head"><div class="sec-title" style="margin:0;font-size:19px">Minha carteira</div><button class="priv-eye" onclick="togglePriv()" title="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
+  ${demoMode?`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--gold-l);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);border-radius:var(--r);padding:12px 14px;margin-bottom:14px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold);font-size:16px"></i><div style="flex:1;min-width:180px;font-size:12.5px;color:var(--ink-2);line-height:1.5">Você está vendo uma <strong>carteira de demonstração</strong> — ela some ao fechar o app. Crie a sua para acompanhar de verdade, com sincronização na nuvem.</div><button class="btn btn-premium btn-sm" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Desbloquear minha carteira</button></div>`:''}
+  <div class="cart-sum-head"><div class="sec-title" style="margin:0;font-size:19px">Minha carteira${demoMode?' <span class="chip ilus" style="vertical-align:middle"><i class="fa-solid fa-flask"></i> demonstração</span>':''}</div><button class="priv-eye" onclick="togglePriv()" title="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
   <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl priv-blur">${brl(p.atual)}</div><div class="dl priv-blur ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}% s/ prov.</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Resultado c/ proventos</div><div class="vl priv-blur ${p.lucroProv>=0?'up':'down'}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div><div class="dl priv-blur ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div></div>
@@ -5500,6 +5510,7 @@ function parseCarteiraCSV(text){
   return { added:n, blocked };
 }
 function importCarteiraCSV(){
+  if(!isPremium()){ toast('Importar a carteira é um recurso Premium'); goPricing(); return; }
   const inp=document.createElement('input'); inp.type='file'; inp.accept='.csv,text/csv';
   inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(!f) return; const r=new FileReader();
     r.onload=()=>{ try{ const res=parseCarteiraCSV(String(r.result||'')); if(res.added>0){ savePortfolio(); toast(`${res.added} aporte${res.added>1?'s':''} importado${res.added>1?'s':''} ✓`); render('carteira'); if(res.blocked>0) setTimeout(()=>{ toast(`${res.blocked} ativo(s) não importados — limite do plano Gratuito (${PLAN_LIMITS.carteira})`); goPricing(); }, 1400); } else if(res.blocked>0){ toast(`Limite do plano Gratuito (${PLAN_LIMITS.carteira} ativos) atingido`); goPricing(); } else toast('Nenhum aporte válido no CSV (colunas: Ativo, Quantidade, Preço, Data)'); }catch(e){ toast('Não foi possível ler o CSV'); } };
@@ -5509,11 +5520,13 @@ function importCarteiraCSV(){
 /* ── Carteira de demonstração (1 clique) — permite ver valor antes de digitar ── */
 function loadDemoCarteira(){
   const demo=[['HGLG11',50,158.00],['KNCR11',80,103.00],['VISC11',60,108.00],['PETR4',100,36.50],['ITSA4',200,9.80]];
-  const now=new Date(); let n=0;
+  const now=new Date(); const lots=[];
   demo.forEach((d,i)=>{ if(!assetLookup(d[0])) return; const dt=new Date(now.getFullYear(), now.getMonth()-(14-i*3), 10).toISOString().slice(0,10);
-    CARTEIRA.push({ id:uid(), tk:d[0], cotas:d[1], pm:d[2], date:dt }); n++; });
-  if(!n){ toast('Não foi possível carregar a demonstração'); return; }
-  savePortfolio(); toast(`Carteira-demo carregada (${n} ativos) — você pode editá-la ou removê-la ✓`);
+    lots.push({ id:uid(), tk:d[0], cotas:d[1], pm:d[2], date:dt }); });
+  if(!lots.length){ toast('Não foi possível carregar a demonstração'); return; }
+  // efêmero: NÃO persiste (sem savePortfolio) — vive só nesta sessão e some ao reabrir o app
+  CARTEIRA=lots; demoMode=true;
+  toast('Carteira de demonstração carregada — ela some ao fechar o app ✓');
   if(currentView==='carteira') render('carteira'); else nav('carteira');
 }
 
