@@ -747,6 +747,10 @@ img, svg, canvas, video { max-width: 100%; }
     <nav class="nav-section">
       <div class="nav-label">Ferramentas</div>
       <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Minha Carteira</span></div>
+      <div class="nav-item" data-view="proventos" onclick="nav('proventos',this)"><i class="fa-solid fa-coins"></i><span>Meus Proventos</span></div>
+      <div class="nav-item" data-view="aporte" onclick="nav('aporte',this)"><i class="fa-solid fa-scale-balanced"></i><span>Aporte Inteligente</span></div>
+      <div class="nav-item" data-view="fire" onclick="nav('fire',this)"><i class="fa-solid fa-fire"></i><span>Independência Financeira</span></div>
+      <div class="nav-item" data-view="ir" onclick="nav('ir',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>Imposto de Renda</span></div>
       <div class="nav-item" data-view="watchlist" onclick="nav('watchlist',this)"><i class="fa-solid fa-star"></i><span>Watchlist</span></div>
       <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
       <div class="nav-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span><span class="nav-badge nav-badge-pro">PRO</span></div>
@@ -2759,6 +2763,10 @@ const PAGES = {
   stocks:       { t:'Stocks',                s:'Ações internacionais — bolsas dos EUA' },
   cripto:       { t:'Criptomoedas',          s:'Principais criptoativos por valor de mercado' },
   carteira:     { t:'Minha Carteira',        s:'Diagnóstico, proventos e saúde da sua carteira' },
+  proventos:    { t:'Meus Proventos',        s:'Histórico, crescimento e Yield on Cost dos seus dividendos' },
+  aporte:       { t:'Aporte Inteligente',    s:'Onde investir o próximo aporte para rebalancear a carteira' },
+  fire:         { t:'Independência Financeira',s:'Quanto falta para viver dos seus dividendos' },
+  ir:           { t:'Imposto de Renda',      s:'DARF de vendas e informe anual prontos para a declaração' },
   watchlist:    { t:'Watchlist',             s:'Ativos que você acompanha de perto' },
   comparador:   { t:'Comparador',            s:'Compare ativos lado a lado pelos fundamentos' },
   screener:     { t:'Rastreador',            s:'Filtre ativos por critérios fundamentalistas' },
@@ -3226,6 +3234,10 @@ function render(v, soft){
   if(v==='painel')       c.innerHTML = viewPainel();
   else if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)) c.innerHTML = viewAssets(v);
   else if(v==='carteira')    c.innerHTML = viewCarteira();
+  else if(v==='proventos')   c.innerHTML = viewProventos();
+  else if(v==='aporte')      c.innerHTML = viewAporte();
+  else if(v==='fire')        c.innerHTML = viewFire();
+  else if(v==='ir')          c.innerHTML = viewIR();
   else if(v==='watchlist')   c.innerHTML = viewWatchlist();
   else if(v==='comparador')  c.innerHTML = viewComparador();
   else if(v==='screener')    c.innerHTML = viewScreener();
@@ -3968,6 +3980,272 @@ function viewSimulador(){
 }
 
 /* ══════════════════════════════════════════════════════════
+   VIEW: MEUS PROVENTOS
+   ══════════════════════════════════════════════════════════ */
+function proventosData(){
+  const pays=provPayments(), now=new Date();
+  const months=[]; for(let i=11;i>=0;i--){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); months.push({ key:d.getFullYear()+'-'+d.getMonth(), label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.',''), val:0 }); }
+  const idx={}; months.forEach((m,i)=>idx[m.key]=i);
+  const byTk={}; let total12=0, prior12=0;
+  pays.forEach(p=>{ const key=p.date.getFullYear()+'-'+p.date.getMonth();
+    if(key in idx){ months[idx[key]].val+=p.valor; total12+=p.valor; byTk[p.tk]=(byTk[p.tk]||0)+p.valor; }
+    else { const diff=(now.getFullYear()-p.date.getFullYear())*12+(now.getMonth()-p.date.getMonth()); if(diff>=12 && diff<24) prior12+=p.valor; }
+  });
+  return { months, total12, media:total12/12, growth: prior12>0?(total12/prior12-1)*100:null, ranking:Object.entries(byTk).sort((a,b)=>b[1]-a[1]) };
+}
+function viewProventos(){
+  const d=proventosData(), p=portfolioStats();
+  if(!d.ranking.length){
+    return `<div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Meus Proventos</div></div>
+    ${emptyState('fa-coins','Você ainda não tem proventos','Adicione aportes em FIIs ou ações pagadoras para acompanhar o histórico, o crescimento e o Yield on Cost da sua renda passiva.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
+  }
+  const yoc = p.invest? p.renda*12/p.invest*100 : 0;
+  const gr = d.growth==null? '—' : (d.growth>=0?'+':'')+pc(d.growth,1)+'%';
+  const rankRows = d.ranking.slice(0,8).map(([tk,v],i)=>{ const col=ALLOC_COLORS[i%ALLOC_COLORS.length], pctv=d.total12? v/d.total12*100:0;
+    return `<div class="pex-row" onclick="quickView('${tk}')"><div class="pex-l"><span style="display:inline-flex;width:22px;height:22px;border-radius:6px;background:${col}22;color:${col};align-items:center;justify-content:center;font-size:11px;font-weight:700">${i+1}</span><div class="pex-id"><div class="pex-tk">${tk}</div><div class="pex-d">${pc(pctv,1)}% do total</div></div></div><div class="pex-r"><div class="pex-v up priv-blur">${brl(v)}</div><div class="pex-s">12 meses</div></div></div>`; }).join('');
+  return `
+  <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Recebido (12m)</div><div class="vl priv-blur up">${brl(d.total12)}</div><div class="dl faint">renda passiva</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Média mensal</div><div class="vl priv-blur">${brl(d.media)}</div><div class="dl faint">por mês</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Crescimento a/a</div><div class="vl ${d.growth>=0?'up':'down'}">${gr}</div><div class="dl faint">vs 12m anteriores</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Yield on Cost</div><div class="vl" style="color:var(--brand)">${pc(yoc,1)}%</div><div class="dl faint">renda s/ custo</div></div>
+  </div>
+  <div class="card card-pad" style="margin-top:16px">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Proventos por mês <span class="card-sub" style="margin-left:6px">· últimos 12 meses</span></div></div>
+    <div style="position:relative;height:240px;margin-top:6px"><canvas id="provMonthChart" role="img" aria-label="Proventos por mês"></canvas></div>
+  </div>
+  <div class="sim-grid" style="margin-top:16px">
+    <div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-trophy"></i></span> Quem mais paga</div></div>
+      <div class="prov-extract" style="margin-top:8px">${rankRows}</div>
+    </div>
+    <div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-chart-pie"></i></span> Distribuição da renda</div></div>
+      <div style="position:relative;height:240px;margin-top:6px"><canvas id="provAssetChart" role="img" aria-label="Distribuição dos proventos por ativo"></canvas></div>
+    </div>
+  </div>
+  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Proventos estimados a partir do rendimento atual de cada ativo e das datas dos seus aportes. Conecte a fonte de proventos por data-com para o histórico exato.</div>`;
+}
+function chartUnavail(c){ if(c) c.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; }
+function initProventosCharts(){
+  const d=proventosData(), c1=$('#provMonthChart');
+  if(c1 && HAS_CHART){ const br=cssVar('--brand'); if(charts.provMonth) charts.provMonth.destroy();
+    charts.provMonth=new Chart(c1,{ type:'bar', data:{ labels:d.months.map(m=>m.label), datasets:[{ data:d.months.map(m=>m.val), backgroundColor:br+'cc', borderRadius:5, maxBarThickness:34 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>brl(c.parsed.y)}} },
+        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}}, y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v.toFixed(0)},border:{display:false}} } } });
+  } else chartUnavail(c1);
+  const c2=$('#provAssetChart');
+  if(c2 && HAS_CHART){ if(charts.provAsset) charts.provAsset.destroy(); const rank=d.ranking.slice(0,8), rest=d.ranking.slice(8).reduce((s,x)=>s+x[1],0);
+    const labels=rank.map(x=>x[0]).concat(rest>0?['Outros']:[]), data=rank.map(x=>x[1]).concat(rest>0?[rest]:[]);
+    charts.provAsset=new Chart(c2,{ type:'doughnut', data:{ labels, datasets:[{ data, backgroundColor:labels.map((_,i)=>ALLOC_COLORS[i%ALLOC_COLORS.length]), borderWidth:0, hoverOffset:7 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'62%', plugins:{ legend:{position:'bottom', labels:{color:cssVar('--ink-2'),font:{size:11,family:'IBM Plex Mono'},padding:10,usePointStyle:true,pointStyleWidth:9,boxHeight:7}}, tooltip:{callbacks:{label:c=>{const tot=c.dataset.data.reduce((s,v)=>s+v,0); return c.label+': '+(tot?(c.parsed/tot*100).toFixed(1):0)+'% · '+brl(c.parsed);}}} } } });
+  } else chartUnavail(c2);
+}
+
+/* ══════════════════════════════════════════════════════════
+   VIEW: APORTE INTELIGENTE
+   ══════════════════════════════════════════════════════════ */
+function aportePlan(valor, strat){
+  const groups=portfolioByTicker().filter(g=>g.cotas>0 && g.f.a.px>0);
+  if(!groups.length) return null;
+  const total=groups.reduce((s,g)=>s+g.val,0), newTotal=total+valor, n=groups.length;
+  let targets;
+  if(strat==='score'){ const ws=groups.map(g=>Math.max(1,g.f.a.score||50)), sum=ws.reduce((a,b)=>a+b,0); targets=ws.map(w=>w/sum*newTotal); }
+  else if(strat==='dy'){ const ws=groups.map(g=>Math.max(0.1,g.f.a.dy||1)), sum=ws.reduce((a,b)=>a+b,0); targets=ws.map(w=>w/sum*newTotal); }
+  else targets=groups.map(()=>newTotal/n);
+  const items=groups.map((g,i)=>({ g, tk:g.tk, px:g.f.a.px, cur:g.val, target:targets[i], deficit:Math.max(0,targets[i]-g.val), cotas:0, invest:0 }));
+  const totDef=items.reduce((s,x)=>s+x.deficit,0);
+  items.forEach(x=>{ x.alloc = totDef>0 ? x.deficit/totDef*valor : valor/n; const c=Math.floor(x.alloc/x.px); x.cotas=c; x.invest=c*x.px; });
+  let budget=valor-items.reduce((s,x)=>s+x.invest,0), guard=0;
+  while(guard++<2000){ const cand=items.filter(x=>x.px<=budget+1e-6).sort((a,b)=>((b.target-b.cur-b.invest))-((a.target-a.cur-a.invest)))[0]; if(!cand) break; cand.cotas++; cand.invest+=cand.px; budget-=cand.px; }
+  return { items:items.filter(x=>x.cotas>0).sort((a,b)=>b.invest-a.invest), sobra:budget, total, newTotal };
+}
+function viewAporte(){
+  const groups=portfolioByTicker().filter(g=>g.cotas>0);
+  if(!groups.length){
+    return `<div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-scale-balanced"></i></span> Aporte Inteligente</div></div>
+    ${emptyState('fa-scale-balanced','Monte sua carteira primeiro','Com seus ativos cadastrados, informo exatamente quanto comprar de cada um no próximo aporte para equilibrar a carteira.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
+  }
+  return `
+  <div class="sec-title">Onde colocar o próximo aporte?</div>
+  <div class="sec-desc">Informe quanto vai investir e a estratégia. O Lastro calcula a compra (em cotas inteiras) que mais aproxima sua carteira do equilíbrio — priorizando quem está abaixo do peso ideal.</div>
+  <div class="card card-pad">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+      <div style="flex:1;min-width:180px"><label style="display:block;font-size:12px;color:var(--ink-3);margin-bottom:6px">Valor do aporte</label>
+        <input id="apVal" type="number" min="0" step="100" value="1000" oninput="runAporte()" style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:15px;font-weight:600"></div>
+      <div style="flex:1;min-width:180px"><label style="display:block;font-size:12px;color:var(--ink-3);margin-bottom:6px">Estratégia</label>
+        <select id="apStrat" onchange="runAporte()" style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:14px">
+          <option value="equal">Igualar pesos</option><option value="score">Priorizar maior Score</option><option value="dy">Priorizar maior DY</option>
+        </select></div>
+    </div>
+  </div>
+  <div id="aportePlan" style="margin-top:16px"></div>`;
+}
+function runAporte(){
+  const host=$('#aportePlan'); if(!host) return;
+  const valor=Math.max(0,+($('#apVal')?.value||0)), strat=$('#apStrat')?.value||'equal';
+  if(valor<=0){ host.innerHTML='<div class="card card-pad"><div class="faint" style="text-align:center;padding:12px">Informe um valor para ver o plano de compra.</div></div>'; return; }
+  const r=aportePlan(valor, strat); if(!r){ host.innerHTML=''; return; }
+  const rows=r.items.map(x=>{ const wOld=r.total? x.cur/r.total*100:0, wNew=r.newTotal? (x.cur+x.invest)/r.newTotal*100:0;
+    return `<div class="pex-row" onclick="quickView('${x.tk}')"><div class="pex-l">${assetLogo(x.tk,x.g.f.k,'sm')}<div class="pex-id"><div class="pex-tk">${x.tk}</div><div class="pex-d">${pc(wOld,1)}% → <strong style="color:var(--brand)">${pc(wNew,1)}%</strong></div></div></div><div class="pex-r"><div class="pex-v">${x.cotas} cota${x.cotas>1?'s':''}</div><div class="pex-s priv-blur">${brl(x.invest)}</div></div></div>`; }).join('');
+  const investido=r.items.reduce((s,x)=>s+x.invest,0);
+  host.innerHTML=`<div class="card card-pad">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-cart-shopping"></i></span> Plano de compra</div><div class="pex-total"><div class="pex-total-v priv-blur">${brl(investido)}</div><div class="pex-total-l">a investir · troco ${brl(r.sobra)}</div></div></div>
+    <div class="prov-extract" style="margin-top:8px">${rows||'<div class="faint" style="padding:12px;text-align:center">Nenhuma cota inteira cabe nesse valor — aumente o aporte.</div>'}</div>
+    <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Sugestão com base nos preços atuais e em cotas inteiras. Não é recomendação de compra — ajuste conforme sua estratégia e custos de corretagem.</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   VIEW: INDEPENDÊNCIA FINANCEIRA
+   ══════════════════════════════════════════════════════════ */
+function getDespesa(){ const v=+localStorage.getItem('lastro_despesa'); return v>0?v:5000; }
+function setDespesa(v){ try{ localStorage.setItem('lastro_despesa',v);}catch(e){} }
+function getFireAporte(){ const v=+localStorage.getItem('lastro_fire_aporte'); return v>0?v:2000; }
+function setFireAporte(v){ try{ localStorage.setItem('lastro_fire_aporte',v);}catch(e){} }
+function fireCalc(despesa, aporte){
+  const p=portfolioStats(), atual=p.atual, renda=p.renda; let dy=p.dyMed/100; if(!(dy>0)) dy=0.09;
+  const mDy=Math.pow(1+dy,1/12)-1, magico=despesa*12/dy, cobertura=despesa>0?renda/despesa*100:0;
+  let patr=atual, m=0; const guard=600; while(patr*mDy<despesa && m<guard){ patr=patr*(1+mDy)+aporte; m++; }
+  const reached=m<guard, totalM=reached?m:guard;
+  let pp=atual; const serie=[atual], labels=['Hoje'];
+  for(let i=1;i<=totalM;i++){ pp=pp*(1+mDy)+aporte; if(i%12===0){ serie.push(pp); labels.push('Ano '+(i/12)); } }
+  if(totalM%12!==0){ serie.push(pp); labels.push(reached?'Liberdade':Math.ceil(totalM/12)+'a'); }
+  return { atual, renda, magico, cobertura, dy, months:m, reached, serie, labels };
+}
+function viewFire(){
+  const p=portfolioStats();
+  if(!p.nAtivos){
+    return `<div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-fire"></i></span> Independência Financeira</div></div>
+    ${emptyState('fa-fire','Comece pela sua carteira','Cadastre seus ativos para calcular quanto da sua vida os dividendos já cobrem e em quanto tempo você atinge a liberdade financeira.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
+  }
+  const desp=getDespesa(), ap=getFireAporte();
+  return `
+  <div class="sim-grid">
+    <div class="card card-pad">
+      <div class="sim-control"><div class="lbl"><span class="n">Custo de vida mensal</span><span class="v" id="fireDespV">${brl0(desp)}</span></div><input type="range" id="fireDesp" min="1000" max="40000" step="500" value="${desp}" oninput="runFire()"></div>
+      <div class="sim-control" style="margin-bottom:0"><div class="lbl"><span class="n">Aporte mensal</span><span class="v" id="fireApV">${brl0(ap)}</span></div><input type="range" id="fireAp" min="0" max="20000" step="100" value="${ap}" oninput="runFire()"></div>
+      <div class="divider"></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="metric"><div class="ml">Patrimônio atual</div><div class="mv priv-blur">${brl(p.atual)}</div></div>
+        <div class="metric"><div class="ml">Renda passiva atual</div><div class="mv priv-blur up">${brl(p.renda)}/mês</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="sim-result">
+        <div class="sim-big"><div class="lbl">Despesas cobertas por dividendos</div><div class="val" id="fireCob">0%</div><div class="sub" id="fireCobSub">—</div></div>
+        <div class="sim-sec"><div class="lbl">Número mágico (capital-alvo)</div><div class="val" id="fireMagic">R$ 0</div><div class="sub" id="fireMagicSub">para viver de renda</div></div>
+      </div>
+      <div class="card card-pad">
+        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-flag-checkered"></i></span> Caminho até a liberdade</div><span class="chip chip-blue" id="fireEta">—</span></div>
+        <div style="height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:4px 0 14px"><div id="fireProg" style="height:100%;width:0%;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .4s"></div></div>
+        <div style="position:relative;height:230px"><canvas id="fireChart" role="img" aria-label="Projeção até a independência financeira"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Projeção determinística reinvestindo proventos ao DY médio da carteira (${pc(p.dyMed,1)}% a.a.). Não considera inflação, impostos nem variação de preço — use como referência de planejamento.</div>`;
+}
+function runFire(){
+  const ds=$('#fireDesp'), as=$('#fireAp'); if(!ds||!as) return;
+  const desp=+ds.value, ap=+as.value; setDespesa(desp); setFireAporte(ap);
+  $('#fireDespV').textContent=brl0(desp); $('#fireApV').textContent=brl0(ap);
+  const f=fireCalc(desp, ap), cob=Math.min(999,f.cobertura);
+  const cobEl=$('#fireCob'); cobEl.textContent=pc(cob,0)+'%'; cobEl.style.color=cob>=100?'var(--brand)':cob>=50?'var(--gold)':'var(--down)';
+  $('#fireCobSub').textContent = cob>=100? `🎉 já vive de renda — sobra ${brl0(f.renda-desp)}/mês` : `faltam ${brl0(desp-f.renda)}/mês`;
+  $('#fireMagic').textContent=brl0(f.magico); $('#fireMagicSub').textContent=`${brl0(Math.max(0,f.magico-f.atual))} a acumular`;
+  $('#fireProg').style.width=Math.min(100, f.magico? f.atual/f.magico*100:0)+'%';
+  if(f.cobertura>=100) $('#fireEta').textContent='Liberdade atingida ✓';
+  else if(f.reached){ const yr=Math.floor(f.months/12), mo=f.months%12, dt=new Date(); dt.setMonth(dt.getMonth()+f.months); $('#fireEta').textContent=`${yr}a ${mo}m · ${dt.toLocaleDateString('pt-BR',{month:'short',year:'numeric'})}`; }
+  else $('#fireEta').textContent='+50 anos — aumente o aporte';
+  const ctx=$('#fireChart'); if(!ctx) return;
+  if(!HAS_CHART){ chartUnavail(ctx); return; }
+  if(charts.fire && charts.fire.canvas!==ctx){ charts.fire.destroy(); charts.fire=null; }
+  if(charts.fire){ charts.fire.data.labels=f.labels; charts.fire.data.datasets[0].data=f.serie; charts.fire.update(); return; }
+  const br=cssVar('--brand');
+  charts.fire=new Chart(ctx,{ type:'line', data:{ labels:f.labels, datasets:[{ label:'Patrimônio', data:f.serie, borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, pointRadius:0, borderWidth:2.5 }] },
+    options:{ responsive:true, maintainAspectRatio:false, crosshair:true, crosshairFmt:v=>'R$'+(v/1000).toFixed(0)+'k',
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>brl0(c.parsed.y)}} },
+      scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:8},border:{display:false}}, y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'},border:{display:false}} } } });
+}
+
+/* ══════════════════════════════════════════════════════════
+   VIEW: IMPOSTO DE RENDA
+   ══════════════════════════════════════════════════════════ */
+function irBensDireitos(){
+  return portfolioByTicker().filter(g=>g.cotas>0).map(g=>{ const isFii=g.f.k==='fiis';
+    return { tk:g.tk, k:g.f.k, grupo:isFii?'07 – Fundos':'03 – Participações societárias', codigo:isFii?'03 – FII/Fiagro':'01 – Ações',
+      qtd:g.cotas, custo:g.custo, pm:g.pm, disc:`${g.cotas} ${isFii?'cotas':'ações'} de ${g.tk} (${g.f.a.nm||''}) — custo médio ${brl(g.pm)}, custo total ${brl(g.custo)}.` };
+  });
+}
+function irRendimentos(year){ const pays=provPayments(); let fii=0, acoes=0; pays.forEach(p=>{ if(p.date.getFullYear()===year){ if(p.k==='fiis') fii+=p.valor; else acoes+=p.valor; } }); return { fii, acoes, total:fii+acoes }; }
+function viewIR(){
+  const bd=irBensDireitos();
+  if(!bd.length){
+    return `<div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-file-invoice-dollar"></i></span> Imposto de Renda</div></div>
+    ${emptyState('fa-file-invoice-dollar','Sem posições para declarar','Cadastre seus aportes para gerar o informe de Bens e Direitos e os rendimentos isentos prontos para a declaração anual.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
+  }
+  const ano=new Date().getFullYear()-1, rend=irRendimentos(ano);
+  const bdRows=bd.map(b=>`<div style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:13px 0;border-bottom:1px solid var(--line)">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">${assetLogo(b.tk,b.k,'sm')}<span class="chip" style="font-size:9.5px;padding:1px 6px">${b.k==='fiis'?'FII':'Ação'}</span></div>
+    <div><div style="font-weight:700;font-size:13.5px;color:var(--ink)">${b.tk}</div><div style="font-size:11.5px;color:var(--ink-3);margin:2px 0 5px">Grupo ${b.grupo} · Código ${b.codigo}</div><div style="font-size:12px;color:var(--ink-2);line-height:1.5;background:var(--surface-3);border-radius:8px;padding:8px 10px">${b.disc} <button class="btn btn-ghost btn-sm" style="margin-left:4px;vertical-align:middle" onclick="copyIR(this,'${encodeURIComponent(b.disc)}')"><i class="fa-regular fa-copy"></i></button></div></div>
+    <div style="text-align:right"><div class="priv-blur" style="font-weight:700;font-size:14px;color:var(--ink)">${brl(b.custo)}</div><div style="font-size:11px;color:var(--ink-3)">custo (31/12)</div></div>
+  </div>`).join('');
+  return `
+  <div class="card card-pad" style="background:linear-gradient(135deg,var(--gold-l),transparent);margin-bottom:16px">
+    <div class="ds-title" style="margin-bottom:6px"><i class="fa-solid fa-circle-info" style="color:var(--gold)"></i> Como funciona</div>
+    <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">FIIs e dividendos de ações são <strong>isentos</strong> (ficha "Rendimentos Isentos"). Suas posições viram a ficha <strong>"Bens e Direitos"</strong> pelo custo de aquisição. Vendas de ações têm isenção até <strong>R$ 20.000/mês</strong>; acima, 15% sobre o ganho (FII: 20%, sem isenção). Valores estimados — confirme com seu contador.</p>
+  </div>
+  <div class="card card-pad">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-building-columns"></i></span> Bens e Direitos <span class="card-sub" style="margin-left:6px">· posição em 31/12</span></div></div>
+    <div style="margin-top:6px">${bdRows}</div>
+  </div>
+  <div class="sim-grid" style="margin-top:16px">
+    <div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-hand-holding-dollar"></i></span> Rendimentos isentos <span class="card-sub" style="margin-left:6px">· ${ano}</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:2px;margin-top:8px">
+        <div class="metric"><div class="ml">FIIs — rendimentos (cód. 26)</div><div class="mv priv-blur up">${brl(rend.fii)}</div></div>
+        <div class="metric"><div class="ml">Ações — dividendos (cód. 09)</div><div class="mv priv-blur up">${brl(rend.acoes)}</div></div>
+        <div class="divider"></div>
+        <div class="metric"><div class="ml" style="font-weight:700">Total isento no ano</div><div class="mv priv-blur" style="font-weight:700">${brl(rend.total)}</div></div>
+      </div>
+      <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Estimado a partir dos proventos da carteira em ${ano}.</div>
+    </div>
+    <div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-calculator"></i></span> Calculadora de DARF (venda)</div></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+        <div><label style="display:block;font-size:12px;color:var(--ink-3);margin-bottom:5px">Ativo vendido</label>
+          <select id="darfTk" onchange="runDarf()" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:14px">${bd.map(b=>`<option value="${b.tk}" data-pm="${b.pm}" data-k="${b.k}">${b.tk} · custo ${brl(b.pm)}</option>`).join('')}</select></div>
+        <div style="display:flex;gap:10px">
+          <div style="flex:1"><label style="display:block;font-size:12px;color:var(--ink-3);margin-bottom:5px">Qtd vendida</label><input id="darfQt" type="number" min="0" step="1" value="100" oninput="runDarf()" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:14px"></div>
+          <div style="flex:1"><label style="display:block;font-size:12px;color:var(--ink-3);margin-bottom:5px">Preço de venda</label><input id="darfPx" type="number" min="0" step="0.01" value="0" oninput="runDarf()" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:14px"></div>
+        </div>
+        <div id="darfResult"><div class="faint" style="font-size:12.5px">Informe quantidade e preço de venda para calcular o imposto.</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+function copyIR(btn, txt){ try{ navigator.clipboard.writeText(decodeURIComponent(txt)); toast('Discriminação copiada'); btn.innerHTML='<i class="fa-solid fa-check"></i>'; setTimeout(()=>btn.innerHTML='<i class="fa-regular fa-copy"></i>',1500); }catch(e){ toast('Não foi possível copiar'); } }
+function runDarf(){
+  const host=$('#darfResult'); if(!host) return;
+  const sel=$('#darfTk'); if(!sel) return; const opt=sel.options[sel.selectedIndex];
+  const pm=+opt.getAttribute('data-pm'), k=opt.getAttribute('data-k');
+  const qt=Math.max(0,+($('#darfQt').value||0)), px=Math.max(0,+($('#darfPx').value||0));
+  if(!qt||!px){ host.innerHTML='<div class="faint" style="font-size:12.5px">Informe quantidade e preço de venda para calcular o imposto.</div>'; return; }
+  const venda=qt*px, custo=qt*pm, ganho=venda-custo, isFii=k==='fiis';
+  const isento = !isFii && venda<=20000 && ganho>0, aliq=isFii?0.20:0.15;
+  const imposto=(ganho>0 && !isento)? ganho*aliq : 0, cls=ganho>=0?'up':'down';
+  host.innerHTML=`<div style="border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:2px">
+    <div class="metric"><div class="ml">Valor da venda</div><div class="mv">${brl(venda)}</div></div>
+    <div class="metric"><div class="ml">Custo (${qt}×${brl(pm)})</div><div class="mv">${brl(custo)}</div></div>
+    <div class="metric"><div class="ml">Ganho de capital</div><div class="mv ${cls}">${ganho>=0?'+':''}${brl(ganho)}</div></div>
+    ${isento?`<div class="metric"><div class="ml">Isenção (vendas &lt; R$ 20k/mês)</div><div class="mv up">Isento ✓</div></div>`:''}
+    <div class="divider"></div>
+    <div class="metric"><div class="ml" style="font-weight:700">DARF a pagar (${(aliq*100).toFixed(0)}%)</div><div class="mv" style="font-weight:700;color:${imposto>0?'var(--down)':'var(--brand)'}">${brl(imposto)}</div></div>
+  </div>
+  <div class="illus-note" style="margin-top:10px"><i class="fa-solid fa-circle-info"></i> Considera apenas esta venda. A isenção de R$ 20k vale para o total de vendas de ações no mês; compense prejuízos acumulados quando aplicável.</div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
    VIEW: SCORE LASTRO
    ══════════════════════════════════════════════════════════ */
 function viewScore(){
@@ -4472,6 +4750,9 @@ function afterRender(v, soft){
   // soft=true vem do próprio softRefreshView pós-cotação → não rebuscar (evita loop)
   if(!soft){ refreshQuotes(); }
   if(v==='carteira'){ initAlloc(); initPatrEvol(); initSalary(); if(!soft) diagnose(); }
+  if(v==='proventos'){ initProventosCharts(); }
+  if(v==='aporte'){ runAporte(); }
+  if(v==='fire'){ runFire(); }
   if(v==='comparador'){ initComparador(); }
   if(v==='screener'){ runScreener(); }
   if(v==='noticias'){
