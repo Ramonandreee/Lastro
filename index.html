@@ -1767,6 +1767,10 @@ table.tbl tbody tr.no-hover td { border:none; }
 .cmp-cta .btn { padding:14px 28px; font-size:15px; }
 .cmp-cta-sub { font-size:11.5px; color:var(--ink-3); margin-top:9px; }
 /* ── Indique e Ganhe ── */
+.ind-page { display:flex; flex-direction:column; gap:16px; }
+.ind-page .indique-hero { margin-bottom:0; }
+.acct-item.acct-gift { color:var(--up); }
+.acct-item.acct-gift i { color:var(--up); }
 .nav-gift-badge { background:color-mix(in srgb,var(--up) 16%,transparent) !important; color:var(--up) !important; }
 .nav-item-gift > i:first-child { color:var(--up); }
 .indique-hero { display:flex; align-items:center; gap:16px; padding:20px 22px; border-radius:var(--r-lg); background:linear-gradient(120deg, color-mix(in srgb,var(--brand) 12%,transparent), transparent 72%); border:1px solid color-mix(in srgb,var(--brand) 20%,transparent); margin-bottom:16px; }
@@ -3001,6 +3005,7 @@ function acctMenuHTML(){
     return `<div class="acct-head"><div class="avatar">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</div><div class="acct-id"><div class="acct-nm">${esc(profileName())}</div><div class="acct-pl">${isPremium()?'Plano Premium 👑':'Plano Gratuito'}</div></div></div>
       ${item('fa-user','Meu perfil',"closeAcctMenu();openProfile()")}
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();openAssinatura()")}
+      ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
       ${themeRow}
       <div class="acct-sep"></div>
@@ -3009,6 +3014,7 @@ function acctMenuHTML(){
   return `<button class="btn btn-primary acct-login" onclick="closeAcctMenu();openAuth('login')"><i class="fa-solid fa-right-to-bracket"></i> Entrar ou criar conta</button>
     <div class="acct-sep"></div>
     ${item('fa-crown','Assinar Premium',"closeAcctMenu();goPricing()")}
+    ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
     ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
     ${themeRow}`;
 }
@@ -4046,6 +4052,7 @@ function viewPlanos(){
   const pro = isPremium();
   const annual = planCycle==='anual';
   const feat = (txt)=>`<li><i class="fa-solid fa-circle-check"></i> ${txt}</li>`;
+  const featx = (txt)=>`<li class="off"><i class="fa-solid fa-xmark"></i> ${txt}</li>`;
   const priceHTML = (p)=>{ const price=annual?p.anual:p.mensal, anchor=annual?p.anchorA:p.anchorM, cents=price.toFixed(2).split('.')[1];
     return `<div class="plan-anchor">${brlc(anchor)}</div><div class="plan-price"><span class="amt">R$ ${Math.floor(price)}<span class="cents">,${cents}</span></span><span class="per">/mês</span></div><div class="plan-billed">${annual?brlc(p.anualTotal)+' cobrado anualmente':'cobrado mensalmente'}</div>`; };
   const paidCard = (p)=>`<div class="plan-card prem${p.popular?' featured':''}">${p.popular?'<div class="plan-flag">Mais popular</div>':''}<div class="plan-name">${p.name} <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>${priceHTML(p)}<div class="plan-desc">${p.desc}</div><ul class="plan-feats">${p.feats.map(feat).join('')}</ul><button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium('${p.key}','${planCycle}')"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':`<i class="fa-solid fa-bolt"></i> Assinar ${p.name}`}</button><div class="plan-trust">${isAuthed()?'Sem fidelidade · cancele quando quiser':'7 dias grátis ao criar conta'}</div></div>`;
@@ -4077,6 +4084,9 @@ function viewPlanos(){
         ${feat('Watchlist até ' + PLAN_LIMITS.watchlist + ' ativos')}
         ${feat('Comparador de ' + PLAN_LIMITS.comparador + ' ativos')}
         ${feat(PLAN_LIMITS.aiDay + ' análises de IA por dia')}
+        ${featx('Sem carteira real e sincronizada')}
+        ${featx('Sem Proventos, Aporte, FIRE e IR')}
+        ${featx('Sem rastreador, alertas e Score completo')}
       </ul>
       <button class="btn btn-ghost" style="width:100%;justify-content:center" ${pro?`onclick="downgradeFree()"`:`disabled`}>${pro?'Voltar ao Gratuito':'Seu plano atual'}</button>
       <div class="plan-trust">Sem custo · para sempre</div>
@@ -4149,9 +4159,8 @@ function viewIndicar(){
   const link=refLink();
   const comM=PLANS.premium.mensal*0.20, comA=PLANS.premium.anualTotal*0.20;
   const step=(n,t,d)=>`<div class="ind-step"><span class="is-n">${n}</span><div><div class="is-t">${t}</div><div class="is-d">${d}</div></div></div>`;
-  return `
+  return `<div class="ind-page">
   ${hero}
-
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-people-group"></i></span> Como funciona</div></div>
     <div class="ind-steps">
@@ -4212,7 +4221,8 @@ function viewIndicar(){
     </ul>
   </div>
 
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Programa ilustrativo nesta demonstração — a apuração das indicações e os pagamentos via PIX entram em operação com a integração do backend.</div>`;
+  <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Programa ilustrativo nesta demonstração — a apuração das indicações e os pagamentos via PIX entram em operação com a integração do backend.</div>
+  </div>`;
 }
 
 /* ══════════════════════════════════════════════════════════
