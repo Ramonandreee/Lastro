@@ -522,6 +522,16 @@ body.view-inicio .topbar-brand { display:flex; }
 .btn-primary:hover { background: var(--brand-d); box-shadow: var(--sh); transform: translateY(-1px); }
 .btn-ghost { background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); }
 .btn-ghost:hover { border-color: var(--line-2); color: var(--ink); }
+/* ── Design System · estados padronizados (hover/active/focus/disabled) ── */
+.btn { cursor: pointer; transition: background .18s var(--ease), border-color .18s var(--ease), box-shadow .18s var(--ease), transform .18s var(--ease), color .18s var(--ease), filter .18s var(--ease); }
+.btn:disabled, .btn[disabled] { opacity: .5; cursor: not-allowed; pointer-events: none; box-shadow: none !important; transform: none !important; filter: none !important; }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--brand-l); }
+.btn-premium:focus-visible { box-shadow: 0 0 0 3px var(--gold-l); }
+.btn-danger:focus-visible { box-shadow: 0 0 0 3px var(--down-l); }
+.btn-ghost:active { background: var(--surface-3); }
+.icon-btn { cursor: pointer; transition: background .14s var(--ease), color .14s var(--ease), border-color .14s var(--ease), transform .14s var(--ease), box-shadow .14s var(--ease); }
+.icon-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--brand-l); }
+.sel:focus-visible, .pg-sel:focus-visible, .pg-btn:focus-visible, .atab:focus-visible, .rec-chip:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--brand-l); }
 
 .divider { height: 1px; background: var(--line); margin: 18px 0; }
 
