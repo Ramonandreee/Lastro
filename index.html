@@ -4967,7 +4967,7 @@ function alertCopy(al, px){
   const nome = (r && r.a.nm) ? r.a.nm : al.tk;
   return {
     title: `${up?'📈':'📉'} ${al.tk} ${up?'subiu para':'caiu para'} ${alertFmt(al.tk, px)}`,
-    body:  `${nome} atingiu seu alerta de ${up?'alta':'baixa'} (alvo ${up?'≥':'≤'} ${alertFmt(al.tk, al.price)}).`
+    body:  `${nome} atingiu o seu alerta de ${up?'alta':'baixa'}.`
   };
 }
 function notifyAlert(al, px){
