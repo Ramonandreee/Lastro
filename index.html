@@ -1595,7 +1595,25 @@ table.tbl tbody tr.no-hover td { border:none; }
 .pricing-foot { display:flex; gap:26px; justify-content:center; flex-wrap:wrap; margin-top:30px; }
 .pf-item { font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:8px; }
 .pf-item i { color:var(--brand); }
-@media (max-width:680px){ .pricing-title { font-size:24px; } }
+/* CRO: âncora de valor, comparativo e reforço */
+.value-anchor { text-align:center; font-size:13.5px; color:var(--ink-2); background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 22%,transparent); border-radius:999px; padding:11px 18px; max-width:520px; margin:20px auto 0; display:flex; align-items:center; justify-content:center; gap:9px; }
+.value-anchor i { color:var(--gold); }
+.value-anchor strong { color:var(--ink); }
+.cmp-table { max-width:680px; margin:24px auto 0; padding:8px 6px; }
+.cmp-row { display:grid; grid-template-columns:1.6fr 1fr 1fr; align-items:center; gap:8px; padding:13px 14px; border-top:1px solid var(--line); }
+.cmp-row:first-child { border-top:none; }
+.cmp-head { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); }
+.cmp-head span { text-align:center; } .cmp-head span:first-child { text-align:left; }
+.cmp-row > span { text-align:center; font-size:13px; }
+.cmp-f { text-align:left !important; color:var(--ink); font-weight:500; }
+.cmp-pro { font-weight:600; }
+.cmp-head .cmp-pro, .cmp-row .cmp-pro { background:linear-gradient(180deg,var(--gold-l),transparent); border-radius:8px; }
+.cmp-yes { color:var(--up); } .cmp-no { color:var(--ink-4); }
+.cmp-txt { font-size:12px; color:var(--ink-2); }
+.cmp-cta { text-align:center; margin-top:22px; }
+.cmp-cta .btn { padding:14px 28px; font-size:15px; }
+.cmp-cta-sub { font-size:11.5px; color:var(--ink-3); margin-top:9px; }
+@media (max-width:680px){ .pricing-title { font-size:24px; } .cmp-row { padding:12px 8px; gap:6px; } .cmp-row > span, .cmp-f { font-size:12px; } .value-anchor { font-size:12.5px; } }
 
 /* onboarding */
 .ob-card { width:500px; }
@@ -3770,11 +3788,36 @@ function viewPlanos(){
   </div>
   <div class="plan-dots" id="planDots"><span class="pd on"></span><span class="pd"></span><span class="pd"></span></div>
 
+  <div class="value-anchor"><i class="fa-solid fa-mug-hot"></i> No plano anual sai por <strong>R$ 0,83/dia</strong> — menos que um café para investir com clareza.</div>
+
+  <div class="cmp-table card card-pad">
+    <div class="cmp-row cmp-head"><span>Recurso</span><span>Gratuito</span><span class="cmp-pro">Premium</span></div>
+    ${[
+      ['Cotações ao vivo (B3 + cripto)', true, true],
+      ['Score Lastro', 'Resumo', 'Completo + ranking'],
+      ['Carteira e watchlist', PLAN_LIMITS.carteira+' / '+PLAN_LIMITS.watchlist, 'Ilimitadas'],
+      ['Comparador de ativos', PLAN_LIMITS.comparador, '4 ativos'],
+      ['Análises de IA por dia', PLAN_LIMITS.aiDay, 'Ilimitadas'],
+      ['Rastreador avançado', false, true],
+      ['Alertas de preço e proventos', false, true],
+      ['Relatórios e exportação (PDF/CSV)', false, true],
+      ['Suporte prioritário', false, true],
+    ].map(([f,g,p])=>`<div class="cmp-row"><span class="cmp-f">${f}</span><span>${cmpCell(g)}</span><span class="cmp-pro">${cmpCell(p)}</span></div>`).join('')}
+  </div>
+
+  ${pro?'':`<div class="cmp-cta"><button class="btn btn-premium" onclick="subscribePremium('anual')"><i class="fa-solid fa-bolt"></i> Começar com 7 dias grátis</button><div class="cmp-cta-sub">Sem fidelidade · cancele quando quiser</div></div>`}
+
   <div class="pricing-foot">
     <div class="pf-item"><i class="fa-solid fa-shield-halved"></i> Pagamento seguro</div>
+    <div class="pf-item"><i class="fa-solid fa-gift"></i> 7 dias grátis</div>
     <div class="pf-item"><i class="fa-solid fa-rotate-left"></i> Cancele a qualquer momento</div>
     <div class="pf-item"><i class="fa-solid fa-headset"></i> Suporte humano</div>
   </div>`;
+}
+function cmpCell(v){
+  if(v===true) return '<i class="fa-solid fa-check cmp-yes"></i>';
+  if(v===false) return '<i class="fa-solid fa-minus cmp-no"></i>';
+  return `<span class="cmp-txt">${v}</span>`;
 }
 
 /* ══════════════════════════════════════════════════════════
