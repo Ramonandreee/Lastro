@@ -5944,7 +5944,18 @@ function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SE
 
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
-  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); closeAuth(); }
+  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); closeAuth(); closeCropper&&closeCropper(); closeConfirm&&closeConfirm(); }
+  // trap de foco: mantém o Tab dentro do modal/painel aberto (acessibilidade)
+  if(e.key==='Tab'){
+    const box = document.querySelector('.modal-scrim.open .modal-card, .search-modal.open .search-panel');
+    if(!box) return;
+    const list=[...box.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(el=>!el.disabled && el.offsetParent!==null);
+    if(!list.length) return;
+    const first=list[0], last=list[list.length-1];
+    if(!box.contains(document.activeElement)){ e.preventDefault(); first.focus(); }
+    else if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }
 });
 
 /* ══════════════════════════════════════════════════════════
