@@ -614,7 +614,8 @@ img, svg, canvas, video { max-width: 100%; }
   .sidebar {
     position:fixed; left:0; top:0; width:min(80vw, 296px); height:100dvh; z-index:70;
     transform:translateX(-100%); transition:transform .3s var(--ease-out);
-    box-shadow:var(--sh-xl); padding:18px 14px;
+    box-shadow:var(--sh-xl);
+    padding:calc(18px + env(safe-area-inset-top,0px)) 14px calc(18px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px));
   }
   body.nav-open .sidebar { transform:none; }
   body.nav-open .sidebar-scrim { display:block; opacity:1; }
@@ -2723,8 +2724,8 @@ function updateHeaderAction(){
   const el = document.getElementById('hdrActions'); if(!el) return;
   const authed=isAuthed(), pro=isPremium();
   let html='';
-  if(!pro){ html += `<button class="icon-btn hdr-crown" title="Premium — desbloqueie recursos" onclick="goPricing()"><i class="fa-solid fa-crown"></i></button>`; }
-  html += `<div class="acct-wrap"><button class="icon-btn hdr-profile" title="Conta" onclick="toggleAcctMenu(event)"><i class="fa-${authed?'solid':'regular'} fa-circle-user"></i></button><div class="acct-menu" id="acctMenu"></div></div>`;
+  if(!pro){ html += `<button class="icon-btn hdr-crown" title="Premium — desbloqueie recursos" aria-label="Assinar Premium" onclick="goPricing()"><i class="fa-solid fa-crown" aria-hidden="true"></i></button>`; }
+  html += `<div class="acct-wrap"><button class="icon-btn hdr-profile" title="Conta" aria-label="Menu da conta" aria-haspopup="menu" onclick="toggleAcctMenu(event)"><i class="fa-${authed?'solid':'regular'} fa-circle-user" aria-hidden="true"></i></button><div class="acct-menu" id="acctMenu" role="menu"></div></div>`;
   el.innerHTML = html;
 }
 function acctMenuHTML(){
