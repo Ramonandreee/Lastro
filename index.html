@@ -526,7 +526,7 @@ body.view-inicio .topbar-brand { display:flex; }
 .divider { height: 1px; background: var(--line); margin: 18px 0; }
 
 /* segmented control */
-.home-chart { position:relative; height:300px; width:100%; }
+.home-chart { position:relative; height:300px; width:100%; touch-action:none; }
 @media (max-width:760px){ .home-chart { height:260px; } }
 .chart-ctrls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .chart-toggle { display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 13px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
@@ -4428,56 +4428,84 @@ function ohlcFrom(arr, key){
   }
   return out;
 }
-function initIbov(){ renderHomeChart(); }
-function renderHomeChart(){
+let homeWin=null;   // janela de zoom/pan {from,to} sobre a série; null = série inteira
+function initIbov(){ homeWin=null; renderHomeChart(); }
+function renderHomeChart(soft){
   const ctx = $('#ibovChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
   if(charts.ibov){ try{charts.ibov.destroy();}catch(e){} }
   const btn=$('#homeTypeBtn'); if(btn) btn.innerHTML = homeChartType==='candle' ? '<i class="fa-solid fa-chart-line"></i> Linha' : '<i class="fa-solid fa-chart-simple"></i> Candles';
   const p = indexSeries(homeChartPeriod);
-  // escala inteligente: nunca começa em zero — enquadra a faixa de preços para destacar o movimento
-  const lo=Math.min(...p.d), hi=Math.max(...p.d), pad=Math.max((hi-lo)*0.18, hi*0.006);
+  const F=p.d.length;
+  if(!homeWin) homeWin={from:0,to:F};
+  homeWin.from=Math.max(0,Math.min(Math.round(homeWin.from), F-5)); homeWin.to=Math.max(homeWin.from+5, Math.min(Math.round(homeWin.to), F));
+  const a=homeWin.from, b=homeWin.to;
+  const pl=p.l.slice(a,b), pd=p.d.slice(a,b);
+  const dur = soft?0:undefined;
+  // escala inteligente: nunca começa em zero — enquadra a faixa visível
+  const lo=Math.min(...pd), hi=Math.max(...pd), pad=Math.max((hi-lo)*0.18, hi*0.006);
   const baseScales = {
     x:{ grid:{display:false}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxRotation:0, autoSkipPadding:14 }, border:{display:false} },
     y:{ position:'right', min:lo-pad, max:hi+pad, grid:{color:cssVar('--line')}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxTicksLimit:6, callback:v=>kfmt(v) }, border:{display:false} }
   };
   if(homeChartType==='candle'){
-    const ohlc=ohlcFrom(p.d, homeAsset.k+homeChartPeriod);
+    const ohlc=ohlcFrom(p.d, homeAsset.k+homeChartPeriod).slice(a,b);
     const upc=cssVar('--up')||'#0E7C5A', downc=cssVar('--down')||'#D14343';
     const colors=ohlc.map(x=> x.c>=x.o?upc:downc);
-    charts.ibov=new Chart(ctx,{ data:{ labels:p.l, datasets:[
-        { type:'bar', label:'wick', data:ohlc.map(x=>[x.l,x.h]), backgroundColor:colors, barThickness:1, grouped:false, order:2 },
-        { type:'bar', label:'corpo', data:ohlc.map(x=>[Math.min(x.o,x.c),Math.max(x.o,x.c)]), backgroundColor:colors, borderRadius:2, barPercentage:0.55, categoryPercentage:0.9, grouped:false, order:1 },
+    const bw=Math.max(0.6, Math.min(2.4, 60/ohlc.length));   // pavio afina/engrossa conforme densidade
+    charts.ibov=new Chart(ctx,{ data:{ labels:pl, datasets:[
+        { type:'bar', label:'wick', data:ohlc.map(x=>[x.l,x.h]), backgroundColor:colors, barThickness:bw, grouped:false, order:2 },
+        { type:'bar', label:'corpo', data:ohlc.map(x=>[Math.min(x.o,x.c),Math.max(x.o,x.c)]), backgroundColor:colors, borderRadius:2, barPercentage:0.6, categoryPercentage:0.9, grouped:false, order:1 },
       ]},
-      options:{ responsive:true, maintainAspectRatio:false, animation:{duration:900,easing:'easeOutQuart'}, crosshair:true, crosshairFmt:kfmt,
+      options:{ responsive:true, maintainAspectRatio:false, animation:{duration:soft?0:900,easing:'easeOutQuart'}, crosshair:true, crosshairFmt:kfmt,
         interaction:{intersect:false,mode:'index'},
         plugins:{ legend:{display:false}, tooltip:{ backgroundColor:cssVar('--ink'), titleColor:cssVar('--canvas'), bodyColor:cssVar('--canvas'), padding:11, displayColors:false, filter:i=>i.datasetIndex===1,
-          callbacks:{ title:items=>p.l[items[0].dataIndex], label:c=>{ const d=ohlc[c.dataIndex]; const ch=d.o?((d.c-d.o)/d.o*100):0; return ['Abert. '+kfmt(d.o), 'Máx. '+kfmt(d.h), 'Mín. '+kfmt(d.l), 'Fech. '+kfmt(d.c), (ch>=0?'+':'')+ch.toFixed(2)+'%']; } } } },
+          callbacks:{ title:items=>pl[items[0].dataIndex], label:c=>{ const d=ohlc[c.dataIndex]; const ch=d.o?((d.c-d.o)/d.o*100):0; return ['Abert. '+kfmt(d.o), 'Máx. '+kfmt(d.h), 'Mín. '+kfmt(d.l), 'Fech. '+kfmt(d.c), (ch>=0?'+':'')+ch.toFixed(2)+'%']; } } } },
         scales:baseScales } });
   } else {
     const br=cssVar('--accent')||'#2563EB';
     const grd=ctx.getContext('2d').createLinearGradient(0,0,0,240); grd.addColorStop(0,br+'2e'); grd.addColorStop(1,br+'00');
     charts.ibov=new Chart(ctx,{ type:'line',
-      data:{ labels:p.l, datasets:[{ data:p.d, borderColor:br, backgroundColor:grd, fill:true, tension:.42, cubicInterpolationMode:'monotone', pointRadius:0, pointHoverRadius:5, pointHoverBackgroundColor:'#fff', pointHoverBorderColor:br, pointHoverBorderWidth:2, borderWidth:2.6 }] },
-      options:{ responsive:true, maintainAspectRatio:false, animation:{duration:1000,easing:'easeOutQuart'}, crosshair:true, crosshairFmt:kfmt,
+      data:{ labels:pl, datasets:[{ data:pd, borderColor:br, backgroundColor:grd, fill:true, tension:.42, cubicInterpolationMode:'monotone', pointRadius:0, pointHoverRadius:5, pointHoverBackgroundColor:'#fff', pointHoverBorderColor:br, pointHoverBorderWidth:2, borderWidth:2.6 }] },
+      options:{ responsive:true, maintainAspectRatio:false, animation:{duration:soft?0:1000,easing:'easeOutQuart'}, crosshair:true, crosshairFmt:kfmt,
         plugins:{ legend:{display:false}, tooltip:{ backgroundColor:cssVar('--ink'), titleColor:cssVar('--canvas'), bodyColor:cssVar('--canvas'), padding:10, displayColors:false, callbacks:{ label:c=>kfmt(c.parsed.y)+(homeAsset.price?'':' pts') } } },
         interaction:{intersect:false,mode:'index'}, scales:baseScales } });
   }
+  if(!soft) bindHomeGestures();
+}
+/* zoom (pinça/roda) e pan (arraste) — janela de candles, estilo TradingView */
+function bindHomeGestures(){
+  const cv=$('#ibovChart'); if(!cv || cv._gz) return; cv._gz=1;
+  const fullLen=()=> indexSeries(homeChartPeriod).d.length;
+  let raf=0; const soft=()=>{ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; renderHomeChart(true); }); };
+  const clamp=(from,to)=>{ const F=fullLen(); to=Math.min(to,F); from=Math.max(0,from); if(to-from<5){ to=Math.min(F,from+5); from=Math.max(0,to-5); } return {from,to}; };
+  let mode=null, sx=0, w0=null, d0=0, c0=0;
+  const area=()=>{ const ca=charts.ibov&&charts.ibov.chartArea; return ca?ca.right-ca.left:cv.clientWidth; };
+  cv.addEventListener('touchstart', e=>{ w0={...homeWin};
+    if(e.touches.length===2){ mode='pinch'; d0=Math.abs(e.touches[0].clientX-e.touches[1].clientX)||1; c0=w0.to-w0.from; }
+    else { mode='pan'; sx=e.touches[0].clientX; } }, {passive:true});
+  cv.addEventListener('touchmove', e=>{ if(!mode) return; e.preventDefault();
+    if(mode==='pan'){ const vis=w0.to-w0.from; const shift=Math.round(-(e.touches[0].clientX-sx)/(area()/vis)); homeWin=clamp(w0.from+shift, w0.to+shift); }
+    else if(mode==='pinch'){ const d=Math.abs(e.touches[0].clientX-e.touches[1].clientX)||1; let vis=Math.round(c0*(d0/d)); vis=Math.max(5,Math.min(fullLen(),vis)); const ctr=(w0.from+w0.to)/2; homeWin=clamp(Math.round(ctr-vis/2), Math.round(ctr-vis/2)+vis); }
+    soft(); }, {passive:false});
+  cv.addEventListener('touchend', ()=>{ mode=null; renderHomeChart(); });
+  cv.addEventListener('wheel', e=>{ e.preventDefault(); const vis=homeWin.to-homeWin.from; let nv=Math.round(vis*(e.deltaY>0?1.18:0.85)); nv=Math.max(5,Math.min(fullLen(),nv)); const ctr=(homeWin.from+homeWin.to)/2; homeWin=clamp(Math.round(ctr-nv/2), Math.round(ctr-nv/2)+nv); soft(); }, {passive:false});
+  cv.addEventListener('dblclick', ()=>{ homeWin=null; renderHomeChart(); });   // reset
 }
 function setIbov(p){
-  homeChartPeriod=p;
+  homeChartPeriod=p; homeWin=null;
   const lb=$('#tfLabel'); if(lb) lb.textContent=p;
   document.querySelectorAll('#tfPanel button').forEach(b=>b.classList.toggle('on', b.textContent===p));
   const panel=$('#tfPanel'); if(panel) panel.classList.remove('open');
   renderHomeChart();
 }
 function toggleTfPanel(){ const p=$('#tfPanel'); if(p) p.classList.toggle('open'); }
-function toggleHomeType(){ homeChartType = homeChartType==='candle' ? 'line' : 'candle'; renderHomeChart(); }
+function toggleHomeType(){ homeChartType = homeChartType==='candle' ? 'line' : 'candle'; homeWin=null; renderHomeChart(); }
 function toggleAssetPicker(e){ if(e) e.stopPropagation(); const p=$('#apPanel'); if(!p) return; if(p.classList.contains('open')){ p.classList.remove('open'); return; }
   p.innerHTML = HOME_ASSETS.map(a=>`<button class="${a.k===homeAsset.k?'on':''}" onclick="setHomeAsset('${a.k}')">${a.nm}</button>`).join('');
   p.classList.add('open');
 }
-function setHomeAsset(k){ const a=HOME_ASSETS.find(x=>x.k===k); if(!a) return; homeAsset=resolveHomeAsset(a); const n=$('#homeAssetName'); if(n) n.textContent=homeAsset.nm; const p=$('#apPanel'); if(p) p.classList.remove('open'); renderHomeChart(); }
+function setHomeAsset(k){ const a=HOME_ASSETS.find(x=>x.k===k); if(!a) return; homeAsset=resolveHomeAsset(a); homeWin=null; const n=$('#homeAssetName'); if(n) n.textContent=homeAsset.nm; const p=$('#apPanel'); if(p) p.classList.remove('open'); renderHomeChart(); }
 document.addEventListener('click', e=>{ if(!e.target.closest('.tf-wrap')){ const p=$('#tfPanel'); if(p) p.classList.remove('open'); } if(!e.target.closest('.ap-wrap')){ const p=$('#apPanel'); if(p) p.classList.remove('open'); } });
 
 /* Alloc chart */
