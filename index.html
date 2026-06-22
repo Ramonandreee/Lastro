@@ -3562,11 +3562,11 @@ function pageWindow(page, pages){
   return out;
 }
 function pagerHTML(kind, page, pages, total, ps, start, shown){
-  const btn=(p,lbl,extra)=>`<button class="pg-btn ${extra||''}" ${p?`onclick="gotoPage('${kind}',${p})"`:'disabled'}>${lbl}</button>`;
-  const nums = pageWindow(page,pages).map(p=> p==='…'?'<span class="pg-ell">…</span>': btn(p, p, p===page?'on':'')).join('');
-  const nav = pages>1 ? `<div class="pg-nav">${btn(page>1?page-1:0,'<i class="fa-solid fa-chevron-left"></i>','pg-arrow')}${nums}${btn(page<pages?page+1:0,'<i class="fa-solid fa-chevron-right"></i>','pg-arrow')}</div>` : '';
+  const btn=(p,lbl,extra,al)=>`<button class="pg-btn ${extra||''}" ${al?`aria-label="${al}"`:''} ${p?`onclick="gotoPage('${kind}',${p})"`:'disabled'}>${lbl}</button>`;
+  const nums = pageWindow(page,pages).map(p=> p==='…'?'<span class="pg-ell">…</span>': btn(p, p, p===page?'on':'', 'Página '+p)).join('');
+  const nav = pages>1 ? `<div class="pg-nav" role="navigation" aria-label="Paginação">${btn(page>1?page-1:0,'<i class="fa-solid fa-chevron-left" aria-hidden="true"></i>','pg-arrow','Página anterior')}${nums}${btn(page<pages?page+1:0,'<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>','pg-arrow','Próxima página')}</div>` : '';
   return `<div class="pager">
-    <div class="pg-info"><span class="pg-range">${start+1}–${start+shown}</span> de ${total} <select class="pg-sel" onchange="setPageSize('${kind}',this.value)">${[30,50,100].map(n=>`<option value="${n}" ${n===ps?'selected':''}>${n} / pág.</option>`).join('')}</select></div>
+    <div class="pg-info"><span class="pg-range">${start+1}–${start+shown}</span> de ${total} <select class="pg-sel" aria-label="Ativos por página" onchange="setPageSize('${kind}',this.value)">${[30,50,100].map(n=>`<option value="${n}" ${n===ps?'selected':''}>${n} / pág.</option>`).join('')}</select></div>
     ${nav}
   </div>`;
 }
@@ -5957,6 +5957,18 @@ document.addEventListener('keydown', e=>{
     else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
   }
 });
+/* devolve o foco ao elemento que abriu o modal quando ele fecha (acessibilidade) */
+(function(){
+  let trigger=null;
+  const obs=new MutationObserver(ms=>{ for(const m of ms){ if(m.attributeName!=='class') continue; const el=m.target;
+    const open=el.classList.contains('open'), was=(m.oldValue||'').includes('open');
+    if(open && !was){ const a=document.activeElement; if(a && a!==document.body && !el.contains(a)) trigger=a; }
+    else if(!open && was){ if(trigger && trigger.focus){ try{ trigger.focus(); }catch(e){} } trigger=null; }
+  }});
+  const watch=el=>obs.observe(el,{attributes:true, attributeFilter:['class'], attributeOldValue:true});
+  document.querySelectorAll('.modal-scrim, .search-modal').forEach(watch);
+  new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{ if(n.nodeType===1 && n.classList && (n.classList.contains('modal-scrim')||n.classList.contains('search-modal'))) watch(n); }))).observe(document.body,{childList:true});
+})();
 
 /* ══════════════════════════════════════════════════════════
    COTAÇÕES AO VIVO — brapi.dev (B3) + cripto
