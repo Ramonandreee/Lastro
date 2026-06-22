@@ -4953,15 +4953,27 @@ function checkAlerts(){
     const r=assetLookup(al.tk); if(!r) return; const px=r.a.px; if(!(px>0)) return;
     const hit = al.dir==='acima' ? px>=al.price : px<=al.price;
     if(hit){ al.status='disparado'; al.firedAt=Date.now(); al.firedPx=px; changed=true;
-      toast(`🔔 ${al.tk} atingiu ${alertFmt(al.tk,px)} (alvo ${al.dir} ${alertFmt(al.tk,al.price)})`);
+      const c=alertCopy(al, px);
+      toast(c.title);
       notifyAlert(al, px);
     }
   });
   if(changed){ setAlerts(list); if(currentView==='alertas') render('alertas', true); }
 }
+/* texto da notificação/toast — direcionado e sem repetir o mesmo valor */
+function alertCopy(al, px){
+  const up = al.dir==='acima';
+  const r = assetLookup(al.tk);
+  const nome = (r && r.a.nm) ? r.a.nm : al.tk;
+  return {
+    title: `${up?'📈':'📉'} ${al.tk} ${up?'subiu para':'caiu para'} ${alertFmt(al.tk, px)}`,
+    body:  `${nome} atingiu seu alerta de ${up?'alta':'baixa'} (alvo ${up?'≥':'≤'} ${alertFmt(al.tk, al.price)}).`
+  };
+}
 function notifyAlert(al, px){
   try{ if('Notification' in window && Notification.permission==='granted'){
-    new Notification('Lastro · Alerta de preço', { body:`${al.tk} atingiu ${alertFmt(al.tk,px)} (alvo ${al.dir} ${alertFmt(al.tk,al.price)})`, icon:'/icon-192.png' });
+    const c=alertCopy(al, px);
+    new Notification(c.title, { body:c.body, icon:'/icon-192.png', badge:'/icon-192.png', tag:'lastro-alert-'+al.id, renotify:true });
   } }catch(e){}
 }
 function viewAlertas(){
