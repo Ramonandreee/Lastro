@@ -4971,10 +4971,13 @@ function alertCopy(al, px){
   };
 }
 function notifyAlert(al, px){
-  try{ if('Notification' in window && Notification.permission==='granted'){
-    const c=alertCopy(al, px);
-    new Notification(c.title, { body:c.body, icon:'/icon-192.png', badge:'/icon-192.png', tag:'lastro-alert-'+al.id, renotify:true });
-  } }catch(e){}
+  if(!('Notification' in window) || Notification.permission!=='granted') return;
+  const c=alertCopy(al, px);
+  const opts={ body:c.body, icon:'/icon-192.png', badge:'/icon-192.png', tag:'lastro-alert-'+al.id, renotify:true, vibrate:[60,40,60], data:{ tk:al.tk }, actions:[{action:'view',title:'Ver ativo'},{action:'dismiss',title:'Dispensar'}] };
+  try{
+    if(_swReg && _swReg.showNotification){ _swReg.showNotification(c.title, opts).catch(()=>{ try{ new Notification(c.title, opts); }catch(_){} }); }
+    else { new Notification(c.title, opts); }
+  }catch(e){ try{ new Notification(c.title, { body:c.body, icon:'/icon-192.png' }); }catch(_){} }
 }
 function viewAlertas(){
   if(!isPremium()){
@@ -6376,6 +6379,19 @@ if(isAuthed()) loadCloudState();   // retoma sessão e sincroniza
 render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
 animateContent();
 loadUniverse();
+/* Service Worker — notificações ricas de alerta + deep-link ao ativo */
+let _swReg=null;
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').then(reg=>{ _swReg=reg; }).catch(()=>{});
+  navigator.serviceWorker.ready.then(reg=>{ _swReg=reg; }).catch(()=>{});
+  navigator.serviceWorker.addEventListener('message', (e)=>{ const d=e.data||{}; if(d.type==='open-asset' && d.tk) openAsset(String(d.tk).toUpperCase()); });
+}
+/* notificação abriu o app em /?asset=TK → navega para o ativo e limpa a URL */
+(function(){
+  try{ const tk=new URLSearchParams(location.search).get('asset');
+    if(tk){ history.replaceState(null,'',location.pathname); setTimeout(()=>openAsset(String(tk).toUpperCase()), 60); }
+  }catch(e){}
+})();
 /* poller de alertas: enquanto houver alerta ativo e o app visível, atualiza
    as cotações dos ativos monitorados a cada 60s e dispara os que baterem o alvo */
 setInterval(()=>{
