@@ -134,10 +134,10 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust
 .splash-name { font-size:34px; font-weight:800; letter-spacing:-.02em; margin-top:20px; animation:spUp .7s var(--ease-out) .18s both; }
 .splash-tag { font-size:13px; font-weight:500; color:rgba(255,255,255,.78); margin-top:6px; animation:spUp .7s var(--ease-out) .3s both; }
 .splash-load { position:absolute; bottom:calc(46px + env(safe-area-inset-bottom,0px)); width:120px; height:3px; border-radius:3px; background:rgba(255,255,255,.18); overflow:hidden; animation:spUp .6s var(--ease-out) .5s both; }
-.splash-load i { display:block; height:100%; width:40%; border-radius:3px; background:#fff; animation:spLoad 1.1s var(--ease) infinite; }
+.splash-load i { display:block; height:100%; width:0%; border-radius:3px; background:#fff; animation:spLoad 2.7s var(--ease-out) .3s forwards; }
 @keyframes spMark { from{opacity:0; transform:scale(.7) translateY(8px);} to{opacity:1; transform:none;} }
 @keyframes spUp { from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;} }
-@keyframes spLoad { 0%{transform:translateX(-130%);} 100%{transform:translateX(330%);} }
+@keyframes spLoad { 0%{width:0%;} 65%{width:72%;} 100%{width:100%;} }
 @media (prefers-reduced-motion:reduce){ .splash-mark,.splash-name,.splash-tag,.splash-load,.splash-load i { animation:none; } }
 body {
   font-family: var(--sans);
@@ -6177,7 +6177,7 @@ loadUniverse();
 (function(){
   const sp=document.getElementById('splash'); if(!sp){ maybeOnboard(); return; }
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  const hold=reduce?500:1500;
+  const hold=reduce?800:3000;
   setTimeout(()=>{ sp.classList.add('hide'); setTimeout(()=>{ sp.remove(); maybeOnboard(); }, 600); }, hold);
 })();
 </script>
