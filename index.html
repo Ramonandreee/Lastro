@@ -1569,7 +1569,7 @@ table.tbl tbody tr.no-hover td { border:none; }
 .row-act.danger:hover { color:var(--down); border-color:var(--down); background:var(--down-l); }
 
 /* modal genérico (posição) */
-.modal-scrim { position:fixed; inset:0; z-index:260; background:rgba(10,14,19,.55); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px)); }
+.modal-scrim { position:fixed; inset:0; z-index:260; background:rgba(10,14,19,.55); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; padding:calc(20px + env(safe-area-inset-top,0px)) calc(20px + env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) calc(20px + env(safe-area-inset-left,0px)); }
 .modal-scrim .modal-card { margin:auto; max-height:calc(100vh - 40px); overflow-y:auto; }
 .modal-scrim.open { display:flex; animation:fadeIn .2s var(--ease); }
 .modal-card { width:440px; max-width:94vw; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-lg); box-shadow:var(--sh-xl); overflow:hidden; animation:panelIn .28s var(--ease-out); }
@@ -1584,6 +1584,18 @@ table.tbl tbody tr.no-hover td { border:none; }
 .fld-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .fld-err { font-size:12.5px; color:var(--down); min-height:16px; }
 @media (max-width:460px){ .fld-row { grid-template-columns:1fr; } }
+
+/* ── Controles de formulário reutilizáveis (consolidam inputs/labels antes inline) ── */
+.form-label { display:block; font-size:12px; font-weight:500; color:var(--ink-3); margin-bottom:6px; }
+.form-input, .form-select { width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--canvas); color:var(--ink); font-size:14px; transition:border-color .15s var(--ease); }
+.form-input:focus, .form-select:focus { border-color:var(--accent); outline:none; }
+.form-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+.form-col { flex:1 1 160px; min-width:0; }
+.chip.chip-sm { font-size:9.5px; padding:1px 6px; }
+/* o rótulo do slider empilha em telas muito estreitas para o número não espremer o texto */
+@media (max-width:400px){ .sim-control .lbl { flex-direction:column; align-items:flex-start; gap:3px; } }
+/* linha de Bens e Direitos (IR): o valor desce para baixo em telas pequenas */
+@media (max-width:440px){ .ir-bd-row { grid-template-columns:auto 1fr !important; } .ir-bd-row .ir-bd-val { grid-column:2; text-align:left !important; margin-top:4px; } }
 
 /* ══════════════════════════════════════════════════════════
    SAAS — planos, paywall, premium, onboarding
@@ -1832,6 +1844,7 @@ body.priv .priv-blur { filter:blur(9px); user-select:none; pointer-events:none; 
 /* detalhe */
 .rc-head { display:flex; gap:7px; margin-bottom:16px; }
 .rc-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+@media (max-width:640px){ .rc-kpis { grid-template-columns:repeat(2,1fr); } }
 .rc-kpi { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:12px; text-align:center; }
 .rc-kpi .l { font-size:11px; color:var(--ink-3); margin-bottom:5px; } .rc-kpi .v { font-size:17px; font-weight:600; }
 .rc-sec { margin-bottom:18px; } .rc-sec-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:9px; }
@@ -2852,7 +2865,7 @@ function confirmLogout(){ showConfirm('Sair da sua conta?','Tem certeza que dese
 /* privacidade: oculta valores monetários (inicia oculto ao logar) */
 function privOn(){ const v=localStorage.getItem('lastro_priv'); return v===null ? isAuthed() : v==='1'; }
 function applyPriv(){ document.body.classList.toggle('priv', privOn()); document.querySelectorAll('.priv-eye i').forEach(i=>{ i.className='fa-solid '+(privOn()?'fa-eye-slash':'fa-eye'); }); }
-function togglePriv(){ localStorage.setItem('lastro_priv', privOn()?'0':'1'); applyPriv(); }
+function togglePriv(){ localStorage.setItem('lastro_priv', privOn()?'0':'1'); applyPriv(); if(typeof saveCloudState==='function') saveCloudState(); }
 /* área de perfil (gerenciamento da conta) */
 /* perfil local (nome de exibição + foto), sincronizado na nuvem */
 function getProfile(){ try{ return JSON.parse(localStorage.getItem('lastro_profile')||'{}'); }catch(e){ return {}; } }
@@ -3051,7 +3064,7 @@ function authLogout(){
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
-  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub'].forEach(k=>localStorage.removeItem(k));
+  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
   CARTEIRA = []; localStorage.setItem('lastro_sub',''); localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
   refreshPlanUI(); updateAuthUI(); applyPriv();
@@ -3078,6 +3091,10 @@ async function loadCloudState(){
       if([30,50,100].includes(+pf.pgsize)){ sessionStorage.setItem('lastro_pgsize', pf.pgsize); Object.keys(tableState).forEach(k=>tableState[k].pageSize=+pf.pgsize); }
       if(pf.chartType) homeChartType=pf.chartType;
       if(pf.chartPeriod) homeChartPeriod=pf.chartPeriod;
+      if(pf.priv==='0'||pf.priv==='1') localStorage.setItem('lastro_priv', pf.priv);
+      if(+pf.despesa>0) localStorage.setItem('lastro_despesa', +pf.despesa);
+      if(+pf.fireAporte>0) localStorage.setItem('lastro_fire_aporte', +pf.fireAporte);
+      if(+pf.rendaMeta>0) localStorage.setItem('lastro_renda_meta', +pf.rendaMeta);
       refreshPlanUI();
       render(currentView);   // reflete preferências (tema/visualização) imediatamente
     } else { await saveCloudState(); } // primeira vez: envia o estado local
@@ -3088,7 +3105,7 @@ function saveCloudState(){
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
   clearTimeout(_cloudT);
   return new Promise(res=>{ _cloudT=setTimeout(async()=>{
-    const data={ carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), plan:getPlan(), theme:getThemePref(), profile:getProfile(), sub:getSub(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod } };
+    const data={ carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), plan:getPlan(), theme:getThemePref(), profile:getProfile(), sub:getSub(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta() } };
     try{ await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data, updated_at:new Date().toISOString()})}); }catch(e){}
     res();
   }, 700); });
@@ -4070,11 +4087,11 @@ function viewAporte(){
   <div class="sec-title">Onde colocar o próximo aporte?</div>
   <div class="sec-desc">Informe quanto vai investir e a estratégia. O Lastro calcula a compra (em cotas inteiras) que mais aproxima sua carteira do equilíbrio — priorizando quem está abaixo do peso ideal.</div>
   <div class="card card-pad">
-    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
-      <div style="flex:1;min-width:180px"><label style="display:block;font-size:12px;color:var(--ink-3);margin-bottom:6px">Valor do aporte</label>
-        <input id="apVal" type="number" min="0" step="100" value="1000" oninput="runAporte()" style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:15px;font-weight:600"></div>
-      <div style="flex:1;min-width:180px"><label style="display:block;font-size:12px;color:var(--ink-3);margin-bottom:6px">Estratégia</label>
-        <select id="apStrat" onchange="runAporte()" style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:14px">
+    <div class="form-row" style="gap:16px">
+      <div class="form-col" style="flex-basis:180px"><label class="form-label">Valor do aporte</label>
+        <input id="apVal" class="form-input" type="number" min="0" step="100" value="1000" oninput="runAporte()" style="font-size:15px;font-weight:600"></div>
+      <div class="form-col" style="flex-basis:180px"><label class="form-label">Estratégia</label>
+        <select id="apStrat" class="form-select" onchange="runAporte()">
           <option value="equal">Igualar pesos</option><option value="score">Priorizar maior Score</option><option value="dy">Priorizar maior DY</option>
         </select></div>
     </div>
@@ -4100,9 +4117,9 @@ function runAporte(){
    VIEW: INDEPENDÊNCIA FINANCEIRA
    ══════════════════════════════════════════════════════════ */
 function getDespesa(){ const v=+localStorage.getItem('lastro_despesa'); return v>0?v:5000; }
-function setDespesa(v){ try{ localStorage.setItem('lastro_despesa',v);}catch(e){} }
+function setDespesa(v){ try{ localStorage.setItem('lastro_despesa',v);}catch(e){} if(typeof saveCloudState==='function') saveCloudState(); }
 function getFireAporte(){ const v=+localStorage.getItem('lastro_fire_aporte'); return v>0?v:2000; }
-function setFireAporte(v){ try{ localStorage.setItem('lastro_fire_aporte',v);}catch(e){} }
+function setFireAporte(v){ try{ localStorage.setItem('lastro_fire_aporte',v);}catch(e){} if(typeof saveCloudState==='function') saveCloudState(); }
 function fireCalc(despesa, aporte){
   const p=portfolioStats(), atual=p.atual, renda=p.renda; let dy=p.dyMed/100; if(!(dy>0)) dy=0.09;
   const mDy=Math.pow(1+dy,1/12)-1, magico=despesa*12/dy, cobertura=despesa>0?renda/despesa*100:0;
@@ -4185,10 +4202,10 @@ function viewIR(){
     ${emptyState('fa-file-invoice-dollar','Sem posições para declarar','Cadastre seus aportes para gerar o informe de Bens e Direitos e os rendimentos isentos prontos para a declaração anual.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   }
   const ano=new Date().getFullYear()-1, rend=irRendimentos(ano);
-  const bdRows=bd.map(b=>`<div style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:13px 0;border-bottom:1px solid var(--line)">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">${assetLogo(b.tk,b.k,'sm')}<span class="chip" style="font-size:9.5px;padding:1px 6px">${b.k==='fiis'?'FII':'Ação'}</span></div>
+  const bdRows=bd.map(b=>`<div class="ir-bd-row" style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:13px 0;border-bottom:1px solid var(--line)">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">${assetLogo(b.tk,b.k,'sm')}<span class="chip chip-sm">${b.k==='fiis'?'FII':'Ação'}</span></div>
     <div><div style="font-weight:700;font-size:13.5px;color:var(--ink)">${b.tk}</div><div style="font-size:11.5px;color:var(--ink-3);margin:2px 0 5px">Grupo ${b.grupo} · Código ${b.codigo}</div><div style="font-size:12px;color:var(--ink-2);line-height:1.5;background:var(--surface-3);border-radius:8px;padding:8px 10px">${b.disc} <button class="btn btn-ghost btn-sm" style="margin-left:4px;vertical-align:middle" onclick="copyIR(this,'${encodeURIComponent(b.disc)}')"><i class="fa-regular fa-copy"></i></button></div></div>
-    <div style="text-align:right"><div class="priv-blur" style="font-weight:700;font-size:14px;color:var(--ink)">${brl(b.custo)}</div><div style="font-size:11px;color:var(--ink-3)">custo (31/12)</div></div>
+    <div class="ir-bd-val" style="text-align:right"><div class="priv-blur" style="font-weight:700;font-size:14px;color:var(--ink)">${brl(b.custo)}</div><div style="font-size:11px;color:var(--ink-3)">custo (31/12)</div></div>
   </div>`).join('');
   return `
   <div class="card card-pad" style="background:linear-gradient(135deg,var(--gold-l),transparent);margin-bottom:16px">
@@ -4213,11 +4230,11 @@ function viewIR(){
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-calculator"></i></span> Calculadora de DARF (venda)</div></div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
-        <div><label style="display:block;font-size:12px;color:var(--ink-3);margin-bottom:5px">Ativo vendido</label>
-          <select id="darfTk" onchange="runDarf()" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:14px">${bd.map(b=>`<option value="${b.tk}" data-pm="${b.pm}" data-k="${b.k}">${b.tk} · custo ${brl(b.pm)}</option>`).join('')}</select></div>
-        <div style="display:flex;gap:10px">
-          <div style="flex:1"><label style="display:block;font-size:12px;color:var(--ink-3);margin-bottom:5px">Qtd vendida</label><input id="darfQt" type="number" min="0" step="1" value="100" oninput="runDarf()" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:14px"></div>
-          <div style="flex:1"><label style="display:block;font-size:12px;color:var(--ink-3);margin-bottom:5px">Preço de venda</label><input id="darfPx" type="number" min="0" step="0.01" value="0" oninput="runDarf()" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);color:var(--ink);font-size:14px"></div>
+        <div><label class="form-label" style="margin-bottom:5px">Ativo vendido</label>
+          <select id="darfTk" class="form-select" onchange="runDarf()">${bd.map(b=>`<option value="${b.tk}" data-pm="${b.pm}" data-k="${b.k}">${b.tk} · custo ${brl(b.pm)}</option>`).join('')}</select></div>
+        <div class="form-row" style="gap:10px;align-items:stretch">
+          <div class="form-col"><label class="form-label" style="margin-bottom:5px">Qtd vendida</label><input id="darfQt" class="form-input" type="number" min="0" step="1" value="100" oninput="runDarf()"></div>
+          <div class="form-col"><label class="form-label" style="margin-bottom:5px">Preço de venda</label><input id="darfPx" class="form-input" type="number" min="0" step="0.01" value="0" oninput="runDarf()"></div>
         </div>
         <div id="darfResult"><div class="faint" style="font-size:12.5px">Informe quantidade e preço de venda para calcular o imposto.</div></div>
       </div>
@@ -4946,6 +4963,7 @@ function initAlloc(){
   const top = items.slice(0,8); const rest = items.slice(8).reduce((s,x)=>s+x.val,0);
   const labels = top.map(x=>x.tk).concat(rest>0?['Outros']:[]);
   const data = top.map(x=>x.val).concat(rest>0?[rest]:[]);
+  if(charts.alloc) charts.alloc.destroy();
   charts.alloc = new Chart(ctx,{
     type:'doughnut',
     data:{ labels, datasets:[{ data, backgroundColor:labels.map((_,i)=>ALLOC_COLORS[i%ALLOC_COLORS.length]), borderWidth:0, hoverOffset:7 }] },
@@ -4967,7 +4985,7 @@ function salaryProjection(){
   return { labels, values, media: totalAno/12, totalAno };
 }
 function getRendaMeta(){ const v=+localStorage.getItem('lastro_renda_meta'); return v>0?v:5000; }
-function setRendaMeta(v){ try{ localStorage.setItem('lastro_renda_meta', v); }catch(e){} }
+function setRendaMeta(v){ try{ localStorage.setItem('lastro_renda_meta', v); }catch(e){} if(typeof saveCloudState==='function') saveCloudState(); }
 function metaProgText(media,meta){
   if(!meta) return '';
   if(media>=meta) return `🎉 Meta atingida: sua renda projetada de <strong>${brl0(media)}/mês</strong> supera os ${brl0(meta)} desejados.`;
@@ -4985,6 +5003,7 @@ function initSalary(){
   const ctx=$('#salaryChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
   const sal=salaryProjection(), br=cssVar('--brand');
+  if(charts.salary) charts.salary.destroy();
   charts.salary = new Chart(ctx,{
     type:'bar',
     data:{ labels:sal.labels, datasets:[{ data:sal.values, backgroundColor:br+'cc', borderRadius:5, maxBarThickness:30 }] },
@@ -5025,6 +5044,7 @@ function initPatrEvol(){
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
   const d=patrimonioEvolution(); if(!d) return;
   const br=cssVar('--brand'), ac=cssVar('--accent'), ink4=cssVar('--ink-4');
+  if(charts.patrEvol) charts.patrEvol.destroy();
   charts.patrEvol = new Chart(ctx,{
     type:'line',
     data:{ labels:d.labels, datasets:[
@@ -6814,16 +6834,23 @@ async function loadUniverse(){
   finally{ universeLoaded = true; const ch=document.getElementById('uniChip'); if(ch) ch.remove(); }
 }
 
-/* INIT */
-applyTheme(false);   // sincroniza ícone/rótulo do tema (data-theme já aplicado no <head>)
-applyPriv();         // privacidade dos valores
-normLots();          // garante id em cada aporte (migração de carteiras antigas)
-refreshPlanUI();
-updateAuthUI();
-if(isAuthed()) loadCloudState();   // retoma sessão e sincroniza
-render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
-animateContent();
-loadUniverse();
+/* INIT — protegido: uma falha em qualquer passo não pode deixar a tela em branco */
+try{
+  applyTheme(false);   // sincroniza ícone/rótulo do tema (data-theme já aplicado no <head>)
+  applyPriv();         // privacidade dos valores
+  normLots();          // garante id em cada aporte (migração de carteiras antigas)
+  refreshPlanUI();
+  updateAuthUI();
+  if(isAuthed()) loadCloudState();   // retoma sessão e sincroniza
+  render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
+  animateContent();
+  loadUniverse();
+}catch(e){
+  console.error('Falha na inicialização do Lastro:', e);
+  try{ const sp=document.getElementById('splash'); if(sp) sp.remove(); }catch(_){}
+  const c=document.getElementById('content');
+  if(c) c.innerHTML='<div style="max-width:420px;margin:60px auto;text-align:center;padding:0 20px"><div style="font-size:34px;color:var(--gold,#C8911F);margin-bottom:14px"><i class="fa-solid fa-triangle-exclamation"></i></div><div style="font-size:17px;font-weight:600;color:var(--ink,#16202B);margin-bottom:8px">Não foi possível carregar a tela</div><p style="font-size:13.5px;color:var(--ink-3,#64707C);line-height:1.6;margin-bottom:18px">Tente recarregar. Se persistir, seus dados continuam salvos com segurança no dispositivo.</p><button class="btn btn-primary" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i> Recarregar</button></div>';
+}
 /* Service Worker — notificações ricas de alerta + deep-link ao ativo */
 let _swReg=null;
 if('serviceWorker' in navigator){
