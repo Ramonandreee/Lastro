@@ -761,6 +761,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-layer-group"></i><span>Carteiras Recomendadas</span></div>
       <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-snowflake"></i><span>Simulador</span></div>
       <div class="nav-item" data-view="noticias" onclick="nav('noticias',this)"><i class="fa-solid fa-newspaper"></i><span>Notícias</span><span class="nav-badge" style="background:var(--down-l);color:var(--down)">LIVE</span></div>
+      <div class="nav-item nav-item-gift" data-view="indicar" onclick="nav('indicar',this)"><i class="fa-solid fa-gift"></i><span>Indique e Ganhe</span><span class="nav-badge nav-gift-badge">Ganhe</span></div>
     </nav>
 
     <nav class="nav-section nav-section-premium">
@@ -1712,7 +1713,7 @@ table.tbl tbody tr.no-hover td { border:none; }
 @media (min-width:760px){ .plan-dots { display:none; } }
 .plan-flag { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,#C8911F,#A87C2A); color:#fff; font-size:11px; font-weight:600; padding:4px 14px; border-radius:20px; box-shadow:var(--sh); }
 .plan-name { font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px; }
-.plan-price { margin:10px 0 4px; display:flex; align-items:baseline; gap:8px; }
+.plan-price { margin:2px 0 0; display:flex; align-items:baseline; gap:8px; }
 .plan-price .amt { font-family:var(--serif); font-size:32px; font-weight:600; letter-spacing:-.02em; }
 .plan-price .amt .cents { font-size:19px; color:var(--ink-3); }
 .plan-price .per { font-size:13px; color:var(--ink-3); }
@@ -1741,10 +1742,17 @@ table.tbl tbody tr.no-hover td { border:none; }
 .pf-item { font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:8px; }
 .pf-item i { color:var(--brand); }
 /* CRO: âncora de valor, comparativo e reforço */
-.value-anchor { text-align:center; font-size:13.5px; color:var(--ink-2); background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 22%,transparent); border-radius:999px; padding:11px 18px; max-width:520px; margin:20px auto 0; display:flex; align-items:center; justify-content:center; gap:9px; }
+.bill-toggle { display:flex; width:fit-content; margin:0 auto 6px; gap:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:4px; }
+.bill-toggle button { border:none; background:transparent; color:var(--ink-2); font-size:13px; font-weight:600; padding:8px 18px; border-radius:999px; cursor:pointer; display:flex; align-items:center; gap:7px; transition:background .18s var(--ease), color .18s var(--ease); }
+.bill-toggle button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
+.bt-off { font-size:10px; font-weight:700; color:var(--up); background:color-mix(in srgb,var(--up) 15%,transparent); padding:2px 7px; border-radius:20px; }
+.plan-anchor { font-size:14px; color:var(--ink-4); text-decoration:line-through; min-height:17px; margin-top:2px; }
+.plan-billed { font-size:11.5px; color:var(--ink-3); margin:2px 0 13px; min-height:15px; }
+.cmp-row-3 { grid-template-columns:1.8fr 1fr 1fr 1fr !important; }
+.value-anchor { text-align:center; font-size:13.5px; color:var(--ink-2); background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 22%,transparent); border-radius:999px; padding:11px 18px; max-width:560px; margin:20px auto 0; display:flex; align-items:center; justify-content:center; gap:9px; flex-wrap:wrap; }
 .value-anchor i { color:var(--gold); }
 .value-anchor strong { color:var(--ink); }
-.cmp-table { max-width:680px; margin:24px auto 0; padding:8px 6px; }
+.cmp-table { max-width:760px; margin:24px auto 0; padding:8px 6px; }
 .cmp-row { display:grid; grid-template-columns:1.6fr 1fr 1fr; align-items:center; gap:8px; padding:13px 14px; border-top:1px solid var(--line); }
 .cmp-row:first-child { border-top:none; }
 .cmp-head { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); }
@@ -1758,6 +1766,40 @@ table.tbl tbody tr.no-hover td { border:none; }
 .cmp-cta { text-align:center; margin-top:22px; }
 .cmp-cta .btn { padding:14px 28px; font-size:15px; }
 .cmp-cta-sub { font-size:11.5px; color:var(--ink-3); margin-top:9px; }
+/* ── Indique e Ganhe ── */
+.nav-gift-badge { background:color-mix(in srgb,var(--up) 16%,transparent) !important; color:var(--up) !important; }
+.nav-item-gift > i:first-child { color:var(--up); }
+.indique-hero { display:flex; align-items:center; gap:16px; padding:20px 22px; border-radius:var(--r-lg); background:linear-gradient(120deg, color-mix(in srgb,var(--brand) 12%,transparent), transparent 72%); border:1px solid color-mix(in srgb,var(--brand) 20%,transparent); margin-bottom:16px; }
+.ih-ic { width:54px; height:54px; border-radius:16px; flex:none; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--brand),var(--accent)); color:#fff; font-size:24px; box-shadow:0 8px 22px color-mix(in srgb,var(--brand) 40%,transparent); }
+.ih-t { font-size:19px; font-weight:700; letter-spacing:-.01em; }
+.ih-s { font-size:13px; color:var(--ink-2); margin-top:3px; line-height:1.5; }
+.ind-steps { display:flex; flex-direction:column; gap:14px; margin-top:6px; }
+.ind-step { display:flex; gap:13px; align-items:flex-start; }
+.is-n { flex:none; width:26px; height:26px; border-radius:50%; background:var(--brand-l); color:var(--brand); font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.is-t { font-weight:600; font-size:14px; }
+.is-d { font-size:13px; color:var(--ink-2); line-height:1.55; margin-top:2px; }
+.ind-earn-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.ind-earn { border-radius:14px; padding:16px 18px; border:1px solid var(--line); }
+.ie-blue { background:color-mix(in srgb,var(--accent) 7%,transparent); border-color:color-mix(in srgb,var(--accent) 20%,transparent); }
+.ie-green { background:color-mix(in srgb,var(--up) 8%,transparent); border-color:color-mix(in srgb,var(--up) 22%,transparent); }
+.ie-head { display:flex; align-items:center; justify-content:space-between; font-weight:700; font-size:14.5px; margin-bottom:10px; }
+.ie-row { display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink-2); padding:9px 0; border-top:1px solid var(--line); }
+.ie-row b { color:var(--ink); font-size:15px; }
+.ie-row b.up { color:var(--up); }
+.ie-note { font-size:12px; color:var(--ink-2); line-height:1.5; margin-top:10px; }
+.ref-link { display:flex; gap:8px; margin-top:6px; }
+.ref-link input { flex:1; min-width:0; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--ink); font-size:13px; font-family:var(--mono); }
+.ref-link .btn { flex:none; }
+.share-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.share-btn { display:flex; flex-direction:column; align-items:center; gap:7px; padding:16px 8px; border-radius:12px; border:1px solid var(--line); background:var(--surface); cursor:pointer; font-size:12.5px; font-weight:600; color:var(--ink); transition:transform .14s var(--ease), box-shadow .14s var(--ease); }
+.share-btn:hover { transform:translateY(-2px); box-shadow:var(--sh-sm); }
+.share-btn i { font-size:22px; }
+.sh-wa i { color:#25D366; } .sh-fb i { color:#1877F2; } .sh-ig i { color:#E1306C; } .sh-tw i { color:var(--ink); }
+.ind-terms { background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 24%,transparent); border-radius:var(--r-lg); padding:16px 18px; margin-top:16px; }
+.it-t { font-weight:700; font-size:13.5px; color:var(--gold); display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.ind-terms ul { margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px; }
+.ind-terms li { font-size:12.5px; color:var(--ink-2); line-height:1.5; }
+@media (max-width:680px){ .ind-earn-grid { grid-template-columns:1fr; } .share-grid { grid-template-columns:repeat(2,1fr); } .indique-hero { padding:16px; } .ih-t { font-size:17px; } }
 @media (max-width:680px){ .pricing-title { font-size:24px; } .cmp-row { padding:12px 8px; gap:6px; } .cmp-row > span, .cmp-f { font-size:12px; } .value-anchor { font-size:12.5px; } }
 
 /* onboarding */
@@ -2852,6 +2894,7 @@ const PAGES = {
   simulador:    { t:'Simulador de Renda',    s:'Projete quanto precisa para viver de dividendos' },
   score:        { t:'Score Lastro',          s:'Ranking proprietário de qualidade dos ativos' },
   planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
+  indicar:      { t:'Indique e Ganhe',       s:'Ganhe 20% da assinatura de cada amigo que você indicar, via PIX' },
 };
 let currentView = 'painel';
 
@@ -3100,12 +3143,15 @@ function upsell(){ proGate('comparador'); }
 function getSub(){ try{ return JSON.parse(localStorage.getItem('lastro_sub')||'null'); }catch(e){ return null; } }
 function setSub(s){ if(s) localStorage.setItem('lastro_sub', JSON.stringify(s)); else localStorage.removeItem('lastro_sub'); if(typeof saveCloudState==='function') saveCloudState(); }
 function addDays(iso,n){ const d=new Date(iso); d.setDate(d.getDate()+n); return d; }
-function subscribePremium(cycle){
+function subscribePremium(tier, cycle){
   if(!isAuthed()){ toast('Entre na sua conta para assinar'); closePosModal(); openAuth('login'); return; }   // bloqueia assinatura sem login
-  const c = cycle==='mensal'?'mensal':'anual';
-  setSub({ cycle:c, since:new Date().toISOString(), card:'4242', brand:'Visa', amount: c==='anual'?298.80:29.90 });
+  // compat: chamadas antigas passavam só o ciclo
+  if(tier==='anual'||tier==='mensal'){ cycle=tier; tier='premium'; }
+  const p = PLANS[tier]||PLANS.premium; const c = cycle==='mensal'?'mensal':'anual';
+  const amount = c==='anual'? p.anualTotal : p.mensal;
+  setSub({ tier, plano:p.name, cycle:c, since:new Date().toISOString(), card:'4242', brand:'Visa', amount });
   setPlan('premium');
-  toast('Bem-vindo ao Premium 👑');
+  toast(`Bem-vindo ao ${p.name} 👑`);
   openAssinatura();
 }
 function downgradeFree(){ setSub(null); setPlan('free'); toast('Plano alterado para Gratuito'); openAssinatura(); }
@@ -3134,7 +3180,7 @@ function viewAssinatura(){
   <div class="sec-title">Gerenciar assinatura</div>
   <div class="sec-desc">Acompanhe e gerencie seu plano, pagamentos e cobranças.</div>
   <div class="card card-pad as-cur">
-    <div class="as-cur-h"><div><div class="as-plan"><i class="fa-solid fa-crown" style="color:var(--gold)"></i> Premium ${s.cycle==='anual'?'Anual':'Mensal'}</div><div class="as-sub">${brl(s.amount)} / ${s.cycle==='anual'?'ano':'mês'}</div></div><span class="chip ${s.canceled?'chip-down':'chip-up'}">${s.canceled?'Cancela ao fim do período':'Ativo'}</span></div>
+    <div class="as-cur-h"><div><div class="as-plan"><i class="fa-solid fa-crown" style="color:var(--gold)"></i> ${s.plano||'Premium'} ${s.cycle==='anual'?'Anual':'Mensal'}</div><div class="as-sub">${brl(s.amount)} / ${s.cycle==='anual'?'ano':'mês'}</div></div><span class="chip ${s.canceled?'chip-down':'chip-up'}">${s.canceled?'Cancela ao fim do período':'Ativo'}</span></div>
     <div class="as-grid">
       <div class="as-item"><span>Ativado em</span><b>${fmtD(since)}</b></div>
       <div class="as-item"><span>${s.canceled?'Acesso até':'Próxima cobrança'}</span><b>${fmtD(next)}</b></div>
@@ -3400,6 +3446,7 @@ function render(v, soft){
   else if(v==='simulador')   c.innerHTML = viewSimulador();
   else if(v==='score')       c.innerHTML = viewScore();
   else if(v==='planos')      c.innerHTML = viewPlanos();
+  else if(v==='indicar')     c.innerHTML = viewIndicar();
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
 }
@@ -3984,9 +4031,24 @@ function viewWatchlist(){
 /* ══════════════════════════════════════════════════════════
    VIEW: PLANOS E PREÇOS
    ══════════════════════════════════════════════════════════ */
+const PLANS = {
+  premium: { key:'premium', name:'Premium', popular:true, desc:'Para acompanhar sua carteira de verdade e decidir com dados.',
+    anual:24.90, mensal:29.90, anchorA:34.90, anchorM:39.90, anualTotal:298.80,
+    feats:['Tudo do Gratuito, sem limites','Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço + IA ilimitada','Watchlist ilimitada + exportação CSV'] },
+  pro: { key:'pro', name:'Investidor Pro', popular:false, desc:'Tudo do Premium, com análises, relatórios e prioridade.',
+    anual:39.90, mensal:49.90, anchorA:54.90, anchorM:64.90, anualTotal:478.80,
+    feats:['Tudo do Premium','Análises aprofundadas por IA ilimitadas','Carteiras recomendadas exclusivas','Relatório mensal da sua carteira','Indicação turbinada: recompensas em dobro','Acesso antecipado a novos recursos','Suporte prioritário'] },
+};
+let planCycle = 'anual';
+function setPlanCycle(c){ planCycle = c==='mensal'?'mensal':'anual'; render('planos'); }
+function brlc(v){ return 'R$ '+(+v).toFixed(2).replace('.',','); }
 function viewPlanos(){
   const pro = isPremium();
-  const feat = (txt, on=true, pr=false)=>`<li class="${on?'':'off'}"><i class="fa-solid fa-${on?'check':'xmark'}"></i> ${txt}${pr?' <span class="pro-tag">Premium</span>':''}</li>`;
+  const annual = planCycle==='anual';
+  const feat = (txt)=>`<li><i class="fa-solid fa-circle-check"></i> ${txt}</li>`;
+  const priceHTML = (p)=>{ const price=annual?p.anual:p.mensal, anchor=annual?p.anchorA:p.anchorM, cents=price.toFixed(2).split('.')[1];
+    return `<div class="plan-anchor">${brlc(anchor)}</div><div class="plan-price"><span class="amt">R$ ${Math.floor(price)}<span class="cents">,${cents}</span></span><span class="per">/mês</span></div><div class="plan-billed">${annual?brlc(p.anualTotal)+' cobrado anualmente':'cobrado mensalmente'}</div>`; };
+  const paidCard = (p)=>`<div class="plan-card prem${p.popular?' featured':''}">${p.popular?'<div class="plan-flag">Mais popular</div>':''}<div class="plan-name">${p.name} <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>${priceHTML(p)}<div class="plan-desc">${p.desc}</div><ul class="plan-feats">${p.feats.map(feat).join('')}</ul><button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium('${p.key}','${planCycle}')"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':`<i class="fa-solid fa-bolt"></i> Assinar ${p.name}`}</button><div class="plan-trust">${isAuthed()?'Sem fidelidade · cancele quando quiser':'7 dias grátis ao criar conta'}</div></div>`;
   const trialBanner = pro ? '' : (trialActive()
     ? `<div class="plan-trial-cta is-active"><i class="fa-solid fa-bolt"></i><div><strong>Teste Premium ativo — ${trialDaysLeft()} dia(s) restantes.</strong> <span>Assine para manter o acesso completo após o período.</span></div></div>`
     : (!isAuthed()
@@ -3995,15 +4057,18 @@ function viewPlanos(){
   return `
   <div class="pricing-hero">
     <span class="chip chip-gold" style="margin-bottom:12px"><i class="fa-solid fa-crown" style="font-size:10px"></i> Lastro Premium</span>
-    <h1 class="pricing-title">Inteligência completa para o investidor brasileiro</h1>
-    <p class="pricing-sub">Comece grátis. Ao criar sua conta, você testa <strong>todos os recursos Premium por 7 dias</strong> — carteira real, proventos, Imposto de Renda, alertas e mais. Sem cartão.</p>
+    <h1 class="pricing-title">Escolha o plano ideal para a sua jornada</h1>
+    <p class="pricing-sub">Comece grátis. Ao criar sua conta, você testa <strong>todos os recursos Premium por 7 dias</strong> — sem cartão.</p>
   </div>
   ${trialBanner}
+  <div class="bill-toggle"><button class="${annual?'on':''}" onclick="setPlanCycle('anual')">Anual <span class="bt-off">17% OFF</span></button><button class="${!annual?'on':''}" onclick="setPlanCycle('mensal')">Mensal</button></div>
 
   <div class="plan-carousel" id="planCarousel">
     <div class="plan-card">
       <div class="plan-name">Gratuito</div>
-      <div class="plan-price"><span class="amt">R$ 0</span><span class="per">para sempre</span></div>
+      <div class="plan-anchor">&nbsp;</div>
+      <div class="plan-price"><span class="amt">R$ 0</span><span class="per">/mês</span></div>
+      <div class="plan-billed">para sempre</div>
       <div class="plan-desc">O essencial para acompanhar o mercado.</div>
       <ul class="plan-feats">
         ${feat('Cotações ao vivo (B3 + cripto)')}
@@ -4017,58 +4082,29 @@ function viewPlanos(){
       <div class="plan-trust">Sem custo · para sempre</div>
     </div>
 
-    <div class="plan-card featured prem">
-      <div class="plan-flag">Mais popular</div>
-      <div class="plan-name">Premium Anual <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>
-      <div class="plan-price"><span class="amt">R$ 24<span class="cents">,90</span></span><span class="per">/mês</span></div>
-      <div class="plan-desc"><span class="plan-save">economize 17%</span> · cobrado R$ 298,80/ano</div>
-      <ul class="plan-feats">
-        ${feat('Tudo do Gratuito, sem limites')}
-        ${feat('Carteira real ilimitada e sincronizada')}
-        ${feat('Proventos, Aporte, FIRE e Imposto de Renda')}
-        ${feat('Rastreador + Score Lastro completo')}
-        ${feat('Alertas de preço + IA ilimitada')}
-        ${feat('Exportar e importar carteira (CSV)')}
-      </ul>
-      <button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium('anual')"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':'<i class="fa-solid fa-bolt"></i> Assinar anual'}</button>
-      <div class="plan-trust">${isAuthed()?'Sem fidelidade · cancele quando quiser':'7 dias grátis ao criar conta · sem cartão'}</div>
-    </div>
-
-    <div class="plan-card prem">
-      <div class="plan-name">Premium Mensal <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>
-      <div class="plan-price"><span class="amt">R$ 29<span class="cents">,90</span></span><span class="per">/mês</span></div>
-      <div class="plan-desc">Flexibilidade total, sem compromisso anual.</div>
-      <ul class="plan-feats">
-        ${feat('Tudo do Gratuito, sem limites')}
-        ${feat('Carteira real ilimitada e sincronizada')}
-        ${feat('Proventos, Aporte, FIRE e Imposto de Renda')}
-        ${feat('Rastreador + Score Lastro completo')}
-        ${feat('Alertas de preço + IA ilimitada')}
-      </ul>
-      <button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium('mensal')"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':'<i class="fa-solid fa-bolt"></i> Assinar mensal'}</button>
-      <div class="plan-trust">${isAuthed()?'Sem fidelidade · cancele quando quiser':'7 dias grátis ao criar conta · sem cartão'}</div>
-    </div>
+    ${paidCard(PLANS.premium)}
+    ${paidCard(PLANS.pro)}
   </div>
   <div class="plan-dots" id="planDots"><span class="pd on"></span><span class="pd"></span><span class="pd"></span></div>
 
-  <div class="value-anchor"><i class="fa-solid fa-mug-hot"></i> No plano anual sai por <strong>R$ 0,83/dia</strong> — menos que um café para investir com clareza.</div>
+  <div class="value-anchor"><i class="fa-solid fa-gift"></i> Indique amigos e <strong>ganhe 20% da assinatura</strong> deles via PIX. <a onclick="nav('indicar')" style="color:var(--accent);cursor:pointer;font-weight:600;white-space:nowrap">Indique e Ganhe →</a></div>
 
   <div class="cmp-table card card-pad">
-    <div class="cmp-row cmp-head"><span>Recurso</span><span>Gratuito</span><span class="cmp-pro">Premium</span></div>
+    <div class="cmp-row cmp-row-3 cmp-head"><span>Recurso</span><span>Gratuito</span><span class="cmp-pro">Premium</span><span>Pro</span></div>
     ${[
-      ['Cotações ao vivo (B3 + cripto)', true, true],
-      ['Notícias e agenda de dividendos', true, true],
-      ['Minha Carteira', 'Demonstração', 'Real ilimitada'],
-      ['Proventos · Aporte · FIRE · IR', false, true],
-      ['Score Lastro', 'Resumo', 'Completo + ranking'],
-      ['Watchlist', PLAN_LIMITS.watchlist, 'Ilimitada'],
-      ['Comparador de ativos', PLAN_LIMITS.comparador, '4 ativos'],
-      ['Análises de IA por dia', PLAN_LIMITS.aiDay, 'Ilimitadas'],
-      ['Rastreador avançado', false, true],
-      ['Alertas de preço', false, true],
-      ['Exportar / importar carteira', false, true],
-      ['Suporte prioritário', false, true],
-    ].map(([f,g,p])=>`<div class="cmp-row"><span class="cmp-f">${f}</span><span>${cmpCell(g)}</span><span class="cmp-pro">${cmpCell(p)}</span></div>`).join('')}
+      ['Carteira real ilimitada', false, true, true],
+      ['Proventos · Aporte · FIRE · IR', false, true, true],
+      ['Rastreador + Score completo', false, true, true],
+      ['Alertas de preço', false, true, true],
+      ['Análises de IA', PLAN_LIMITS.aiDay+'/dia', 'Ilimitada', 'Ilimitada'],
+      ['Watchlist', PLAN_LIMITS.watchlist, 'Ilimitada', 'Ilimitada'],
+      ['Comparador', PLAN_LIMITS.comparador, '4 ativos', '4 ativos'],
+      ['Análises aprofundadas por IA', false, false, true],
+      ['Carteiras recomendadas exclusivas', false, false, true],
+      ['Relatório mensal da carteira', false, false, true],
+      ['Indicação turbinada (em dobro)', false, false, true],
+      ['Suporte', 'Padrão', 'Padrão', 'Prioritário'],
+    ].map(([f,g,p,pr])=>`<div class="cmp-row cmp-row-3"><span class="cmp-f">${f}</span><span>${cmpCell(g)}</span><span class="cmp-pro">${cmpCell(p)}</span><span>${cmpCell(pr)}</span></div>`).join('')}
   </div>
 
   ${pro?'':`<div class="cmp-cta">${!isAuthed()
@@ -4086,6 +4122,97 @@ function cmpCell(v){
   if(v===true) return '<i class="fa-solid fa-check cmp-yes"></i>';
   if(v===false) return '<i class="fa-solid fa-minus cmp-no"></i>';
   return `<span class="cmp-txt">${v}</span>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   VIEW: INDIQUE E GANHE (programa de indicação)
+   ══════════════════════════════════════════════════════════ */
+function refCode(){ const u=currentUser(); if(!u) return ''; let c=localStorage.getItem('lastro_refcode'); if(!c){ c='LASTRO-'+(seedFrom((u.email||u.id||'')+'ref')%1000000).toString().padStart(6,'0'); try{ localStorage.setItem('lastro_refcode', c); }catch(e){} } return c; }
+function refLink(){ const c=refCode(); return c ? 'https://lastro.app/?ref='+c : ''; }
+function copyRefLink(btn){ const l=refLink(); if(!l) return; try{ navigator.clipboard.writeText(l); toast('Link copiado ✓'); if(btn){ const o=btn.innerHTML; btn.innerHTML='<i class="fa-solid fa-check"></i>'; setTimeout(()=>btn.innerHTML=o,1500); } }catch(e){ toast('Não foi possível copiar'); } }
+function shareRef(ch){ const l=refLink(); if(!l) return;
+  const msg='Conheça a Lastro — inteligência completa para investir em FIIs e ações da B3: carteira, proventos, Imposto de Renda e alertas. Comece grátis: '+l;
+  const e=encodeURIComponent(msg), el=encodeURIComponent(l);
+  if(ch==='instagram'){ copyRefLink(); toast('Link copiado — cole no seu story ou na bio do Instagram'); return; }
+  const urls={ whatsapp:'https://wa.me/?text='+e, facebook:'https://www.facebook.com/sharer/sharer.php?u='+el, twitter:'https://twitter.com/intent/tweet?text='+e };
+  if(urls[ch]) window.open(urls[ch], '_blank', 'noopener');
+}
+function viewIndicar(){
+  const hero = `<div class="indique-hero">
+    <div class="ih-ic"><i class="fa-solid fa-gift"></i></div>
+    <div><div class="ih-t">Programa Indique e Ganhe</div><div class="ih-s">Indique amigos e ganhe parte do valor da assinatura deles, todo mês, via PIX.</div></div>
+  </div>`;
+  if(!isAuthed()){
+    return `${hero}
+    <div class="card card-pad">${emptyState('fa-user-plus','Crie sua conta para participar','Gere seu link exclusivo e ganhe 20% da assinatura de cada amigo que você indicar — recorrente, direto na sua conta via PIX.', `<button class="btn btn-premium" onclick="openAuth('signup')"><i class="fa-solid fa-rocket"></i> Criar conta grátis</button>`)}</div>`;
+  }
+  const link=refLink();
+  const comM=PLANS.premium.mensal*0.20, comA=PLANS.premium.anualTotal*0.20;
+  const step=(n,t,d)=>`<div class="ind-step"><span class="is-n">${n}</span><div><div class="is-t">${t}</div><div class="is-d">${d}</div></div></div>`;
+  return `
+  ${hero}
+
+  <div class="card card-pad">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-people-group"></i></span> Como funciona</div></div>
+    <div class="ind-steps">
+      ${step(1,'Compartilhe seu link único','Use o link de indicação abaixo para enviar a amigos e familiares.')}
+      ${step(2,'Seu indicado assina a Lastro','Quando alguém usar seu link e se tornar assinante, você é creditado em 20% do valor da assinatura.')}
+      ${step(3,'Receba sua comissão via PIX','Você recebe parte da assinatura todos os meses enquanto seu indicado permanecer ativo, direto na sua conta.')}
+    </div>
+  </div>
+
+  <div class="card card-pad">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-sack-dollar"></i></span> Quanto você ganha?</div></div>
+    <p class="sec-desc" style="margin:6px 0 14px">Você recebe <strong>20% do valor da assinatura</strong> do seu indicado. Veja quanto rende em cada plano:</p>
+    <div class="ind-earn-grid">
+      <div class="ind-earn ie-blue">
+        <div class="ie-head"><span>Plano Mensal</span><span class="chip chip-blue">${brlc(PLANS.premium.mensal)}/mês</span></div>
+        <div class="ie-row"><span>Valor da assinatura</span><b>${brlc(PLANS.premium.mensal)}</b></div>
+        <div class="ie-row"><span>Sua comissão (20%)</span><b class="up">${brlc(comM)}</b></div>
+        <div class="ie-note"><strong>${brlc(comM)} todo mês</strong> enquanto o indicado permanecer com a assinatura ativa.</div>
+      </div>
+      <div class="ind-earn ie-green">
+        <div class="ie-head"><span>Plano Anual</span><span class="chip chip-up">${brlc(PLANS.premium.anualTotal)}/ano</span></div>
+        <div class="ie-row"><span>Valor da assinatura</span><b>${brlc(PLANS.premium.anualTotal)}</b></div>
+        <div class="ie-row"><span>Sua comissão (20%)</span><b class="up">${brlc(comA)}</b></div>
+        <div class="ie-note"><strong>${brlc(comA)}</strong> quando o indicado assinar o plano anual.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-pad">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-link"></i></span> Seu link de indicação</div></div>
+    <div class="ref-link"><input id="refLinkInput" readonly value="${link}" onclick="this.select()"><button class="btn btn-primary" onclick="copyRefLink(this)" aria-label="Copiar link"><i class="fa-regular fa-copy"></i> Copiar</button></div>
+  </div>
+
+  <div class="card card-pad">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--accent-l,var(--brand-l));color:var(--accent)"><i class="fa-solid fa-share-nodes"></i></span> Compartilhar</div></div>
+    <p class="sec-desc" style="margin:6px 0 12px">Clique para compartilhar com textos prontos e otimizados para cada rede.</p>
+    <div class="share-grid">
+      <button class="share-btn sh-wa" onclick="shareRef('whatsapp')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+      <button class="share-btn sh-fb" onclick="shareRef('facebook')"><i class="fa-brands fa-facebook"></i> Facebook</button>
+      <button class="share-btn sh-ig" onclick="shareRef('instagram')"><i class="fa-brands fa-instagram"></i> Instagram</button>
+      <button class="share-btn sh-tw" onclick="shareRef('twitter')"><i class="fa-brands fa-x-twitter"></i> X / Twitter</button>
+    </div>
+  </div>
+
+  <div class="card card-pad">
+    <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-users"></i></span> Minhas indicações</div></div>
+    ${emptyState('fa-user-group','Você ainda não tem indicações','Compartilhe seu link para começar a ganhar comissão a cada amigo que assinar.','')}
+  </div>
+
+  <div class="ind-terms">
+    <div class="it-t"><i class="fa-solid fa-circle-info"></i> Informações importantes</div>
+    <ul>
+      <li>O pagamento é feito mensalmente enquanto o indicado estiver com assinatura ativa.</li>
+      <li>A comissão é de 20% sobre o valor da assinatura do indicado.</li>
+      <li>Os pagamentos são feitos via PIX automaticamente.</li>
+      <li>Você pode indicar quantas pessoas quiser — não há limite.</li>
+      <li>Para dúvidas sobre pagamentos, fale com o nosso suporte.</li>
+    </ul>
+  </div>
+
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Programa ilustrativo nesta demonstração — a apuração das indicações e os pagamentos via PIX entram em operação com a integração do backend.</div>`;
 }
 
 /* ══════════════════════════════════════════════════════════
