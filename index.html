@@ -2366,7 +2366,7 @@ function addPosition(tk, cotas, pm, date){
   if(!(cotas>0) || !(pm>0)) return { ok:false, msg:'Informe quantidade e valor válidos' };
   if(!validDate(date)) return { ok:false, msg:'Informe a data do aporte (não futura)' };
   const has = CARTEIRA.some(c=>c.tk===tk);
-  if(!has && !isPremium() && uniqueTickers().length >= PLAN_LIMITS.carteira){
+  if(!has && !isPro() && uniqueTickers().length >= PLAN_LIMITS.carteira){
     return { ok:false, premium:true, msg:`O plano Gratuito permite até ${PLAN_LIMITS.carteira} ativos. Faça upgrade para carteira ilimitada.` };
   }
   CARTEIRA.push({ id:uid(), tk, cotas, pm, date });
@@ -2505,8 +2505,8 @@ function posPreview(){
   el.classList.add('on');
 }
 function openPosModal(tk, lotId){
-  // carteira real é Premium — no plano Gratuito qualquer tentativa de adicionar/editar leva à assinatura
-  if(!isPremium()){ goPricing(); return; }
+  // carteira real é PRO — anônimo cria conta (teste 7 dias); teste expirado vai para assinatura
+  if(!proGate()) return;
   const lot = lotId ? CARTEIRA.find(c=>c.id===lotId) : null;
   const lockTk = !!lot || !!tk;
   $('#posSug').classList.remove('on'); _sugList=[]; _sugIdx=-1;
@@ -2804,13 +2804,46 @@ let currentView = 'painel';
 const PLAN_LIMITS = { carteira: 6, watchlist: 8, comparador: 2, aiDay: 5 };
 let demoMode = false;   // carteira de demonstração (efêmera, só em memória — some ao recarregar)
 function getPlan(){ return localStorage.getItem('lastro_plan')==='premium' ? 'premium' : 'free'; }
+
+/* ══ Teste PRO de 7 dias (captação de leads) ══
+   Criar conta (mesmo no plano Gratuito) libera todos os recursos PRO por 7 dias.
+   isPro() = acesso ao recurso (Premium OU teste ativo).  isPremium() = assinante pagante.
+   Os selos "PRO" continuam visíveis durante o teste — só somem para quem assina. */
+const TRIAL_DAYS = 7;
+function trialStartTs(){ return +localStorage.getItem('lastro_trial_start') || 0; }
+function trialDaysLeft(){ const s=trialStartTs(); if(!s) return 0; return Math.max(0, TRIAL_DAYS - Math.floor((Date.now()-s)/86400000)); }
+function trialActive(){ return isAuthed() && !isPremium() && trialDaysLeft()>0; }
+function trialExpired(){ return isAuthed() && !isPremium() && trialStartTs()>0 && trialDaysLeft()<=0; }
+function isPro(){ return isPremium() || trialActive(); }
+/* inicia o teste no primeiro acesso autenticado (idempotente) */
+function ensureTrial(){ if(isAuthed() && !isPremium() && !trialStartTs()){ try{ localStorage.setItem('lastro_trial_start', Date.now()); }catch(e){} } }
+/* gate central de recurso PRO: retorna true se há acesso; senão conduz ao caminho certo
+   (anônimo → criar conta + teste de 7 dias; teste expirado → assinar Premium) */
+function proGate(){
+  if(isPro()) return true;
+  if(!isAuthed()){ toast('Crie sua conta grátis e teste os recursos PRO por 7 dias'); openAuth('signup'); }
+  else { toast('Seu teste PRO terminou — assine o Premium para continuar'); goPricing(); }
+  return false;
+}
+/* rótulo do botão de desbloqueio conforme o estado do usuário */
+function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias PRO grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
+function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
+function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
 function refreshPlanUI(){
   const pro = isPremium();
-  document.body.classList.toggle('is-premium', pro);
-  const pl = document.querySelector('.user-meta .pl'); if(pl) pl.textContent = pro?'Plano Premium':'Plano Gratuito';
-  const up = document.getElementById('upgradeBtn'); if(up) up.style.display = pro?'none':'flex';
+  document.body.classList.toggle('is-premium', pro);   // selos PRO seguem visíveis no teste; somem só para assinantes
+  const pl = document.querySelector('.user-meta .pl'); if(pl) pl.textContent = pro?'Plano Premium': (trialActive()?`Teste PRO · ${trialDaysLeft()}d`:'Plano Gratuito');
+  const up = document.getElementById('upgradeBtn');
+  if(up){ up.style.display = pro?'none':'flex'; up.onclick = (!isAuthed()? ()=>openAuth('signup') : goPricing);
+    const uct=up.querySelector('.uc-top'), ucs=up.querySelector('.uc-sub');
+    if(uct&&ucs){
+      if(trialActive()){ uct.innerHTML='<i class="fa-solid fa-bolt"></i> Teste PRO ativo'; ucs.textContent=`${trialDaysLeft()} dia(s) restantes · assine para manter`; }
+      else if(!isAuthed()){ uct.innerHTML='<i class="fa-solid fa-rocket"></i> Teste PRO grátis'; ucs.textContent='Crie sua conta e use 7 dias grátis'; }
+      else { uct.innerHTML='<i class="fa-solid fa-crown"></i> Seja Premium'; ucs.textContent='Análises, alertas e rastreador completos'; }
+    }
+  }
   updateHeaderAction();
 }
 /* cabeçalho: Menu | Logo | Coroa | Perfil — só ícones, logo sempre centralizada (mobile) */
@@ -2950,7 +2983,7 @@ function openProfile(){
 /* uso de IA no dia (limite do plano free) */
 function aiUsedToday(){ try{ const o=JSON.parse(localStorage.getItem('lastro_ai')||'{}'); const d=new Date().toISOString().slice(0,10); return o.d===d?(o.n||0):0; }catch(e){ return 0; } }
 function aiInc(){ const d=new Date().toISOString().slice(0,10); localStorage.setItem('lastro_ai', JSON.stringify({ d, n: aiUsedToday()+1 })); }
-function aiCanRun(){ return isPremium() || aiUsedToday() < PLAN_LIMITS.aiDay; }
+function aiCanRun(){ return isPro() || aiUsedToday() < PLAN_LIMITS.aiDay; }
 
 function goPricing(){
   currentView='planos';
@@ -2960,15 +2993,16 @@ function goPricing(){
 }
 /* card de bloqueio (soft paywall) reutilizável */
 function paywall(title, sub){
+  const note = !isAuthed() ? '7 dias de PRO grátis ao criar conta · sem cartão' : (trialExpired()?'Seu teste de 7 dias terminou':'7 dias grátis · cancele quando quiser');
   return `<div class="paywall">
     <div class="pw-ic"><i class="fa-solid fa-crown"></i></div>
     <div class="pw-t">${title}</div>
     <div class="pw-s">${sub||''}</div>
-    <button class="btn btn-premium" onclick="goPricing()"><i class="fa-solid fa-bolt"></i> Desbloquear com Premium</button>
-    <div class="pw-note">7 dias grátis · cancele quando quiser</div>
+    ${proCtaButton()}
+    <div class="pw-note">${note}</div>
   </div>`;
 }
-function upsell(){ toast('Recurso Premium — faça upgrade para desbloquear'); goPricing(); }
+function upsell(){ proGate(); }
 
 /* mock de assinatura (billing real entra depois) */
 /* assinatura (simulada até integrar o gateway de pagamento) */
@@ -3039,7 +3073,7 @@ function authHeaders(){ const c=_sb(); return { apikey:c.SUPABASE_ANON_KEY, 'Con
 function getSession(){ try{ return JSON.parse(localStorage.getItem('lastro_session')||'null'); }catch(e){ return null; } }
 function currentUser(){ const s=getSession(); return s&&s.user ? s.user : null; }
 function isAuthed(){ return !!currentUser(); }
-function saveSession(s){ localStorage.setItem('lastro_session', JSON.stringify(s)); updateAuthUI(); }
+function saveSession(s){ localStorage.setItem('lastro_session', JSON.stringify(s)); ensureTrial(); updateAuthUI(); refreshPlanUI(); }
 function clearSession(){ localStorage.removeItem('lastro_session'); updateAuthUI(); }
 
 async function authSignup(email, pass){
@@ -3068,7 +3102,7 @@ function authLogout(){
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
-  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta'].forEach(k=>localStorage.removeItem(k));
+  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
   CARTEIRA = []; localStorage.setItem('lastro_sub',''); localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
   refreshPlanUI(); updateAuthUI(); applyPriv();
@@ -3099,6 +3133,8 @@ async function loadCloudState(){
       if(+pf.despesa>0) localStorage.setItem('lastro_despesa', +pf.despesa);
       if(+pf.fireAporte>0) localStorage.setItem('lastro_fire_aporte', +pf.fireAporte);
       if(+pf.rendaMeta>0) localStorage.setItem('lastro_renda_meta', +pf.rendaMeta);
+      // teste PRO: preserva a data de início mais antiga (evita "renovar" o teste trocando de aparelho)
+      if(+pf.trialStart>0){ const cur=trialStartTs(); if(!cur || +pf.trialStart<cur) localStorage.setItem('lastro_trial_start', +pf.trialStart); }
       refreshPlanUI();
       render(currentView);   // reflete preferências (tema/visualização) imediatamente
     } else { await saveCloudState(); } // primeira vez: envia o estado local
@@ -3109,7 +3145,7 @@ function saveCloudState(){
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
   clearTimeout(_cloudT);
   return new Promise(res=>{ _cloudT=setTimeout(async()=>{
-    const data={ carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), plan:getPlan(), theme:getThemePref(), profile:getProfile(), sub:getSub(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta() } };
+    const data={ carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), plan:getPlan(), theme:getThemePref(), profile:getProfile(), sub:getSub(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } };
     try{ await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data, updated_at:new Date().toISOString()})}); }catch(e){}
     res();
   }, 700); });
@@ -3145,7 +3181,7 @@ function renderAuth(mode){
     <div class="auth-hero">
       <div class="auth-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
       <div class="auth-h">${mode==='signup'?'Crie sua conta grátis':'Bem-vindo de volta'}</div>
-      <div class="auth-sub">${mode==='signup'?'Comece em segundos — carteira, watchlist e preferências sincronizadas entre seus dispositivos.':'Acesse sua carteira, watchlist e preferências, sincronizadas onde você estiver.'}</div>
+      <div class="auth-sub">${mode==='signup'?'Crie sua conta e teste <strong>todos os recursos PRO grátis por 7 dias</strong> — sem cartão. Carteira e preferências sincronizadas entre seus dispositivos.':'Acesse sua carteira, watchlist e preferências, sincronizadas onde você estiver.'}</div>
     </div>
     <div class="auth-tabs"><button class="${mode==='login'?'on':''}" onclick="renderAuth('login')">Entrar</button><button class="${mode==='signup'?'on':''}" onclick="renderAuth('signup')">Criar conta</button></div>
     <label class="fld auth-fld"><span>E-mail</span><div class="auth-input"><i class="fa-regular fa-envelope"></i><input id="auEmail" type="email" inputmode="email" placeholder="voce@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('#auPass').focus()"></div></label>
@@ -3170,8 +3206,10 @@ async function authSubmit(mode){
       <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:18px" onclick="renderAuth('login')">Voltar ao login</button></div>`;
     return;
   }
-  closeAuth(); toast(mode==='signup'?'Conta criada 🎉':'Bem-vindo de volta!');
-  if(['carteira','watchlist'].includes(currentView)) render(currentView);
+  closeAuth();
+  toast(mode==='signup'? (trialActive()?`Conta criada 🎉 Teste PRO liberado por ${trialDaysLeft()} dias!`:'Conta criada 🎉') : 'Bem-vindo de volta!');
+  refreshPlanUI();
+  render(currentView);   // re-renderiza a tela atual para destravar recursos PRO liberados pelo teste
 }
 
 /* onboarding (primeiro acesso) */
@@ -3743,19 +3781,19 @@ function viewCarteira(){
   const n = byT.length;
   const concentracao = n ? Math.max(...byT.map(g=>p.atual? g.val/p.atual*100 : 0)) : 0;
   const saude = n ? Math.max(0, Math.round(100 - (concentracao>30?15:6) - (n<6?12:0) - (n<3?10:0))) : 0;
-  // Carteira real é Premium: no plano Gratuito o botão vira "Desbloquear"; o usuário só explora via demonstração
-  const addBtn = isPremium()
+  // Carteira real é PRO: no teste/assinatura adiciona normalmente; fora disso o botão vira "Criar conta / Desbloquear"
+  const addBtn = isPro()
     ? `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar aporte</button>`
-    : `<button class="btn btn-premium" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Desbloquear minha carteira</button>`;
+    : proCtaButton();
 
   if(!n){
-    const emptyCta = isPremium()
+    const emptyCta = isPro()
       ? `${addBtn} <button class="btn btn-ghost" onclick="importCarteiraCSV()"><i class="fa-solid fa-file-import"></i> Importar CSV</button>`
       : `${addBtn} <button class="btn btn-ghost" onclick="loadDemoCarteira()"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver com dados de exemplo</button>`;
     return `
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-wallet"></i></span> Minha Carteira</div>${addBtn}</div>
-      ${emptyState('fa-wallet','Sua carteira está vazia', isPremium()?'Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.':'Veja como a carteira funciona com dados de exemplo. Para acompanhar a sua de verdade — com sincronização, proventos, Imposto de Renda e mais — desbloqueie o Premium.', emptyCta)}
+      ${emptyState('fa-wallet','Sua carteira está vazia', isPro()?'Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.':'Veja como a carteira funciona com dados de exemplo. Para acompanhar a sua de verdade — com sincronização, proventos, Imposto de Renda e mais — crie sua conta e teste o PRO 7 dias grátis.', emptyCta)}
     </div>`;
   }
 
@@ -4300,7 +4338,7 @@ function viewScore(){
   }).join('');
 
   const ranked = [...FIIS,...ACOES].filter(a=>typeof a.score==='number').sort((a,b)=>b.score-a.score);
-  const pro = isPremium();
+  const pro = isPro();
   const visible = pro ? ranked : ranked.slice(0,8);
   const rows = visible.map((a,i)=>{
     const c = scoreColor(a.score);
@@ -4340,7 +4378,7 @@ function gbRow(label, pct){
 const ALL_ASSETS_FLAT = ()=>[...FIIS.map(a=>({...a,_k:'fiis'})), ...ACOES.map(a=>({...a,_k:'acoes'}))];
 let cmpSel = ['KNCR11','HGLG11','VGIR11'];
 function cmpSlot(i){
-  const pro=isPremium(), cap=pro?4:PLAN_LIMITS.comparador;
+  const pro=isPro(), cap=isPro()?4:PLAN_LIMITS.comparador;
   if(i>=cap) return `<button class="sel sel-locked cmp-slot" onclick="upsell()" title="Premium"><i class="fa-solid fa-lock" style="font-size:10px"></i> + Ativo ${i+1} <span class="pro-tag">PRO</span></button>`;
   const tk=cmpSel[i];
   if(tk){ const lk=assetLookup(tk), k=lk?lk.k:'acoes', a=lk?lk.a:{};
@@ -4349,7 +4387,7 @@ function cmpSlot(i){
   return `<div class="fld-rel cmp-slot"><input id="cmpIn${i}" class="cmp-input" placeholder="+ Ativo ${i+1}" autocomplete="off" oninput="this.value=this.value.toUpperCase();cmpSuggest(${i})" onfocus="cmpSuggest(${i})" onblur="cmpHide(${i})" onkeydown="cmpKey(event,${i})"><div id="cmpSug${i}" class="pos-sug"></div></div>`;
 }
 function viewComparador(){
-  const pro = isPremium();
+  const pro = isPro();
   return `
   <div class="sec-title">Comparador de ativos</div>
   <div class="sec-desc">Compare ativos lado a lado pelos principais fundamentos e pelo Score Lastro. ${pro?'Até 4 ativos.':'No plano Gratuito você compara 2 — faça upgrade para 4.'}</div>
@@ -4380,9 +4418,9 @@ function cmpKey(e,i){ const box=$('#cmpSug'+i), open=box&&box.classList.contains
 }
 function pickCmp(i,tk){ setCmp(i,tk); }
 function clearCmp(i){ cmpSel.splice(i,1); cmpSel=cmpSel.filter(Boolean); render('comparador'); }
-function setCmp(i,v){ if(i>=PLAN_LIMITS.comparador && !isPremium()){ upsell(); return; } cmpSel[i]=v||null; cmpSel=cmpSel.filter(Boolean); render('comparador'); }
+function setCmp(i,v){ if(i>=PLAN_LIMITS.comparador && !isPro()){ upsell(); return; } cmpSel[i]=v||null; cmpSel=cmpSel.filter(Boolean); render('comparador'); }
 function initComparador(){
-  const cap = isPremium()?4:PLAN_LIMITS.comparador;
+  const cap = isPro()?4:PLAN_LIMITS.comparador;
   if(cmpSel.length>cap) cmpSel = cmpSel.slice(0,cap);
   ['cmp0','cmp1','cmp2','cmp3'].forEach((id,i)=>{ const el=$('#'+id); if(el&&cmpSel[i]) el.value=cmpSel[i]; });
   const items = cmpSel.slice(0,cap).map(tk=>ALL_ASSETS_FLAT().find(a=>a.tk===tk)).filter(Boolean);
@@ -4413,7 +4451,7 @@ function initComparador(){
    ══════════════════════════════════════════════════════════ */
 let scrState = { universe:'fiis', dyMin:0, pvpMax:3, scoreMin:0 };
 function viewScreener(){
-  if(!isPremium()){
+  if(!isPro()){
     return `<div class="sec-title">Rastreador de ativos <span class="pro-tag">PRO</span></div>
     <div class="sec-desc">Filtre centenas de ativos por DY, P/VP, Score e mais — encontre exatamente o que se encaixa na sua estratégia.</div>
     <div class="card card-pad">${paywall('Rastreador avançado é Premium','Combine critérios fundamentalistas (DY mínimo, P/VP máximo, Score) sobre todo o universo de ativos. Disponível no plano Premium.')}</div>`;
@@ -5137,7 +5175,7 @@ async function callAI(msg, el){
     if(el) el.innerHTML = `<div class="ai-locked"><i class="fa-solid fa-crown"></i> Você usou suas <strong>${PLAN_LIMITS.aiDay} análises gratuitas</strong> de hoje. <a onclick="goPricing()">Fazer upgrade para ilimitado →</a></div>`;
     return;
   }
-  if(!isPremium()) aiInc();
+  if(!isPro()) aiInc();
   if(el) el.innerHTML = skelLines(3);
   const endpoint = (window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || 'https://api.anthropic.com/v1/messages';
   try{
@@ -5317,7 +5355,7 @@ function isWatched(tk){ return watchlist().includes(tk); }
 function watchBtnInner(tk){ const on=isWatched(tk); return `<i class="fa-${on?'solid':'regular'} fa-star" style="${on?'color:var(--gold)':''}"></i> ${on?'Na watchlist':'Watchlist'}`; }
 function toggleWatch(tk){
   const w=watchlist(); const i=w.indexOf(tk);
-  if(i<0 && !isPremium() && w.length >= PLAN_LIMITS.watchlist){ toast(`Watchlist do plano Gratuito limitada a ${PLAN_LIMITS.watchlist} ativos`); goPricing(); return; }
+  if(i<0 && !isPro() && w.length >= PLAN_LIMITS.watchlist){ toast(`Watchlist do plano Gratuito limitada a ${PLAN_LIMITS.watchlist} ativos`); proGate(); return; }
   if(i>=0) w.splice(i,1); else w.push(tk);
   localStorage.setItem('lastro_watch', JSON.stringify(w));
   if(typeof saveCloudState==='function') saveCloudState();
@@ -5334,7 +5372,7 @@ function activeAlerts(){ return getAlerts().filter(a=>a.status==='ativo'); }
 function alertFmt(tk, n){ const r=assetLookup(tk); return (r && ASSET_CLASS[r.k] && (ASSET_CLASS[r.k].cur==='usd' || r.a.usd)) ? usd(n) : brl(n); }
 let _alertCtx=null, _alertDir='acima';
 function openAlertModal(tk){
-  if(!isPremium()){ toast('Alertas de preço são um recurso Premium'); goPricing(); return; }
+  if(!proGate()) return;
   const r=assetLookup(tk); if(!r){ toast('Ativo não encontrado'); return; }
   if(r.k==='stocks'){ toast('Alertas disponíveis para ativos da B3 e cripto'); return; }
   _alertCtx={tk:r.a.tk, k:r.k}; _alertDir='acima';
@@ -5361,7 +5399,7 @@ function alertHint(){
 }
 function saveAlert(){
   if(!_alertCtx){ return; }
-  if(!isPremium()){ closeAlertModal(); goPricing(); return; }
+  if(!isPro()){ closeAlertModal(); proGate(); return; }
   const px=parseBRL($('#alertPx').value);
   if(!(px>0)){ $('#alertErr').textContent='Informe um preço-alvo válido'; return; }
   const list=getAlerts();
@@ -5412,8 +5450,8 @@ function notifyAlert(al, px){
   }catch(e){ try{ new Notification(c.title, { body:c.body, icon:'/icon-192.png' }); }catch(_){} }
 }
 function viewAlertas(){
-  if(!isPremium()){
-    return `<div class="card card-pad">${paywall('Alertas de preço são Premium','Crie alertas e seja avisado assim que um ativo atingir o preço-alvo. Monitora as cotações ao vivo da B3 e de cripto enquanto o app está aberto.')}</div>`;
+  if(!isPro()){
+    return `<div class="card card-pad">${paywall('Alertas de preço são PRO','Crie alertas e seja avisado assim que um ativo atingir o preço-alvo. Monitora as cotações ao vivo da B3 e de cripto enquanto o app está aberto.')}</div>`;
   }
   try{ if('Notification' in window && Notification.permission==='default') Notification.requestPermission(); }catch(e){}
   const list=getAlerts();
@@ -5463,7 +5501,7 @@ function downloadFile(name, text, mime){
 function csvCell(v){ const s=String(v==null?'':v); return /[";\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
 function csvNum(n){ return (typeof n==='number'&&isFinite(n)) ? n.toFixed(2).replace('.',',') : ''; }
 function exportCarteiraCSV(){
-  if(!isPremium()){ toast('Exportar a carteira é um recurso Premium'); goPricing(); return; }
+  if(!proGate()) return;
   const groups=portfolioByTicker();
   if(!groups.length){ toast('Sua carteira está vazia'); return; }
   const head=['Ativo','Nome','Classe','Quantidade','Preço médio (R$)','Cotação atual','Valor investido','Valor atual','Resultado (R$)','Resultado (%)','Proventos recebidos (R$)'];
@@ -5496,7 +5534,7 @@ function parseCarteiraCSV(text){
   let iTk=find('ativo','ticker','código','codigo'), iQt=find('quantidade','qtd','cotas'), iPm=find('médio','medio','preço','preco','valor'), iDt=find('data','date'), start=0;
   if(iTk>=0) start=1; else { iTk=0; iQt=1; iPm=2; iDt=3; }   // sem cabeçalho → ordem padrão
   if(iQt<0) iQt=1; if(iPm<0) iPm=2; if(iDt<0) iDt=3;
-  const prem=isPremium(), limit=PLAN_LIMITS.carteira;
+  const prem=isPro(), limit=PLAN_LIMITS.carteira;
   let n=0, blocked=0;
   for(let i=start;i<lines.length;i++){
     const c=csvSplitLine(lines[i],sep);
@@ -5510,7 +5548,7 @@ function parseCarteiraCSV(text){
   return { added:n, blocked };
 }
 function importCarteiraCSV(){
-  if(!isPremium()){ toast('Importar a carteira é um recurso Premium'); goPricing(); return; }
+  if(!proGate()) return;
   const inp=document.createElement('input'); inp.type='file'; inp.accept='.csv,text/csv';
   inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(!f) return; const r=new FileReader();
     r.onload=()=>{ try{ const res=parseCarteiraCSV(String(r.result||'')); if(res.added>0){ savePortfolio(); toast(`${res.added} aporte${res.added>1?'s':''} importado${res.added>1?'s':''} ✓`); render('carteira'); if(res.blocked>0) setTimeout(()=>{ toast(`${res.blocked} ativo(s) não importados — limite do plano Gratuito (${PLAN_LIMITS.carteira})`); goPricing(); }, 1400); } else if(res.blocked>0){ toast(`Limite do plano Gratuito (${PLAN_LIMITS.carteira} ativos) atingido`); goPricing(); } else toast('Nenhum aporte válido no CSV (colunas: Ativo, Quantidade, Preço, Data)'); }catch(e){ toast('Não foi possível ler o CSV'); } };
@@ -6182,7 +6220,7 @@ function decisionCard(a,k,f){
 
 function premiumCard(a,k){
   if(!ASSET_CLASS[k].score || typeof a.score!=='number') return '';
-  if(isPremium()){
+  if(isPro()){
     return `<div class="card card-pad" style="margin-bottom:16px">
       <div class="ds-title">Análise aprofundada · IA <span class="pro-tag">PRO</span></div>
       <div id="aiDeep" style="font-size:13.5px;color:var(--ink-2);line-height:1.7"><span class="faint">Gere uma leitura contextual deste ativo com a Inteligência Lastro.</span></div>
@@ -6197,9 +6235,9 @@ function premiumCard(a,k){
     </div>
     <div class="pt-lock">
       <div class="pw-ic"><i class="fa-solid fa-crown"></i></div>
-      <div class="pw-t">Análise aprofundada é Premium</div>
+      <div class="pw-t">Análise aprofundada é PRO</div>
       <div class="pw-s">Preço-teto, projeção de proventos, comparativo setorial e leitura por IA deste ativo.</div>
-      <button class="btn btn-premium" onclick="goPricing()"><i class="fa-solid fa-bolt"></i> Desbloquear</button>
+      ${proCtaButton()}
     </div>
   </div>`;
 }
@@ -6903,6 +6941,7 @@ try{
   applyTheme(false);   // sincroniza ícone/rótulo do tema (data-theme já aplicado no <head>)
   applyPriv();         // privacidade dos valores
   normLots();          // garante id em cada aporte (migração de carteiras antigas)
+  if(isAuthed()) ensureTrial();   // garante o teste PRO de 7 dias para contas existentes
   refreshPlanUI();
   updateAuthUI();
   document.querySelectorAll('.modal-scrim,.search-modal').forEach(m=>{ m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); });
