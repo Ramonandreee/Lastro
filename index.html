@@ -1592,6 +1592,7 @@ table.tbl tbody tr.no-hover td { border:none; }
 .form-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
 .form-col { flex:1 1 160px; min-width:0; }
 .chip.chip-sm { font-size:9.5px; padding:1px 6px; }
+.chip.ilus { background:var(--surface-3); color:var(--ink-3); font-weight:500; border:1px solid var(--line); }
 /* o rótulo do slider empilha em telas muito estreitas para o número não espremer o texto */
 @media (max-width:400px){ .sim-control .lbl { flex-direction:column; align-items:flex-start; gap:3px; } }
 /* linha de Bens e Direitos (IR): o valor desce para baixo em telas pequenas */
@@ -3745,7 +3746,7 @@ function viewCarteira(){
     return `
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-wallet"></i></span> Minha Carteira</div>${addBtn}</div>
-      ${emptyState('fa-wallet','Sua carteira está vazia','Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.', `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar aporte</button>`)}
+      ${emptyState('fa-wallet','Sua carteira está vazia','Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.', `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar aporte</button> <button class="btn btn-ghost" onclick="loadDemoCarteira()"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver com dados de exemplo</button> <button class="btn btn-ghost" onclick="importCarteiraCSV()"><i class="fa-solid fa-file-import"></i> Importar CSV</button>`)}
     </div>`;
   }
 
@@ -3761,7 +3762,7 @@ function viewCarteira(){
   </div>
 
   <div class="pos-section">
-    <div class="card-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n} ativo${n!==1?'s':''}</span></div><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-ghost btn-sm" onclick="exportCarteiraCSV()" title="Exportar carteira em CSV"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">PRO</span>'}</button>${addBtn}</div></div>
+    <div class="card-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n} ativo${n!==1?'s':''}</span></div><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-ghost btn-sm" onclick="importCarteiraCSV()" title="Importar aportes de um arquivo CSV"><i class="fa-solid fa-file-import"></i> Importar</button><button class="btn btn-ghost btn-sm" onclick="exportCarteiraCSV()" title="Exportar carteira em CSV"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">PRO</span>'}</button>${addBtn}</div></div>
     <div class="pos-grid">${holdings}</div>
   </div>
 
@@ -3771,7 +3772,7 @@ function viewCarteira(){
   </div>
 
   <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução do patrimônio <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div></div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução do patrimônio <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div><span class="chip ilus" title="Reconstrução ilustrativa — ainda não é histórico real de preços"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
     <div style="position:relative;height:240px;margin-top:6px"><canvas id="patrEvolChart" role="img" aria-label="Evolução do patrimônio comparada a CDI e IBOV"></canvas></div>
     <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Reconstrução ilustrativa do valor da carteira mês a mês a partir das datas e valores dos seus aportes, comparada a aplicar os mesmos aportes no CDI (Selic 14,5% a.a.) e no IBOV. Conecte o histórico de preços para valores exatos.</div>
   </div>
@@ -4028,7 +4029,7 @@ function viewProventos(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Yield on Cost</div><div class="vl" style="color:var(--brand)">${pc(yoc,1)}%</div><div class="dl faint">renda s/ custo</div></div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Proventos por mês <span class="card-sub" style="margin-left:6px">· últimos 12 meses</span></div></div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Proventos por mês <span class="card-sub" style="margin-left:6px">· últimos 12 meses</span></div><span class="chip ilus" title="Estimado a partir do rendimento atual — conecte a fonte por data-com para valores exatos"><i class="fa-solid fa-flask"></i> estimado</span></div>
     <div style="position:relative;height:240px;margin-top:6px"><canvas id="provMonthChart" role="img" aria-label="Proventos por mês"></canvas></div>
   </div>
   <div class="sim-grid" style="margin-top:16px">
@@ -5467,6 +5468,55 @@ function exportCarteiraCSV(){
   toast('Carteira exportada em CSV ✓');
 }
 
+/* ── Importação de aportes via CSV (detecta cabeçalho e separador ; ou ,) ── */
+function csvSplitLine(line, sep){ const out=[]; let cur='', q=false;
+  for(let i=0;i<line.length;i++){ const ch=line[i];
+    if(q){ if(ch==='"'){ if(line[i+1]==='"'){ cur+='"'; i++; } else q=false; } else cur+=ch; }
+    else { if(ch==='"') q=true; else if(ch===sep){ out.push(cur); cur=''; } else cur+=ch; } }
+  out.push(cur); return out.map(s=>s.trim());
+}
+function parseNumBR(s){ s=String(s==null?'':s).replace(/[^\d.,-]/g,''); if(!s) return NaN; if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); return parseFloat(s); }
+function normDateBR(s){ s=String(s==null?'':s).trim(); const m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m?`${m[3]}-${m[2]}-${m[1]}`:s; }
+function parseCarteiraCSV(text){
+  const lines=text.split(/\r?\n/).map(l=>l.replace(/^﻿/,'').trim()).filter(Boolean);
+  if(!lines.length) return 0;
+  const sep=(lines[0].match(/;/g)||[]).length>=(lines[0].match(/,/g)||[]).length?';':',';
+  const head=csvSplitLine(lines[0],sep).map(h=>h.toLowerCase());
+  const find=(...keys)=>head.findIndex(h=>keys.some(k=>h.includes(k)));
+  let iTk=find('ativo','ticker','código','codigo'), iQt=find('quantidade','qtd','cotas'), iPm=find('médio','medio','preço','preco','valor'), iDt=find('data','date'), start=0;
+  if(iTk>=0) start=1; else { iTk=0; iQt=1; iPm=2; iDt=3; }   // sem cabeçalho → ordem padrão
+  if(iQt<0) iQt=1; if(iPm<0) iPm=2; if(iDt<0) iDt=3;
+  const prem=isPremium(), limit=PLAN_LIMITS.carteira;
+  let n=0, blocked=0;
+  for(let i=start;i<lines.length;i++){
+    const c=csvSplitLine(lines[i],sep);
+    const tk=String(c[iTk]||'').toUpperCase().trim(); if(!tk||!assetLookup(tk)) continue;
+    const cotas=parseNumBR(c[iQt]), pm=parseNumBR(c[iPm]); if(!(cotas>0)||!(pm>0)) continue;
+    // respeita o limite do plano gratuito (mesma regra do addPosition)
+    if(!prem && !CARTEIRA.some(c2=>c2.tk===tk) && uniqueTickers().length>=limit){ blocked++; continue; }
+    let date=normDateBR(c[iDt]||''); if(!validDate(date)) date=new Date().toISOString().slice(0,10);
+    CARTEIRA.push({ id:uid(), tk, cotas, pm, date }); n++;
+  }
+  return { added:n, blocked };
+}
+function importCarteiraCSV(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.csv,text/csv';
+  inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(!f) return; const r=new FileReader();
+    r.onload=()=>{ try{ const res=parseCarteiraCSV(String(r.result||'')); if(res.added>0){ savePortfolio(); toast(`${res.added} aporte${res.added>1?'s':''} importado${res.added>1?'s':''} ✓`); render('carteira'); if(res.blocked>0) setTimeout(()=>{ toast(`${res.blocked} ativo(s) não importados — limite do plano Gratuito (${PLAN_LIMITS.carteira})`); goPricing(); }, 1400); } else if(res.blocked>0){ toast(`Limite do plano Gratuito (${PLAN_LIMITS.carteira} ativos) atingido`); goPricing(); } else toast('Nenhum aporte válido no CSV (colunas: Ativo, Quantidade, Preço, Data)'); }catch(e){ toast('Não foi possível ler o CSV'); } };
+    r.readAsText(f, 'utf-8');
+  }; inp.click();
+}
+/* ── Carteira de demonstração (1 clique) — permite ver valor antes de digitar ── */
+function loadDemoCarteira(){
+  const demo=[['HGLG11',50,158.00],['KNCR11',80,103.00],['VISC11',60,108.00],['PETR4',100,36.50],['ITSA4',200,9.80]];
+  const now=new Date(); let n=0;
+  demo.forEach((d,i)=>{ if(!assetLookup(d[0])) return; const dt=new Date(now.getFullYear(), now.getMonth()-(14-i*3), 10).toISOString().slice(0,10);
+    CARTEIRA.push({ id:uid(), tk:d[0], cotas:d[1], pm:d[2], date:dt }); n++; });
+  if(!n){ toast('Não foi possível carregar a demonstração'); return; }
+  savePortfolio(); toast(`Carteira-demo carregada (${n} ativos) — você pode editá-la ou removê-la ✓`);
+  if(currentView==='carteira') render('carteira'); else nav('carteira');
+}
+
 /* série histórica determinística (ilustrativa) ancorada no preço atual */
 function seedFrom(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
 function rngF(seed){ return function(){ let t=seed+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }; }
@@ -6634,7 +6684,8 @@ function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SE
 
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
-  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); closeAuth(); closeCropper&&closeCropper(); closeConfirm&&closeConfirm(); }
+  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); closeAuth(); closeCropper&&closeCropper(); closeConfirm&&closeConfirm();
+    typeof closeAlertModal==='function'&&closeAlertModal(); typeof closeIndHistory==='function'&&closeIndHistory(); typeof closeCarteira==='function'&&closeCarteira(); typeof closeOnboarding==='function'&&closeOnboarding(); }
   // trap de foco: mantém o Tab dentro do modal/painel aberto (acessibilidade)
   if(e.key==='Tab'){
     const box = document.querySelector('.modal-scrim.open .modal-card, .search-modal.open .search-panel');
@@ -6841,6 +6892,7 @@ try{
   normLots();          // garante id em cada aporte (migração de carteiras antigas)
   refreshPlanUI();
   updateAuthUI();
+  document.querySelectorAll('.modal-scrim,.search-modal').forEach(m=>{ m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); });
   if(isAuthed()) loadCloudState();   // retoma sessão e sincroniza
   render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
   animateContent();
@@ -6877,7 +6929,9 @@ setInterval(()=>{
 (function(){
   const sp=document.getElementById('splash'); if(!sp){ maybeOnboard(); return; }
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  const hold=reduce?800:3000;
+  // primeiro acesso ganha o momento de marca completo; retornos são instantâneos
+  let seen=false; try{ seen=!!localStorage.getItem('lastro_splash_seen'); localStorage.setItem('lastro_splash_seen','1'); }catch(e){}
+  const hold=reduce?600:(seen?700:2400);
   setTimeout(()=>{ sp.classList.add('hide'); setTimeout(()=>{ sp.remove(); maybeOnboard(); }, 600); }, hold);
 })();
 </script>
