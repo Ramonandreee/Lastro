@@ -713,7 +713,7 @@ img, svg, canvas, video { max-width: 100%; }
     <div class="nav-scroll">
     <nav class="nav-section">
       <div class="nav-label">Mercado</div>
-      <div class="nav-item active" data-view="painel" onclick="nav('painel',this)"><i class="fa-solid fa-house"></i><span>Início</span></div>
+      <div class="nav-item active" data-view="painel" aria-current="page" onclick="nav('painel',this)"><i class="fa-solid fa-house"></i><span>Início</span></div>
       <div class="nav-item" data-view="acoes" onclick="nav('acoes',this)"><i class="fa-solid fa-chart-column"></i><span>Ações</span></div>
       <div class="nav-item" data-view="fiis" onclick="nav('fiis',this)"><i class="fa-solid fa-building"></i><span>Fundos Imobiliários</span></div>
       <div class="nav-item" data-view="bdrs" onclick="nav('bdrs',this)"><i class="fa-solid fa-globe"></i><span>BDRs</span></div>
@@ -792,7 +792,7 @@ img, svg, canvas, video { max-width: 100%; }
 
 <!-- ════════ MODAL — POSIÇÃO DA CARTEIRA ════════ -->
 <div class="modal-scrim" id="posModal" onclick="if(event.target===this)closePosModal()">
-  <div class="modal-card" role="dialog" aria-label="Posição da carteira">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Posição da carteira">
     <div class="modal-head"><span id="posTitle">Adicionar posição</span><button class="drawer-close" onclick="closePosModal()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <div class="fld fld-rel">
@@ -814,7 +814,7 @@ img, svg, canvas, video { max-width: 100%; }
 
 <!-- ════════ CONTA / AUTENTICAÇÃO ════════ -->
 <div class="modal-scrim" id="authModal" onclick="if(event.target===this)closeAuth()">
-  <div class="modal-card" role="dialog" aria-label="Conta">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Conta">
     <div class="modal-head"><span id="authTitle">Entrar na Lastro</span><button class="drawer-close" onclick="closeAuth()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body" id="authBody"></div>
   </div>
@@ -822,7 +822,7 @@ img, svg, canvas, video { max-width: 100%; }
 
 <!-- ════════ HISTÓRICO DE INDICADORES ════════ -->
 <div class="modal-scrim" id="cropModal" onclick="if(event.target===this)closeCropper()">
-  <div class="modal-card" role="dialog" aria-label="Ajustar foto" style="width:340px">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Ajustar foto" style="width:340px">
     <div class="modal-head"><span>Ajustar foto</span><button class="drawer-close" onclick="closeCropper()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <div class="crop-stage"><canvas id="cropCanvas" width="256" height="256"></canvas><div class="crop-ring"></div></div>
@@ -833,13 +833,13 @@ img, svg, canvas, video { max-width: 100%; }
   </div>
 </div>
 <div class="modal-scrim" id="carModal" onclick="if(event.target===this)closeCarteira()">
-  <div class="modal-card hist-card" role="dialog" aria-label="Carteira recomendada">
+  <div class="modal-card hist-card" role="dialog" aria-modal="true" aria-label="Carteira recomendada">
     <div class="modal-head"><span><i class="fa-solid fa-star" style="color:var(--gold);margin-right:8px"></i><span id="carTitle">Carteira</span></span><button class="drawer-close" onclick="closeCarteira()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="hist-body" id="carBody"></div>
   </div>
 </div>
 <div class="modal-scrim" id="indModal" onclick="if(event.target===this)closeIndHistory()">
-  <div class="modal-card hist-card" role="dialog" aria-label="Histórico de indicadores">
+  <div class="modal-card hist-card" role="dialog" aria-modal="true" aria-label="Histórico de indicadores">
     <div class="modal-head"><span><i class="fa-solid fa-chart-column" style="color:var(--gold);margin-right:8px"></i><span id="indMTitle">Histórico de Indicadores</span></span><button class="drawer-close" onclick="closeIndHistory()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="hist-body">
       <div class="hist-controls">
@@ -860,7 +860,7 @@ img, svg, canvas, video { max-width: 100%; }
 
 <!-- ════════ ONBOARDING ════════ -->
 <div class="modal-scrim" id="obModal">
-  <div class="modal-card ob-card" role="dialog" aria-label="Bem-vindo ao Lastro">
+  <div class="modal-card ob-card" role="dialog" aria-modal="true" aria-label="Bem-vindo ao Lastro">
     <div class="ob-hero">
       <div class="ob-logo"><svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
       <div class="ob-title">Bem-vindo ao Lastro</div>
@@ -3136,8 +3136,8 @@ function nav(v, el, noHist){
   if(!noHist && currentView && currentView!==v) navStack.push(currentView);
   if(navStack.length>30) navStack.shift();
   currentView = v;
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(el) el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{ n.classList.remove('active'); n.removeAttribute('aria-current'); });
+  if(el){ el.classList.add('active'); el.setAttribute('aria-current','page'); }
   $('#pageTitle').textContent = PAGES[v].t;
   $('#pageSub').textContent = PAGES[v].s;
   render(v);
