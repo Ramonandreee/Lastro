@@ -269,6 +269,14 @@ a { color: inherit; text-decoration: none; }
   color: var(--gold);
   letter-spacing: .03em;
 }
+/* ── grupo Premium no menu lateral ── */
+.nav-label-premium { color: var(--gold); display:flex; align-items:center; gap:7px; }
+.nav-label-premium i { font-size: 10px; }
+.nav-crown { background: transparent !important; color: var(--gold); padding: 2px 5px !important; }
+.nav-crown i { font-size: 10.5px; }
+.premium-item:hover { background: color-mix(in srgb, var(--gold) 9%, transparent); color: var(--ink); }
+.nav-section-premium .nav-item.active { box-shadow: inset 2.5px 0 0 var(--gold); background: color-mix(in srgb, var(--gold) 12%, transparent); }
+.nav-section-premium .nav-item.active > i:first-child { color: var(--gold); }
 .sidebar-foot {
   margin-top: auto;
   padding-top: 16px;
@@ -747,23 +755,23 @@ img, svg, canvas, video { max-width: 100%; }
     <nav class="nav-section">
       <div class="nav-label">Ferramentas</div>
       <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Minha Carteira</span></div>
-      <div class="nav-item" data-view="proventos" onclick="nav('proventos',this)"><i class="fa-solid fa-coins"></i><span>Meus Proventos</span><span class="nav-badge nav-badge-pro">Premium</span></div>
-      <div class="nav-item" data-view="aporte" onclick="nav('aporte',this)"><i class="fa-solid fa-scale-balanced"></i><span>Aporte Inteligente</span><span class="nav-badge nav-badge-pro">Premium</span></div>
-      <div class="nav-item" data-view="fire" onclick="nav('fire',this)"><i class="fa-solid fa-fire"></i><span>Independência Financeira</span><span class="nav-badge nav-badge-pro">Premium</span></div>
-      <div class="nav-item" data-view="ir" onclick="nav('ir',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>Imposto de Renda</span><span class="nav-badge nav-badge-pro">Premium</span></div>
       <div class="nav-item" data-view="watchlist" onclick="nav('watchlist',this)"><i class="fa-solid fa-star"></i><span>Watchlist</span></div>
       <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
-      <div class="nav-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span><span class="nav-badge nav-badge-pro">Premium</span></div>
-      <div class="nav-item" data-view="alertas" onclick="nav('alertas',this)"><i class="fa-solid fa-bell"></i><span>Alertas</span><span class="nav-badge nav-badge-pro">Premium</span></div>
       <div class="nav-item" data-view="agenda" onclick="nav('agenda',this)"><i class="fa-solid fa-calendar-day"></i><span>Agenda de Dividendos</span></div>
-      <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-star"></i><span>Carteiras Recomendadas</span></div>
+      <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-layer-group"></i><span>Carteiras Recomendadas</span></div>
+      <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-snowflake"></i><span>Simulador</span></div>
       <div class="nav-item" data-view="noticias" onclick="nav('noticias',this)"><i class="fa-solid fa-newspaper"></i><span>Notícias</span><span class="nav-badge" style="background:var(--down-l);color:var(--down)">LIVE</span></div>
     </nav>
 
-    <nav class="nav-section">
-      <div class="nav-label">Inteligência</div>
-      <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-snowflake"></i><span>Simulador</span></div>
-      <div class="nav-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro">Premium</span></div>
+    <nav class="nav-section nav-section-premium">
+      <div class="nav-label nav-label-premium"><i class="fa-solid fa-crown"></i> Premium</div>
+      <div class="nav-item premium-item" data-view="proventos" onclick="nav('proventos',this)"><i class="fa-solid fa-coins"></i><span>Meus Proventos</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="aporte" onclick="nav('aporte',this)"><i class="fa-solid fa-scale-balanced"></i><span>Aporte Inteligente</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="fire" onclick="nav('fire',this)"><i class="fa-solid fa-fire"></i><span>Independência Financeira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="ir" onclick="nav('ir',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>Imposto de Renda</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="alertas" onclick="nav('alertas',this)"><i class="fa-solid fa-bell"></i><span>Alertas de Preço</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
     </nav>
     </div>
 
@@ -860,6 +868,10 @@ img, svg, canvas, video { max-width: 100%; }
 </div>
 
 <!-- ════════ CONTA / AUTENTICAÇÃO ════════ -->
+<div class="modal-scrim" id="premiumModal" onclick="if(event.target===this)closePremiumModal()">
+  <div class="modal-card premium-modal" role="dialog" aria-modal="true" aria-label="Recurso Premium"></div>
+</div>
+
 <div class="modal-scrim" id="authModal" onclick="if(event.target===this)closeAuth()">
   <div class="modal-card" role="dialog" aria-modal="true" aria-label="Conta">
     <div class="modal-head"><span id="authTitle">Entrar na Lastro</span><button class="drawer-close" onclick="closeAuth()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
@@ -1623,6 +1635,31 @@ table.tbl tbody tr.no-hover td { border:none; }
 .ai-locked { font-size:12.5px; color:var(--ink-2); line-height:1.6; background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 24%,transparent); padding:12px 14px; border-radius:var(--r-sm); }
 .ai-locked i { color:var(--gold); margin-right:5px; }
 .ai-locked a { color:var(--accent); cursor:pointer; font-weight:600; }
+/* ── tela de apresentação Premium (modal + paywall inline) ── */
+.premium-modal { width:460px; max-width:94vw; position:relative; }
+.pm-close { position:absolute; top:12px; right:12px; z-index:2; width:30px; height:30px; border-radius:50%; border:none; background:color-mix(in srgb,var(--ink) 8%,transparent); color:var(--ink-2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; }
+.pm-close:hover { background:color-mix(in srgb,var(--ink) 14%,transparent); color:var(--ink); }
+.pm-hero { text-align:center; padding:28px 24px 16px; background:linear-gradient(180deg, var(--gold-l), transparent); }
+.pm-crown { width:56px; height:56px; border-radius:16px; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#C8911F,#A87C2A 60%,#8a6420); color:#fff; font-size:24px; box-shadow:0 10px 26px rgba(168,124,42,.42); }
+.pm-badge { display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--gold); background:var(--gold-l); padding:3px 11px; border-radius:20px; }
+.pm-badge i { font-size:9px; }
+.pm-name { font-size:20px; font-weight:700; letter-spacing:-.01em; margin:12px 0 7px; display:flex; align-items:center; justify-content:center; gap:9px; }
+.pm-name i { color:var(--gold); }
+.pm-desc { font-size:13.5px; color:var(--ink-2); line-height:1.6; max-width:380px; margin:0 auto; }
+.pm-why { display:flex; gap:10px; font-size:13px; color:var(--ink-2); line-height:1.55; background:var(--surface-2); border-radius:12px; padding:12px 14px; margin:16px 22px 0; }
+.pm-why i { color:var(--gold); margin-top:2px; flex:none; }
+.pm-bt { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); margin:18px 22px 9px; }
+.pm-benefits { list-style:none; margin:0 22px; display:flex; flex-direction:column; gap:9px; }
+.pm-benefits li { display:flex; align-items:flex-start; gap:10px; font-size:13.5px; color:var(--ink); line-height:1.45; }
+.pm-benefits li i { color:var(--brand); margin-top:3px; font-size:12px; }
+.pm-actions { display:flex; flex-direction:column; gap:9px; padding:20px 22px 4px; }
+.pm-actions .btn { width:100%; justify-content:center; }
+.pm-trust { text-align:center; font-size:11px; color:var(--ink-3); padding:8px 22px 22px; }
+/* ribbon discreto no topo de páginas Premium */
+.premium-ribbon { display:inline-flex; align-items:center; gap:8px; font-size:11.5px; font-weight:600; color:var(--gold); background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 26%,transparent); padding:5px 12px; border-radius:20px; margin-bottom:14px; }
+.premium-ribbon i { font-size:10.5px; }
+.premium-gate { overflow:hidden; }
+.premium-gate .pm-actions { padding-bottom:8px; }
 .sel-locked { display:inline-flex; align-items:center; gap:7px; justify-content:center; color:var(--ink-3); cursor:pointer; border-style:dashed !important; }
 .sel-locked:hover { color:var(--ink); border-color:var(--gold) !important; }
 
@@ -1659,8 +1696,13 @@ table.tbl tbody tr.no-hover td { border:none; }
 .plan-carousel { display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:10px 16px 6px; scroll-padding:16px; }
 .plan-carousel::-webkit-scrollbar { display:none; }
 .plan-carousel::-webkit-scrollbar { display:none; }
-.plan-card { flex:0 0 90%; max-width:400px; scroll-snap-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); padding:20px 22px; position:relative; box-shadow:var(--sh-sm); transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
-@media (min-width:760px){ .plan-carousel { justify-content:center; flex-wrap:nowrap; } .plan-card { flex:0 0 340px; } }
+.plan-card { display:flex; flex-direction:column; flex:0 0 90%; max-width:400px; scroll-snap-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); padding:20px 22px; position:relative; box-shadow:var(--sh-sm); transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
+.plan-card > .btn { margin-top:auto; }   /* CTA ancorado na base → botões alinhados entre planos */
+/* desktop/notebook: grade de 3 colunas, alturas iguais, sem rolagem (não é mais carrossel) */
+@media (min-width:760px){
+  .plan-carousel { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px; max-width:1080px; margin:0 auto; overflow:visible; padding:24px 6px 8px; align-items:stretch; }
+  .plan-card { flex:initial; max-width:none; }
+}
 .plan-card.featured { border:1.5px solid var(--gold); background:linear-gradient(180deg, color-mix(in srgb,var(--gold) 7%,transparent), var(--surface) 30%); box-shadow:0 18px 44px rgba(168,124,42,.18); }
 .plan-card.featured:hover { transform:translateY(-4px); }
 .plan-save { display:inline-block; font-weight:700; color:var(--gold); background:var(--gold-l); padding:1px 8px; border-radius:20px; }
@@ -1675,7 +1717,7 @@ table.tbl tbody tr.no-hover td { border:none; }
 .plan-price .amt .cents { font-size:19px; color:var(--ink-3); }
 .plan-price .per { font-size:13px; color:var(--ink-3); }
 .plan-desc { font-size:12.5px; color:var(--ink-2); margin-bottom:13px; }
-.plan-feats { list-style:none; display:flex; flex-direction:column; gap:8px; margin:0 0 15px; }
+.plan-feats { list-style:none; display:flex; flex-direction:column; gap:8px; margin:0 0 15px; flex:1 1 auto; }
 .plan-feats li { display:flex; align-items:flex-start; gap:9px; font-size:12.5px; color:var(--ink); line-height:1.4; }
 .plan-feats li i { margin-top:2px; color:var(--brand); font-size:12px; }
 .plan-feats li.off { color:var(--ink-3); } .plan-feats li.off i { color:var(--ink-4); }
@@ -2521,7 +2563,7 @@ function posPreview(){
 }
 function openPosModal(tk, lotId){
   // carteira real é Premium — anônimo cria conta (teste 7 dias); teste expirado vai para assinatura
-  if(!proGate()) return;
+  if(!proGate('carteira')) return;
   const lot = lotId ? CARTEIRA.find(c=>c.id===lotId) : null;
   const lockTk = !!lot || !!tk;
   $('#posSug').classList.remove('on'); _sugList=[]; _sugIdx=-1;
@@ -2832,18 +2874,52 @@ function trialExpired(){ return isAuthed() && !isPremium() && trialStartTs()>0 &
 function isPro(){ return isPremium() || trialActive(); }
 /* inicia o teste no primeiro acesso autenticado (idempotente) */
 function ensureTrial(){ if(isAuthed() && !isPremium() && !trialStartTs()){ try{ localStorage.setItem('lastro_trial_start', Date.now()); }catch(e){} } }
-/* gate central de recurso PRO: retorna true se há acesso; senão conduz ao caminho certo
-   (anônimo → criar conta + teste de 7 dias; teste expirado → assinar Premium) */
-function proGate(){
-  if(isPro()) return true;
-  if(!isAuthed()){ toast('Crie sua conta grátis e teste os recursos Premium por 7 dias'); openAuth('signup'); }
-  else { toast('Seu teste Premium terminou — assine para continuar'); goPricing(); }
-  return false;
+/* catálogo de recursos Premium (para a tela de apresentação/conversão) */
+const PREMIUM_FEATURES = {
+  carteira:  { name:'Carteira Real', icon:'fa-wallet', desc:'Acompanhe seus aportes de verdade: patrimônio, proventos e rentabilidade com e sem dividendos, sincronizados na nuvem.', why:'No plano Gratuito você só explora a demonstração. Com a carteira real, cada decisão parte dos seus números.' },
+  proventos: { name:'Meus Proventos', icon:'fa-coins', desc:'Painel completo da sua renda passiva: crescimento ano a ano, Yield on Cost e projeção dos próximos 12 meses.', why:'Saiba exatamente quanto seus ativos pagam e como sua renda evolui mês a mês.' },
+  aporte:    { name:'Aporte Inteligente', icon:'fa-scale-balanced', desc:'O Lastro calcula onde investir o próximo aporte para equilibrar sua carteira, em cotas inteiras.', why:'Pare de adivinhar o que comprar — receba a alocação ideal a cada mês.' },
+  fire:      { name:'Independência Financeira', icon:'fa-fire', desc:'Descubra quanto falta para viver dos seus dividendos, com número mágico e data projetada de liberdade.', why:'Visualize sua meta de liberdade financeira e o caminho real até ela.' },
+  ir:        { name:'Imposto de Renda', icon:'fa-file-invoice-dollar', desc:'Bens e Direitos prontos para a declaração, rendimentos isentos do ano e cálculo de DARF sobre vendas.', why:'Economize horas na declaração e evite erros que custam caro.' },
+  screener:  { name:'Rastreador de Ativos', icon:'fa-filter', desc:'Filtre todo o universo da B3 por DY, P/VP, Score e mais — sob medida para a sua estratégia.', why:'Encontre as melhores oportunidades em segundos, sem garimpar manualmente.' },
+  alertas:   { name:'Alertas de Preço', icon:'fa-bell', desc:'Seja avisado assim que um ativo atingir o preço-alvo, com cotações ao vivo da B3 e cripto.', why:'Nunca mais perca o momento certo de comprar ou vender.' },
+  score:     { name:'Score Lastro Completo', icon:'fa-award', desc:'Ranking proprietário de qualidade de todos os ativos, com critérios fundamentalistas.', why:'Compare a qualidade dos ativos de forma objetiva e rápida.' },
+  comparador:{ name:'Comparador Completo', icon:'fa-code-compare', desc:'Compare até 4 ativos lado a lado pelos principais fundamentos e pelo Score Lastro.', why:'Decida entre vários ativos com tudo na mesma tela.' },
+  watchlist: { name:'Watchlist Ilimitada', icon:'fa-star', desc:'Acompanhe quantos ativos quiser, sem limite.', why:'Monitore todas as suas ideias de investimento em um só lugar.' },
+  export:    { name:'Exportar Carteira', icon:'fa-file-csv', desc:'Baixe sua carteira completa em CSV para usar onde quiser.', why:'Leve seus dados com você, com total liberdade.' },
+};
+const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço e IA ilimitada','Watchlist ilimitada e exportação CSV'];
+/* tela de apresentação Premium (usada no modal e como paywall inline) */
+function premiumPresentation(key){
+  const f = PREMIUM_FEATURES[key] || { name:'Recurso Premium', icon:'fa-crown', desc:'Desbloqueie todo o poder da plataforma Lastro.', why:'' };
+  const anon = !isAuthed();
+  return `
+  <div class="pm-hero">
+    <div class="pm-crown"><i class="fa-solid fa-crown"></i></div>
+    <span class="pm-badge"><i class="fa-solid fa-crown"></i> Recurso Premium</span>
+    <h3 class="pm-name"><i class="fa-solid ${f.icon}"></i> ${f.name}</h3>
+    <p class="pm-desc">${f.desc}</p>
+  </div>
+  ${f.why?`<div class="pm-why"><i class="fa-solid fa-lightbulb"></i><span>${f.why}</span></div>`:''}
+  <div class="pm-bt">Tudo o que você desbloqueia</div>
+  <ul class="pm-benefits">${PREMIUM_BENEFITS.map(b=>`<li><i class="fa-solid fa-check"></i> ${b}</li>`).join('')}</ul>
+  <div class="pm-actions">
+    <button class="btn btn-premium" onclick="proUnlock()"><i class="fa-solid fa-crown"></i> ${anon?'Criar conta · 7 dias grátis':'Desbloquear Premium'}</button>
+    <button class="btn btn-ghost" onclick="closePremiumModal();goPricing()">Conhecer os planos</button>
+  </div>
+  <div class="pm-trust">${anon?'7 dias grátis ao criar conta · sem cartão':'Sem fidelidade · cancele quando quiser'}</div>`;
 }
+function openPremiumModal(key){ const m=$('#premiumModal'); if(!m){ proUnlock(); return; } const c=m.querySelector('.modal-card'); if(c) c.innerHTML='<button class="pm-close" onclick="closePremiumModal()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>'+premiumPresentation(key); m.classList.add('open'); }
+function closePremiumModal(){ const m=$('#premiumModal'); if(m) m.classList.remove('open'); }
+function proUnlock(){ closePremiumModal(); if(!isAuthed()) openAuth('signup'); else goPricing(); }
+/* gate central de recurso Premium: true se há acesso; senão mostra a tela de apresentação Premium */
+function proGate(key){ if(isPro()) return true; openPremiumModal(key); return false; }
 /* rótulo do botão de desbloqueio conforme o estado do usuário */
 function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias Premium grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
 function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
 function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
+const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score'];
+function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
 function refreshPlanUI(){
@@ -3017,7 +3093,7 @@ function paywall(title, sub){
     <div class="pw-note">${note}</div>
   </div>`;
 }
-function upsell(){ proGate(); }
+function upsell(){ proGate('comparador'); }
 
 /* mock de assinatura (billing real entra depois) */
 /* assinatura (simulada até integrar o gateway de pagamento) */
@@ -3938,6 +4014,7 @@ function viewPlanos(){
         ${feat(PLAN_LIMITS.aiDay + ' análises de IA por dia')}
       </ul>
       <button class="btn btn-ghost" style="width:100%;justify-content:center" ${pro?`onclick="downgradeFree()"`:`disabled`}>${pro?'Voltar ao Gratuito':'Seu plano atual'}</button>
+      <div class="plan-trust">Sem custo · para sempre</div>
     </div>
 
     <div class="plan-card featured prem">
@@ -4472,9 +4549,7 @@ function initComparador(){
 let scrState = { universe:'fiis', dyMin:0, pvpMax:3, scoreMin:0 };
 function viewScreener(){
   if(!isPro()){
-    return `<div class="sec-title">Rastreador de ativos <span class="pro-tag">Premium</span></div>
-    <div class="sec-desc">Filtre centenas de ativos por DY, P/VP, Score e mais — encontre exatamente o que se encaixa na sua estratégia.</div>
-    <div class="card card-pad">${paywall('Rastreador avançado é Premium','Combine critérios fundamentalistas (DY mínimo, P/VP máximo, Score) sobre todo o universo de ativos. Disponível no plano Premium.')}</div>`;
+    return `<div class="card premium-gate">${premiumPresentation('screener')}</div>`;
   }
   return `
   <div class="sec-title">Rastreador de ativos</div>
@@ -4818,6 +4893,9 @@ function destroyCharts(){ Object.values(charts).forEach(c=>{try{c.destroy()}catc
 function afterRender(v, soft){
   destroyCharts();
   document.body.classList.toggle('view-inicio', v==='painel');
+  // identidade Premium: ribbon discreto no topo das páginas Premium
+  document.body.classList.toggle('premium-view', PREMIUM_VIEWS.includes(v));
+  if(PREMIUM_VIEWS.includes(v)){ const c=$('#content'); if(c && !c.querySelector(':scope > .premium-ribbon')) c.insertAdjacentHTML('afterbegin', premiumRibbon()); }
   if(newsTimer){ clearInterval(newsTimer); newsTimer = null; }   // pausa o feed ao sair de Notícias
   if(v==='painel'){
     const p = portfolioStats();
@@ -4867,7 +4945,8 @@ function initPlanCarousel(){
   const syncDots=()=>{ if(dots) [...dots.children].forEach((d,i)=>d.classList.toggle('on', i===activeIdx())); };
   if(dots) [...dots.children].forEach((d,i)=> d.onclick=()=>car.scrollTo({left:centerOf(i), behavior:'smooth'}));
   car.onscroll=()=>{ clearTimeout(car._t); car._t=setTimeout(syncDots,60); };
-  setTimeout(()=>{ car.scrollTo({left:centerOf(1), behavior:'auto'}); syncDots(); }, 30);  // abre no plano em destaque
+  // só centraliza o destaque quando é carrossel (mobile); no desktop é grade e não rola
+  setTimeout(()=>{ if(car.scrollWidth > car.clientWidth + 4) car.scrollTo({left:centerOf(1), behavior:'auto'}); syncDots(); }, 30);
 }
 
 /* contagem progressiva dos valores de indicador (.ind-v[data-num]) */
@@ -5375,7 +5454,7 @@ function isWatched(tk){ return watchlist().includes(tk); }
 function watchBtnInner(tk){ const on=isWatched(tk); return `<i class="fa-${on?'solid':'regular'} fa-star" style="${on?'color:var(--gold)':''}"></i> ${on?'Na watchlist':'Watchlist'}`; }
 function toggleWatch(tk){
   const w=watchlist(); const i=w.indexOf(tk);
-  if(i<0 && !isPro() && w.length >= PLAN_LIMITS.watchlist){ toast(`Watchlist do plano Gratuito limitada a ${PLAN_LIMITS.watchlist} ativos`); proGate(); return; }
+  if(i<0 && !isPro() && w.length >= PLAN_LIMITS.watchlist){ proGate('watchlist'); return; }
   if(i>=0) w.splice(i,1); else w.push(tk);
   localStorage.setItem('lastro_watch', JSON.stringify(w));
   if(typeof saveCloudState==='function') saveCloudState();
@@ -5392,7 +5471,7 @@ function activeAlerts(){ return getAlerts().filter(a=>a.status==='ativo'); }
 function alertFmt(tk, n){ const r=assetLookup(tk); return (r && ASSET_CLASS[r.k] && (ASSET_CLASS[r.k].cur==='usd' || r.a.usd)) ? usd(n) : brl(n); }
 let _alertCtx=null, _alertDir='acima';
 function openAlertModal(tk){
-  if(!proGate()) return;
+  if(!proGate('alertas')) return;
   const r=assetLookup(tk); if(!r){ toast('Ativo não encontrado'); return; }
   if(r.k==='stocks'){ toast('Alertas disponíveis para ativos da B3 e cripto'); return; }
   _alertCtx={tk:r.a.tk, k:r.k}; _alertDir='acima';
@@ -5419,7 +5498,7 @@ function alertHint(){
 }
 function saveAlert(){
   if(!_alertCtx){ return; }
-  if(!isPro()){ closeAlertModal(); proGate(); return; }
+  if(!isPro()){ closeAlertModal(); proGate('alertas'); return; }
   const px=parseBRL($('#alertPx').value);
   if(!(px>0)){ $('#alertErr').textContent='Informe um preço-alvo válido'; return; }
   const list=getAlerts();
@@ -5471,7 +5550,7 @@ function notifyAlert(al, px){
 }
 function viewAlertas(){
   if(!isPro()){
-    return `<div class="card card-pad">${paywall('Alertas de preço são Premium','Crie alertas e seja avisado assim que um ativo atingir o preço-alvo. Monitora as cotações ao vivo da B3 e de cripto enquanto o app está aberto.')}</div>`;
+    return `<div class="card card-pad premium-gate">${premiumPresentation('alertas')}</div>`;
   }
   try{ if('Notification' in window && Notification.permission==='default') Notification.requestPermission(); }catch(e){}
   const list=getAlerts();
@@ -5521,7 +5600,7 @@ function downloadFile(name, text, mime){
 function csvCell(v){ const s=String(v==null?'':v); return /[";\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
 function csvNum(n){ return (typeof n==='number'&&isFinite(n)) ? n.toFixed(2).replace('.',',') : ''; }
 function exportCarteiraCSV(){
-  if(!proGate()) return;
+  if(!proGate('export')) return;
   const groups=portfolioByTicker();
   if(!groups.length){ toast('Sua carteira está vazia'); return; }
   const head=['Ativo','Nome','Classe','Quantidade','Preço médio (R$)','Cotação atual','Valor investido','Valor atual','Resultado (R$)','Resultado (%)','Proventos recebidos (R$)'];
@@ -5568,7 +5647,7 @@ function parseCarteiraCSV(text){
   return { added:n, blocked };
 }
 function importCarteiraCSV(){
-  if(!proGate()) return;
+  if(!proGate('carteira')) return;
   const inp=document.createElement('input'); inp.type='file'; inp.accept='.csv,text/csv';
   inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(!f) return; const r=new FileReader();
     r.onload=()=>{ try{ const res=parseCarteiraCSV(String(r.result||'')); if(res.added>0){ savePortfolio(); toast(`${res.added} aporte${res.added>1?'s':''} importado${res.added>1?'s':''} ✓`); render('carteira'); if(res.blocked>0) setTimeout(()=>{ toast(`${res.blocked} ativo(s) não importados — limite do plano Gratuito (${PLAN_LIMITS.carteira})`); goPricing(); }, 1400); } else if(res.blocked>0){ toast(`Limite do plano Gratuito (${PLAN_LIMITS.carteira} ativos) atingido`); goPricing(); } else toast('Nenhum aporte válido no CSV (colunas: Ativo, Quantidade, Preço, Data)'); }catch(e){ toast('Não foi possível ler o CSV'); } };
@@ -6756,7 +6835,7 @@ function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SE
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
   if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); closeAuth(); closeCropper&&closeCropper(); closeConfirm&&closeConfirm();
-    typeof closeAlertModal==='function'&&closeAlertModal(); typeof closeIndHistory==='function'&&closeIndHistory(); typeof closeCarteira==='function'&&closeCarteira(); typeof closeOnboarding==='function'&&closeOnboarding(); }
+    typeof closeAlertModal==='function'&&closeAlertModal(); typeof closeIndHistory==='function'&&closeIndHistory(); typeof closeCarteira==='function'&&closeCarteira(); typeof closeOnboarding==='function'&&closeOnboarding(); typeof closePremiumModal==='function'&&closePremiumModal(); }
   // trap de foco: mantém o Tab dentro do modal/painel aberto (acessibilidade)
   if(e.key==='Tab'){
     const box = document.querySelector('.modal-scrim.open .modal-card, .search-modal.open .search-panel');
