@@ -774,6 +774,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item premium-item" data-view="alertas" onclick="nav('alertas',this)"><i class="fa-solid fa-bell"></i><span>Alertas de Preço</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
     </nav>
     </div>
 
@@ -1938,6 +1939,41 @@ body.priv .priv-blur { filter:blur(9px); user-select:none; pointer-events:none; 
 .rec-card-pro { border-color:color-mix(in srgb,var(--gold) 38%,transparent); background:linear-gradient(180deg, color-mix(in srgb,var(--gold) 6%,transparent), var(--surface) 26%); }
 .rec-pro-flag { position:absolute; top:14px; right:14px; display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; letter-spacing:.03em; color:#fff; background:linear-gradient(135deg,#C8911F,#A87C2A); padding:3px 9px; border-radius:20px; box-shadow:0 4px 12px rgba(168,124,42,.3); }
 body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2A); }
+/* Raio-X da carteira */
+.rx-cols { display:grid; grid-template-columns:1.15fr .85fr; gap:16px; }
+@media (max-width:880px){ .rx-cols { grid-template-columns:1fr; } }
+.rx-bar { margin-bottom:11px; }
+.rx-bar:last-child { margin-bottom:0; }
+.rx-bar-top { display:flex; justify-content:space-between; align-items:baseline; font-size:12.5px; color:var(--ink-2); margin-bottom:5px; }
+.rx-bar-top em { font-style:normal; font-size:11px; }
+.rx-bar-track { height:7px; background:var(--line); border-radius:5px; overflow:hidden; }
+.rx-bar-track i { display:block; height:100%; border-radius:5px; transition:width .5s var(--ease-out); }
+.rx-classe-note { font-size:11.5px; line-height:1.55; margin-top:14px; }
+.rx-grade { display:flex; gap:18px; align-items:center; }
+.rx-grade-badge { flex:none; width:78px; height:78px; border-radius:18px; border:1.5px solid; display:flex; align-items:center; justify-content:center; }
+.rx-grade-letter { font-size:30px; font-weight:800; letter-spacing:-.02em; }
+.rx-grade-body { flex:1; min-width:0; }
+.rx-grade-h { font-size:13.5px; color:var(--ink-2); margin-bottom:8px; }
+.rx-grade-track { height:8px; background:var(--line); border-radius:5px; overflow:hidden; margin-bottom:12px; }
+.rx-grade-track i { display:block; height:100%; border-radius:5px; transition:width .6s var(--ease-out); }
+.rx-reasons { list-style:none; margin:0; padding:0; display:grid; gap:6px; }
+.rx-reasons li { font-size:12.5px; line-height:1.5; color:var(--ink-2); display:flex; gap:8px; align-items:flex-start; }
+.rx-reasons li i { margin-top:3px; font-size:11px; }
+.rx-reasons li.pos i { color:var(--brand); }
+.rx-reasons li.neg i { color:var(--gold); }
+.rx-assets { display:grid; gap:2px; }
+.rx-asset { display:flex; align-items:center; gap:11px; padding:9px 6px; border-radius:10px; cursor:pointer; transition:background .15s var(--ease); }
+.rx-asset:hover { background:var(--surface-2,var(--brand-l)); }
+.rx-as-id { flex:none; width:200px; min-width:0; }
+.rx-as-tk { font-size:13px; font-weight:600; color:var(--ink-1); display:flex; align-items:center; gap:7px; }
+.rx-as-nm { font-size:11px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rx-as-bar { flex:1; height:7px; background:var(--line); border-radius:5px; overflow:hidden; }
+.rx-as-bar i { display:block; height:100%; border-radius:5px; transition:width .5s var(--ease-out); }
+.rx-as-w { flex:none; width:54px; text-align:right; font-size:12.5px; font-weight:600; color:var(--ink-2); }
+.rx-flag { font-size:9.5px; font-weight:700; letter-spacing:.02em; padding:2px 7px; border-radius:20px; text-transform:uppercase; }
+.rx-flag.neg { background:color-mix(in srgb,var(--down) 14%,transparent); color:var(--down); }
+.rx-flag.warn { background:var(--gold-l); color:var(--gold); }
+@media (max-width:560px){ .rx-as-id { width:130px; } .rx-as-nm { display:none; } }
 .rec-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
 .rec-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
 .rec-nm { font-size:18px; font-weight:700; letter-spacing:-.01em; }
@@ -2920,6 +2956,7 @@ const PAGES = {
   simulador:    { t:'Simulador de Renda',    s:'Projete quanto precisa para viver de dividendos' },
   score:        { t:'Score Lastro',          s:'Ranking proprietário de qualidade dos ativos' },
   backtest:     { t:'Backtest da Carteira',  s:'Simulação histórica da sua carteira vs CDI e IBOV' },
+  raiox:        { t:'Raio-X da Carteira',     s:'Diversificação, concentração e Nota Lastro da sua carteira' },
   planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
   indicar:      { t:'Indique e Ganhe',       s:'Ganhe 20% da assinatura de cada amigo que você indicar, via PIX' },
 };
@@ -2959,10 +2996,11 @@ const PREMIUM_FEATURES = {
   export:    { name:'Exportar Carteira', icon:'fa-file-csv', desc:'Baixe sua carteira completa em CSV para usar onde quiser.', why:'Leve seus dados com você, com total liberdade.' },
   relatorio: { name:'Relatório Mensal da Carteira', icon:'fa-file-lines', pro:true, desc:'Um relatório completo e imprimível da sua carteira: patrimônio, resultado, proventos do mês e alocação.', why:'Acompanhe sua evolução com um documento profissional — ideal para guardar ou compartilhar com seu contador.' },
   backtest:  { name:'Backtest da Carteira', icon:'fa-chart-line', pro:true, desc:'Simule como a sua carteira teria se comportado no passado: retorno, volatilidade e maior queda, comparados ao CDI e ao IBOV.', why:'Entenda o risco e o retorno histórico da sua estratégia antes de tomar decisões.' },
+  raiox:     { name:'Raio-X da Carteira', icon:'fa-magnifying-glass-chart', pro:true, desc:'O retrato completo da sua carteira: diversificação por setor, ativo e classe, com a Nota de Diversificação Lastro e alertas de concentração.', why:'Enxergue de relance onde sua carteira está concentrada e o que melhorar.' },
   carteiras: { name:'Carteiras Recomendadas Exclusivas', icon:'fa-layer-group', pro:true, desc:'Estratégias premium montadas pela inteligência Lastro, disponíveis apenas para assinantes Investidor Pro.', why:'Acesse alocações mais sofisticadas, com composição e estratégia detalhadas.' },
 };
 const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço e IA ilimitada','Watchlist ilimitada e exportação CSV'];
-const PRO_BENEFITS = ['Tudo do Premium, sem limites','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas','Relatório mensal da carteira (imprimível)','Comissão de indicação dobrada — 40%','Suporte prioritário'];
+const PRO_BENEFITS = ['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas','Relatório mensal da carteira (imprimível)','Comissão de indicação dobrada — 40%','Suporte prioritário'];
 /* tela de apresentação Premium / Investidor Pro (usada no modal e como paywall inline) */
 function premiumPresentation(key){
   const f = PREMIUM_FEATURES[key] || { name:'Recurso Premium', icon:'fa-crown', desc:'Desbloqueie todo o poder da plataforma Lastro.', why:'' };
@@ -2995,7 +3033,7 @@ function proGate(key){ if(isPro()) return true; openPremiumModal(key); return fa
 function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias Premium grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
 function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
 function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
-const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest'];
+const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox'];
 function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
@@ -3488,6 +3526,7 @@ function render(v, soft){
   else if(v==='planos')      c.innerHTML = viewPlanos();
   else if(v==='indicar')     c.innerHTML = viewIndicar();
   else if(v==='backtest')    c.innerHTML = viewBacktest();
+  else if(v==='raiox')       c.innerHTML = viewRaioX();
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
 }
@@ -4078,7 +4117,7 @@ const PLANS = {
     feats:['Tudo do Gratuito, sem limites','Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço + IA ilimitada','Watchlist ilimitada + exportação CSV'] },
   pro: { key:'pro', name:'Investidor Pro', popular:false, desc:'Tudo do Premium, com análises, relatórios e prioridade.',
     anual:39.90, mensal:49.90, anchorA:54.90, anchorM:64.90, anualTotal:478.80,
-    feats:['Tudo do Premium, sem limites','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas','Relatório mensal da carteira (imprimível)','Comissão de indicação dobrada — 40%','Suporte prioritário'] },
+    feats:['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas','Relatório mensal da carteira (imprimível)','Comissão de indicação dobrada — 40%'] },
 };
 let planCycle = 'anual';
 function setPlanCycle(c){ planCycle = c==='mensal'?'mensal':'anual'; render('planos'); }
@@ -4145,6 +4184,7 @@ function viewPlanos(){
       ['Watchlist', PLAN_LIMITS.watchlist, 'Ilimitada', 'Ilimitada'],
       ['Comparador', PLAN_LIMITS.comparador, '4 ativos', '4 ativos'],
       ['Comissão de indicação', '20%', '20%', '40%'],
+      ['Raio-X da carteira (Nota Lastro)', false, false, true],
       ['Backtest histórico da carteira', false, false, true],
       ['Carteiras recomendadas exclusivas', false, false, true],
       ['Relatório mensal da carteira', false, false, true],
@@ -5094,6 +5134,7 @@ function afterRender(v, soft){
   if(v==='aporte'){ runAporte(); }
   if(v==='fire'){ runFire(); }
   if(v==='backtest'){ initBacktest(); }
+  if(v==='raiox'){ initRaioX(); }
   if(v==='comparador'){ initComparador(); }
   if(v==='screener'){ runScreener(); }
   if(v==='noticias'){
@@ -5438,6 +5479,109 @@ function initBacktest(){
                 tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+brl0(c.parsed.y) } } },
       scales:{ x:{ grid:{display:false}, ticks:{color:cssVar('--ink-3'),font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:8}, border:{display:false} },
                y:{ grid:{color:cssVar('--line')}, ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'}, border:{display:false} } } }
+  });
+}
+
+/* ── Raio-X da Carteira (Investidor Pro) ── */
+function rxClasseOf(k){ return k==='acoes'?'Ações':k==='fiis'?'FIIs':k==='etfs'?'ETFs':k==='cripto'?'Cripto':'Exterior'; }
+function rxSetorOf(g){ const a=g.f.a, k=g.f.k; if(k==='acoes'||k==='fiis') return (a&&a.seg)||'Outros'; return rxClasseOf(k); }
+function diversificationGrade(){
+  const p=portfolioStats(); if(!p.atual||!p._byT.length) return null;
+  const pos=p._byT.map(g=>({ tk:g.tk, k:g.f.k, a:g.f.a, val:g.val, w:g.val/p.atual*100, setor:rxSetorOf(g), classe:rxClasseOf(g.f.k) }));
+  const n=pos.length, top=pos.slice().sort((a,b)=>b.w-a.w)[0];
+  const setores=[...new Set(pos.map(x=>x.setor))], classes=[...new Set(pos.map(x=>x.classe))];
+  let s=0;
+  s += n>=12?25:n>=8?20:n>=5?14:n>=3?8:3;
+  s += top.w<=15?25:top.w<=20?20:top.w<=25?15:top.w<=35?8:2;
+  s += setores.length>=6?25:setores.length>=4?20:setores.length>=3?14:setores.length>=2?8:3;
+  s += classes.length>=4?25:classes.length>=3?20:classes.length>=2?14:5;
+  s=Math.round(Math.min(100,s));
+  const reasons=[];
+  if(top.w>25) reasons.push({neg:true,t:`<strong>${top.tk}</strong> concentra ${pc(top.w,0)}% da carteira — acima do ideal de 25%.`});
+  if(setores.length<3) reasons.push({neg:true,t:`Apenas ${setores.length} setor${setores.length>1?'es':''} representado${setores.length>1?'s':''} — baixa diversificação setorial.`});
+  if(classes.length===1) reasons.push({neg:true,t:`Carteira 100% em ${classes[0]} — diversificar entre classes reduz a volatilidade.`});
+  if(n<5) reasons.push({neg:true,t:`Só ${n} ativo${n>1?'s':''} — o ideal é 8–15 para diluir o risco específico.`});
+  if(n>=8) reasons.push({neg:false,t:`${n} ativos diluem bem o risco específico.`});
+  if(top.w<=20) reasons.push({neg:false,t:`Nenhuma posição domina a carteira (máx. ${pc(top.w,0)}%).`});
+  if(setores.length>=4) reasons.push({neg:false,t:`${setores.length} setores distintos compõem a carteira.`});
+  if(classes.length>=3) reasons.push({neg:false,t:`${classes.length} classes de ativos: ${classes.join(', ')}.`});
+  const g = s>=90?{grade:'A+',label:'Excelente',color:'#0E7C5A'} : s>=78?{grade:'A',label:'Muito boa',color:'#16A34A'} : s>=62?{grade:'B',label:'Boa',color:'#A87C2A'} : s>=45?{grade:'C',label:'Concentrada',color:'#E2761B'} : {grade:'D',label:'Muito concentrada',color:'#DC2626'};
+  return { pos, n, top, setores, classes, score:s, ...g, reasons:reasons.slice(0,5) };
+}
+function rxBar(label, pct, color, sub){
+  return `<div class="rx-bar"><div class="rx-bar-top"><span>${label}${sub?` <em class="faint">${sub}</em>`:''}</span><b class="mono">${pc(pct,1)}%</b></div><div class="rx-bar-track"><i style="width:${Math.min(100,pct).toFixed(1)}%;background:${color}"></i></div></div>`;
+}
+function viewRaioX(){
+  if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('raiox')}</div>`;
+  const p=portfolioStats(), d=diversificationGrade();
+  if(!d) return `<div class="card card-pad">${emptyState('fa-magnifying-glass-chart','Sem posições para o Raio-X','Adicione ativos à sua carteira para ver a diversificação, a concentração e a Nota Lastro.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
+  // agregações
+  const byClasse={}; d.pos.forEach(x=> byClasse[x.classe]=(byClasse[x.classe]||0)+x.w);
+  const bySetor={}; d.pos.forEach(x=> bySetor[x.setor]=(bySetor[x.setor]||0)+x.w);
+  const clEnt=Object.entries(byClasse).sort((a,b)=>b[1]-a[1]);
+  const sgEnt=Object.entries(bySetor).sort((a,b)=>b[1]-a[1]);
+  const pal=REC_PALETTE;
+  const clBars=clEnt.map(([k,v],i)=>rxBar(k,v,pal[i%pal.length])).join('');
+  const sgBars=sgEnt.map(([k,v],i)=>rxBar(k,v,pal[i%pal.length])).join('');
+  const atRows=d.pos.slice().sort((a,b)=>b.w-a.w).map(x=>{
+    const alta=x.w>25, media=x.w>15&&x.w<=25;
+    return `<div class="rx-asset" onclick="quickView('${x.tk}')">
+      ${assetLogo(x.tk,x.k,'sm')}
+      <div class="rx-as-id"><div class="rx-as-tk">${x.tk}${alta?` <span class="rx-flag neg">concentração elevada</span>`:media?` <span class="rx-flag warn">atenção</span>`:''}</div><div class="rx-as-nm">${esc((x.a&&x.a.nm)||'')} · ${x.setor}</div></div>
+      <div class="rx-as-bar"><i style="width:${Math.min(100,x.w*2.5).toFixed(1)}%;background:${alta?'var(--down)':media?'var(--gold)':'var(--brand)'}"></i></div>
+      <span class="rx-as-w mono">${pc(x.w,1)}%</span></div>`;
+  }).join('');
+  const reasons=d.reasons.map(r=>`<li class="${r.neg?'neg':'pos'}"><i class="fa-solid fa-${r.neg?'triangle-exclamation':'circle-check'}"></i> ${r.t}</li>`).join('');
+  const provReceb=p.prov||0, provProj=(p.renda||0)*12;
+  return `
+  <div class="sec-title">Raio-X da carteira</div>
+  <div class="sec-desc">O retrato completo da sua carteira: patrimônio, diversificação por setor, ativo e classe, e a Nota de Diversificação Lastro com os motivos.</div>
+  <div class="mstrip" style="grid-template-columns:repeat(6,1fr)">
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl">${brl0(p.atual)}</div><div class="dl ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}%</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Rentabilidade</div><div class="vl ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div><div class="dl faint">c/ proventos</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos recebidos</div><div class="vl">${brl0(provReceb)}</div><div class="dl faint">acumulado</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos projetados</div><div class="vl">${brl0(provProj)}</div><div class="dl faint">12 meses</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Ativos</div><div class="vl">${d.n}</div><div class="dl faint">posições</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Setores</div><div class="vl">${d.setores.length}</div><div class="dl faint">classes: ${d.classes.length}</div></div>
+  </div>
+  <div class="rx-grade card card-pad" style="margin-top:16px;border-color:${d.color}55">
+    <div class="rx-grade-badge" style="background:${d.color}14;color:${d.color};border-color:${d.color}55"><span class="rx-grade-letter">${d.grade}</span></div>
+    <div class="rx-grade-body">
+      <div class="rx-grade-h">Nota de Diversificação Lastro™ · <strong style="color:${d.color}">${d.label}</strong> <span class="mono faint">${d.score}/100</span></div>
+      <div class="rx-grade-track"><i style="width:${d.score}%;background:${d.color}"></i></div>
+      <ul class="rx-reasons">${reasons}</ul>
+    </div>
+  </div>
+  <div class="rx-cols" style="margin-top:16px">
+    <div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Por setor</div></div>
+      <div style="position:relative;height:210px;margin:6px 0 14px"><canvas id="rxSetorChart" role="img" aria-label="Diversificação por setor"></canvas></div>
+      <div class="rx-bars">${sgBars}</div>
+    </div>
+    <div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--accent-l,var(--brand-l));color:var(--accent)"><i class="fa-solid fa-layer-group"></i></span> Por classe</div></div>
+      <div class="rx-bars" style="margin-top:6px">${clBars}</div>
+      <div class="rx-classe-note faint">Exposição por classe de ativo — distribuir entre ações, FIIs e exterior reduz a volatilidade.</div>
+    </div>
+  </div>
+  <div class="card card-pad" style="margin-top:16px">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-weight-scale"></i></span> Por ativo <span class="card-sub" style="margin-left:6px">· peso e concentração</span></div></div>
+    <div class="rx-assets">${atRows}</div>
+  </div>
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Análise calculada sobre as posições reais da sua carteira. Não é recomendação personalizada de investimento.</div>`;
+}
+function initRaioX(){
+  const ctx=$('#rxSetorChart'); if(!ctx) return;
+  if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
+  const d=diversificationGrade(); if(!d) return;
+  const by={}; d.pos.forEach(x=> by[x.setor]=(by[x.setor]||0)+x.w);
+  const ent=Object.entries(by).sort((a,b)=>b[1]-a[1]); const pal=REC_PALETTE;
+  if(charts.rxSetor) charts.rxSetor.destroy();
+  charts.rxSetor=new Chart(ctx,{ type:'doughnut',
+    data:{ labels:ent.map(e=>e[0]), datasets:[{ data:ent.map(e=>e[1]), backgroundColor:ent.map((_,i)=>pal[i%pal.length]), borderWidth:2, borderColor:cssVar('--surface') }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'60%',
+      plugins:{ legend:{ position:'right', labels:{ color:cssVar('--ink-2'), font:{size:10.5}, usePointStyle:true, pointStyleWidth:8, boxHeight:7, padding:8 } },
+                tooltip:{ callbacks:{ label:c=>c.label+': '+pc(c.parsed,1)+'%' } } } }
   });
 }
 
