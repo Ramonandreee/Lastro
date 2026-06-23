@@ -2332,8 +2332,9 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 .ckl-ring { width:96px; height:96px; flex:none; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:conic-gradient(var(--rc) calc(var(--p,0)*1%), var(--surface-3) 0); position:relative; }
 .ckl-ring[data-st="pos"]{ --rc:var(--up); } .ckl-ring[data-st="warn"]{ --rc:var(--warn); } .ckl-ring[data-st="crit"]{ --rc:var(--down); }
 .ckl-ring::after { content:''; position:absolute; inset:9px; border-radius:50%; background:var(--surface); }
-.ckl-pct { position:relative; z-index:1; font-family:var(--mono); font-size:26px; font-weight:600; letter-spacing:-.02em; line-height:1; }
-.ckl-pct small { font-size:13px; color:var(--ink-3); }
+.ckl-pct { position:relative; z-index:1; font-family:var(--mono); font-size:22px; font-weight:600; letter-spacing:-.03em; line-height:1; }
+.ckl-pct small { font-size:11px; color:var(--ink-3); margin-left:1px; }
+.ckl-lbl { margin-top:3px; }
 .ckl-lbl { position:relative; z-index:1; font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); }
 .ckl-sum { flex:1; min-width:0; }
 .ckl-vd { font-size:16px; font-weight:700; display:flex; align-items:center; gap:8px; letter-spacing:-.01em; }
@@ -5644,7 +5645,7 @@ function viewRaioX(){
       <div class="rx-as-bar"><i style="width:${Math.min(100,x.w*2.5).toFixed(1)}%;background:${alta?'var(--down)':media?'var(--gold)':'var(--brand)'}"></i></div>
       <span class="rx-as-w mono">${pc(x.w,1)}%</span></div>`;
   }).join('');
-  const reasons=d.reasons.map(r=>`<li class="${r.neg?'neg':'pos'}"><i class="fa-solid fa-${r.neg?'triangle-exclamation':'circle-check'}"></i> ${r.t}</li>`).join('');
+  const reasons=d.reasons.map(r=>`<li class="${r.neg?'neg':'pos'}"><i class="fa-solid fa-${r.neg?'triangle-exclamation':'circle-check'}"></i> <span>${r.t}</span></li>`).join('');
   const provReceb=p.prov||0, provProj=(p.renda||0)*12;
   const sc=lastroScores();
   const eqColor = sc.equilibrio>=80?'#0E7C5A':sc.equilibrio>=65?'#16A34A':sc.equilibrio>=50?'#A87C2A':sc.equilibrio>=35?'#E2761B':'#DC2626';
@@ -5841,11 +5842,11 @@ function viewConsultor(){
   const p=portfolioStats();
   if(!p._byT.length) return `<div class="card card-pad">${emptyState('fa-user-tie','Sem carteira para analisar','Adicione posições para o Consultor IA diagnosticar a sua carteira e sugerir o próximo aporte.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   const ins=portfolioInsights(), d=diversificationGrade();
-  const cons=ins.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> ${t}</li>`).join('');
-  const pros=ins.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> ${t}</li>`).join('');
-  const rebal=(ins.rebal||[]).map(t=>`<li><i class="fa-solid fa-arrow-right-arrow-left"></i> ${t}</li>`).join('');
+  const cons=ins.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> <span>${t}</span></li>`).join('');
+  const pros=ins.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>${t}</span></li>`).join('');
+  const rebal=(ins.rebal||[]).map(t=>`<li><i class="fa-solid fa-arrow-right-arrow-left"></i> <span>${t}</span></li>`).join('');
   const falta=['Ações','FIIs','Exterior'].filter(c=>!d.classes.includes(c));
-  const faltaHtml = falta.length? falta.map(c=>`<li><i class="fa-solid fa-plus"></i> Falta exposição a <strong>${c}</strong> — adicionar diversifica a carteira.</li>`).join('') : '<li class="pos"><i class="fa-solid fa-circle-check"></i> Sua carteira cobre as principais classes de ativos.</li>';
+  const faltaHtml = falta.length? falta.map(c=>`<li><i class="fa-solid fa-plus"></i> <span>Falta exposição a <strong>${c}</strong> — adicionar diversifica a carteira.</span></li>`).join('') : '<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>Sua carteira cobre as principais classes de ativos.</span></li>';
   return `
   <div class="sec-title">Consultor IA da carteira</div>
   <div class="sec-desc">Um consultor que olha a <strong>sua</strong> carteira: faz o diagnóstico, aponta o que ajustar e responde quanto e onde investir o próximo aporte. Análise educativa — não é recomendação personalizada de investimento.</div>
@@ -6018,8 +6019,8 @@ function portfolioInsights(){
 function renderDiag(){
   const el=$('#diagBody'); if(!el) return;
   const d = portfolioInsights();
-  const pros = d.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> ${t}</li>`).join('');
-  const cons = d.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> ${t}</li>`).join('');
+  const pros = d.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>${t}</span></li>`).join('');
+  const cons = d.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> <span>${t}</span></li>`).join('');
   const reb = (d.rebal||[]).map(t=>`<li style="display:flex;gap:9px;align-items:flex-start;padding:5px 0;font-size:13px;color:var(--ink-2);line-height:1.5;list-style:none"><i class="fa-solid fa-arrow-right-arrow-left" style="color:var(--accent);margin-top:3px"></i><span>${t}</span></li>`).join('');
   el.innerHTML = `<div style="margin-bottom:14px">${d.summary}</div>
     <div class="proscons">
@@ -6985,8 +6986,8 @@ function decisionCard(a,k,f){
     'Consistência':'Regularidade histórica das distribuições. Alta = pagamentos previsíveis.'
   };
   const dimHtml = dims.map(d=>`<div class="dim" data-tip="${esc(DIM_HINTS[d.label]||'')}"><div class="dim-l">${d.label} <i class="fa-regular fa-circle-question frq"></i></div><div class="dim-r tone-${d.tone}">${d.rating}</div></div>`).join('');
-  const pros = ins.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> ${t}</li>`).join('');
-  const cons = ins.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> ${t}</li>`).join('');
+  const pros = ins.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>${t}</span></li>`).join('');
+  const cons = ins.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> <span>${t}</span></li>`).join('');
   return `<div class="card card-pad decision">
     <div class="dec-head">
       <div class="dec-verdict"><i class="fa-solid fa-${icon} tone-${ins.tone}"></i> <span>${ins.verdict}</span></div>
