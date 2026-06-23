@@ -1974,6 +1974,15 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 .rx-flag.neg { background:color-mix(in srgb,var(--down) 14%,transparent); color:var(--down); }
 .rx-flag.warn { background:var(--gold-l); color:var(--gold); }
 @media (max-width:560px){ .rx-as-id { width:130px; } .rx-as-nm { display:none; } }
+.rx-scores { display:grid; grid-template-columns:1.4fr 1fr; gap:16px; }
+@media (max-width:760px){ .rx-scores { grid-template-columns:1fr; } }
+.rx-eq-num { font-size:46px; font-weight:800; letter-spacing:-.03em; line-height:1; margin-bottom:12px; }
+.rx-eq-num small { font-size:17px; font-weight:600; color:var(--ink-3); margin-left:2px; }
+.rx-eq-sub { font-size:11px; margin-top:9px; }
+.rx-sono { text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.rx-sono-emoji { font-size:48px; line-height:1; margin:4px 0 8px; }
+.rx-sono-l { font-size:18px; font-weight:700; }
+.rx-sono-q { font-size:11.5px; font-style:italic; margin-top:11px; padding-top:11px; border-top:1px solid var(--line); width:100%; }
 .rec-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
 .rec-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
 .rec-nm { font-size:18px; font-weight:700; letter-spacing:-.01em; }
@@ -5508,6 +5517,26 @@ function diversificationGrade(){
   const g = s>=90?{grade:'A+',label:'Excelente',color:'#0E7C5A'} : s>=78?{grade:'A',label:'Muito boa',color:'#16A34A'} : s>=62?{grade:'B',label:'Boa',color:'#A87C2A'} : s>=45?{grade:'C',label:'Concentrada',color:'#E2761B'} : {grade:'D',label:'Muito concentrada',color:'#DC2626'};
   return { pos, n, top, setores, classes, score:s, ...g, reasons:reasons.slice(0,5) };
 }
+/* Scores proprietários da carteira (Índice de Equilíbrio, Sono Tranquilo, Segurança dos dividendos) */
+function lastroScores(){
+  const p=portfolioStats(), d=diversificationGrade(); if(!d) return null;
+  const pos=d.pos, wsum=f=> pos.reduce((s,x)=> s + f(x)*x.w/100, 0);
+  const qual = wsum(x=> x.a&&x.a.score!=null? x.a.score : 55);
+  const consist = wsum(x=> x.a&&x.a.consist!=null? x.a.consist*100 : 60);
+  const divScore = Math.min(100,(p.dyMed/9)*100);
+  const concScore = Math.max(0, 100 - Math.max(0, d.top.w-15)*3);
+  const intlScore = d.classes.includes('Exterior')?100:60;
+  const equilibrio = Math.round(Math.max(0,Math.min(100, d.score*0.30 + qual*0.24 + consist*0.16 + divScore*0.10 + concScore*0.12 + intlScore*0.08)));
+  const sonoVal = Math.round(Math.max(0,Math.min(100, consist*0.34 + d.score*0.26 + concScore*0.22 + qual*0.18)));
+  const sono = sonoVal>=72?{e:'😴',l:'Excelente',sub:'Pode dormir tranquilo',c:'#16A34A'} : sonoVal>=52?{e:'⚠️',l:'Moderado',sub:'Alguns pontos de atenção',c:'#E2761B'} : {e:'🚨',l:'Arriscado',sub:'A carteira pede ajustes',c:'#DC2626'};
+  const divSeg = pos.filter(x=>x.a&&(x.a.dy||0)>0).map(x=>{
+    const dy=x.a.dy||0, cons=x.a.consist!=null?x.a.consist:0.6;
+    let sc=cons*10; if(dy>15) sc-=3.5; else if(dy>12) sc-=2; else if(dy>10) sc-=1; if((x.a.score||0)>=75) sc+=0.8;
+    sc=Math.max(0,Math.min(10,sc));
+    return { tk:x.tk, k:x.k, nm:(x.a.nm||''), dy, sc:Math.round(sc*10)/10 };
+  }).sort((a,b)=>a.sc-b.sc);
+  return { equilibrio, sono, sonoVal, divSeg, qual:Math.round(qual), consist:Math.round(consist) };
+}
 function rxBar(label, pct, color, sub){
   return `<div class="rx-bar"><div class="rx-bar-top"><span>${label}${sub?` <em class="faint">${sub}</em>`:''}</span><b class="mono">${pc(pct,1)}%</b></div><div class="rx-bar-track"><i style="width:${Math.min(100,pct).toFixed(1)}%;background:${color}"></i></div></div>`;
 }
@@ -5533,6 +5562,10 @@ function viewRaioX(){
   }).join('');
   const reasons=d.reasons.map(r=>`<li class="${r.neg?'neg':'pos'}"><i class="fa-solid fa-${r.neg?'triangle-exclamation':'circle-check'}"></i> ${r.t}</li>`).join('');
   const provReceb=p.prov||0, provProj=(p.renda||0)*12;
+  const sc=lastroScores();
+  const eqColor = sc.equilibrio>=80?'#0E7C5A':sc.equilibrio>=65?'#16A34A':sc.equilibrio>=50?'#A87C2A':sc.equilibrio>=35?'#E2761B':'#DC2626';
+  const eqMsg = sc.equilibrio>=80?'Carteira muito bem equilibrada entre diversificação, qualidade e renda.' : sc.equilibrio>=65?'Bom equilíbrio geral — pequenos ajustes podem elevar o índice.' : sc.equilibrio>=50?'Equilíbrio mediano: revise concentração e mix de qualidade.' : 'Carteira desequilibrada — priorize diversificação e qualidade dos ativos.';
+  const divSegRows = sc.divSeg.map(x=>{ const c=x.sc>=7?'var(--brand)':x.sc>=4?'var(--gold)':'var(--down)'; return `<div class="rx-asset" onclick="quickView('${x.tk}')">${assetLogo(x.tk,x.k,'sm')}<div class="rx-as-id"><div class="rx-as-tk">${x.tk}</div><div class="rx-as-nm">${esc(x.nm)} · DY ${pc(x.dy,1)}%</div></div><div class="rx-as-bar"><i style="width:${(x.sc*10).toFixed(0)}%;background:${c}"></i></div><span class="rx-as-w mono" style="color:${c}">${x.sc.toFixed(1)}/10</span></div>`; }).join('') || '<div class="faint" style="font-size:12.5px;padding:6px">Nenhum ativo pagador de dividendos na carteira.</div>';
   return `
   <div class="sec-title">Raio-X da carteira</div>
   <div class="sec-desc">O retrato completo da sua carteira: patrimônio, diversificação por setor, ativo e classe, e a Nota de Diversificação Lastro com os motivos.</div>
@@ -5552,6 +5585,22 @@ function viewRaioX(){
       <ul class="rx-reasons">${reasons}</ul>
     </div>
   </div>
+  <div class="rx-scores" style="margin-top:16px">
+    <div class="card card-pad rx-eq">
+      <div class="card-h" style="margin-bottom:12px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-scale-balanced"></i></span> Índice de Equilíbrio Lastro™</div>
+      <div class="rx-eq-num" style="color:${eqColor}">${sc.equilibrio}<small>/100</small></div>
+      <div class="rx-grade-track"><i style="width:${sc.equilibrio}%;background:${eqColor}"></i></div>
+      <p class="faint" style="font-size:12px;margin:11px 0 0;line-height:1.55">${eqMsg}</p>
+      <div class="rx-eq-sub faint">Qualidade média ${sc.qual}/100 · Consistência ${sc.consist}/100</div>
+    </div>
+    <div class="card card-pad rx-sono">
+      <div class="card-h" style="justify-content:center;margin-bottom:10px"><span class="ico" style="background:${sc.sono.c}1a;color:${sc.sono.c}"><i class="fa-solid fa-bed"></i></span> Score de Sono Tranquilo™</div>
+      <div class="rx-sono-emoji">${sc.sono.e}</div>
+      <div class="rx-sono-l" style="color:${sc.sono.c}">${sc.sono.l}</div>
+      <div class="faint" style="font-size:12px;margin-top:3px">${sc.sono.sub} · ${sc.sonoVal}/100</div>
+      <div class="rx-sono-q faint">“Posso dormir tranquilo com essa carteira?”</div>
+    </div>
+  </div>
   <div class="rx-cols" style="margin-top:16px">
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Por setor</div></div>
@@ -5567,6 +5616,11 @@ function viewRaioX(){
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-weight-scale"></i></span> Por ativo <span class="card-sub" style="margin-left:6px">· peso e concentração</span></div></div>
     <div class="rx-assets">${atRows}</div>
+  </div>
+  <div class="card card-pad" style="margin-top:16px">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-shield-halved"></i></span> Segurança dos dividendos <span class="card-sub" style="margin-left:6px">· além do yield</span></div></div>
+    <div class="rx-classe-note faint" style="margin:2px 0 12px">Yield alto nem sempre é dividendo seguro. A nota combina consistência histórica, qualidade e sustentabilidade do pagamento (0 a 10).</div>
+    <div class="rx-assets">${divSegRows}</div>
   </div>
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Análise calculada sobre as posições reais da sua carteira. Não é recomendação personalizada de investimento.</div>`;
 }
