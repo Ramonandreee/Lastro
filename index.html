@@ -775,6 +775,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item premium-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
     </nav>
     </div>
 
@@ -1983,6 +1984,20 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 .rx-sono-emoji { font-size:48px; line-height:1; margin:4px 0 8px; }
 .rx-sono-l { font-size:18px; font-weight:700; }
 .rx-sono-q { font-size:11.5px; font-style:italic; margin-top:11px; padding-top:11px; border-top:1px solid var(--line); width:100%; }
+/* Stress test */
+.stress-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+.st-card { display:flex; flex-direction:column; }
+.st-head { display:flex; gap:11px; align-items:flex-start; margin-bottom:14px; }
+.st-nome { font-size:14px; font-weight:600; color:var(--ink-1); }
+.st-desc { font-size:11.5px; line-height:1.45; margin-top:2px; }
+.st-impact { display:flex; align-items:baseline; gap:10px; }
+.st-imp-p { font-size:28px; font-weight:800; letter-spacing:-.02em; }
+.st-imp-v { font-size:14px; font-weight:600; }
+.st-newval { font-size:11.5px; margin:6px 0 12px; }
+.st-affs { margin-top:auto; border-top:1px solid var(--line); padding-top:10px; display:grid; gap:5px; }
+.st-aff { display:flex; justify-content:space-between; align-items:center; font-size:12px; }
+.st-aff-tk { color:var(--ink-2); font-weight:600; }
+.st-aff.faint { font-size:11.5px; line-height:1.4; }
 .rec-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
 .rec-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
 .rec-nm { font-size:18px; font-weight:700; letter-spacing:-.01em; }
@@ -2966,6 +2981,7 @@ const PAGES = {
   score:        { t:'Score Lastro',          s:'Ranking proprietário de qualidade dos ativos' },
   backtest:     { t:'Backtest da Carteira',  s:'Simulação histórica da sua carteira vs CDI e IBOV' },
   raiox:        { t:'Raio-X da Carteira',     s:'Diversificação, concentração e Nota Lastro da sua carteira' },
+  stress:       { t:'Stress Test',            s:'Impacto estimado de cenários de crise na sua carteira' },
   planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
   indicar:      { t:'Indique e Ganhe',       s:'Ganhe 20% da assinatura de cada amigo que você indicar, via PIX' },
 };
@@ -3006,6 +3022,7 @@ const PREMIUM_FEATURES = {
   relatorio: { name:'Relatório Mensal da Carteira', icon:'fa-file-lines', pro:true, desc:'Um relatório completo e imprimível da sua carteira: patrimônio, resultado, proventos do mês e alocação.', why:'Acompanhe sua evolução com um documento profissional — ideal para guardar ou compartilhar com seu contador.' },
   backtest:  { name:'Backtest da Carteira', icon:'fa-chart-line', pro:true, desc:'Simule como a sua carteira teria se comportado no passado: retorno, volatilidade e maior queda, comparados ao CDI e ao IBOV.', why:'Entenda o risco e o retorno histórico da sua estratégia antes de tomar decisões.' },
   raiox:     { name:'Raio-X da Carteira', icon:'fa-magnifying-glass-chart', pro:true, desc:'O retrato completo da sua carteira: diversificação por setor, ativo e classe, com a Nota de Diversificação Lastro e alertas de concentração.', why:'Enxergue de relance onde sua carteira está concentrada e o que melhorar.' },
+  stress:    { name:'Stress Test da Carteira', icon:'fa-heart-pulse', pro:true, desc:'Simule cenários de crise — queda de bancos, do petróleo, alta de juros, queda da bolsa, dólar em alta — e veja o impacto estimado em reais na sua carteira.', why:'Saiba quanto a sua carteira pode perder antes de a crise acontecer.' },
   carteiras: { name:'Carteiras Recomendadas Exclusivas', icon:'fa-layer-group', pro:true, desc:'Estratégias premium montadas pela inteligência Lastro, disponíveis apenas para assinantes Investidor Pro.', why:'Acesse alocações mais sofisticadas, com composição e estratégia detalhadas.' },
 };
 const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço e IA ilimitada','Watchlist ilimitada e exportação CSV'];
@@ -3042,7 +3059,7 @@ function proGate(key){ if(isPro()) return true; openPremiumModal(key); return fa
 function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias Premium grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
 function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
 function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
-const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox'];
+const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox','stress'];
 function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
@@ -3536,6 +3553,7 @@ function render(v, soft){
   else if(v==='indicar')     c.innerHTML = viewIndicar();
   else if(v==='backtest')    c.innerHTML = viewBacktest();
   else if(v==='raiox')       c.innerHTML = viewRaioX();
+  else if(v==='stress')      c.innerHTML = viewStress();
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
 }
@@ -5637,6 +5655,51 @@ function initRaioX(){
       plugins:{ legend:{ position:'right', labels:{ color:cssVar('--ink-2'), font:{size:10.5}, usePointStyle:true, pointStyleWidth:8, boxHeight:7, padding:8 } },
                 tooltip:{ callbacks:{ label:c=>c.label+': '+pc(c.parsed,1)+'%' } } } }
   });
+}
+
+/* ── Stress Test da Carteira (Investidor Pro) ── */
+function stressScenarios(){
+  return [
+    { id:'bancos', nome:'Bancos caem 20%', icon:'fa-building-columns', desc:'Crise de crédito derruba os grandes bancos.', fn:x=> /banco/i.test(x.setor)? -20 : 0 },
+    { id:'petro',  nome:'Petróleo cai 30%', icon:'fa-oil-well', desc:'Queda forte do barril atinge as petrolíferas.', fn:x=> /petr[óo]leo/i.test(x.setor)? -30 : 0 },
+    { id:'juros',  nome:'Alta dos juros (+2 p.p.)', icon:'fa-arrow-trend-up', desc:'Selic sobe e pressiona FIIs e ações de crescimento.', fn:x=>{ if(x.k==='fiis') return -8; if(/banco/i.test(x.setor)) return 2; if((x.a&&x.a.pl||0)>20) return -7; return -3; } },
+    { id:'bolsa',  nome:'Bolsa cai 15%', icon:'fa-arrow-trend-down', desc:'Correção ampla do mercado de ações.', fn:x=>{ if(x.k==='acoes') return -15; if(x.k==='fiis') return -6; if(x.k==='cripto') return -20; if(x.classe==='Exterior') return -11; return -8; } },
+    { id:'dolar',  nome:'Dólar sobe 10%', icon:'fa-dollar-sign', desc:'O real se desvaloriza frente ao dólar.', fn:x=>{ if(x.classe==='Exterior') return 10; if(/petr|miner|side|papel|celulose|industri/i.test(x.setor)) return 4; return -1; } },
+  ];
+}
+function stressResults(){
+  const p=portfolioStats(), d=diversificationGrade(); if(!d) return null;
+  return stressScenarios().map(sc=>{
+    let delta=0; const affected=[];
+    d.pos.forEach(x=>{ const ch=sc.fn(x); if(ch){ const dv=x.val*ch/100; delta+=dv; affected.push({tk:x.tk,k:x.k,ch,dv}); } });
+    affected.sort((a,b)=>Math.abs(b.dv)-Math.abs(a.dv));
+    return { ...sc, delta, deltaP:p.atual?delta/p.atual*100:0, newVal:p.atual+delta, affected };
+  }).sort((a,b)=>a.delta-b.delta);
+}
+function viewStress(){
+  if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('stress')}</div>`;
+  const p=portfolioStats(), res=stressResults();
+  if(!res) return `<div class="card card-pad">${emptyState('fa-heart-pulse','Sem posições para o stress test','Adicione ativos à sua carteira para simular cenários de crise e ver o impacto estimado.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
+  const pior=res[0];
+  const cards=res.map(r=>{
+    const neg=r.delta<0, c=neg?'var(--down)':'var(--up)';
+    const aff=r.affected.slice(0,3).map(a=>`<div class="st-aff"><span class="st-aff-tk">${a.tk}</span><span class="mono" style="color:${a.ch<0?'var(--down)':'var(--up)'}">${a.ch>0?'+':''}${a.ch}%</span></div>`).join('') || '<div class="st-aff faint">Sua carteira não tem exposição direta a este cenário.</div>';
+    return `<div class="card card-pad st-card">
+      <div class="st-head"><span class="ico" style="background:${c}1a;color:${c}"><i class="fa-solid ${r.icon}"></i></span><div><div class="st-nome">${r.nome}</div><div class="st-desc faint">${r.desc}</div></div></div>
+      <div class="st-impact"><div class="st-imp-p mono" style="color:${c}">${r.deltaP>0?'+':''}${pc(r.deltaP,1)}%</div><div class="st-imp-v" style="color:${c}">${r.delta>0?'+':''}${brl0(r.delta)}</div></div>
+      <div class="st-newval faint">Patrimônio: ${brl0(p.atual)} → <strong style="color:var(--ink-1)">${brl0(r.newVal)}</strong></div>
+      <div class="st-affs">${aff}</div>
+    </div>`;
+  }).join('');
+  return `
+  <div class="sec-title">Stress test da carteira</div>
+  <div class="sec-desc">Como a sua carteira reagiria a cenários de crise. O impacto é estimado a partir da sensibilidade típica de cada setor e classe — uma referência de risco, não uma previsão.</div>
+  <div class="card card-pad st-worst" style="border-color:var(--down)55">
+    <div class="card-h" style="margin-bottom:6px"><span class="ico" style="background:color-mix(in srgb,var(--down) 14%,transparent);color:var(--down)"><i class="fa-solid fa-triangle-exclamation"></i></span> Pior cenário para a sua carteira</div>
+    <p style="font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0">No cenário <strong>${pior.nome}</strong>, sua carteira recuaria cerca de <strong style="color:var(--down)">${pc(pior.deltaP,1)}%</strong> (${brl0(pior.delta)}), indo de ${brl0(p.atual)} para ${brl0(pior.newVal)}.</p>
+  </div>
+  <div class="stress-grid" style="margin-top:16px">${cards}</div>
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sensibilidades ilustrativas por setor/classe sobre as posições reais da carteira. Cenários hipotéticos — não são recomendação nem previsão de mercado.</div>`;
 }
 
 /* Simulador */
