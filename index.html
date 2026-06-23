@@ -789,6 +789,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="barganhas" onclick="nav('barganhas',this)"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Radar de Barganhas</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="consultor" onclick="nav('consultor',this)"><i class="fa-solid fa-user-tie"></i><span>Consultor IA</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="deterioracao" onclick="nav('deterioracao',this)"><i class="fa-solid fa-arrow-trend-down"></i><span>Detector de Risco</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
     </nav>
     </div>
 
@@ -2056,6 +2057,27 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 .cons-pick-tk { font-size:14.5px; font-weight:700; color:var(--ink-1); }
 .cons-pick-id .faint { font-size:12px; }
 .cons-motivo { font-size:13px; color:var(--ink-2); line-height:1.6; margin:0 0 4px; }
+/* Detector de deterioração */
+.det-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:16px; }
+.det-card { border-left:3px solid var(--warn); }
+.det-card.det-card-alta { border-left-color:var(--down); }
+.det-head { display:flex; align-items:center; gap:11px; cursor:pointer; padding-bottom:13px; margin-bottom:12px; border-bottom:1px solid var(--line); }
+.det-id { flex:1; min-width:0; }
+.det-tk { font-size:14px; font-weight:600; color:var(--ink-1); display:flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:4px; }
+.det-nm { font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.det-badge { font-size:9.5px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; padding:2px 7px; border-radius:20px; white-space:nowrap; }
+.det-badge.alta { background:color-mix(in srgb,var(--down) 14%,transparent); color:var(--down); }
+.det-badge.media { background:var(--warn-l); color:var(--warn); }
+.det-sigs { display:grid; gap:11px; }
+.det-sig { display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5; color:var(--ink-2); }
+.det-sig-ic { flex:none; width:24px; height:24px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:11px; margin-top:1px; }
+.det-sig-ic.alta { background:color-mix(in srgb,var(--down) 13%,transparent); color:var(--down); }
+.det-sig-ic.media { background:var(--warn-l); color:var(--warn); }
+.det-dot { display:inline-block; width:8px; height:8px; border-radius:50%; }
+.det-dot.alta { background:var(--down); } .det-dot.media { background:var(--warn); }
+.det-clear { display:flex; align-items:center; gap:16px; }
+.det-clear-ic { flex:none; width:52px; height:52px; border-radius:14px; background:var(--up-l); color:var(--up); display:flex; align-items:center; justify-content:center; font-size:22px; }
+.det-clear-t { font-size:16px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
 .rec-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
 .rec-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
 .rec-nm { font-size:18px; font-weight:700; letter-spacing:-.01em; }
@@ -3042,6 +3064,7 @@ const PAGES = {
   stress:       { t:'Stress Test',            s:'Impacto estimado de cenários de crise na sua carteira' },
   barganhas:    { t:'Radar de Barganhas',     s:'Ativos de qualidade abaixo da média histórica de valuation' },
   consultor:    { t:'Consultor IA da Carteira',s:'Diagnóstico e sugestão de aporte personalizada para a sua carteira' },
+  deterioracao: { t:'Detector de Deterioração',s:'Alertas automáticos quando os fundamentos da sua carteira pioram' },
   planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
   indicar:      { t:'Indique e Ganhe',       s:'Ganhe 20% da assinatura de cada amigo que você indicar, via PIX' },
 };
@@ -3085,10 +3108,11 @@ const PREMIUM_FEATURES = {
   stress:    { name:'Stress Test da Carteira', icon:'fa-heart-pulse', pro:true, desc:'Simule cenários de crise — queda de bancos, do petróleo, alta de juros, queda da bolsa, dólar em alta — e veja o impacto estimado em reais na sua carteira.', why:'Saiba quanto a sua carteira pode perder antes de a crise acontecer.' },
   barganhas: { name:'Radar de Barganhas', icon:'fa-magnifying-glass-dollar', pro:true, desc:'Ranking de ativos de qualidade negociando abaixo da própria média histórica de valuation — os maiores descontos do mercado.', why:'Encontre boas empresas em momentos de preço atrativo, sem garimpar manualmente.' },
   consultor: { name:'Consultor IA da Carteira', icon:'fa-user-tie', pro:true, desc:'Diagnóstico automático da sua carteira e respostas do tipo “tenho R$ 3.000 para investir” — com a sugestão de onde aportar, sempre explicando o porquê.', why:'Tenha um consultor que analisa a SUA carteira e diz o próximo passo, não dicas genéricas.' },
+  deterioracao: { name:'Detector de Deterioração', icon:'fa-arrow-trend-down', pro:true, desc:'Vigia os fundamentos dos seus ativos e te avisa quando algo piora: margem ou ROE em queda, dividendo em risco, vacância subindo, lucros inconsistentes.', why:'Saia antes do problema — descubra a deterioração de uma empresa antes que ela vire prejuízo.' },
   carteiras: { name:'Carteiras Recomendadas Exclusivas', icon:'fa-layer-group', pro:true, desc:'Estratégias premium montadas pela inteligência Lastro, disponíveis apenas para assinantes Investidor Pro.', why:'Acesse alocações mais sofisticadas, com composição e estratégia detalhadas.' },
 };
 const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço e IA ilimitada','Watchlist ilimitada e exportação CSV'];
-const PRO_BENEFITS = ['Tudo do Premium, sem limites','Consultor IA da carteira (diagnóstico + onde aportar)','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test e Radar de Barganhas','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas','Comissão de indicação dobrada — 40%'];
+const PRO_BENEFITS = ['Tudo do Premium, sem limites','Consultor IA da carteira (diagnóstico + onde aportar)','Raio-X da carteira com Nota de Diversificação Lastro','Detector de deterioração de fundamentos','Stress Test e Radar de Barganhas','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'];
 /* tela de apresentação Premium / Investidor Pro (usada no modal e como paywall inline) */
 function premiumPresentation(key){
   const f = PREMIUM_FEATURES[key] || { name:'Recurso Premium', icon:'fa-crown', desc:'Desbloqueie todo o poder da plataforma Lastro.', why:'' };
@@ -3121,7 +3145,7 @@ function proGate(key){ if(isPro()) return true; openPremiumModal(key); return fa
 function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias Premium grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
 function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
 function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
-const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox','stress','barganhas','consultor'];
+const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox','stress','barganhas','consultor','deterioracao'];
 function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
@@ -3618,6 +3642,7 @@ function render(v, soft){
   else if(v==='stress')      c.innerHTML = viewStress();
   else if(v==='barganhas')   c.innerHTML = viewBargain();
   else if(v==='consultor')   c.innerHTML = viewConsultor();
+  else if(v==='deterioracao') c.innerHTML = viewDeterioracao();
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
 }
@@ -4276,6 +4301,7 @@ function viewPlanos(){
       ['Comparador', PLAN_LIMITS.comparador, '4 ativos', '4 ativos'],
       ['Comissão de indicação', '20%', '20%', '40%'],
       ['Consultor IA da carteira', false, false, true],
+      ['Detector de deterioração', false, false, true],
       ['Raio-X da carteira (Nota Lastro)', false, false, true],
       ['Stress Test e Radar de Barganhas', false, false, true],
       ['Backtest histórico da carteira', false, false, true],
@@ -5867,6 +5893,72 @@ function viewConsultor(){
     <div id="consultorOut"></div>
   </div>
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Diagnóstico determinístico calculado sobre a sua carteira. Educativo — não constitui recomendação personalizada de investimento.</div>`;
+}
+
+/* ── Detector de Deterioração de Fundamentos (Investidor Pro) ── */
+function deteriorationScan(){
+  const p=portfolioStats(); if(!p._byT.length) return null;
+  const items=p._byT.map(g=>({tk:g.tk, k:g.f.k, a:g.f.a})).filter(x=>x.k==='acoes'||x.k==='fiis');
+  if(!items.length) return [];
+  const decl=(id,tk,cur)=>{ if(typeof cur!=='number'||!isFinite(cur)) return null; const h=indHistory(id,tk,cur,6); const d=h.data; let n=0; for(let i=d.length-1;i>0;i--){ if(d[i]<d[i-1]) n++; else break; } const mean=histMean(h); return { n, mean, cur, dropPct:mean?(mean-cur)/mean*100:0 }; };
+  const out=items.map(x=>{
+    const a=x.a, sig=[];
+    if(x.k==='acoes'){
+      const m=decl('mgl',x.tk,a.mgl); if(m && (m.n>=2 || m.dropPct>18)) sig.push({sev:m.dropPct>30?'alta':'media', i:'fa-chart-line-down', t:`Margem líquida em queda — ${pc(a.mgl,1)}% hoje vs média de ${pc(m.mean,1)}%${m.n>=2?`, ${m.n} períodos seguidos`:''}.`});
+      const r=decl('roe',x.tk,a.roe); if(r && r.dropPct>25) sig.push({sev:r.dropPct>35?'alta':'media', i:'fa-percent', t:`ROE recuou ${pc(r.dropPct,0)}% frente à média histórica (${pc(a.roe,1)}% vs ${pc(r.mean,1)}%).`});
+      if((a.dy||0)>13 && (a.consist||1)<0.8) sig.push({sev:'alta', i:'fa-hand-holding-dollar', t:`Dividend Yield de ${pc(a.dy,1)}% muito acima do usual com baixa consistência — o dividendo pode não se sustentar.`});
+      if((a.consist||1)<0.6) sig.push({sev:'media', i:'fa-wave-square', t:`Lucros pouco consistentes (consistência ${pc((a.consist||0)*100,0)}%) — resultado volátil.`});
+    } else {
+      if((a.vac||0)>8) sig.push({sev:a.vac>12?'alta':'media', i:'fa-door-open', t:`Vacância elevada de ${pc(a.vac,1)}% — pressiona a distribuição de rendimentos.`});
+      const dd=decl('dy',x.tk,a.dy); if(dd && dd.n>=2) sig.push({sev:'media', i:'fa-chart-line-down', t:`Rendimento em queda — DY de ${pc(a.dy,1)}% recuando ${dd.n} períodos seguidos.`});
+      if((a.consist||1)<0.75) sig.push({sev:'media', i:'fa-wave-square', t:`Distribuição pouco consistente (${pc((a.consist||0)*100,0)}%) — renda menos previsível.`});
+    }
+    if((a.score||100)<55) sig.push({sev:'media', i:'fa-award', t:`Score Lastro baixo (${a.score}/100) — qualidade fundamentalista fraca.`});
+    return { tk:x.tk, k:x.k, nm:a.nm||'', score:a.score, sig };
+  }).filter(r=>r.sig.length);
+  const rank=r=>r.sig.some(s=>s.sev==='alta')?0:1;
+  out.sort((a,b)=>rank(a)-rank(b) || b.sig.length-a.sig.length);
+  return out;
+}
+function viewDeterioracao(){
+  if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('deterioracao')}</div>`;
+  const p=portfolioStats(), res=deteriorationScan();
+  if(res===null) return `<div class="card card-pad">${emptyState('fa-arrow-trend-down','Sem carteira para monitorar','Adicione ativos para o detector vigiar os fundamentos e te avisar quando algo piorar.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
+  const monit=p._byT.filter(g=>g.f.k==='acoes'||g.f.k==='fiis').length;
+  const totalSig=res.reduce((s,r)=>s+r.sig.length,0), altas=res.reduce((s,r)=>s+r.sig.filter(x=>x.sev==='alta').length,0);
+  const sevDot=s=>`<span class="det-dot ${s}"></span>`;
+  if(!res.length){
+    return `
+    <div class="sec-title">Detector de deterioração</div>
+    <div class="sec-desc">O Lastro vigia os fundamentos dos seus ativos e te avisa quando algo começa a piorar.</div>
+    <div class="card card-pad det-clear">
+      <span class="det-clear-ic"><i class="fa-solid fa-shield-check"></i></span>
+      <div><div class="det-clear-t">Nenhum sinal de deterioração</div><div class="faint" style="font-size:13px;margin-top:3px">Os ${monit} ativos monitorados da sua carteira estão com fundamentos saudáveis. Continuaremos de olho.</div></div>
+    </div>
+    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Análise sobre as posições reais da carteira, com séries históricas ilustrativas. Não é recomendação de compra ou venda.</div>`;
+  }
+  const cards=res.map(r=>{
+    const top=r.sig.some(s=>s.sev==='alta');
+    const rows=r.sig.map(s=>`<div class="det-sig"><span class="det-sig-ic ${s.sev}"><i class="fa-solid ${s.i}"></i></span><span>${s.t}</span></div>`).join('');
+    return `<div class="card card-pad det-card${top?' det-card-alta':''}">
+      <div class="det-head" onclick="quickView('${r.tk}')">
+        ${assetLogo(r.tk,r.k,'sm')}
+        <div class="det-id"><div class="det-tk">${r.tk} ${top?'<span class="det-badge alta">risco alto</span>':'<span class="det-badge media">atenção</span>'}</div><div class="det-nm">${esc(r.nm)}</div></div>
+        <span class="score-pill" style="color:${scoreColor(r.score)}"><span class="score-dot" style="background:${scoreColor(r.score)}"></span>${r.score}</span>
+      </div>
+      <div class="det-sigs">${rows}</div>
+    </div>`;
+  }).join('');
+  return `
+  <div class="sec-title">Detector de deterioração</div>
+  <div class="sec-desc">O Lastro vigia os fundamentos dos seus ativos e te avisa quando algo começa a piorar — antes que vire prejuízo.</div>
+  <div class="mstrip" style="grid-template-columns:repeat(3,1fr)">
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Ativos monitorados</div><div class="vl">${monit}</div><div class="dl faint">na carteira</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Com alertas</div><div class="vl ${res.length?'down':''}">${res.length}</div><div class="dl faint">${totalSig} sinais</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Risco alto</div><div class="vl ${altas?'down':''}">${altas}</div><div class="dl faint">prioridade</div></div>
+  </div>
+  <div class="det-grid" style="margin-top:16px">${cards}</div>
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sinais calculados sobre as posições reais da carteira, com séries históricas ilustrativas. Educativo — não é recomendação de compra ou venda.</div>`;
 }
 
 /* Simulador */
