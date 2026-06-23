@@ -1111,6 +1111,7 @@ img, svg, canvas, video { max-width: 100%; }
 .mcell .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
 .mcell .nm { font-size: 11.5px; color: var(--ink-3); font-weight: 500; margin-bottom: 6px; }
 .mcell .spark-mini { width: 56px; height: 34px; flex: none; align-self: center; }
+.spark-mini svg, #heroSpark svg { display: block; }
 .mcell .vl { font-family: var(--mono); font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
 .mcell .dl { font-size: 11px; margin-top: 2px; font-family: var(--mono); }
 
@@ -4621,7 +4622,7 @@ function runFire(){
   if(charts.fire && charts.fire.canvas!==ctx){ charts.fire.destroy(); charts.fire=null; }
   if(charts.fire){ charts.fire.data.labels=f.labels; charts.fire.data.datasets[0].data=f.serie; charts.fire.update(); return; }
   const br=cssVar('--brand');
-  charts.fire=new Chart(ctx,{ type:'line', data:{ labels:f.labels, datasets:[{ label:'Patrimônio', data:f.serie, borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, pointRadius:0, borderWidth:2.5 }] },
+  charts.fire=new Chart(ctx,{ type:'line', data:{ labels:f.labels, datasets:[{ label:'Patrimônio', data:f.serie, borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5 }] },
     options:{ responsive:true, maintainAspectRatio:false, crosshair:true, crosshairFmt:v=>'R$'+(v/1000).toFixed(0)+'k',
       plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>brl0(c.parsed.y)}} },
       scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:8},border:{display:false}}, y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'},border:{display:false}} } } });
@@ -5496,9 +5497,9 @@ function initPatrEvol(){
   charts.patrEvol = new Chart(ctx,{
     type:'line',
     data:{ labels:d.labels, datasets:[
-      { label:'Sua carteira', data:d.cart, borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, pointRadius:0, borderWidth:2.5 },
-      { label:'CDI', data:d.cdi, borderColor:ink4, borderDash:[5,4], fill:false, tension:.35, pointRadius:0, borderWidth:1.8 },
-      { label:'IBOV', data:d.ibov, borderColor:ac, borderDash:[2,3], fill:false, tension:.35, pointRadius:0, borderWidth:1.8 }
+      { label:'Sua carteira', data:d.cart, borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5 },
+      { label:'CDI', data:d.cdi, borderColor:ink4, borderDash:[5,4], fill:false, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:1.8 },
+      { label:'IBOV', data:d.ibov, borderColor:ac, borderDash:[2,3], fill:false, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:1.8 }
     ]},
     options:{ responsive:true, maintainAspectRatio:false, crosshair:true, crosshairFmt:v=>'R$'+(v/1000).toFixed(0)+'k', interaction:{mode:'index',intersect:false},
       plugins:{ legend:{ display:true, position:'top', align:'end', labels:{ color:cssVar('--ink-2'), font:{size:11}, usePointStyle:true, pointStyleWidth:9, boxHeight:7 } },
@@ -5552,9 +5553,9 @@ function initBacktest(){
   if(charts.backtest) charts.backtest.destroy();
   charts.backtest = new Chart(ctx,{ type:'line',
     data:{ labels:d.labels, datasets:[
-      { label:'Sua carteira', data:d.cart, borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, pointRadius:0, borderWidth:2.5 },
-      { label:'CDI', data:d.cdi, borderColor:ink4, borderDash:[5,4], fill:false, tension:.35, pointRadius:0, borderWidth:1.8 },
-      { label:'IBOV', data:d.ibov, borderColor:ac, borderDash:[2,3], fill:false, tension:.35, pointRadius:0, borderWidth:1.8 }
+      { label:'Sua carteira', data:d.cart, borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5 },
+      { label:'CDI', data:d.cdi, borderColor:ink4, borderDash:[5,4], fill:false, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:1.8 },
+      { label:'IBOV', data:d.ibov, borderColor:ac, borderDash:[2,3], fill:false, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:1.8 }
     ]},
     options:{ responsive:true, maintainAspectRatio:false, crosshair:true, crosshairFmt:v=>'R$'+(v/1000).toFixed(0)+'k', interaction:{mode:'index',intersect:false},
       plugins:{ legend:{ display:true, position:'top', align:'end', labels:{ color:cssVar('--ink-2'), font:{size:11}, usePointStyle:true, pointStyleWidth:9, boxHeight:7 } },
