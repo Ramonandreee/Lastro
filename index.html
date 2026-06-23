@@ -1396,9 +1396,13 @@ input[type=range]::-moz-range-thumb {
 .logo { position:relative; display:inline-flex; align-items:center; justify-content:center; flex:none; overflow:hidden; border:none; background:#fff; }
 /* logo preenche o quadrado arredondado (cobre o fundo branco) no formato da marca oficial */
 .logo-img { width:100%; height:100%; object-fit:cover; background:#fff; }
-.logo-mono { width:100%; height:100%; align-items:center; justify-content:center; font-family:var(--sans); font-weight:700; letter-spacing:-.03em; color:#fff; background:var(--surface-3); text-transform:uppercase; }
+.logo-mono { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-family:var(--sans); font-weight:700; letter-spacing:-.03em; color:#fff; background:var(--surface-3); text-transform:uppercase; }
 .logo.sm .logo-mono, .logo.xs .logo-mono { font-size:10px; }
 .logo.md .logo-mono { font-size:12px; } .logo.lg .logo-mono { font-size:14px; }
+/* placeholder por setor: ícone dimensionado ao tamanho do logo */
+.logo-mono i { font-size:15px; line-height:1; }
+.logo.lg .logo-mono i { font-size:22px; } .logo.md .logo-mono i { font-size:18px; }
+.logo.sm .logo-mono i { font-size:14px; } .logo.xs .logo-mono i { font-size:12.5px; }
 .logo.lg { width:52px; height:52px; border-radius:14px; font-size:13px; }
 .logo.md { width:42px; height:42px; border-radius:12px; font-size:11px; }
 .logo.sm { width:34px; height:34px; border-radius:10px; font-size:9.5px; }
@@ -6188,10 +6192,57 @@ function avatarColor(key){ let h=2166136261; const s=String(key||'·'); for(let 
 function avatarInitials(tk){ const m=String(tk||'').match(/^[A-Za-z]+/); return (m?m[0]:String(tk)).slice(0,4).toUpperCase(); }
 const _segCache={};
 function segOf(tk){ if(tk in _segCache) return _segCache[tk]; const lk=assetLookup(tk); return _segCache[tk]=(lk?(lk.a.seg||lk.a.sub||''):''); }
+/* ícone do setor/segmento — usado no placeholder de ativos sem logo */
+function segIcon(tk,k){
+  const seg=(segOf(tk)||'').toLowerCase(); const t=re=>re.test(seg);
+  if(k==='cripto') return 'fa-coins';
+  if(k==='fiis'){
+    if(t(/papel|cr[ií]dito|receb[íi]/)) return 'fa-file-invoice-dollar';
+    if(t(/log[íi]st/)) return 'fa-warehouse';
+    if(t(/shopping/)) return 'fa-bag-shopping';
+    if(t(/laje|corporat|escrit/)) return 'fa-building';
+    if(t(/h[íi]brid/)) return 'fa-shapes';
+    if(t(/fof|fundos/)) return 'fa-layer-group';
+    if(t(/sa[úu]de|hospital/)) return 'fa-hospital';
+    if(t(/agro|fiagro/)) return 'fa-wheat-awn';
+    if(t(/urbana/)) return 'fa-city';
+    if(t(/renda fixa/)) return 'fa-piggy-bank';
+    if(t(/varejo/)) return 'fa-store';
+    return 'fa-building';
+  }
+  if(t(/banc/)) return 'fa-building-columns';
+  if(t(/petr[óo]leo|g[áa]s/)) return 'fa-oil-well';
+  if(t(/miner/)) return 'fa-gem';
+  if(t(/sider/)) return 'fa-industry';
+  if(t(/energia|el[ée]tric/)) return 'fa-bolt';
+  if(t(/saneament/)) return 'fa-droplet';
+  if(t(/varejo farma|farma/)) return 'fa-prescription-bottle-medical';
+  if(t(/sa[úu]de/)) return 'fa-heart-pulse';
+  if(t(/varejo|consumo/)) return 'fa-cart-shopping';
+  if(t(/semicond|tecnolog/)) return 'fa-microchip';
+  if(t(/telecom/)) return 'fa-tower-cell';
+  if(t(/papel|celulose/)) return 'fa-tree';
+  if(t(/aliment/)) return 'fa-utensils';
+  if(t(/bebida/)) return 'fa-wine-bottle';
+  if(t(/autom|carro/)) return 'fa-car';
+  if(t(/m[íi]dia/)) return 'fa-clapperboard';
+  if(t(/seguro|previd/)) return 'fa-shield-halved';
+  if(t(/holding/)) return 'fa-sitemap';
+  if(t(/urânio|uranio/)) return 'fa-radiation';
+  if(t(/commodit/)) return 'fa-cubes';
+  if(t(/financ/)) return 'fa-sack-dollar';
+  if(t(/dividend/)) return 'fa-hand-holding-dollar';
+  if(t(/bens industri|industri/)) return 'fa-industry';
+  if(t(/renda fixa/)) return 'fa-piggy-bank';
+  if(t(/nasdaq|s&p|total market|small caps|crescimento|renda vari[áa]vel/)) return 'fa-chart-pie';
+  if(t(/exterior/)||k==='stocks'||k==='bdrs') return 'fa-globe';
+  if(k==='etfs') return 'fa-chart-pie';
+  return 'fa-chart-line';
+}
 function assetLogo(tk,k,cls){
   const src=logoSrc(tk,k), fb=logoFallback(tk,k);
-  const col=avatarColor(segOf(tk)||k||tk), ini=avatarInitials(tk);
-  const mono=`<span class="logo-mono" style="background:${col};color:#fff${src?';display:none':''}">${ini}</span>`;
+  const col=avatarColor(segOf(tk)||k||tk);
+  const mono=`<span class="logo-mono" style="background:${col};color:#fff${src?';display:none':''}"><i class="fa-solid ${segIcon(tk,k)}"></i></span>`;
   const img=src?`<img class="logo-img" src="${src}" alt="${tk}" loading="lazy" onerror="logoErr(this,'${fb}')">`:'';
   return `<span class="logo ${cls||''}">${img}${mono}</span>`;
 }
