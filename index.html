@@ -776,6 +776,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="barganhas" onclick="nav('barganhas',this)"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Radar de Barganhas</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
     </nav>
     </div>
 
@@ -1998,6 +1999,23 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 .st-aff { display:flex; justify-content:space-between; align-items:center; font-size:12px; }
 .st-aff-tk { color:var(--ink-2); font-weight:600; }
 .st-aff.faint { font-size:11.5px; line-height:1.4; }
+/* Radar de barganhas */
+.bg-list { padding:6px 8px; }
+.bg-row { display:flex; align-items:center; gap:12px; padding:11px 8px; border-radius:10px; cursor:pointer; transition:background .15s var(--ease); border-bottom:1px solid var(--line); }
+.bg-row:last-child { border-bottom:none; }
+.bg-row:hover { background:var(--surface-2,var(--brand-l)); }
+.bg-rank { flex:none; width:22px; text-align:center; font-size:13px; font-weight:700; color:var(--ink-3); }
+.bg-id { flex:1; min-width:0; }
+.bg-tk { font-size:13.5px; font-weight:600; color:var(--ink-1); }
+.bg-nm { font-size:11px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bg-score { flex:none; }
+.bg-pvp { flex:none; width:96px; text-align:right; font-size:12px; color:var(--ink-2); }
+.bg-pvp .faint { font-size:10.5px; }
+.bg-desc { flex:none; width:140px; display:flex; align-items:center; gap:9px; }
+.bg-desc-track { flex:1; height:7px; background:var(--line); border-radius:5px; overflow:hidden; }
+.bg-desc-track i { display:block; height:100%; border-radius:5px; background:linear-gradient(90deg,var(--brand),#16A34A); }
+.bg-desc-v { flex:none; width:42px; text-align:right; font-size:12.5px; font-weight:700; color:var(--brand); }
+@media (max-width:640px){ .bg-nm { display:none; } .bg-pvp { width:74px; } .bg-desc { width:96px; } }
 .rec-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
 .rec-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
 .rec-nm { font-size:18px; font-weight:700; letter-spacing:-.01em; }
@@ -2982,6 +3000,7 @@ const PAGES = {
   backtest:     { t:'Backtest da Carteira',  s:'Simulação histórica da sua carteira vs CDI e IBOV' },
   raiox:        { t:'Raio-X da Carteira',     s:'Diversificação, concentração e Nota Lastro da sua carteira' },
   stress:       { t:'Stress Test',            s:'Impacto estimado de cenários de crise na sua carteira' },
+  barganhas:    { t:'Radar de Barganhas',     s:'Ativos de qualidade abaixo da média histórica de valuation' },
   planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
   indicar:      { t:'Indique e Ganhe',       s:'Ganhe 20% da assinatura de cada amigo que você indicar, via PIX' },
 };
@@ -3023,6 +3042,7 @@ const PREMIUM_FEATURES = {
   backtest:  { name:'Backtest da Carteira', icon:'fa-chart-line', pro:true, desc:'Simule como a sua carteira teria se comportado no passado: retorno, volatilidade e maior queda, comparados ao CDI e ao IBOV.', why:'Entenda o risco e o retorno histórico da sua estratégia antes de tomar decisões.' },
   raiox:     { name:'Raio-X da Carteira', icon:'fa-magnifying-glass-chart', pro:true, desc:'O retrato completo da sua carteira: diversificação por setor, ativo e classe, com a Nota de Diversificação Lastro e alertas de concentração.', why:'Enxergue de relance onde sua carteira está concentrada e o que melhorar.' },
   stress:    { name:'Stress Test da Carteira', icon:'fa-heart-pulse', pro:true, desc:'Simule cenários de crise — queda de bancos, do petróleo, alta de juros, queda da bolsa, dólar em alta — e veja o impacto estimado em reais na sua carteira.', why:'Saiba quanto a sua carteira pode perder antes de a crise acontecer.' },
+  barganhas: { name:'Radar de Barganhas', icon:'fa-magnifying-glass-dollar', pro:true, desc:'Ranking de ativos de qualidade negociando abaixo da própria média histórica de valuation — os maiores descontos do mercado.', why:'Encontre boas empresas em momentos de preço atrativo, sem garimpar manualmente.' },
   carteiras: { name:'Carteiras Recomendadas Exclusivas', icon:'fa-layer-group', pro:true, desc:'Estratégias premium montadas pela inteligência Lastro, disponíveis apenas para assinantes Investidor Pro.', why:'Acesse alocações mais sofisticadas, com composição e estratégia detalhadas.' },
 };
 const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço e IA ilimitada','Watchlist ilimitada e exportação CSV'];
@@ -3059,7 +3079,7 @@ function proGate(key){ if(isPro()) return true; openPremiumModal(key); return fa
 function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias Premium grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
 function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
 function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
-const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox','stress'];
+const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox','stress','barganhas'];
 function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
@@ -3554,6 +3574,7 @@ function render(v, soft){
   else if(v==='backtest')    c.innerHTML = viewBacktest();
   else if(v==='raiox')       c.innerHTML = viewRaioX();
   else if(v==='stress')      c.innerHTML = viewStress();
+  else if(v==='barganhas')   c.innerHTML = viewBargain();
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
 }
@@ -5700,6 +5721,42 @@ function viewStress(){
   </div>
   <div class="stress-grid" style="margin-top:16px">${cards}</div>
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sensibilidades ilustrativas por setor/classe sobre as posições reais da carteira. Cenários hipotéticos — não são recomendação nem previsão de mercado.</div>`;
+}
+
+/* ── Radar de Barganhas (Investidor Pro) ── */
+let bargainFilter='Todos';
+function bargainRadar(){
+  const items=[];
+  [['acoes',ACOES],['fiis',FIIS]].forEach(([k,arr])=> arr.forEach(a=>{
+    const pvp=a.pvp; if(typeof a.score!=='number'||!pvp||pvp<=0) return;
+    const mean=histMean(indHistory('pvp',a.tk,pvp,10)); if(!mean) return;
+    const desc=(mean-pvp)/mean*100;
+    items.push({ tk:a.tk, k, nm:a.nm, seg:a.seg||'', pvp, mean, desc, score:a.score, dy:a.dy||0 });
+  }));
+  return items.filter(x=>x.desc>3 && x.score>=58).sort((a,b)=> (b.desc+b.score*0.18)-(a.desc+a.score*0.18));
+}
+function setBargainFilter(f){ bargainFilter=f; render('barganhas'); }
+function viewBargain(){
+  if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('barganhas')}</div>`;
+  let list=bargainRadar();
+  if(bargainFilter==='Ações') list=list.filter(x=>x.k==='acoes');
+  else if(bargainFilter==='FIIs') list=list.filter(x=>x.k==='fiis');
+  list=list.slice(0,20);
+  const chips=['Todos','Ações','FIIs'].map(f=>`<button class="rec-chip ${f===bargainFilter?'on':''}" onclick="setBargainFilter('${f}')">${f}</button>`).join('');
+  const rows=list.map((x,i)=>`<div class="bg-row" onclick="quickView('${x.tk}')">
+    <span class="bg-rank">${i+1}</span>
+    ${assetLogo(x.tk,x.k,'sm')}
+    <div class="bg-id"><div class="bg-tk">${x.tk}</div><div class="bg-nm">${esc(x.nm)} · ${esc(x.seg)}</div></div>
+    <span class="score-pill bg-score" style="color:${scoreColor(x.score)}"><span class="score-dot" style="background:${scoreColor(x.score)}"></span>${x.score}</span>
+    <div class="bg-pvp"><div>P/VP <b class="mono">${x.pvp.toFixed(2)}</b></div><div class="faint">média ${x.mean.toFixed(2)}</div></div>
+    <div class="bg-desc"><div class="bg-desc-track"><i style="width:${Math.min(100,x.desc*2.2).toFixed(0)}%"></i></div><span class="bg-desc-v mono">−${pc(x.desc,0)}%</span></div>
+  </div>`).join('') || '<div class="search-empty">Nenhuma barganha nesta categoria no momento.</div>';
+  return `
+  <div class="sec-title">Radar de barganhas</div>
+  <div class="sec-desc">Ativos de qualidade (Score Lastro alto) negociando <strong>abaixo da própria média histórica de P/VP</strong> — ordenados pelo maior desconto combinado à qualidade. Referência de valuation, não recomendação de compra.</div>
+  <div class="rec-filters">${chips}</div>
+  <div class="card card-pad bg-list">${rows}</div>
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Média histórica reconstruída de forma ilustrativa (10 anos). Desconto não garante retorno — verifique os fundamentos antes de decidir.</div>`;
 }
 
 /* Simulador */
