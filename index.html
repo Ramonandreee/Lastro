@@ -56,12 +56,12 @@
   --up-l:     #E6F3EE;
   --down:     #D14343;
   --down-l:   #FBEBEB;
-  --accent:   #2563EB;
-  --accent-l: #E8EEFC;
+  --accent:   #3B6FD4;
+  --accent-l: #E9EEFB;
   --warn:     #B7791F;
   --warn-l:   #FBF1DC;
-  --neu:      #2563EB;
-  --neu-l:    #E8EEFC;
+  --neu:      #3B6FD4;
+  --neu-l:    #E9EEFB;
   --gold:     #A87C2A;
   --gold-l:   #F6EFDF;
 
@@ -5357,7 +5357,7 @@ function renderHomeChart(soft){
           callbacks:{ title:items=>pl[items[0].dataIndex], label:c=>{ const d=ohlc[c.dataIndex]; const ch=d.o?((d.c-d.o)/d.o*100):0; return ['Abert. '+kfmt(d.o), 'Máx. '+kfmt(d.h), 'Mín. '+kfmt(d.l), 'Fech. '+kfmt(d.c), (ch>=0?'+':'')+ch.toFixed(2)+'%']; } } } },
         scales:baseScales } });
   } else {
-    const br=cssVar('--accent')||'#2563EB';
+    const br=cssVar('--accent')||'#3B6FD4';
     const grd=ctx.getContext('2d').createLinearGradient(0,0,0,240); grd.addColorStop(0,br+'2e'); grd.addColorStop(1,br+'00');
     charts.ibov=new Chart(ctx,{ type:'line',
       data:{ labels:pl, datasets:[{ data:pd, borderColor:br, backgroundColor:grd, fill:true, tension:.42, cubicInterpolationMode:'monotone', pointRadius:0, pointHoverRadius:5, pointHoverBackgroundColor:'#fff', pointHoverBorderColor:br, pointHoverBorderWidth:2, borderWidth:2.6 }] },
