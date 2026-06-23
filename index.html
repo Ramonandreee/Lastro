@@ -695,6 +695,16 @@ img, svg, canvas, video { max-width: 100%; }
   #dataTbl .td-asset .nm { min-width: 0; overflow: hidden; }
   #dataTbl .td-asset .tk { font-size: 13.5px; }
   #dataTbl .td-asset .ds { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* ranking do Score (.tbl-rank): no mobile mostra Ativo · Score · Classificação, SEM rolar */
+  table.tbl-rank { width: 100% !important; min-width: 0 !important; table-layout: fixed; }
+  table.tbl-rank th, table.tbl-rank td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 9px; padding-right: 9px; }
+  table.tbl-rank th:nth-child(1), table.tbl-rank td:nth-child(1),
+  table.tbl-rank th:nth-child(3), table.tbl-rank td:nth-child(3),
+  table.tbl-rank th:nth-child(4), table.tbl-rank td:nth-child(4) { display: none; }
+  table.tbl-rank th:first-child, table.tbl-rank td:first-child { position: static; }
+  table.tbl-rank th:nth-child(2), table.tbl-rank td:nth-child(2) { width: 50%; }
+  table.tbl-rank th:nth-child(5), table.tbl-rank td:nth-child(5) { width: 22%; }
+  table.tbl-rank th:nth-child(6), table.tbl-rank td:nth-child(6) { width: 28%; overflow: visible; text-overflow: clip; }
 }
 @media (max-width: 460px) {
   .content { padding: 15px 15px 20px; }
@@ -4744,7 +4754,7 @@ function viewScore(){
 
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-ranking-star"></i></span> Ranking geral de qualidade</div><span class="card-sub">${pro?ranked.length+' ativos avaliados':'Top 8 · '+ranked.length+' no Premium'}</span></div>
-    <div class="tbl-wrap"><table class="tbl">
+    <div class="tbl-wrap"><table class="tbl tbl-rank">
       <thead><tr><th>#</th><th>Ativo</th><th>Tipo</th><th>Distribuição</th><th>Score</th><th>Classificação</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
