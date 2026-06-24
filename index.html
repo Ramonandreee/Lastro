@@ -855,7 +855,7 @@ img, svg, canvas, video { max-width: 100%; }
       </div>
       <div class="fld-row">
         <label class="fld"><span>Quantidade</span><input id="posQt" type="number" min="0" step="any" inputmode="decimal" placeholder="0" oninput="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
-        <label class="fld"><span>Valor (R$) <small style="color:var(--ink-4);font-weight:400">por unidade</small></span><input id="posPm" type="text" inputmode="decimal" placeholder="0,00" oninput="maskBRL(this)" onkeydown="if(event.key==='Enter')savePos()"></label>
+        <label class="fld"><span><span id="posCurLbl">Valor (R$)</span> <small style="color:var(--ink-4);font-weight:400">por unidade</small></span><input id="posPm" type="text" inputmode="decimal" placeholder="0,00" oninput="maskBRL(this)" onkeydown="if(event.key==='Enter')savePos()"></label>
       </div>
       <label class="fld"><span>Data do aporte <small style="color:var(--ink-4);font-weight:400">· contabiliza os proventos</small></span><input id="posDt" type="date" required onchange="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
       <div id="posPreview" class="pos-preview"></div>
@@ -2726,10 +2726,16 @@ function portfolioByTicker(){
     const g=map.get(c.tk); g.lots.push(c); g.cotas+=c.cotas; g.custo+=c.cotas*c.pm; });
   const out=[];
   map.forEach(g=>{ const a=g.f.a,k=g.f.k;
-    g.pm=g.cotas?g.custo/g.cotas:0; g.val=g.cotas*(a.px||0); g.lucro=g.val-g.custo; g.lp=g.custo?g.lucro/g.custo*100:0;
-    g.pays=groupPayments(g); g.prov=g.pays.reduce((s,p)=>s+p.valor,0);
+    // ativos dolarizados: pm/cotação ficam em US$ (nativo); patrimônio é convertido p/ BRL
+    g.cur = ((ASSET_CLASS[k]&&ASSET_CLASS[k].cur==='usd')||a.usd) ? 'usd':'brl';
+    const rate = g.cur==='usd' ? usdBrlRate() : 1;
+    g.pm = g.cotas ? g.custo/g.cotas : 0;          // preço médio nativo (US$ p/ stocks)
+    g.custoNat = g.custo; g.valNat = g.cotas*(a.px||0);
+    g.custo = g.custoNat*rate; g.val = g.valNat*rate;   // BRL p/ somar no patrimônio
+    g.lucro=g.val-g.custo; g.lp=g.custo?g.lucro/g.custo*100:0;
+    g.pays=groupPayments(g); g.prov=g.pays.reduce((s,p)=>s+p.valor,0)*rate;
     g.lucroProv=g.lucro+g.prov; g.lpProv=g.custo?g.lucroProv/g.custo*100:0;
-    g.mensal=(k==='fiis'&&typeof a.div==='number')?g.cotas*a.div:(typeof a.dy==='number'?g.val*(a.dy/100)/12:0);
+    g.mensal=(k==='fiis'&&typeof a.div==='number')?g.cotas*a.div*rate:(typeof a.dy==='number'?g.val*(a.dy/100)/12:0);
     g.lots.sort((x,y)=> (y.date||'').localeCompare(x.date||''));
     out.push(g); });
   return out.sort((x,y)=>y.val-x.val);
@@ -2786,13 +2792,14 @@ function hlSug(){ document.querySelectorAll('#posSug .sug-row').forEach((r,i)=>r
 function posPreview(){
   const el=$('#posPreview'); if(!el) return;
   const tk=($('#posTk').value||'').toUpperCase().trim(); const f=assetLookup(tk);
+  const cur=curOf(tk); const lblc=$('#posCurLbl'); if(lblc) lblc.textContent = cur==='usd'?'Valor (US$)':'Valor (R$)';
   if(!f){ el.innerHTML=''; el.classList.remove('on'); return; }
   const a=f.a,k=f.k; const pm=parseBRL($('#posPm').value), qt=+$('#posQt').value;
   const rows=[];
   if(typeof a.score==='number') rows.push(`<div class="pp-row"><span>Score Lastro</span><b style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)};margin-right:6px"></span>${a.score}/100 · ${scoreTier(a.score)}</b></div>`);
   rows.push(`<div class="pp-row"><span>Cotação atual</span><b class="mono">${fmtPx(a,k)}</b></div>`);
   if(pm>0){ const diff=(pm-(a.px||0))/(a.px||1)*100; rows.push(`<div class="pp-row"><span>Seu preço vs. cotação</span><b class="mono ${diff<=0?'up':'down'}">${diff>0?'+':''}${pc(diff,1)}% ${diff<=0?'(abaixo)':'(acima)'}</b></div>`); }
-  if(pm>0&&qt>0) rows.push(`<div class="pp-row"><span>Custo do aporte</span><b class="mono">${brl(pm*qt)}</b></div>`);
+  if(pm>0&&qt>0) rows.push(`<div class="pp-row"><span>Custo do aporte</span><b class="mono">${fmtCur(pm*qt,cur)}${cur==='usd'?` <span class="faint">≈ ${brl(pm*qt*usdBrlRate())}</span>`:''}</b></div>`);
   el.innerHTML=`<div class="pp-h">${assetLogo(tk,k,'sm')}<div class="pp-id"><div class="pp-tk">${tk}</div><div class="pp-nm">${esc(a.nm||'')}</div></div></div>${rows.join('')}`;
   el.classList.add('on');
 }
@@ -4141,13 +4148,14 @@ function tblFilter(kind, key, val){
 /* cartão de posição (estilo app financeiro) */
 function posCard(g){
   const a=g.f.a, k=g.f.k; const vv=(k==='cripto'?a.v24:a.var)??0;
-  const pmProv=g.cotas?(g.custo-g.prov)/g.cotas:0;
+  const _rate=g.cur==='usd'?usdBrlRate():1;
+  const pmProv=g.cotas?(((g.custoNat!=null?g.custoNat:g.custo)-g.prov/_rate)/g.cotas):0;
   const lotsHtml = g.lots.map(l=>{
     const lcusto=l.cotas*l.pm, lval=l.cotas*(a.px||0), llp=lcusto?(lval-lcusto)/lcusto*100:0;
     return `<div class="lot-line">
       <span class="lot-dt"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(l.date)}</span>
       <span class="lot-q">${l.cotas} cota${l.cotas!==1?'s':''}</span>
-      <span class="mono priv-blur">${brl(l.pm)}</span>
+      <span class="mono priv-blur">${fmtCur(l.pm,g.cur)}</span>
       <span class="mono ${llp>=0?'up':'down'}">${llp>=0?'+':''}${pc(llp,1)}%</span>
       <span class="lot-acts"><button class="row-act" onclick="event.stopPropagation();openPosModal('${g.tk}','${l.id}')"><i class="fa-solid fa-pen"></i></button><button class="row-act danger" onclick="event.stopPropagation();removeLot('${l.id}')"><i class="fa-solid fa-trash-can"></i></button></span>
     </div>`;
@@ -4162,7 +4170,7 @@ function posCard(g){
     <div class="pc-rows">
       ${row('Categoria', ASSET_CLASS[k].label)}
       ${row('Quantidade', `<span class="mono">${g.cotas}</span>`)}
-      ${row('Preço médio', `<span class="mono priv-blur">${brl(g.pm)}</span>`)}
+      ${row('Preço médio', `<span class="mono priv-blur">${fmtCur(g.pm,g.cur)}</span>`)}
       ${row('Proventos da posição', `<span class="mono up priv-blur">${brl(g.prov)}</span>`)}
       ${row('Resultado com proventos', `<span class="mono ${g.lucroProv>=0?'up':'down'} priv-blur">${g.lucroProv>=0?'+':''}${brl(g.lucroProv)} · ${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</span>`)}
       ${row('Saldo bruto', `<span class="mono priv-blur">${brl(g.val)}</span>`)}
@@ -4171,7 +4179,7 @@ function posCard(g){
     <div class="pc-extra" id="more-${g.tk}" hidden>
       <div class="pc-extra-t">Dados complementares</div>
       ${row('Valor investido', `<span class="mono priv-blur">${brl(g.custo)}</span>`)}
-      ${row('Preço médio com proventos', `<span class="mono priv-blur">${brl(pmProv)}</span>`)}
+      ${row('Preço médio com proventos', `<span class="mono priv-blur">${fmtCur(pmProv,g.cur)}</span>`)}
       ${row('Resultado sem proventos', `<span class="mono ${g.lucro>=0?'up':'down'} priv-blur">${g.lucro>=0?'+':''}${brl(g.lucro)} · ${g.lucro>=0?'+':''}${pc(g.lp,1)}%</span>`)}
       <div class="pc-extra-t" style="margin-top:14px">Histórico de aportes</div>
       ${lotsHtml}
@@ -6239,6 +6247,10 @@ function fmtPx(a,k){
   if(ASSET_CLASS[k].cur==='usd' || a.usd) return usd(a.px);
   return (k==='cripto' && a.px>=100) ? brl(Math.round(a.px)) : brl(a.px);
 }
+/* moeda do ativo: stocks são dolarizados (US$); conversão p/ BRL na agregação da carteira */
+function usdBrlRate(){ const d=(typeof MARKET!=='undefined')&&MARKET.find(m=>m.nm==='Dólar'); const r=d?parseBRL(d.vl):0; return r>0?r:5.18; }
+function curOf(tk){ const lk=assetLookup(tk); return lk && ((ASSET_CLASS[lk.k]&&ASSET_CLASS[lk.k].cur==='usd')||lk.a.usd) ? 'usd':'brl'; }
+function fmtCur(v,cur){ return cur==='usd'? usd(v) : brl(v); }
 /* logo real do ativo (CDN brapi p/ B3, CoinCap p/ cripto, Clearbit p/ stocks US) */
 const STOCK_DOMAIN = { NVDA:'nvidia.com', AAPL:'apple.com', MSFT:'microsoft.com', GOOGL:'google.com', AMZN:'amazon.com', META:'meta.com', TSM:'tsmc.com', AVGO:'broadcom.com', TSLA:'tesla.com', JPM:'jpmorganchase.com', NFLX:'netflix.com', AMD:'amd.com', V:'visa.com', MA:'mastercard.com', KO:'coca-cola.com', DIS:'thewaltdisneycompany.com' };
 function logoSrc(tk,k){
