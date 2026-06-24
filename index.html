@@ -2333,13 +2333,16 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 }
 /* revelação escalonada dos cards em qualquer grade */
 @keyframes cardRise { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
-.content-anim .grid > .card, .content-anim .dt-grid > .card, .content-anim .mstrip > .mcell { animation: cardRise .5s var(--ease-out) both; }
-.content-anim .grid > .card:nth-child(1),.content-anim .dt-grid > .card:nth-child(1),.content-anim .mstrip > .mcell:nth-child(1){animation-delay:.03s}
-.content-anim .grid > .card:nth-child(2),.content-anim .dt-grid > .card:nth-child(2),.content-anim .mstrip > .mcell:nth-child(2){animation-delay:.07s}
-.content-anim .grid > .card:nth-child(3),.content-anim .dt-grid > .card:nth-child(3),.content-anim .mstrip > .mcell:nth-child(3){animation-delay:.11s}
-.content-anim .grid > .card:nth-child(4),.content-anim .dt-grid > .card:nth-child(4),.content-anim .mstrip > .mcell:nth-child(4){animation-delay:.15s}
-.content-anim .grid > .card:nth-child(5),.content-anim .mstrip > .mcell:nth-child(5){animation-delay:.19s}
-.content-anim .grid > .card:nth-child(n+6),.content-anim .mstrip > .mcell:nth-child(n+6){animation-delay:.23s}
+.content-anim .grid > .card, .content-anim .dt-grid > .card, .content-anim .mstrip > .mcell, .content-anim .mstrip > .mkt-cell { animation: cardRise .5s var(--ease-out) both; }
+.content-anim .grid > .card:nth-child(1),.content-anim .dt-grid > .card:nth-child(1),.content-anim .mstrip > .mcell:nth-child(1),.content-anim .mstrip > .mkt-cell:nth-child(1){animation-delay:.03s}
+.content-anim .grid > .card:nth-child(2),.content-anim .dt-grid > .card:nth-child(2),.content-anim .mstrip > .mcell:nth-child(2),.content-anim .mstrip > .mkt-cell:nth-child(2){animation-delay:.07s}
+.content-anim .grid > .card:nth-child(3),.content-anim .dt-grid > .card:nth-child(3),.content-anim .mstrip > .mcell:nth-child(3),.content-anim .mstrip > .mkt-cell:nth-child(3){animation-delay:.11s}
+.content-anim .grid > .card:nth-child(4),.content-anim .dt-grid > .card:nth-child(4),.content-anim .mstrip > .mcell:nth-child(4),.content-anim .mstrip > .mkt-cell:nth-child(4){animation-delay:.15s}
+.content-anim .grid > .card:nth-child(5),.content-anim .mstrip > .mcell:nth-child(5),.content-anim .mstrip > .mkt-cell:nth-child(5){animation-delay:.19s}
+.content-anim .grid > .card:nth-child(n+6),.content-anim .mstrip > .mcell:nth-child(n+6),.content-anim .mstrip > .mkt-cell:nth-child(n+6){animation-delay:.23s}
+.content-anim .hero > * { animation: cardRise .5s var(--ease-out) both; }
+.content-anim .hero > *:nth-child(1){ animation-delay:.02s }
+.content-anim .hero > *:nth-child(2){ animation-delay:.06s }
 /* cabeçalho de card com ícone — leve animação do ícone no hover do card */
 .card-h .ico { transition: transform .22s var(--ease-out); }
 .grid > .card:hover .card-h .ico, .dt-grid > .card:hover .card-h .ico { transform: scale(1.08); }
@@ -2349,7 +2352,7 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 }
 .mv-row, .sr, .rank-row { transition: background .14s var(--ease), transform .16s var(--ease-out); }
 @media (prefers-reduced-motion:reduce){
-  .content-anim .grid > .card, .content-anim .dt-grid > .card, .content-anim .mstrip > .mcell { animation:none; }
+  .content-anim .grid > .card, .content-anim .dt-grid > .card, .content-anim .mstrip > .mcell, .content-anim .mstrip > .mkt-cell, .content-anim .hero > * { animation:none; }
   .grid > .card:hover, .dt-grid > .card:hover, .about-grid > .card:hover, .mv-row:hover, .sr:hover, .rank-row:hover { transform:none; }
 }
 
