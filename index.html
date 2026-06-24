@@ -998,8 +998,8 @@ img, svg, canvas, video { max-width: 100%; }
 .hero-mkt-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .hero-mkt.clickable { cursor:pointer; }
 /* crossfade lento e contemplativo da troca de índice no hero */
-.hero-mkt .hero-mkt-head, .hero-mkt .hero-value, .hero-mkt .hero-delta, .hero-mkt .hero-spark { transition: opacity .6s var(--ease); }
-.hero-mkt.hero-swap .hero-mkt-head, .hero-mkt.hero-swap .hero-value, .hero-mkt.hero-swap .hero-delta, .hero-mkt.hero-swap .hero-spark { opacity:0; }
+.hero-mkt .hero-mkt-head, .hero-mkt .hero-value, .hero-mkt .hero-delta, .hero-mkt .hero-chart { transition: opacity .6s var(--ease); }
+.hero-mkt.hero-swap .hero-mkt-head, .hero-mkt.hero-swap .hero-value, .hero-mkt.hero-swap .hero-delta, .hero-mkt.hero-swap .hero-chart { opacity:0; }
 .hero-eyebrow {
   font-size: 11.5px; font-weight: 600; letter-spacing: .08em;
   text-transform: uppercase; color: var(--ink-3);
@@ -1038,7 +1038,7 @@ img, svg, canvas, video { max-width: 100%; }
 .hero-stat .lbl { font-size: 11.5px; color: var(--ink-3); margin-bottom: 5px; font-weight: 500; }
 .hero-stat .val { font-family: var(--mono); font-size: 19px; font-weight: 500; letter-spacing: -.01em; }
 .hero-stat .sub { font-size: 11px; margin-top: 2px; }
-.hero-spark { position: relative; height: 56px; margin-top: 20px; }
+.hero-chart { position: relative; height: 88px; margin-top: 18px; margin-left: -2px; margin-right: -2px; }
 
 /* AI insight card */
 .insight {
@@ -1113,7 +1113,7 @@ img, svg, canvas, video { max-width: 100%; }
 .mcell .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
 .mcell .nm { font-size: 11.5px; color: var(--ink-3); font-weight: 500; margin-bottom: 6px; }
 .mcell .spark-mini { width: 56px; height: 34px; flex: none; align-self: center; }
-.spark-mini svg, #heroSpark svg { display: block; }
+.spark-mini svg, #heroChartWrap svg { display: block; }
 .mcell .vl { font-family: var(--mono); font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
 .mcell .dl { font-size: 11px; margin-top: 2px; font-family: var(--mono); }
 
@@ -3719,12 +3719,36 @@ function renderHeroIdx(soft){
     lbl.textContent=x.nm;
     const v=$('#heroIdxVal'); if(v) v.textContent=x.vl;
     const chip=$('#heroIdxChip'); if(chip){ chip.className='chip '+(x.up?'chip-up':'chip-down'); chip.innerHTML=`<i class="fa-solid fa-arrow-${x.up?'up':'down'}" style="font-size:9px"></i> ${x.dl}`; }
-    const hs=$('#heroSpark'); if(hs) hs.innerHTML=spark(x.spark,420,56,x.up?'var(--up)':'var(--down)',true).replace('width="420"','width="100%"').replace('viewBox="0 0 420 56"','viewBox="0 0 420 56" preserveAspectRatio="none"');
+    updateHeroChart();
   };
   const main=document.querySelector('.hero-mkt');
   if(soft && main){ main.classList.add('hero-swap'); setTimeout(()=>{ apply(); main.classList.remove('hero-swap'); }, 650); }
   else apply();
 }
+/* gráfico de área premium do herói (gradiente, curva suave, baseline da abertura, crosshair) */
+function heroChartData(){ const list=heroIndices(); return list[heroIdx%list.length]; }
+function buildHeroChart(ctx,x){
+  const data = (x.spark&&x.spark.length>1)?x.spark.slice():[100,101]; const up=x.up, base0=data[0];
+  const col = up?cssVar('--up'):cssVar('--down');
+  const g=ctx.getContext('2d'); const grd=g.createLinearGradient(0,0,0,90); grd.addColorStop(0,col+'33'); grd.addColorStop(1,col+'00');
+  if(charts.hero){ try{charts.hero.destroy();}catch(e){} }
+  charts.hero=new Chart(ctx,{ type:'line',
+    data:{ labels:data.map((_,i)=>i), datasets:[
+      { data, borderColor:col, backgroundColor:grd, fill:true, borderWidth:2.4, tension:.4, cubicInterpolationMode:'monotone', pointRadius:0, pointHoverRadius:4, pointHoverBackgroundColor:cssVar('--surface'), pointHoverBorderColor:col, pointHoverBorderWidth:2, order:1 },
+      { data:data.map(()=>base0), borderColor:cssVar('--ink-4'), borderWidth:1, borderDash:[4,4], fill:false, pointRadius:0, pointHoverRadius:0, order:2 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, animation:{duration:550}, interaction:{mode:'index',intersect:false}, crosshair:true,
+      plugins:{ legend:{display:false}, tooltip:{ enabled:true, displayColors:false, padding:8, caretSize:5, filter:i=>i.datasetIndex===0,
+        callbacks:{ title:()=>'', label:c=>{ const pct=base0?(c.parsed.y/base0-1)*100:0; return (pct>=0?'+':'')+pct.toFixed(2)+'% no dia'; } } } },
+      scales:{ x:{display:false}, y:{display:false, grace:'12%'} } }
+  });
+}
+function initHeroChart(){
+  const ctx=$('#heroChart'), wrap=$('#heroChartWrap'); if(!wrap) return; const x=heroChartData();
+  if(!HAS_CHART || !ctx){ wrap.innerHTML = spark(x.spark,420,80,x.up?'var(--up)':'var(--down)',true).replace('width="420"','width="100%"').replace('viewBox="0 0 420 80"','viewBox="0 0 420 80" preserveAspectRatio="none"'); return; }
+  buildHeroChart(ctx,x);
+}
+function updateHeroChart(){ const ctx=$('#heroChart'); if(!HAS_CHART || !ctx){ initHeroChart(); return; } buildHeroChart(ctx,heroChartData()); }
 function startHeroTimer(){ stopHeroTimer(); _heroTimer=setInterval(()=>{ if(currentView!=='painel'){ stopHeroTimer(); return; } heroIdx++; renderHeroIdx(true); }, 15000); }
 function stopHeroTimer(){ if(_heroTimer){ clearInterval(_heroTimer); _heroTimer=null; } }
 function cycleHero(){ heroIdx++; renderHeroIdx(true); startHeroTimer(); }
@@ -3795,7 +3819,7 @@ function viewPainel(){
         <span class="chip ${ib.up?'chip-up':'chip-down'}" id="heroIdxChip"><i class="fa-solid fa-arrow-${ib.up?'up':'down'}" style="font-size:9px"></i> ${ib.dl}</span>
         <span class="faint" style="font-size:12.5px">no pregão de hoje</span>
       </div>
-      <div class="hero-spark" id="heroSpark"></div>
+      <div class="hero-chart" id="heroChartWrap"><canvas id="heroChart" role="img" aria-label="Variação do índice no dia"></canvas></div>
     </div>
 
     <div class="insight">
