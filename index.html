@@ -5777,7 +5777,12 @@ function backtestMetrics(d){
   const mean=rs.reduce((a,b)=>a+b,0)/(rs.length||1);
   const vol=Math.sqrt(rs.reduce((a,b)=>a+(b-mean)*(b-mean),0)/(rs.length||1))*Math.sqrt(12)*100;
   let peak=cart[0]||0, mdd=0; cart.forEach(v=>{ if(v>peak) peak=v; if(peak>0){ const dd=(v-peak)/peak*100; if(dd<mdd) mdd=dd; } });
-  return { ret, retCdi, retIbov, vol, mdd, meses:n-1 };
+  const cagr = (invest>0 && n>1) ? (Math.pow(cartF/invest, 12/(n-1))-1)*100 : 0;
+  const ann = mean*12*100;
+  const sharpe = vol>0 ? (ann-14.5)/vol : 0;
+  const pos = rs.filter(r=>r>0).length, posPct = rs.length? pos/rs.length*100 : 0;
+  const bestM = rs.length? Math.max(...rs)*100 : 0, worstM = rs.length? Math.min(...rs)*100 : 0;
+  return { ret, retCdi, retIbov, vol, mdd, meses:n-1, cagr, sharpe, posPct, bestM, worstM };
 }
 function viewBacktest(){
   if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('backtest')}</div>`;
@@ -5793,6 +5798,13 @@ function viewBacktest(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">vs IBOV</div><div class="vl ${vsi>=0?'up':'down'}">${vsi>=0?'+':''}${pc(vsi,1)} p.p.</div><div class="dl faint">IBOV ${pc(m.retIbov,1)}%</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Volatilidade</div><div class="vl">${pc(m.vol,1)}%</div><div class="dl faint">anualizada</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Maior queda</div><div class="vl down">${pc(m.mdd,1)}%</div><div class="dl faint">pico → vale</div></div>
+  </div>
+  <div class="mstrip" style="grid-template-columns:repeat(5,1fr);margin-top:12px">
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Retorno anualizado</div><div class="vl ${m.cagr>=0?'up':'down'}">${m.cagr>=0?'+':''}${pc(m.cagr,1)}%</div><div class="dl faint">CAGR a.a.</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Índice de Sharpe</div><div class="vl ${m.sharpe>=0?'up':'down'}">${pc(m.sharpe,2)}</div><div class="dl faint">retorno/risco vs CDI</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Meses positivos</div><div class="vl">${pc(m.posPct,0)}%</div><div class="dl faint">dos ${m.meses} meses</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Melhor mês</div><div class="vl up">+${pc(m.bestM,1)}%</div><div class="dl faint">no período</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Pior mês</div><div class="vl down">${pc(m.worstM,1)}%</div><div class="dl faint">no período</div></div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução simulada <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div><span class="chip ilus"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
