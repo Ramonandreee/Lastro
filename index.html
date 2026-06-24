@@ -1079,8 +1079,8 @@ img, svg, canvas, video { max-width: 100%; }
   content:''; position:absolute; inset:0; border-radius:10px;
   background: linear-gradient(135deg, rgba(255,255,255,.28), transparent 55%);
 }
-.insight-title { font-size: 14px; font-weight: 700; letter-spacing: -.01em; }
-.insight-title .tag { display: inline-flex; align-items: center; gap: 5px; margin-top: 3px; font-size: 9.5px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--accent); }
+.insight-title { font-size: 14px; font-weight: 700; letter-spacing: -.01em; display: flex; flex-direction: column; gap: 4px; line-height: 1.2; }
+.insight-title .tag { display: inline-flex; align-self: flex-start; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--accent); }
 .insight-title .tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
 .insight-body {
   font-size: 13px; line-height: 1.65; color: var(--ink-2);
@@ -3800,8 +3800,11 @@ function viewPainel(){
   const p = portfolioStats();
   // Ibovespa já é o destaque do hero — a faixa abaixo mostra os demais índices (sem repetir)
   const mstrip = MARKET.slice(1).map((m,i)=>{
-    const colHex = m.up===true?cssVar('--up'): m.up===false?cssVar('--down'):cssVar('--ink-3');
-    const cls = m.up===true?'up': m.up===false?'down':'faint';
+    // cor pelo sinal da variação do dia (não pela flag 'up', que é invertida p/ o dólar)
+    const dd=(m.dl||'').trim();
+    const dir = (dd.startsWith('-')||dd.startsWith('−')) ? 'down' : (dd.startsWith('+') ? 'up' : 'flat');
+    const colHex = dir==='up'?cssVar('--up'): dir==='down'?cssVar('--down'):cssVar('--ink-3');
+    const cls = dir==='up'?'up': dir==='down'?'down':'faint';
     return `<div class="mkt-cell">
       <div class="mkt-head"><span class="mkt-nm">${m.nm}</span><span class="mkt-dl ${cls}">${m.dl}</span></div>
       <div class="mkt-val">${m.nm==='Dólar'?'R$ ':''}${m.vl}</div>
