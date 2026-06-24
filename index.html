@@ -5975,7 +5975,7 @@ function viewConsultor(){
   <div class="card card-pad cons-tool" style="margin-top:16px">
     <div class="card-h" style="margin-bottom:6px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Quanto e onde investir agora?</div>
     <p class="faint" style="font-size:12.5px;margin:0 0 12px;line-height:1.55">Diga quanto você tem para aportar este mês. O consultor sugere onde, com base na composição atual da sua carteira.</p>
-    <div class="cons-input"><span class="cons-cur">R$</span><input id="consultorAmt" type="text" inputmode="decimal" placeholder="3.000" onkeydown="if(event.key==='Enter')runConsultor()"><button class="btn btn-primary" onclick="runConsultor()"><i class="fa-solid fa-arrow-right"></i> Analisar</button></div>
+    <div class="cons-input"><span class="cons-cur">R$</span><input id="consultorAmt" type="text" inputmode="decimal" placeholder="3.000" oninput="maskBRL(this)" onkeydown="if(event.key==='Enter')runConsultor()"><button class="btn btn-primary" onclick="runConsultor()"><i class="fa-solid fa-arrow-right"></i> Analisar</button></div>
     <div id="consultorOut"></div>
   </div>
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Diagnóstico determinístico calculado sobre a sua carteira. Educativo — não constitui recomendação personalizada de investimento.</div>`;
@@ -6214,7 +6214,11 @@ function diagnose(){ renderDiag(); }
 // fonte de busca: todas as classes, ao vivo (inclui o universo mesclado)
 function searchPool(){
   const map=[['FII',FIIS],['Ação',ACOES],['BDR',BDRS],['ETF',ETFS],['Stock',STOCKS],['Cripto',CRIPTO]];
-  const out=[]; for(const [lbl,arr] of map) for(const a of arr) out.push({tk:a.tk,nm:a.nm,px:a.px,var:a.var,kind:lbl,usd:a.usd});
+  const b3=new Set(['FII','Ação','BDR','ETF']);
+  const out=[]; for(const [lbl,arr] of map) for(const a of arr){
+    if(b3.has(lbl) && /[0-9]F$/.test(a.tk)) continue;   // ignora ativos fracionários da B3 (ex.: PETR4F)
+    out.push({tk:a.tk,nm:a.nm,px:a.px,var:a.var,kind:lbl,usd:a.usd});
+  }
   return out;
 }
 function openSearch(){ $('#searchModal').classList.add('open'); setTimeout(()=>$('#searchInput').focus(),60); runSearch(''); }
