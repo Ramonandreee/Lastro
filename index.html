@@ -1762,7 +1762,9 @@ table.tbl tbody tr.no-hover td { border:none; }
 .plan-dots .pd { width:7px; height:7px; border-radius:50%; background:var(--line-2); transition:all .2s var(--ease); cursor:pointer; }
 .plan-dots .pd.on { background:var(--gold); width:20px; border-radius:4px; }
 @media (min-width:760px){ .plan-dots { display:none; } }
-.plan-flag { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,#C8911F,#A87C2A); color:#fff; font-size:11px; font-weight:600; padding:4px 14px; border-radius:20px; box-shadow:var(--sh); }
+.plan-flag { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,#C8911F,#A87C2A); color:#fff; font-size:11px; font-weight:600; padding:4px 14px; border-radius:20px; box-shadow:var(--sh); white-space:nowrap; }
+.plan-flag-current { background:linear-gradient(135deg, var(--brand), var(--brand-d)); }
+.plan-card.is-current { border-color:color-mix(in srgb, var(--brand) 45%, transparent); box-shadow:0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent), var(--sh-sm); }
 .plan-name { font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px; }
 .plan-price { margin:2px 0 0; display:flex; align-items:baseline; gap:8px; }
 .plan-price .amt { font-family:var(--serif); font-size:32px; font-weight:600; letter-spacing:-.02em; }
@@ -4326,12 +4328,21 @@ function setPlanCycle(c){ planCycle = c==='mensal'?'mensal':'anual'; render('pla
 function brlc(v){ return 'R$ '+(+v).toFixed(2).replace('.',','); }
 function viewPlanos(){
   const pro = isPremium();
+  const myTier = planTier(), rank = {free:0, premium:1, pro:2};
   const annual = planCycle==='anual';
   const feat = (txt)=>`<li><i class="fa-solid fa-circle-check"></i> ${txt}</li>`;
   const featx = (txt)=>`<li class="off"><i class="fa-solid fa-xmark"></i> ${txt}</li>`;
   const priceHTML = (p)=>{ const price=annual?p.anual:p.mensal, anchor=annual?p.anchorA:p.anchorM, cents=price.toFixed(2).split('.')[1];
     return `<div class="plan-anchor">${brlc(anchor)}</div><div class="plan-price"><span class="amt">R$ ${Math.floor(price)}<span class="cents">,${cents}</span></span><span class="per">/mês</span></div><div class="plan-billed">${annual?brlc(p.anualTotal)+' cobrado anualmente':'cobrado mensalmente'}</div>`; };
-  const paidCard = (p)=>`<div class="plan-card prem${p.popular?' featured':''}">${p.popular?'<div class="plan-flag">Mais popular</div>':''}<div class="plan-name">${p.name} <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>${priceHTML(p)}<div class="plan-desc">${p.desc}</div><ul class="plan-feats">${p.feats.map(feat).join('')}</ul><button class="btn btn-premium" style="width:100%;justify-content:center" ${pro?'disabled':`onclick="subscribePremium('${p.key}','${planCycle}')"`}>${pro?'<i class="fa-solid fa-check"></i> Plano ativo':`<i class="fa-solid fa-bolt"></i> Assinar ${p.name}`}</button><div class="plan-trust">${isAuthed()?'Sem fidelidade · cancele quando quiser':'7 dias grátis ao criar conta'}</div></div>`;
+  const paidCard = (p)=>{
+    const isCur = myTier===p.key, up = rank[p.key]>rank[myTier];
+    const label = isCur ? '<i class="fa-solid fa-check"></i> Plano atual'
+      : myTier==='free' ? `<i class="fa-solid fa-bolt"></i> Assinar ${p.name}`
+      : up ? `<i class="fa-solid fa-arrow-up"></i> Fazer upgrade para ${p.name}`
+      : `<i class="fa-solid fa-arrow-down"></i> Mudar para ${p.name}`;
+    const attr = isCur ? 'disabled' : `onclick="subscribePremium('${p.key}','${planCycle}')"`;
+    return `<div class="plan-card prem${p.popular?' featured':''}${isCur?' is-current':''}">${isCur?'<div class="plan-flag plan-flag-current">Seu plano</div>':(p.popular?'<div class="plan-flag">Mais popular</div>':'')}<div class="plan-name">${p.name} <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>${priceHTML(p)}<div class="plan-desc">${p.desc}</div><ul class="plan-feats">${p.feats.map(feat).join('')}</ul><button class="btn btn-premium" style="width:100%;justify-content:center" ${attr}>${label}</button><div class="plan-trust">${isAuthed()?'Sem fidelidade · cancele quando quiser':'7 dias grátis ao criar conta'}</div></div>`;
+  };
   const trialBanner = pro ? '' : (trialActive()
     ? `<div class="plan-trial-cta is-active"><i class="fa-solid fa-bolt"></i><div><strong>Teste Premium ativo — ${trialDaysLeft()} dia(s) restantes.</strong> <span>Assine para manter o acesso completo após o período.</span></div></div>`
     : (!isAuthed()
@@ -4343,11 +4354,11 @@ function viewPlanos(){
     <h1 class="pricing-title">Escolha o plano ideal para a sua jornada</h1>
     <p class="pricing-sub">Comece grátis. Ao criar sua conta, você testa <strong>todos os recursos Premium por 7 dias</strong> — sem cartão.</p>
   </div>
-  ${trialBanner}
   <div class="bill-toggle"><button class="${annual?'on':''}" onclick="setPlanCycle('anual')">Anual <span class="bt-off">17% OFF</span></button><button class="${!annual?'on':''}" onclick="setPlanCycle('mensal')">Mensal</button></div>
 
   <div class="plan-carousel" id="planCarousel">
-    <div class="plan-card">
+    <div class="plan-card${myTier==='free'?' is-current':''}">
+      ${myTier==='free'?'<div class="plan-flag plan-flag-current">Seu plano</div>':''}
       <div class="plan-name">Gratuito</div>
       <div class="plan-anchor">&nbsp;</div>
       <div class="plan-price"><span class="amt">R$ 0</span><span class="per">/mês</span></div>
@@ -4372,6 +4383,7 @@ function viewPlanos(){
     ${paidCard(PLANS.pro)}
   </div>
   <div class="plan-dots" id="planDots"><span class="pd on"></span><span class="pd"></span><span class="pd"></span></div>
+  ${trialBanner}
 
   <div class="value-anchor"><i class="fa-solid fa-gift"></i> Indique amigos e <strong>ganhe 20% da assinatura</strong> deles via PIX. <a onclick="nav('indicar')" style="color:var(--accent);cursor:pointer;font-weight:600;white-space:nowrap">Indique e Ganhe →</a></div>
 
