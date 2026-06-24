@@ -988,11 +988,13 @@ img, svg, canvas, video { max-width: 100%; }
   position: absolute;
   top: -40%; right: -10%;
   width: 380px; height: 380px;
-  background: radial-gradient(circle, var(--brand-l) 0%, transparent 68%);
+  background: radial-gradient(circle, var(--hero-glow, var(--brand-l)) 0%, transparent 68%);
   opacity: .5;
   pointer-events: none;
   z-index: 0;
+  transition: background .6s var(--ease);
 }
+.hero-main.hero-down { --hero-glow: var(--down-l); }
 .hero-main > * { position: relative; z-index: 1; }
 /* alternância de índice no hero */
 .hero-mkt-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
@@ -3719,6 +3721,7 @@ function renderHeroIdx(soft){
     lbl.textContent=x.nm;
     const v=$('#heroIdxVal'); if(v) v.textContent=x.vl;
     const chip=$('#heroIdxChip'); if(chip){ chip.className='chip '+(x.up?'chip-up':'chip-down'); chip.innerHTML=`<i class="fa-solid fa-arrow-${x.up?'up':'down'}" style="font-size:9px"></i> ${x.dl}`; }
+    const hm=document.querySelector('.hero-main'); if(hm) hm.classList.toggle('hero-down', !x.up);
     updateHeroChart();
   };
   const main=document.querySelector('.hero-mkt');
