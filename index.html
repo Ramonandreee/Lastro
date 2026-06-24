@@ -1822,6 +1822,9 @@ table.tbl tbody tr.no-hover td { border:none; }
 .ind-page .indique-hero { margin-bottom:0; }
 .acct-item.acct-gift { color:var(--up); }
 .acct-item.acct-gift i { color:var(--up); }
+.acct-test .acct-toggle { margin-left:auto; font-size:9.5px; font-weight:800; letter-spacing:.05em; padding:2px 8px; border-radius:20px; background:var(--surface-3); color:var(--ink-3); }
+.acct-test.on .acct-toggle { background:var(--brand); color:#fff; }
+.acct-test.on i { color:var(--brand); }
 .nav-gift-badge { background:color-mix(in srgb,var(--up) 16%,transparent) !important; color:var(--up) !important; }
 .nav-item-gift > i:first-child { color:var(--up); }
 .indique-hero { display:flex; align-items:center; gap:16px; padding:20px 22px; border-radius:var(--r-lg); background:linear-gradient(120deg, color-mix(in srgb,var(--brand) 12%,transparent), transparent 72%); border:1px solid color-mix(in srgb,var(--brand) 20%,transparent); margin-bottom:16px; }
@@ -3238,6 +3241,7 @@ function acctMenuHTML(){
       ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
       ${themeRow}
+      ${isOwner()? `<div class="acct-sep"></div><button class="acct-item acct-test ${testModeOn()?'on':''}" onclick="toggleTestMode()"><i class="fa-solid fa-flask-vial"></i> Modo teste · dados aleatórios<span class="acct-toggle">${testModeOn()?'ON':'OFF'}</span></button>`:''}
       <div class="acct-sep"></div>
       ${item('fa-arrow-right-from-bracket','Sair',"closeAcctMenu();confirmLogout()",'danger')}`;
   }
@@ -6550,6 +6554,39 @@ function importCarteiraCSV(){
   }; inp.click();
 }
 /* ── Carteira de demonstração (1 clique) — permite ver valor antes de digitar ── */
+/* ── Modo teste do dono (Ramon): gera dados aleatórios + Investidor Pro; desligar zera tudo ── */
+const OWNER_EMAIL = 'ramonandreee@gmail.com';
+function isOwner(){ const u=currentUser(); return !!u && String(u.email||'').toLowerCase()===OWNER_EMAIL; }
+function testModeOn(){ return localStorage.getItem('lastro_testmode')==='1'; }
+function genTestCarteira(){
+  const pool=[...ACOES, ...FIIS].filter(a=>a&&a.px>0).map(a=>a.tk);
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+  const pick=pool.slice(0,9), now=new Date(), lots=[];
+  pick.forEach(tk=>{ const lk=assetLookup(tk); if(!lk) return; const px=lk.a.px||10;
+    const cotas=Math.max(1, Math.round((1500+Math.random()*9000)/px));
+    const monthsAgo=Math.floor(Math.random()*22)+2;
+    const dt=new Date(now.getFullYear(), now.getMonth()-monthsAgo, 4+Math.floor(Math.random()*22)).toISOString().slice(0,10);
+    const pm=+(px*(0.68+Math.random()*0.5)).toFixed(2);
+    lots.push({ id:uid(), tk, cotas, pm, date:dt });
+  });
+  return lots;
+}
+function toggleTestMode(){
+  closeAcctMenu();
+  if(!testModeOn()){
+    localStorage.setItem('lastro_testmode','1'); demoMode=false;
+    setPlan('premium');
+    localStorage.setItem('lastro_sub', JSON.stringify({ tier:'pro', plano:'Investidor Pro', cycle:'anual', amount:588, brand:'Visa', card:'4242', canceled:false }));
+    CARTEIRA=genTestCarteira(); savePortfolio();
+    toast('Modo teste ON — Investidor Pro + carteira aleatória ✓');
+  } else {
+    localStorage.removeItem('lastro_testmode');
+    CARTEIRA=[]; savePortfolio();
+    localStorage.removeItem('lastro_sub'); setPlan('free');
+    toast('Modo teste OFF — tudo zerado ✓');
+  }
+  refreshPlanUI(); applyPriv(); nav('painel');
+}
 function loadDemoCarteira(){
   const demo=[['HGLG11',50,158.00],['KNCR11',80,103.00],['VISC11',60,108.00],['PETR4',100,36.50],['ITSA4',200,9.80]];
   const now=new Date(); const lots=[];
