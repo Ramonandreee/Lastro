@@ -2798,7 +2798,10 @@ function posPreview(){
   const tk=($('#posTk').value||'').toUpperCase().trim(); const f=assetLookup(tk);
   const cur=curOf(tk); const lblc=$('#posCurLbl'); if(lblc) lblc.textContent = cur==='usd'?'Valor (US$)':'Valor (R$)';
   if(!f){ el.innerHTML=''; el.classList.remove('on'); return; }
-  const a=f.a,k=f.k; const pm=parseBRL($('#posPm').value), qt=+$('#posQt').value;
+  const a=f.a,k=f.k;
+  // pré-preenche o preço com a cotação atual (editável) — só quando o campo está vazio
+  const pmEl=$('#posPm'); if(pmEl && !pmEl.value.trim() && a.px>0) pmEl.value=fmtBRLInput(a.px);
+  const pm=parseBRL($('#posPm').value), qt=+$('#posQt').value;
   const rows=[];
   if(typeof a.score==='number') rows.push(`<div class="pp-row"><span>Score Lastro</span><b style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)};margin-right:6px"></span>${a.score}/100 · ${scoreTier(a.score)}</b></div>`);
   rows.push(`<div class="pp-row"><span>Cotação atual</span><b class="mono">${fmtPx(a,k)}</b></div>`);
@@ -6595,12 +6598,14 @@ const OWNER_EMAIL = 'ramonandreee@gmail.com';
 function isOwner(){ const u=currentUser(); return !!u && String(u.email||'').toLowerCase()===OWNER_EMAIL; }
 function testModeOn(){ return localStorage.getItem('lastro_testmode')==='1'; }
 function genTestCarteira(){
-  const pool=[...ACOES, ...FIIS].filter(a=>a&&a.px>0).map(a=>a.tk);
-  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
-  const pick=pool.slice(0,9), now=new Date(), lots=[];
-  pick.forEach(tk=>{ const lk=assetLookup(tk); if(!lk) return; const px=lk.a.px||10;
+  const shuffle=arr=>{ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; };
+  // garante pagadores de proventos (FIIs têm div; ações com DY>0) e NUNCA BDRs/stocks
+  const fiis  = shuffle(FIIS.filter(a=>a&&a.px>0).map(a=>a.tk)).slice(0,4);
+  const acoes = shuffle(ACOES.filter(a=>a&&a.px>0 && (a.dy||0)>0).map(a=>a.tk)).slice(0,5);
+  const pick=[...fiis, ...acoes], now=new Date(), lots=[];
+  pick.forEach(tk=>{ const lk=assetLookup(tk); if(!lk || (lk.k!=='acoes' && lk.k!=='fiis')) return; const px=lk.a.px||10;
     const cotas=Math.max(1, Math.round((1500+Math.random()*9000)/px));
-    const monthsAgo=Math.floor(Math.random()*22)+2;
+    const monthsAgo=Math.floor(Math.random()*21)+3;
     const dt=new Date(now.getFullYear(), now.getMonth()-monthsAgo, 4+Math.floor(Math.random()*22)).toISOString().slice(0,10);
     const pm=+(px*(0.68+Math.random()*0.5)).toFixed(2);
     lots.push({ id:uid(), tk, cotas, pm, date:dt });
