@@ -1972,8 +1972,10 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .prof-row.sub b { font-weight:500; color:var(--ink-3); }
 .prof-btn { width:100%; justify-content:flex-start; margin-top:8px; }
 .prof-out { width:100%; justify-content:center; margin-top:16px; }
-/* privacidade: borra valores monetários */
-body.priv .priv-blur { filter:blur(9px); user-select:none; pointer-events:none; transition:filter .2s var(--ease); }
+/* privacidade: oculta valores com uma tarja limpa (sem blur) */
+body.priv .priv-blur { position:relative; color:transparent !important; user-select:none; pointer-events:none; border-radius:6px; }
+body.priv .priv-blur * { visibility:hidden; }
+body.priv .priv-blur::after { content:"••••••"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--ink-3); background:var(--surface-3); border-radius:6px; letter-spacing:.14em; font-size:.82em; visibility:visible; }
 .priv-blur { transition:filter .2s var(--ease); }
 .priv-eye { width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; transition:all .14s var(--ease); flex:none; }
 .priv-eye:hover { color:var(--ink); border-color:var(--line-2); }
@@ -3247,6 +3249,7 @@ function acctMenuHTML(){
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();openAssinatura()")}
       ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
+      ${item(privOn()?'fa-eye':'fa-eye-slash', privOn()?'Mostrar meus valores':'Ocultar meus valores', "closeAcctMenu();togglePriv()")}
       ${themeRow}
       ${isOwner()? `<div class="acct-sep"></div><button class="acct-item acct-test ${testModeOn()?'on':''}" onclick="toggleTestMode()"><i class="fa-solid fa-flask-vial"></i> Modo teste · dados aleatórios<span class="acct-toggle">${testModeOn()?'ON':'OFF'}</span></button>`:''}
       <div class="acct-sep"></div>
