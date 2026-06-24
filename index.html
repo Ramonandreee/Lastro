@@ -1099,6 +1099,16 @@ img, svg, canvas, video { max-width: 100%; }
 
 /* metric strip */
 .mstrip { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+/* cards de mercado da Home (IFIX/Dólar/SELIC/Bitcoin) — sparkline premium full-bleed */
+.mkt-cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px 16px 0; box-shadow: var(--sh-sm); overflow: hidden; cursor: default; transition: transform .22s var(--ease-out), box-shadow .22s var(--ease-out), border-color .22s var(--ease); }
+.mkt-cell:hover { transform: translateY(-3px); box-shadow: var(--sh-lg); border-color: var(--line-2); }
+.mkt-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.mkt-nm { font-size: 11.5px; font-weight: 600; color: var(--ink-3); letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mkt-dl { flex: none; font-size: 11px; font-weight: 600; font-family: var(--mono); }
+.mkt-dl.up { color: var(--up); } .mkt-dl.down { color: var(--down); } .mkt-dl.faint { color: var(--ink-4); }
+.mkt-val { font-family: var(--mono); font-size: 19px; font-weight: 600; letter-spacing: -.01em; color: var(--ink); margin-top: 5px; }
+.mkt-spark { height: 40px; margin: 10px -16px 0; }
+.mkt-spark svg { display: block; width: 100%; height: 40px; }
 .mcell {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -3003,6 +3013,14 @@ function spark(data, w, h, color, fill){
   }
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" fill="none">${f}<path d="${p}" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${w-2}" cy="${lastY.toFixed(1)}" r="2" fill="${color}"/></svg>`;
 }
+/* sparkline premium para os cards de mercado: gradiente + traço crisp (full-bleed) */
+function mktSpark(data, color, id){
+  const w=240, h=44, p=sparkPath(data,w,h), g='mktg'+id;
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" fill="none">`
+    + `<defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity="0.20"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>`
+    + `<path d="${p} L ${w} ${h} L 0 ${h} Z" fill="url(#${g})"/>`
+    + `<path d="${p}" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`;
+}
 
 function animateNum(el, target, opts={}){
   const dur = opts.dur||900, dec = opts.dec??2, prefix = opts.prefix||'', suffix=opts.suffix||'';
@@ -3759,16 +3777,13 @@ function cycleHero(){ heroIdx++; renderHeroIdx(true); startHeroTimer(); }
 function viewPainel(){
   const p = portfolioStats();
   // Ibovespa já é o destaque do hero — a faixa abaixo mostra os demais índices (sem repetir)
-  const mstrip = MARKET.slice(1).map(m=>{
-    const col = m.up===true?'var(--up)': m.up===false?'var(--down)':'var(--ink-3)';
+  const mstrip = MARKET.slice(1).map((m,i)=>{
+    const colHex = m.up===true?cssVar('--up'): m.up===false?cssVar('--down'):cssVar('--ink-3');
     const cls = m.up===true?'up': m.up===false?'down':'faint';
-    return `<div class="mcell">
-      <div class="mcell-l">
-        <div class="nm">${m.nm}</div>
-        <div class="vl">${m.nm==='Dólar'?'R$ ':''}${m.vl}</div>
-        <div class="dl ${cls}">${m.dl}</div>
-      </div>
-      <span class="spark-mini">${spark(m.spark,56,34,col,true)}</span>
+    return `<div class="mkt-cell">
+      <div class="mkt-head"><span class="mkt-nm">${m.nm}</span><span class="mkt-dl ${cls}">${m.dl}</span></div>
+      <div class="mkt-val">${m.nm==='Dólar'?'R$ ':''}${m.vl}</div>
+      <div class="mkt-spark">${mktSpark(m.spark, colHex, i)}</div>
     </div>`;
   }).join('');
 
