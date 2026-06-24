@@ -5484,11 +5484,8 @@ const HOME_TF = [['1D',30],['5D',40],['1M',24],['6M',28],['1A',52],['5A',60],['M
 let homeChartPeriod='1M', homeChartType='candle';
 /* ativos disponíveis no gráfico principal (índices + tickers) */
 const HOME_ASSETS = [
-  {k:'NASDAQ', nm:'Nasdaq', base:20485}, {k:'SP500', nm:'S&P 500', base:5430},
+  {k:'SP500', nm:'S&P 500', base:5430}, {k:'NASDAQ', nm:'Nasdaq', base:20485},
   {k:'IBOV', nm:'Ibovespa', base:168619}, {k:'IFIX', nm:'IFIX', base:3777},
-  {k:'PETR4', nm:'PETR4', tk:'PETR4'}, {k:'VALE3', nm:'VALE3', tk:'VALE3'},
-  {k:'AAPL34', nm:'Apple', tk:'AAPL34'}, {k:'NVDC34', nm:'NVIDIA', tk:'NVDC34'},
-  {k:'BTC', nm:'Bitcoin', tk:'BTC'}, {k:'ETH', nm:'Ethereum', tk:'ETH'},
 ];
 function resolveHomeAsset(a){ if(a.tk){ const lk=assetLookup(a.tk); return {k:a.k, nm:a.nm, base:(lk&&lk.a.px)||100, price:true}; } return {k:a.k, nm:a.nm, base:a.base, price:false}; }
 let homeAsset = resolveHomeAsset(HOME_ASSETS[0]);
@@ -8041,6 +8038,8 @@ function mergeUniverse(arr, items){
   let added = 0;
   items.forEach(it=>{
     if(!it.tk || have.has(it.tk)) return;
+    if(/[0-9]F$/.test(it.tk)) return;                  // ignora ativos fracionários da B3 (ex.: PETR4F)
+    if(!/^[A-Z]{4}\d{1,2}$/.test(it.tk)) return;       // só tickers padrão B3 (ON/PN/Unit)
     have.add(it.tk);
     arr.push({ tk:it.tk, nm:it.nm||it.tk, seg:it.seg||'Outros', px:it.px||0, var:it.var||0, mkt:it.mkt, logo:it.logo, _uni:true });
     added++;
