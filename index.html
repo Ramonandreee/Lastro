@@ -4689,7 +4689,7 @@ function viewAporte(){
   <div class="card card-pad">
     <div class="form-row" style="gap:16px">
       <div class="form-col" style="flex-basis:180px"><label class="form-label">Valor do aporte</label>
-        <input id="apVal" class="form-input" type="number" min="0" step="100" value="1000" oninput="runAporte()" style="font-size:15px;font-weight:600"></div>
+        <input id="apVal" class="form-input" type="text" inputmode="decimal" value="1.000" oninput="maskBRL(this);runAporte()" style="font-size:15px;font-weight:600"></div>
       <div class="form-col" style="flex-basis:180px"><label class="form-label">Estratégia</label>
         <select id="apStrat" class="form-select" onchange="runAporte()">
           <option value="equal">Igualar pesos</option><option value="score">Priorizar maior Score</option><option value="dy">Priorizar maior DY</option>
@@ -4700,7 +4700,7 @@ function viewAporte(){
 }
 function runAporte(){
   const host=$('#aportePlan'); if(!host) return;
-  const valor=Math.max(0,+($('#apVal')?.value||0)), strat=$('#apStrat')?.value||'equal';
+  const valor=Math.max(0,parseBRL($('#apVal')?.value||'0')||0), strat=$('#apStrat')?.value||'equal';
   if(valor<=0){ host.innerHTML='<div class="card card-pad"><div class="faint" style="text-align:center;padding:12px">Informe um valor para ver o plano de compra.</div></div>'; return; }
   const r=aportePlan(valor, strat); if(!r){ host.innerHTML=''; return; }
   const rows=r.items.map(x=>{ const wOld=r.total? x.cur/r.total*100:0, wNew=r.newTotal? (x.cur+x.invest)/r.newTotal*100:0;
@@ -4834,7 +4834,7 @@ function viewIR(){
           <select id="darfTk" class="form-select" onchange="runDarf()">${bd.map(b=>`<option value="${b.tk}" data-pm="${b.pm}" data-k="${b.k}">${b.tk} · custo ${brl(b.pm)}</option>`).join('')}</select></div>
         <div class="form-row" style="gap:10px;align-items:stretch">
           <div class="form-col"><label class="form-label" style="margin-bottom:5px">Qtd vendida</label><input id="darfQt" class="form-input" type="number" min="0" step="1" value="100" oninput="runDarf()"></div>
-          <div class="form-col"><label class="form-label" style="margin-bottom:5px">Preço de venda</label><input id="darfPx" class="form-input" type="number" min="0" step="0.01" value="0" oninput="runDarf()"></div>
+          <div class="form-col"><label class="form-label" style="margin-bottom:5px">Preço de venda (R$)</label><input id="darfPx" class="form-input" type="text" inputmode="decimal" placeholder="0,00" value="0,00" oninput="maskBRL(this);runDarf()"></div>
         </div>
         <div id="darfResult"><div class="faint" style="font-size:12.5px">Informe quantidade e preço de venda para calcular o imposto.</div></div>
       </div>
@@ -4846,7 +4846,7 @@ function runDarf(){
   const host=$('#darfResult'); if(!host) return;
   const sel=$('#darfTk'); if(!sel) return; const opt=sel.options[sel.selectedIndex];
   const pm=+opt.getAttribute('data-pm'), k=opt.getAttribute('data-k');
-  const qt=Math.max(0,+($('#darfQt').value||0)), px=Math.max(0,+($('#darfPx').value||0));
+  const qt=Math.max(0,+($('#darfQt').value||0)), px=Math.max(0,parseBRL($('#darfPx').value||'0')||0);
   if(!qt||!px){ host.innerHTML='<div class="faint" style="font-size:12.5px">Informe quantidade e preço de venda para calcular o imposto.</div>'; return; }
   const venda=qt*px, custo=qt*pm, ganho=venda-custo, isFii=k==='fiis';
   const isento = !isFii && venda<=20000 && ganho>0, aliq=isFii?0.20:0.15;
