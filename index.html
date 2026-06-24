@@ -3251,7 +3251,7 @@ function acctMenuHTML(){
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
       ${item(privOn()?'fa-eye':'fa-eye-slash', privOn()?'Mostrar meus valores':'Ocultar meus valores', "closeAcctMenu();togglePriv()")}
       ${themeRow}
-      ${isOwner()? `<div class="acct-sep"></div><button class="acct-item acct-test ${testModeOn()?'on':''}" onclick="toggleTestMode()"><i class="fa-solid fa-flask-vial"></i> Modo teste · dados aleatórios<span class="acct-toggle">${testModeOn()?'ON':'OFF'}</span></button>`:''}
+      ${isOwner()? `<div class="acct-sep"></div><button class="acct-item acct-test ${testModeOn()?'on':''}" onclick="toggleTestMode()"><i class="fa-solid fa-flask-vial"></i> Modo teste<span class="acct-toggle">${testModeOn()?'ON':'OFF'}</span></button>`:''}
       <div class="acct-sep"></div>
       ${item('fa-arrow-right-from-bracket','Sair',"closeAcctMenu();confirmLogout()",'danger')}`;
   }
