@@ -2048,6 +2048,19 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 .rx-sono-emoji { font-size:48px; line-height:1; margin:4px 0 8px; }
 .rx-sono-l { font-size:18px; font-weight:700; }
 .rx-sono-q { font-size:11.5px; font-style:italic; margin-top:11px; padding-top:11px; border-top:1px solid var(--line); width:100%; }
+/* Raio-X: alternância de modo + upload por foto */
+.rx-modebar { display:inline-flex; gap:4px; background:var(--surface-3); padding:4px; border-radius:11px; margin-bottom:18px; }
+.rx-modebar button { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; color:var(--ink-3); background:transparent; border:none; border-radius:8px; padding:8px 14px; cursor:pointer; transition:all .15s var(--ease); }
+.rx-modebar button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
+.rx-modebar button:not(.on):hover { color:var(--ink-2); }
+.rx-upload { text-align:center; display:flex; flex-direction:column; align-items:center; padding:40px 24px; }
+.rx-up-ic { width:64px; height:64px; border-radius:18px; background:var(--brand-l); color:var(--brand); display:flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:14px; }
+.rx-up-ic.spin { background:var(--surface-3); color:var(--ink-3); }
+.rx-up-t { font-size:17px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
+.rx-up-err { margin-top:14px; font-size:12.5px; color:var(--down); background:var(--down-l); border-radius:9px; padding:9px 12px; display:flex; gap:8px; align-items:flex-start; text-align:left; }
+.rx-photo-banner { display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--accent-l); border:1px solid color-mix(in srgb,var(--accent) 25%,transparent); border-radius:12px; padding:11px 14px; margin-bottom:16px; font-size:12.5px; color:var(--ink-2); }
+.rx-photo-banner i { color:var(--accent); }
+.rx-photo-banner button { margin-left:auto; display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:var(--accent); background:var(--surface); border:1px solid color-mix(in srgb,var(--accent) 30%,transparent); border-radius:8px; padding:6px 11px; cursor:pointer; }
 /* Stress test */
 .stress-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
 .st-card { display:flex; flex-direction:column; }
@@ -2754,9 +2767,9 @@ function upcomingProventos(){
   });
   return out.sort((a,b)=>a.date-b.date).slice(0,6);
 }
-function portfolioByTicker(){
+function portfolioByTicker(lots){
   const map=new Map();
-  CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(!f) return;
+  (lots||CARTEIRA).forEach(c=>{ const f=assetLookup(c.tk); if(!f) return;
     if(!map.has(c.tk)) map.set(c.tk,{tk:c.tk,f,lots:[],cotas:0,custo:0});
     const g=map.get(c.tk); g.lots.push(c); g.cotas+=c.cotas; g.custo+=c.cotas*c.pm; });
   const out=[];
@@ -3113,8 +3126,8 @@ function toast(msg){
 }
 
 /* portfolio computed */
-function portfolioStats(){
-  const byT = portfolioByTicker();
+function portfolioStats(lots){
+  const byT = portfolioByTicker(lots);
   let invest=0, atual=0, renda=0, dyNum=0, prov=0;
   byT.forEach(g=>{ invest+=g.custo; atual+=g.val; renda+=g.mensal; dyNum+=(g.f.a.dy||0)*g.val; prov+=g.prov; });
   const dyMed = atual ? dyNum/atual : 0;
@@ -5849,8 +5862,8 @@ function initBacktest(){
 /* ── Raio-X da Carteira (Investidor Pro) ── */
 function rxClasseOf(k){ return k==='acoes'?'Ações':k==='fiis'?'FIIs':k==='etfs'?'ETFs':k==='cripto'?'Cripto':'Exterior'; }
 function rxSetorOf(g){ const a=g.f.a, k=g.f.k; if(k==='acoes'||k==='fiis') return (a&&a.seg)||'Outros'; return rxClasseOf(k); }
-function diversificationGrade(){
-  const p=portfolioStats(); if(!p.atual||!p._byT.length) return null;
+function diversificationGrade(lots){
+  const p=portfolioStats(lots); if(!p.atual||!p._byT.length) return null;
   const pos=p._byT.map(g=>({ tk:g.tk, k:g.f.k, a:g.f.a, val:g.val, w:g.val/p.atual*100, setor:rxSetorOf(g), classe:rxClasseOf(g.f.k) }));
   const n=pos.length, top=pos.slice().sort((a,b)=>b.w-a.w)[0];
   const setores=[...new Set(pos.map(x=>x.setor))], classes=[...new Set(pos.map(x=>x.classe))];
@@ -5873,8 +5886,8 @@ function diversificationGrade(){
   return { pos, n, top, setores, classes, score:s, ...g, reasons:reasons.slice(0,5) };
 }
 /* Scores proprietários da carteira (Índice de Equilíbrio, Sono Tranquilo, Segurança dos dividendos) */
-function lastroScores(){
-  const p=portfolioStats(), d=diversificationGrade(); if(!d) return null;
+function lastroScores(lots){
+  const p=portfolioStats(lots), d=diversificationGrade(lots); if(!d) return null;
   const pos=d.pos, wsum=f=> pos.reduce((s,x)=> s + f(x)*x.w/100, 0);
   const qual = wsum(x=> x.a&&x.a.score!=null? x.a.score : 55);
   const consist = wsum(x=> x.a&&x.a.consist!=null? x.a.consist*100 : 60);
@@ -5895,10 +5908,57 @@ function lastroScores(){
 function rxBar(label, pct, color, sub){
   return `<div class="rx-bar"><div class="rx-bar-top"><span>${label}${sub?` <em class="faint">${sub}</em>`:''}</span><b class="mono">${pc(pct,1)}%</b></div><div class="rx-bar-track"><i style="width:${Math.min(100,pct).toFixed(1)}%;background:${color}"></i></div></div>`;
 }
+/* ── Raio-X de outra carteira por foto (IA lê o print e monta o Raio-X) ── */
+let rxMode='minha', rxPhotoLots=null, rxPhotoBusy=false, rxPhotoErr='', _rxLots=null;
+function rxSetMode(m){ rxMode=(m==='foto')?'foto':'minha'; render('raiox'); }
+function rxClearPhoto(){ rxPhotoLots=null; rxPhotoErr=''; render('raiox'); }
+function rxPickPhotos(){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true; inp.onchange=()=>{ if(inp.files&&inp.files.length) rxAnalyzePhotos(inp.files); }; inp.click(); }
+function fileToB64(file){ return new Promise((res)=>{ const r=new FileReader(); r.onload=()=>{ const m=/^data:(.+?);base64,(.*)$/.exec(r.result||''); res(m?{media_type:m[1],data:m[2]}:null); }; r.onerror=()=>res(null); r.readAsDataURL(file); }); }
+const RX_EXTRACT_SYS = 'Você é um leitor de carteiras de investimento brasileiras. Recebe imagens (prints de corretora, app ou planilha) e extrai as posições. Responda APENAS com um array JSON, sem texto antes ou depois.';
+const RX_EXTRACT_PROMPT = 'Extraia todas as posições visíveis nas imagens. Para cada ativo retorne {"ticker":"<código B3 ex: PETR4, HGLG11>","cotas":<quantidade inteira>,"pm":<preço médio em número com ponto decimal; se não houver, 0>}. Use o código do ticker (não o nome). Responda só o array JSON, ex: [{"ticker":"PETR4","cotas":100,"pm":36.5}].';
+async function rxAnalyzePhotos(files){
+  rxPhotoBusy=true; rxPhotoErr=''; rxPhotoLots=null; render('raiox');
+  try{
+    const imgs=(await Promise.all([...files].slice(0,5).map(fileToB64))).filter(Boolean);
+    if(!imgs.length) throw new Error('img');
+    const endpoint=(window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || 'https://api.anthropic.com/v1/messages';
+    const content=[...imgs.map(i=>({type:'image',source:{type:'base64',media_type:i.media_type,data:i.data}})), {type:'text', text:RX_EXTRACT_PROMPT}];
+    const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,system:RX_EXTRACT_SYS,messages:[{role:'user',content}]})});
+    const dd=await r.json(); const txt=(dd.content&&dd.content[0]&&dd.content[0].text)||'';
+    const arr=JSON.parse((txt.match(/\[[\s\S]*\]/)||['[]'])[0]);
+    const lots=arr.map(x=>{ const tk=String(x.ticker||x.tk||'').toUpperCase().replace(/[^A-Z0-9]/g,''); const lk=assetLookup(tk); if(!lk) return null; const cotas=Math.max(0,Math.round(+x.cotas||+x.quantidade||0)); if(!cotas) return null; const pm=(+x.pm||+x.preco_medio||lk.a.px||0); return { id:uid(), tk, cotas, pm, date:todayISO() }; }).filter(Boolean);
+    if(!lots.length) rxPhotoErr='Não reconheci ativos da B3 nas fotos. Tente um print mais nítido da lista de posições (com os códigos dos ativos).';
+    rxPhotoLots = lots.length? lots : null;
+  }catch(e){ rxPhotoErr='Não consegui ler as fotos. A leitura por IA precisa do endpoint conectado (config.js → AI_ENDPOINT). Tente novamente.'; }
+  rxPhotoBusy=false; render('raiox');
+}
+function rxModeBar(){
+  return `<div class="rx-modebar">
+    <button class="${rxMode==='minha'?'on':''}" onclick="rxSetMode('minha')"><i class="fa-solid fa-wallet"></i> Minha carteira</button>
+    <button class="${rxMode==='foto'?'on':''}" onclick="rxSetMode('foto')"><i class="fa-solid fa-camera"></i> Outra carteira (foto)</button>
+  </div>`;
+}
+function rxUploadUI(){
+  if(rxPhotoBusy) return `<div class="card card-pad rx-upload"><div class="rx-up-ic spin"><i class="fa-solid fa-spinner fa-spin"></i></div><div class="rx-up-t">Lendo as fotos com IA…</div><div class="faint" style="font-size:12.5px">Identificando ativos, quantidades e preços</div></div>`;
+  return `<div class="card card-pad rx-upload">
+    <div class="rx-up-ic"><i class="fa-solid fa-camera-retro"></i></div>
+    <div class="rx-up-t">Raio-X de outra carteira por foto</div>
+    <p class="faint" style="font-size:13px;line-height:1.6;max-width:440px;margin:6px auto 16px">Envie um ou mais prints da carteira (corretora, app ou planilha). A IA lê os ativos e monta o Raio-X completo — diversificação, concentração, Nota Lastro e sugestões.</p>
+    <button class="btn btn-primary" onclick="rxPickPhotos()"><i class="fa-solid fa-arrow-up-from-bracket"></i> Enviar fotos</button>
+    ${rxPhotoErr?`<div class="rx-up-err"><i class="fa-solid fa-triangle-exclamation"></i> ${esc(rxPhotoErr)}</div>`:''}
+    <div class="illus-note" style="margin-top:16px;text-align:left"><i class="fa-solid fa-circle-info"></i> As imagens são enviadas à IA apenas para extrair os ativos. Reconhecemos tickers da B3 e principais ativos da base Lastro.</div>
+  </div>`;
+}
 function viewRaioX(){
   if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('raiox')}</div>`;
-  const p=portfolioStats(), d=diversificationGrade();
-  if(!d) return `<div class="card card-pad">${emptyState('fa-magnifying-glass-chart','Sem posições para o Raio-X','Adicione ativos à sua carteira para ver a diversificação, a concentração e a Nota Lastro.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
+  const head = `<div class="sec-title">Raio-X da carteira</div>
+  <div class="sec-desc">O retrato completo da carteira: patrimônio, diversificação por setor, ativo e classe, a Nota de Diversificação Lastro e sugestões de melhoria.</div>
+  ${rxModeBar()}`;
+  if(rxMode==='foto' && !rxPhotoLots) return head + rxUploadUI();
+  const lots = rxMode==='foto' ? rxPhotoLots : null; _rxLots = lots;
+  const isFoto = rxMode==='foto' && !!lots;
+  const p=portfolioStats(lots), d=diversificationGrade(lots);
+  if(!d) return head + `<div class="card card-pad">${emptyState('fa-magnifying-glass-chart','Sem posições para o Raio-X','Adicione ativos à sua carteira para ver a diversificação, a concentração e a Nota Lastro.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   // agregações
   const byClasse={}; d.pos.forEach(x=> byClasse[x.classe]=(byClasse[x.classe]||0)+x.w);
   const bySetor={}; d.pos.forEach(x=> bySetor[x.setor]=(bySetor[x.setor]||0)+x.w);
@@ -5917,13 +5977,17 @@ function viewRaioX(){
   }).join('');
   const reasons=d.reasons.map(r=>`<li class="${r.neg?'neg':'pos'}"><i class="fa-solid fa-${r.neg?'triangle-exclamation':'circle-check'}"></i> <span>${r.t}</span></li>`).join('');
   const provReceb=p.prov||0, provProj=(p.renda||0)*12;
-  const sc=lastroScores();
+  const sc=lastroScores(lots);
+  const ins=portfolioInsights(lots);
+  const _falta=['Ações','FIIs','Exterior'].filter(c=>!d.classes.includes(c));
+  const sugItems=[...(ins.rebal||[]), ..._falta.map(c=>`Adicionar exposição a <strong>${c}</strong> para diversificar entre classes.`)]
+    .map(t=>`<li><i class="fa-solid fa-arrow-trend-up"></i> <span>${t}</span></li>`).join('')
+    || '<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>Carteira equilibrada — sem ajustes urgentes no momento.</span></li>';
   const eqColor = sc.equilibrio>=80?'#0E7C5A':sc.equilibrio>=65?'#16A34A':sc.equilibrio>=50?'#A87C2A':sc.equilibrio>=35?'#E2761B':'#DC2626';
   const eqMsg = sc.equilibrio>=80?'Carteira muito bem equilibrada entre diversificação, qualidade e renda.' : sc.equilibrio>=65?'Bom equilíbrio geral — pequenos ajustes podem elevar o índice.' : sc.equilibrio>=50?'Equilíbrio mediano: revise concentração e mix de qualidade.' : 'Carteira desequilibrada — priorize diversificação e qualidade dos ativos.';
   const divSegRows = sc.divSeg.map(x=>{ const c=x.sc>=7?'var(--brand)':x.sc>=4?'var(--gold)':'var(--down)'; return `<div class="rx-asset" onclick="quickView('${x.tk}')">${assetLogo(x.tk,x.k,'sm')}<div class="rx-as-id"><div class="rx-as-tk">${x.tk}</div><div class="rx-as-nm">${esc(x.nm)} · DY ${pc(x.dy,1)}%</div></div><div class="rx-as-bar"><i style="width:${(x.sc*10).toFixed(0)}%;background:${c}"></i></div><span class="rx-as-w mono" style="color:${c}">${x.sc.toFixed(1)}/10</span></div>`; }).join('') || '<div class="faint" style="font-size:12.5px;padding:6px">Nenhum ativo pagador de dividendos na carteira.</div>';
-  return `
-  <div class="sec-title">Raio-X da carteira</div>
-  <div class="sec-desc">O retrato completo da sua carteira: patrimônio, diversificação por setor, ativo e classe, e a Nota de Diversificação Lastro com os motivos.</div>
+  return head + `
+  ${isFoto?`<div class="rx-photo-banner"><i class="fa-solid fa-camera"></i> <span>Raio-X de uma carteira importada por foto · <strong>${lots.length}</strong> ativo${lots.length!==1?'s':''} reconhecido${lots.length!==1?'s':''}</span><button onclick="rxClearPhoto()"><i class="fa-solid fa-arrows-rotate"></i> Trocar fotos</button></div>`:''}
   <div class="mstrip" style="grid-template-columns:repeat(6,1fr)">
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl">${brl0(p.atual)}</div><div class="dl ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}%</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Rentabilidade</div><div class="vl ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div><div class="dl faint">c/ proventos</div></div>
@@ -5948,12 +6012,9 @@ function viewRaioX(){
       <p class="faint" style="font-size:12px;margin:11px 0 0;line-height:1.55">${eqMsg}</p>
       <div class="rx-eq-sub faint">Qualidade média ${sc.qual}/100 · Consistência ${sc.consist}/100</div>
     </div>
-    <div class="card card-pad rx-sono">
-      <div class="card-h" style="justify-content:center;margin-bottom:10px"><span class="ico" style="background:${sc.sono.c}1a;color:${sc.sono.c}"><i class="fa-solid fa-bed"></i></span> Score de Sono Tranquilo™</div>
-      <div class="rx-sono-emoji">${sc.sono.e}</div>
-      <div class="rx-sono-l" style="color:${sc.sono.c}">${sc.sono.l}</div>
-      <div class="faint" style="font-size:12px;margin-top:3px">${sc.sono.sub} · ${sc.sonoVal}/100</div>
-      <div class="rx-sono-q faint">“Posso dormir tranquilo com essa carteira?”</div>
+    <div class="card card-pad">
+      <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Sugestões de melhoria</div>
+      <ul class="cons-sug">${sugItems}</ul>
     </div>
   </div>
   <div class="rx-cols" style="margin-top:16px">
@@ -5982,7 +6043,7 @@ function viewRaioX(){
 function initRaioX(){
   const ctx=$('#rxSetorChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
-  const d=diversificationGrade(); if(!d) return;
+  const d=diversificationGrade(_rxLots); if(!d) return;
   const by={}; d.pos.forEach(x=> by[x.setor]=(by[x.setor]||0)+x.w);
   const ent=Object.entries(by).sort((a,b)=>b[1]-a[1]); const pal=REC_PALETTE;
   if(charts.rxSetor) charts.rxSetor.destroy();
@@ -6308,8 +6369,8 @@ function askAICart(){
   callAI(msg, out);
 }
 /* diagnóstico determinístico da carteira (instantâneo, gratuito) */
-function portfolioInsights(){
-  const p = portfolioStats(); const n = p.nAtivos;
+function portfolioInsights(lots){
+  const p = portfolioStats(lots); const n = p.nAtivos;
   const pos = p._byT.map(g=>({ tk:g.tk, k:g.f.k, a:g.f.a, w: p.atual? g.val/p.atual*100 : 0 }));
   const pros=[], cons=[];
   if(!pos.length) return { pros, cons, summary:'Adicione posições para ver o diagnóstico.' };
