@@ -3520,6 +3520,9 @@ function authLogout(){
   render(currentView==='asset'?'painel':currentView);
 }
 /* sync nuvem: tabela user_state (user_id pk, data jsonb). Falha graciosa p/ localStorage. */
+/* re-sincroniza o estado da nuvem ao voltar o foco/aba (PC ↔ celular), com debounce */
+let _lastSync=0;
+function syncOnReturn(){ if(!isAuthed()) return; const now=Date.now(); if(now-_lastSync<4000) return; _lastSync=now; try{ loadCloudState(); }catch(e){} }
 async function loadCloudState(){
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return;
   try{
@@ -7846,8 +7849,8 @@ function setThemePref(p){ if(!THEME_SEQ.includes(p)) p='auto'; localStorage.setI
 function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SEQ.indexOf(cur)+1)%THEME_SEQ.length]; setThemePref(next); toast(next==='auto'?'Tema: Automático':next==='dark'?'Tema: Escuro':'Tema: Claro'); }
 // segue o sistema em tempo real quando em "automático"
 (function(){ const mq=matchMedia('(prefers-color-scheme: dark)'); const fn=()=>{ if(getThemePref()==='auto') applyTheme(true); }; if(mq.addEventListener) mq.addEventListener('change', fn); else if(mq.addListener) mq.addListener(fn);
-  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && getThemePref()==='auto') applyTheme(true); });
-  window.addEventListener('focus', ()=>{ if(getThemePref()==='auto') applyTheme(true); });
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ if(getThemePref()==='auto') applyTheme(true); syncOnReturn(); } });
+  window.addEventListener('focus', ()=>{ if(getThemePref()==='auto') applyTheme(true); syncOnReturn(); });
   // iOS/PWA standalone às vezes NÃO dispara o evento de mudança de tema — polling leve garante atualização em tempo real
   setInterval(()=>{ if(getThemePref()!=='auto') return; const sysDark=matchMedia('(prefers-color-scheme: dark)').matches; const curDark=document.documentElement.getAttribute('data-theme')==='dark'; if(sysDark!==curDark) applyTheme(true); }, 1200);
 })();
