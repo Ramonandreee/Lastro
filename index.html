@@ -5217,6 +5217,13 @@ function newsItemHTML(n){
   </div>`;
 }
 
+function newsAltaHTML(){
+  const mv=topMovers('up',4);
+  if(!mv.length) return '<div class="drawer-empty" style="padding:10px 0">Carregando…</div>';
+  const mx=Math.max(...mv.map(a=>a.var||0),0.1);
+  return mv.map((a,i)=>`<div class="rank-row" onclick="quickView('${a.tk}')"><span class="rank-n">${i+1}</span><span class="rank-tk">${a.tk}</span><span class="rank-bar"><i style="width:${Math.max(8,(a.var/mx)*100).toFixed(0)}%;background:var(--up)"></i></span><span class="rank-pct up">+${pc(a.var)}%</span></div>`).join('');
+}
+function renderNewsAlta(){ const el=$('#newsAlta'); if(el) el.innerHTML=newsAltaHTML(); }
 function viewNoticias(){
   const items = NEWS.map(newsItemHTML).join('');
   return `
@@ -5229,9 +5236,7 @@ function viewNoticias(){
     <div style="display:flex;flex-direction:column;gap:16px">
       <div class="card card-pad">
         <div class="card-h" style="margin-bottom:14px"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-fire"></i></span> Em alta agora</div>
-        <div class="rank">
-          ${ALTAS.slice(0,4).map((r,i)=>`<div class="rank-row" onclick="quickView('${r[0]}')"><span class="rank-n">${i+1}</span><span class="rank-tk">${r[0]}</span><span class="rank-bar"><i style="width:${r[1]/2.75*100}%;background:var(--up)"></i></span><span class="rank-pct up">+${pc(r[1])}%</span></div>`).join('')}
-        </div>
+        <div class="rank" id="newsAlta">${newsAltaHTML()}</div>
       </div>
       <div class="card card-pad" style="background:var(--surface-2)">
         <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff"><i class="fa-solid fa-sparkles"></i></span> Resumo IA do dia</div>
@@ -7848,6 +7853,7 @@ function screenSymbols(){
     case 'cripto': CRIPTO.forEach(c=> crypto.add(c.tk)); break;
     case 'painel':
     case 'carteira': CARTEIRA.forEach(c=> b3.add(c.tk)); break;
+    case 'noticias': ACOES.filter(isLiquidStock).forEach(a=> b3.add(a.tk)); break;   // "Em alta agora" ao vivo
     case 'watchlist': watchlist().forEach(tk=>{ const f=assetLookup(tk); if(f){ if(f.k==='cripto') crypto.add(tk); else if(f.k!=='stocks') b3.add(tk); } }); break;
     case 'asset': {
       const f = currentAssetTk && assetLookup(currentAssetTk);
@@ -7915,6 +7921,8 @@ function softRefreshView(){
     renderAssets(v);
   } else if(['painel','carteira','score','asset','watchlist','alertas'].includes(v) && !typing){
     render(v, true);             // soft: re-renderiza sem re-disparar buscas (evita loop)
+  } else if(v==='noticias' && !typing){
+    renderNewsAlta();            // atualiza "Em alta agora" sem recriar o feed de notícias
   }
 }
 
