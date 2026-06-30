@@ -789,7 +789,6 @@ img, svg, canvas, video { max-width: 100%; }
     <nav class="nav-section nav-section-premium">
       <div class="nav-label nav-label-premium"><i class="fa-solid fa-crown"></i> Análise</div>
       <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="consultor" onclick="nav('consultor',this)"><i class="fa-solid fa-user-tie"></i><span>Consultor IA</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="deterioracao" onclick="nav('deterioracao',this)"><i class="fa-solid fa-arrow-trend-down"></i><span>Detector de Risco</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
@@ -6074,6 +6073,12 @@ function viewRaioX(){
     </div>
     <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sugestões educativas geradas a partir da composição, concentração e Score Lastro — não são recomendação personalizada de investimento.</div>
   </div>
+  ${!isFoto?`<div class="card card-pad cons-tool" style="margin-top:16px">
+    <div class="card-h" style="margin-bottom:6px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Quanto e onde investir agora?</div>
+    <p class="faint" style="font-size:12.5px;margin:0 0 12px;line-height:1.55">Diga quanto você tem para aportar este mês e o Lastro sugere onde, com base na composição atual da sua carteira.</p>
+    <div class="cons-input"><span class="cons-cur">R$</span><input id="consultorAmt" type="text" inputmode="decimal" placeholder="3.000" oninput="maskBRL(this)" onkeydown="if(event.key==='Enter')runConsultor()"><button class="btn btn-primary" onclick="runConsultor()"><i class="fa-solid fa-arrow-right"></i> Analisar</button></div>
+    <div id="consultorOut"></div>
+  </div>`:''}
   <div class="rx-cols" style="margin-top:16px">
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Por setor</div></div>
