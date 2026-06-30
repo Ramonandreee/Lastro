@@ -2060,6 +2060,22 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 .rx-up-err { margin-top:14px; font-size:12.5px; color:var(--down); background:var(--down-l); border-radius:9px; padding:9px 12px; display:flex; gap:8px; align-items:flex-start; text-align:left; }
 .rx-photo-banner { display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--accent-l); border:1px solid color-mix(in srgb,var(--accent) 25%,transparent); border-radius:12px; padding:11px 14px; margin-bottom:16px; font-size:12.5px; color:var(--ink-2); }
 .rx-photo-banner i { color:var(--accent); }
+/* Raio-X: recomendações de ação */
+.rx-recs { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+@media (max-width:760px){ .rx-recs { grid-template-columns:1fr; gap:14px; } }
+.rx-rec-h { display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; letter-spacing:.01em; margin-bottom:10px; }
+.rx-rec-h.up { color:var(--brand); } .rx-rec-h.down { color:var(--down); }
+.rx-rec { display:flex; gap:11px; align-items:flex-start; padding:11px 0; border-top:1px solid var(--line); cursor:pointer; }
+.rx-rec:first-of-type { border-top:none; padding-top:2px; }
+.rx-rec-id { flex:1; min-width:0; }
+.rx-rec-tk { font-family:var(--mono); font-size:13.5px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:4px; margin-bottom:3px; }
+.rx-rec-act { font-family:var(--sans); font-size:9.5px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; padding:2px 8px; border-radius:20px; }
+.rx-rec-act.up { background:var(--brand-l); color:var(--brand); }
+.rx-rec-act.down { background:color-mix(in srgb,var(--down) 13%,transparent); color:var(--down); }
+.rx-rec-act.warn { background:var(--gold-l); color:var(--gold); }
+.rx-rec-why { font-size:12px; line-height:1.55; color:var(--ink-2); }
+.rx-rec-ok { display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:var(--ink-2); line-height:1.5; padding:6px 0; }
+.rx-rec-ok i { color:var(--brand); margin-top:2px; }
 .rx-photo-banner button { margin-left:auto; display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:var(--accent); background:var(--surface); border:1px solid color-mix(in srgb,var(--accent) 30%,transparent); border-radius:8px; padding:6px 11px; cursor:pointer; }
 /* Stress test */
 .stress-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
@@ -5935,7 +5951,7 @@ async function rxAnalyzePhotos(files){
 function rxModeBar(){
   return `<div class="rx-modebar">
     <button class="${rxMode==='minha'?'on':''}" onclick="rxSetMode('minha')"><i class="fa-solid fa-wallet"></i> Minha carteira</button>
-    <button class="${rxMode==='foto'?'on':''}" onclick="rxSetMode('foto')"><i class="fa-solid fa-camera"></i> Outra carteira (foto)</button>
+    <button class="${rxMode==='foto'?'on':''}" onclick="rxSetMode('foto')"><i class="fa-solid fa-camera"></i> Outra carteira</button>
   </div>`;
 }
 function rxUploadUI(){
@@ -5948,6 +5964,30 @@ function rxUploadUI(){
     ${rxPhotoErr?`<div class="rx-up-err"><i class="fa-solid fa-triangle-exclamation"></i> ${esc(rxPhotoErr)}</div>`:''}
     <div class="illus-note" style="margin-top:16px;text-align:left"><i class="fa-solid fa-circle-info"></i> As imagens são enviadas à IA apenas para extrair os ativos. Reconhecemos tickers da B3 e principais ativos da base Lastro.</div>
   </div>`;
+}
+/* recomendações de ação (comprar/reduzir) com justificativa — sobre a carteira ativa */
+function rxRecommendations(lots){
+  const d=diversificationGrade(lots); if(!d) return { buy:[], sell:[] };
+  const held=new Set(d.pos.map(x=>x.tk));
+  const byClasse={}; d.pos.forEach(x=> byClasse[x.classe]=(byClasse[x.classe]||0)+x.w);
+  const sell=[];
+  d.pos.slice().sort((a,b)=>b.w-a.w).forEach(x=>{ const a=x.a||{};
+    if(x.w>25) sell.push({tk:x.tk,k:x.k,acao:'Reduzir',cls:'down',reason:`Concentração elevada: ${pc(x.w,0)}% da carteira. Reduzir para ≤25% diminui o risco específico.`});
+    else if((a.dy||0)>13 && (a.consist!=null?a.consist:1)<0.8) sell.push({tk:x.tk,k:x.k,acao:'Atenção',cls:'warn',reason:`DY de ${pc(a.dy,1)}% muito alto com baixa consistência — risco de o dividendo não se sustentar.`});
+    else if((a.score||0)>0 && a.score<55) sell.push({tk:x.tk,k:x.k,acao:'Revisar',cls:'warn',reason:`Score Lastro baixo (${a.score}/100) — qualidade fundamentalista fraca puxa o nível da carteira.`});
+  });
+  const pool=[...FIIS.map(a=>({a,k:'fiis',classe:'FIIs'})), ...ACOES.map(a=>({a,k:'acoes',classe:'Ações'}))]
+    .filter(o=>typeof o.a.score==='number' && o.a.px>0 && !held.has(o.a.tk));
+  const buy=[];
+  ['Ações','FIIs'].filter(c=>!d.classes.includes(c)).forEach(c=>{
+    const o=pool.filter(o=>o.classe===c).sort((x,y)=>y.a.score-x.a.score)[0];
+    if(o) buy.push({tk:o.a.tk,k:o.k,acao:'Adicionar',cls:'up',reason:`Sua carteira não tem ${c}. ${o.a.tk} entra com Score ${o.a.score}/100 e diversifica a classe.`});
+  });
+  pool.sort((x,y)=>y.a.score-x.a.score).forEach(o=>{ if(buy.length>=4||buy.some(b=>b.tk===o.a.tk)) return; const a=o.a;
+    const why = (a.dy||0)>=8 ? `Score ${a.score}/100 e DY de ${pc(a.dy,1)}% — qualidade com boa renda para fortalecer a carteira.` : `Score ${a.score}/100 (${scoreTier(a.score)}) — ativo de alta qualidade que eleva a média da carteira.`;
+    buy.push({tk:a.tk,k:o.k,acao:'Adicionar',cls:'up',reason:why});
+  });
+  return { buy:buy.slice(0,4), sell:sell.slice(0,4) };
 }
 function viewRaioX(){
   if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('raiox')}</div>`;
@@ -5986,6 +6026,10 @@ function viewRaioX(){
   const eqColor = sc.equilibrio>=80?'#0E7C5A':sc.equilibrio>=65?'#16A34A':sc.equilibrio>=50?'#A87C2A':sc.equilibrio>=35?'#E2761B':'#DC2626';
   const eqMsg = sc.equilibrio>=80?'Carteira muito bem equilibrada entre diversificação, qualidade e renda.' : sc.equilibrio>=65?'Bom equilíbrio geral — pequenos ajustes podem elevar o índice.' : sc.equilibrio>=50?'Equilíbrio mediano: revise concentração e mix de qualidade.' : 'Carteira desequilibrada — priorize diversificação e qualidade dos ativos.';
   const divSegRows = sc.divSeg.map(x=>{ const c=x.sc>=7?'var(--brand)':x.sc>=4?'var(--gold)':'var(--down)'; return `<div class="rx-asset" onclick="quickView('${x.tk}')">${assetLogo(x.tk,x.k,'sm')}<div class="rx-as-id"><div class="rx-as-tk">${x.tk}</div><div class="rx-as-nm">${esc(x.nm)} · DY ${pc(x.dy,1)}%</div></div><div class="rx-as-bar"><i style="width:${(x.sc*10).toFixed(0)}%;background:${c}"></i></div><span class="rx-as-w mono" style="color:${c}">${x.sc.toFixed(1)}/10</span></div>`; }).join('') || '<div class="faint" style="font-size:12.5px;padding:6px">Nenhum ativo pagador de dividendos na carteira.</div>';
+  const recs=rxRecommendations(lots);
+  const recRow=x=>`<div class="rx-rec" onclick="quickView('${x.tk}')">${assetLogo(x.tk,x.k,'sm')}<div class="rx-rec-id"><div class="rx-rec-tk">${x.tk} <span class="rx-rec-act ${x.cls}">${x.acao}</span></div><div class="rx-rec-why">${x.reason}</div></div></div>`;
+  const buyRows = recs.buy.map(recRow).join('') || '<div class="faint" style="font-size:12px;padding:6px">Carteira bem coberta — sem compras prioritárias agora.</div>';
+  const sellRows = recs.sell.map(recRow).join('') || '<div class="rx-rec-ok"><i class="fa-solid fa-circle-check"></i> Nada a reduzir: sem concentração excessiva nem ativos de baixa qualidade.</div>';
   return head + `
   ${isFoto?`<div class="rx-photo-banner"><i class="fa-solid fa-camera"></i> <span>Raio-X de uma carteira importada por foto · <strong>${lots.length}</strong> ativo${lots.length!==1?'s':''} reconhecido${lots.length!==1?'s':''}</span><button onclick="rxClearPhoto()"><i class="fa-solid fa-arrows-rotate"></i> Trocar fotos</button></div>`:''}
   <div class="mstrip" style="grid-template-columns:repeat(6,1fr)">
@@ -6016,6 +6060,20 @@ function viewRaioX(){
       <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Sugestões de melhoria</div>
       <ul class="cons-sug">${sugItems}</ul>
     </div>
+  </div>
+  <div class="card card-pad" style="margin-top:16px">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-arrows-rotate"></i></span> Recomendações de ação <span class="card-sub" style="margin-left:6px">· o que comprar e reduzir, com o motivo</span></div></div>
+    <div class="rx-recs">
+      <div class="rx-rec-col">
+        <div class="rx-rec-h up"><i class="fa-solid fa-circle-plus"></i> Considerar comprar</div>
+        ${buyRows}
+      </div>
+      <div class="rx-rec-col">
+        <div class="rx-rec-h down"><i class="fa-solid fa-circle-minus"></i> Considerar reduzir</div>
+        ${sellRows}
+      </div>
+    </div>
+    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sugestões educativas geradas a partir da composição, concentração e Score Lastro — não são recomendação personalizada de investimento.</div>
   </div>
   <div class="rx-cols" style="margin-top:16px">
     <div class="card card-pad">
