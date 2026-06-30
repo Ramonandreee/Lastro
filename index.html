@@ -779,8 +779,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Carteira</span></div>
       <div class="nav-item premium-item" data-view="proventos" onclick="nav('proventos',this)"><i class="fa-solid fa-coins"></i><span>Meus Proventos</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item" data-view="agenda" onclick="nav('agenda',this)"><i class="fa-solid fa-calendar-day"></i><span>Agenda de Dividendos</span></div>
-      <div class="nav-item" data-view="watchlist" onclick="nav('watchlist',this)"><i class="fa-solid fa-star"></i><span>Watchlist</span></div>
-      <div class="nav-item premium-item" data-view="alertas" onclick="nav('alertas',this)"><i class="fa-solid fa-bell"></i><span>Alertas de Preço</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item" data-view="acompanhar" onclick="nav('acompanhar',this)"><i class="fa-solid fa-star"></i><span>Acompanhar</span></div>
       <div class="nav-item premium-item" data-view="aporte" onclick="nav('aporte',this)"><i class="fa-solid fa-scale-balanced"></i><span>Aporte Inteligente</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="fire" onclick="nav('fire',this)"><i class="fa-solid fa-fire"></i><span>Independência Financeira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="ir" onclick="nav('ir',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>Imposto de Renda</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
@@ -2051,6 +2050,7 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 .rx-modebar button { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; color:var(--ink-3); background:transparent; border:none; border-radius:8px; padding:8px 14px; cursor:pointer; transition:all .15s var(--ease); }
 .rx-modebar button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
 .rx-modebar button:not(.on):hover { color:var(--ink-2); }
+.acomp-badge { font-size:10px; font-weight:700; background:var(--down); color:#fff; border-radius:20px; padding:1px 6px; line-height:1.5; }
 .rx-upload { text-align:center; display:flex; flex-direction:column; align-items:center; padding:40px 24px; }
 .rx-up-ic { width:64px; height:64px; border-radius:18px; background:var(--brand-l); color:var(--brand); display:flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:14px; }
 .rx-up-ic.spin { background:var(--surface-3); color:var(--ink-3); }
@@ -3169,6 +3169,7 @@ const PAGES = {
   aporte:       { t:'Aporte Inteligente',    s:'Onde investir o próximo aporte para rebalancear a carteira' },
   fire:         { t:'Independência Financeira',s:'Quanto falta para viver dos seus dividendos' },
   ir:           { t:'Imposto de Renda',      s:'DARF de vendas e informe anual prontos para a declaração' },
+  acompanhar:   { t:'Acompanhar',            s:'Watchlist e alertas de preço em um só lugar' },
   watchlist:    { t:'Watchlist',             s:'Ativos que você acompanha de perto' },
   comparador:   { t:'Comparador',            s:'Compare ativos lado a lado pelos fundamentos' },
   screener:     { t:'Rastreador',            s:'Filtre ativos por critérios fundamentalistas' },
@@ -3750,6 +3751,7 @@ function render(v, soft){
   else if(v==='aporte')      c.innerHTML = viewAporte();
   else if(v==='fire')        c.innerHTML = viewFire();
   else if(v==='ir')          c.innerHTML = viewIR();
+  else if(v==='acompanhar')  c.innerHTML = viewAcompanhar();
   else if(v==='watchlist')   c.innerHTML = viewWatchlist();
   else if(v==='comparador')  c.innerHTML = viewComparador();
   else if(v==='screener')    c.innerHTML = viewScreener();
@@ -4347,6 +4349,19 @@ function viewCarteira(){
 /* ══════════════════════════════════════════════════════════
    VIEW: WATCHLIST
    ══════════════════════════════════════════════════════════ */
+/* ── Acompanhar: Watchlist + Alertas em abas ── */
+let acompTab='watch';
+function setAcompTab(t){ acompTab=(t==='alertas')?'alertas':'watch'; render('acompanhar'); }
+function viewAcompanhar(){
+  const nA=getAlerts().filter(a=>a.status==='ativo').length;
+  const tabs=`<div class="rx-modebar acomp-tabs">
+    <button class="${acompTab==='watch'?'on':''}" onclick="setAcompTab('watch')"><i class="fa-solid fa-star"></i> Watchlist</button>
+    <button class="${acompTab==='alertas'?'on':''}" onclick="setAcompTab('alertas')"><i class="fa-solid fa-bell"></i> Alertas${nA?` <span class="acomp-badge">${nA}</span>`:''}${isPro()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:9px"></i>'}</button>
+  </div>`;
+  return `<div class="sec-title">Acompanhar</div>
+  <div class="sec-desc">Os ativos que você monitora e os alertas de preço, em um só lugar.</div>
+  ${tabs}${acompTab==='alertas'?viewAlertas():viewWatchlist()}`;
+}
 function viewWatchlist(){
   const items = watchlist().map(tk=>assetLookup(tk)).filter(Boolean);
   const cta = `<button class="btn btn-ghost" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i> Buscar ativo</button>`;
@@ -4364,7 +4379,7 @@ function viewWatchlist(){
       <td class="mono">${fmtPx(a,k)}</td>
       <td class="mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</td>
       <td>${typeof a.score==='number'?`<span class="score-pill" style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)}"></span>${a.score}</span>`:'<span class="muted" style="font-size:12px">—</span>'}</td>
-      <td class="row-acts"><button class="row-act danger" title="Remover da watchlist" onclick="event.stopPropagation();toggleWatch('${a.tk}');render('watchlist')"><i class="fa-solid fa-star" style="color:var(--gold)"></i></button></td>
+      <td class="row-acts"><button class="row-act danger" title="Remover da watchlist" onclick="event.stopPropagation();toggleWatch('${a.tk}');render('acompanhar')"><i class="fa-solid fa-star" style="color:var(--gold)"></i></button></td>
     </tr>`;
   }).join('');
   return `<div class="card card-pad">
@@ -6689,11 +6704,11 @@ function saveAlert(){
   setAlerts(list);
   toast(`Alerta criado · ${_alertCtx.tk} ${_alertDir} ${alertFmt(_alertCtx.tk,px)} 🔔`);
   closeAlertModal();
-  if(currentView==='alertas') render('alertas', true);
+  if(currentView==='alertas') render('acompanhar', true);
 }
-function deleteAlert(id){ setAlerts(getAlerts().filter(a=>a.id!==id)); if(currentView==='alertas') render('alertas', true); }
-function clearFiredAlerts(){ setAlerts(getAlerts().filter(a=>a.status!=='disparado')); if(currentView==='alertas') render('alertas', true); }
-function reactivateAlert(id){ const list=getAlerts(); const al=list.find(a=>a.id===id); if(al){ al.status='ativo'; delete al.firedAt; delete al.firedPx; setAlerts(list); if(currentView==='alertas') render('alertas', true); } }
+function deleteAlert(id){ setAlerts(getAlerts().filter(a=>a.id!==id)); if(currentView==='alertas') render('acompanhar', true); }
+function clearFiredAlerts(){ setAlerts(getAlerts().filter(a=>a.status!=='disparado')); if(currentView==='alertas') render('acompanhar', true); }
+function reactivateAlert(id){ const list=getAlerts(); const al=list.find(a=>a.id===id); if(al){ al.status='ativo'; delete al.firedAt; delete al.firedPx; setAlerts(list); if(currentView==='alertas') render('acompanhar', true); } }
 /* checa alertas ativos contra as cotações recém-atualizadas */
 function checkAlerts(){
   const list=getAlerts(); if(!list.length) return; let changed=false;
@@ -6707,7 +6722,7 @@ function checkAlerts(){
       notifyAlert(al, px);
     }
   });
-  if(changed){ setAlerts(list); if(currentView==='alertas') render('alertas', true); }
+  if(changed){ setAlerts(list); if(currentView==='alertas') render('acompanhar', true); }
 }
 /* texto da notificação/toast — direcionado e sem repetir o mesmo valor */
 function alertCopy(al, px){
@@ -8202,7 +8217,7 @@ function softRefreshView(){
   if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)){
     if(typing) return;            // não recriar a tabela enquanto o usuário digita/filtra
     renderAssets(v);
-  } else if(['painel','carteira','score','asset','watchlist','alertas'].includes(v) && !typing){
+  } else if(['painel','carteira','score','asset','watchlist','alertas','acompanhar'].includes(v) && !typing){
     render(v, true);             // soft: re-renderiza sem re-disparar buscas (evita loop)
   } else if(v==='noticias' && !typing){
     renderNewsAlta();            // atualiza "Em alta agora" sem recriar o feed de notícias
