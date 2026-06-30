@@ -771,35 +771,34 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item" data-view="etfs" onclick="nav('etfs',this)"><i class="fa-solid fa-layer-group"></i><span>ETFs</span></div>
       <div class="nav-item" data-view="stocks" onclick="nav('stocks',this)"><i class="fa-solid fa-flag-usa"></i><span>Stocks</span></div>
       <div class="nav-item" data-view="cripto" onclick="nav('cripto',this)"><i class="fa-brands fa-bitcoin"></i><span>Criptomoedas</span></div>
+      <div class="nav-item" data-view="noticias" onclick="nav('noticias',this)"><i class="fa-solid fa-newspaper"></i><span>Notícias</span><span class="nav-badge" style="background:var(--down-l);color:var(--down)">LIVE</span></div>
     </nav>
 
     <nav class="nav-section">
-      <div class="nav-label">Ferramentas</div>
-      <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Minha Carteira</span></div>
-      <div class="nav-item" data-view="watchlist" onclick="nav('watchlist',this)"><i class="fa-solid fa-star"></i><span>Watchlist</span></div>
-      <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
-      <div class="nav-item" data-view="agenda" onclick="nav('agenda',this)"><i class="fa-solid fa-calendar-day"></i><span>Agenda de Dividendos</span></div>
-      <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-layer-group"></i><span>Carteiras Recomendadas</span></div>
-      <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-snowflake"></i><span>Simulador</span></div>
-      <div class="nav-item" data-view="noticias" onclick="nav('noticias',this)"><i class="fa-solid fa-newspaper"></i><span>Notícias</span><span class="nav-badge" style="background:var(--down-l);color:var(--down)">LIVE</span></div>
-      <div class="nav-item nav-item-gift" data-view="indicar" onclick="nav('indicar',this)"><i class="fa-solid fa-gift"></i><span>Indique e Ganhe</span><span class="nav-badge nav-gift-badge">Ganhe</span></div>
-    </nav>
-
-    <nav class="nav-section nav-section-premium">
-      <div class="nav-label nav-label-premium"><i class="fa-solid fa-crown"></i> Premium</div>
+      <div class="nav-label">Minha Carteira</div>
+      <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Carteira</span></div>
       <div class="nav-item premium-item" data-view="proventos" onclick="nav('proventos',this)"><i class="fa-solid fa-coins"></i><span>Meus Proventos</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item" data-view="agenda" onclick="nav('agenda',this)"><i class="fa-solid fa-calendar-day"></i><span>Agenda de Dividendos</span></div>
+      <div class="nav-item" data-view="watchlist" onclick="nav('watchlist',this)"><i class="fa-solid fa-star"></i><span>Watchlist</span></div>
+      <div class="nav-item premium-item" data-view="alertas" onclick="nav('alertas',this)"><i class="fa-solid fa-bell"></i><span>Alertas de Preço</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="aporte" onclick="nav('aporte',this)"><i class="fa-solid fa-scale-balanced"></i><span>Aporte Inteligente</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="fire" onclick="nav('fire',this)"><i class="fa-solid fa-fire"></i><span>Independência Financeira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="ir" onclick="nav('ir',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>Imposto de Renda</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="alertas" onclick="nav('alertas',this)"><i class="fa-solid fa-bell"></i><span>Alertas de Preço</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+    </nav>
+
+    <nav class="nav-section nav-section-premium">
+      <div class="nav-label nav-label-premium"><i class="fa-solid fa-crown"></i> Análise</div>
       <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="barganhas" onclick="nav('barganhas',this)"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Radar de Barganhas</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="consultor" onclick="nav('consultor',this)"><i class="fa-solid fa-user-tie"></i><span>Consultor IA</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="deterioracao" onclick="nav('deterioracao',this)"><i class="fa-solid fa-arrow-trend-down"></i><span>Detector de Risco</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item premium-item" data-view="barganhas" onclick="nav('barganhas',this)"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Radar de Barganhas</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
+      <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-layer-group"></i><span>Carteiras Recomendadas</span></div>
+      <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-snowflake"></i><span>Simulador</span></div>
     </nav>
     </div>
 
