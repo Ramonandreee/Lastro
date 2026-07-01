@@ -1094,6 +1094,9 @@ img, svg, canvas, video { max-width: 100%; }
   flex: 1;
 }
 .insight-body strong { color: var(--ink); font-weight: 600; }
+.insight-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+.insight-chips button { font-size: 11.5px; font-weight: 500; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 20px; padding: 6px 12px; cursor: pointer; transition: border-color .14s var(--ease), color .14s var(--ease), background .14s var(--ease); }
+.insight-chips button:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-l); }
 .insight-input {
   display: flex; gap: 8px; margin-top: 16px;
 }
@@ -4105,6 +4108,11 @@ function viewPainel(){
         <input id="insightInput" placeholder="Pergunte sobre o mercado ou um ativo…" onkeydown="if(event.key==='Enter')askAI()">
         <button class="insight-send" onclick="askAI()"><i class="fa-solid fa-arrow-up"></i></button>
       </div>
+      <div class="insight-chips">
+        <button onclick="askAISugg('Panorama do mercado brasileiro hoje')">Panorama do dia</button>
+        <button onclick="askAISugg('Quais FIIs de papel estão atrativos agora?')">FIIs atrativos</button>
+        <button onclick="askAISugg('Boas pagadoras de dividendos na bolsa hoje')">Dividendos</button>
+      </div>
     </div>
   </div>
 
@@ -6614,6 +6622,7 @@ async function callAI(msg, el){
     if(el) el.innerHTML = '<span class="faint">A Inteligência Lastro requer conexão com a API. Em produção, conecte via proxy serverless (veja README).</span>';
   }
 }
+function askAISugg(q){ const inp=$('#insightInput'); if(inp) inp.value=q; askAI(); }
 function askAI(initial){
   const inp = $('#insightInput'), out = $('#insightBody');
   const msg = initial ? 'Em 2 frases, dê um panorama do mercado brasileiro de renda variável hoje (Ibovespa, Selic e oportunidades em dividendos/FIIs).' : (inp?inp.value.trim():'');
