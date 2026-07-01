@@ -781,7 +781,6 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item" data-view="agenda" onclick="nav('agenda',this)"><i class="fa-solid fa-calendar-day"></i><span>Agenda de Dividendos</span></div>
       <div class="nav-item" data-view="acompanhar" onclick="nav('acompanhar',this)"><i class="fa-solid fa-star"></i><span>Acompanhar</span></div>
       <div class="nav-item premium-item" data-view="aporte" onclick="nav('aporte',this)"><i class="fa-solid fa-scale-balanced"></i><span>Aporte Inteligente</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="fire" onclick="nav('fire',this)"><i class="fa-solid fa-fire"></i><span>Independência Financeira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="ir" onclick="nav('ir',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>Imposto de Renda</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
     </nav>
 
@@ -4656,6 +4655,12 @@ function viewSimulador(){
         <div style="position:relative;height:260px"><canvas id="simChart" role="img" aria-label="Projeção de crescimento da renda passiva"></canvas></div>
       </div>
     </div>
+  </div>
+  <div class="mstrip sim-kpis" style="grid-template-columns:repeat(4,1fr);margin-top:16px">
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Número mágico</div><div class="vl" id="simMagico">—</div><div class="dl faint">patrimônio p/ a meta</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Independência em</div><div class="vl" id="simTempo">—</div><div class="dl faint">no ritmo atual</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Cobertura da meta</div><div class="vl" id="simCob">—</div><div class="dl faint">renda ÷ meta</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos no período</div><div class="vl up" id="simProvT">—</div><div class="dl faint">reinvestidos</div></div>
   </div>`;
 }
 
@@ -6405,6 +6410,14 @@ function runSim(){
 
   if(metaMes){ const ay=Math.floor(metaMes/12), am=metaMes%12; $('#simMeta').textContent = `Meta atingida em ${ay}a ${am}m`; }
   else $('#simMeta').textContent = `Meta não atingida em ${yr}a`;
+  // indicadores extras (ex-Independência Financeira)
+  const magico = dy>0 ? goal*12/dy : 0;
+  const setT=(id,v)=>{ const e=$('#'+id); if(e) e.textContent=v; };
+  setT('simMagico', brl0(magico));
+  setT('simCob', pc(Math.min(999, goal? rendaFinal/goal*100 : 0),0)+'%');
+  setT('simProvT', brl0(Math.max(0, patr-totalAportado)));
+  if(metaMes){ const ay=Math.floor(metaMes/12), am=metaMes%12; setT('simTempo', ay+'a'+(am?' '+am+'m':'')); }
+  else setT('simTempo', '> '+yr+'a');
 
   // chart
   const ctx = $('#simChart'); if(!ctx) return;
