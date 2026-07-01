@@ -772,7 +772,7 @@ img, svg, canvas, video { max-width: 100%; }
     </div>
 
     <div class="nav-scroll">
-    <nav class="nav-section">
+    <nav class="nav-section" data-tour="mercado">
       <div class="nav-label">Mercado</div>
       <div class="nav-item active" data-view="painel" aria-current="page" onclick="nav('painel',this)"><i class="fa-solid fa-house"></i><span>Início</span></div>
       <div class="nav-item" data-view="acoes" onclick="nav('acoes',this)"><i class="fa-solid fa-chart-column"></i><span>Ações</span></div>
@@ -784,7 +784,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item" data-view="noticias" onclick="nav('noticias',this)"><i class="fa-solid fa-newspaper"></i><span>Notícias</span><span class="nav-badge" style="background:var(--down-l);color:var(--down)">LIVE</span></div>
     </nav>
 
-    <nav class="nav-section">
+    <nav class="nav-section" data-tour="carteira">
       <div class="nav-label">Minha Carteira</div>
       <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Carteira</span></div>
       <div class="nav-item premium-item" data-view="proventos" onclick="nav('proventos',this)"><i class="fa-solid fa-coins"></i><span>Meus Proventos</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
@@ -794,7 +794,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item premium-item" data-view="ir" onclick="nav('ir',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>Imposto de Renda</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
     </nav>
 
-    <nav class="nav-section nav-section-premium">
+    <nav class="nav-section nav-section-premium" data-tour="analise">
       <div class="nav-label nav-label-premium"><i class="fa-solid fa-crown"></i> Análise</div>
       <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="deterioracao" onclick="nav('deterioracao',this)"><i class="fa-solid fa-arrow-trend-down"></i><span>Detector de Risco</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
@@ -1896,6 +1896,22 @@ table.tbl tbody tr.no-hover td { border:none; }
 .ob-in { animation:obFade .3s var(--ease-out); }
 .ob-count { font-size:12px; font-weight:500; color:var(--ink-3); }
 @media (prefers-reduced-motion:reduce){ .ob-in { animation:none; } }
+/* tour guiado (coach marks) */
+.tour-ov { position:fixed; inset:0; z-index:400; display:none; }
+.tour-ov.open { display:block; }
+.tour-spot { position:fixed; border-radius:12px; border:2px solid var(--brand); box-shadow:0 0 0 9999px rgba(8,12,17,.60), 0 0 0 4px color-mix(in srgb,var(--brand) 28%,transparent); z-index:401; pointer-events:none; transition:left .3s var(--ease-out), top .3s var(--ease-out), width .3s var(--ease-out), height .3s var(--ease-out); }
+.tour-pop { position:fixed; z-index:402; background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--sh-xl); padding:16px 16px 14px; transition:left .28s var(--ease-out), top .28s var(--ease-out); }
+.tour-pop-h { font-size:15px; font-weight:700; letter-spacing:-.01em; color:var(--ink); display:flex; align-items:center; gap:8px; padding-right:22px; }
+.tour-pop-h i { color:var(--brand); }
+.tour-pop-t { font-size:13px; line-height:1.6; color:var(--ink-2); margin-top:8px; }
+.tour-pop-f { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; }
+.tour-dots { display:flex; gap:5px; }
+.tour-dots span { width:6px; height:6px; border-radius:50%; background:var(--line-2); transition:all .2s var(--ease); }
+.tour-dots span.on { width:16px; border-radius:3px; background:var(--brand); }
+.tour-btns { display:flex; gap:8px; }
+.tour-skip { position:absolute; top:11px; right:11px; width:26px; height:26px; border-radius:8px; background:var(--surface-3); color:var(--ink-3); border:none; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; }
+.tour-skip:hover { color:var(--ink); }
+@media (prefers-reduced-motion:reduce){ .tour-spot, .tour-pop { transition:none; } }
 body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 
 /* ── card de decisão (data → decisão) ── */
@@ -3356,7 +3372,7 @@ function acctMenuHTML(){
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();openAssinatura()")}
       ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
-      ${item('fa-circle-play','Como funciona',"closeAcctMenu();openOnboarding()")}
+      ${item('fa-circle-play','Como funciona',"closeAcctMenu();startTour()")}
       ${item(privOn()?'fa-eye':'fa-eye-slash', privOn()?'Mostrar meus valores':'Ocultar meus valores', "closeAcctMenu();togglePriv()")}
       ${themeRow}
       ${isOwner()? `<div class="acct-sep"></div><button class="acct-item acct-test ${testModeOn()?'on':''}" onclick="toggleTestMode()"><i class="fa-solid fa-flask-vial"></i> Modo teste<span class="acct-toggle">${testModeOn()?'ON':'OFF'}</span></button>`:''}
@@ -3368,7 +3384,7 @@ function acctMenuHTML(){
     ${item('fa-crown','Assinar Premium',"closeAcctMenu();goPricing()")}
     ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
     ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
-      ${item('fa-circle-play','Como funciona',"closeAcctMenu();openOnboarding()")}
+      ${item('fa-circle-play','Como funciona',"closeAcctMenu();startTour()")}
     ${themeRow}`;
 }
 function toggleAcctMenu(e){ if(e) e.stopPropagation(); const m=$('#acctMenu'); if(!m) return; if(m.classList.contains('open')){ m.classList.remove('open'); return; } m.innerHTML=acctMenuHTML(); m.classList.add('open'); }
@@ -3745,6 +3761,55 @@ function obTouchStart(e){ _obTX=e.changedTouches[0].clientX; }
 function obTouchEnd(e){ const dx=e.changedTouches[0].clientX-_obTX; if(Math.abs(dx)>50){ if(dx<0) obNext(); else obPrev(); } }
 function openOnboarding(){ obStep=0; renderOb(); const m=$('#obModal'); if(m){ m.classList.add('open'); document.addEventListener('keydown',obKey); const c=m.querySelector('.ob-card'); if(c){ c.addEventListener('touchstart',obTouchStart,{passive:true}); c.addEventListener('touchend',obTouchEnd,{passive:true}); } } }
 function closeOnboarding(){ const m=$('#obModal'); if(m){ m.classList.remove('open'); const c=m.querySelector('.ob-card'); if(c){ c.removeEventListener('touchstart',obTouchStart); c.removeEventListener('touchend',obTouchEnd); } } document.removeEventListener('keydown',obKey); localStorage.setItem('lastro_onboarded','1'); }
+
+/* ── Tour guiado (coach marks): destaca as seções reais e explica ── */
+let tourStep=0, _tourActive=false;
+function tourGroupPre(){ if(currentView!=='painel') nav('painel'); if(window.innerWidth<=760) openSidebar(); }
+function tourContentPre(){ closeSidebar(); if(currentView!=='painel') nav('painel'); }
+function tourTopPre(){ closeSidebar(); }
+const TOUR=[
+  { center:true, ic:'fa-hand-sparkles', title:'Bora conhecer o app?', text:'Em poucos passos eu te mostro as seções e o que dá pra fazer em cada uma. Use Próximo, as setas do teclado ou arraste.' },
+  { sel:'[data-tour="mercado"]', pre:tourGroupPre, title:'Mercado', text:'Explore Ações, FIIs, BDRs, ETFs, Stocks e Cripto — com fundamentos completos e o Score Lastro™ (0 a 100) de cada ativo. As Notícias também ficam aqui.' },
+  { sel:'[data-tour="carteira"]', pre:tourGroupPre, title:'Minha Carteira', text:'Cadastre seus aportes e acompanhe patrimônio, proventos, agenda de dividendos, watchlist, alertas e o Aporte Inteligente — sincronizado na nuvem.' },
+  { sel:'[data-tour="analise"]', pre:tourGroupPre, title:'Análise', text:'Ferramentas de decisão: Raio-X da carteira, Backtest, Stress Test, Detector de Risco, Rastreador e Radar de Barganhas.' },
+  { sel:'.insight', pre:tourContentPre, title:'Inteligência Lastro', text:'Pergunte sobre o mercado ou qualquer ativo — respostas por IA, com base nos dados. Você também pode ler uma carteira por foto no Raio-X.' },
+  { sel:'.hdr-profile', pre:tourTopPre, title:'Sua conta', text:'Perfil, plano, tema claro/escuro e este tour (em "Como funciona") ficam aqui no seu avatar.' },
+  { center:true, ic:'fa-circle-check', title:'Tudo pronto!', text:'Explore à vontade. Você pode rever este tour quando quiser no menu da conta.' },
+];
+function ensureTourEls(){ if(document.getElementById('tourOv')) return; const o=document.createElement('div'); o.id='tourOv'; o.className='tour-ov'; o.innerHTML='<div id="tourSpot" class="tour-spot"></div><div id="tourPop" class="tour-pop"></div>'; document.body.appendChild(o); }
+function startTour(){ if(typeof closeAcctMenu==='function') closeAcctMenu(); localStorage.setItem('lastro_onboarded','1'); ensureTourEls(); tourStep=0; _tourActive=true; $('#tourOv').classList.add('open'); document.addEventListener('keydown',tourKey); window.addEventListener('resize',tourReposition); tourShow(); }
+function endTour(){ _tourActive=false; closeSidebar(); const o=$('#tourOv'); if(o) o.classList.remove('open'); document.removeEventListener('keydown',tourKey); window.removeEventListener('resize',tourReposition); }
+function tourKey(e){ if(!_tourActive) return; if(e.key==='ArrowRight') tourNext(); else if(e.key==='ArrowLeft') tourPrev(); else if(e.key==='Escape') endTour(); }
+function tourNext(){ if(tourStep<TOUR.length-1){ tourStep++; tourShow(); } else endTour(); }
+function tourPrev(){ if(tourStep>0){ tourStep--; tourShow(); } }
+function tourReposition(){ if(_tourActive) tourPlace(TOUR[tourStep]); }
+function tourShow(){ const s=TOUR[tourStep]; if(s.pre){ try{ s.pre(); }catch(e){} } setTimeout(()=>tourPlace(s), s.pre?320:60); }
+function tourPopHTML(s){
+  const last=tourStep===TOUR.length-1;
+  return `<div class="tour-pop-h">${s.ic?`<i class="fa-solid ${s.ic}"></i> `:''}${s.title}</div>
+    <div class="tour-pop-t">${s.text}</div>
+    <div class="tour-pop-f">
+      <div class="tour-dots">${TOUR.map((_,i)=>`<span class="${i===tourStep?'on':''}"></span>`).join('')}</div>
+      <div class="tour-btns">${tourStep>0?`<button class="btn btn-ghost btn-sm" onclick="tourPrev()">Voltar</button>`:''}<button class="btn btn-primary btn-sm" onclick="tourNext()">${last?'Concluir':'Próximo'}</button></div>
+    </div>
+    ${!last?`<button class="tour-skip" onclick="endTour()" aria-label="Pular tour"><i class="fa-solid fa-xmark"></i></button>`:''}`;
+}
+function tourPlace(s){
+  const spot=$('#tourSpot'), pop=$('#tourPop'); if(!spot||!pop) return;
+  pop.innerHTML=tourPopHTML(s);
+  const el = (!s.center && s.sel) ? document.querySelector(s.sel) : null;
+  const pw=Math.min(320, window.innerWidth-24); pop.style.width=pw+'px';
+  if(!el){ spot.style.display='none'; pop.classList.add('center'); pop.style.left='50%'; pop.style.top='50%'; pop.style.transform='translate(-50%,-50%)'; return; }
+  pop.classList.remove('center'); pop.style.transform='';
+  try{ el.scrollIntoView({block:'center',behavior:'auto'}); }catch(e){}
+  const r=el.getBoundingClientRect(), pad=7;
+  spot.style.display='block';
+  spot.style.left=(r.left-pad)+'px'; spot.style.top=(r.top-pad)+'px'; spot.style.width=(r.width+pad*2)+'px'; spot.style.height=(r.height+pad*2)+'px';
+  const ph=pop.offsetHeight||180;
+  let top=r.bottom+12; if(top+ph>window.innerHeight-12) top=Math.max(12, r.top-ph-12);
+  let left=Math.min(Math.max(12, r.left+r.width/2-pw/2), window.innerWidth-pw-12);
+  pop.style.left=left+'px'; pop.style.top=top+'px';
+}
 
 /* polish: anima a entrada da tela e gera skeleton de carregamento */
 function animateContent(){ const c=$('#content'); if(!c) return; c.classList.remove('content-anim'); void c.offsetWidth; c.classList.add('content-anim'); }
