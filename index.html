@@ -2285,9 +2285,11 @@ body.report-open { overflow:hidden; }
 .pc-var { font-size:12px; margin-top:1px; }
 .pc-rows, .pc-extra { display:flex; flex-direction:column; }
 .pc-extra[hidden] { display:none; }
-.pc-row { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13.5px; color:var(--ink-2); }
+.pc-row { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:2px 14px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13.5px; color:var(--ink-2); }
 .pc-row:last-child { border-bottom:none; }
-.pc-row b { color:var(--ink); font-weight:600; }
+.pc-row > span:first-child { min-width:0; }
+.pc-row b { color:var(--ink); font-weight:600; margin-left:auto; text-align:right; white-space:nowrap; }
+.pc-row b .mono, .pc-row b span { white-space:nowrap; }
 .pc-more { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:8px; padding:11px; border-radius:10px; font-size:13px; font-weight:600; color:var(--brand); cursor:pointer; transition:background .14s var(--ease); }
 .pc-more:hover { background:var(--surface-2); }
 .pc-more i { transition:transform .2s var(--ease); font-size:11px; }
@@ -2590,8 +2592,8 @@ body.report-open { overflow:hidden; }
 .pp-id { min-width:0; }
 .pp-tk { font-family:var(--mono); font-weight:600; font-size:14px; }
 .pp-nm { font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.pp-row { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:12.5px; color:var(--ink-2); padding:5px 0; }
-.pp-row b { font-weight:600; color:var(--ink); display:inline-flex; align-items:center; }
+.pp-row { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:2px 12px; font-size:12.5px; color:var(--ink-2); padding:5px 0; }
+.pp-row b { font-weight:600; color:var(--ink); display:inline-flex; align-items:center; margin-left:auto; white-space:nowrap; }
 .lot-caret { display:inline-flex; width:16px; color:var(--ink-4); transition:transform .18s var(--ease); font-size:11px; }
 .lot-caret.open { transform:rotate(90deg); color:var(--brand); }
 .lot-badge { font-size:10px; font-weight:600; color:var(--accent); background:var(--accent-l); padding:1px 7px; border-radius:20px; vertical-align:middle; }
