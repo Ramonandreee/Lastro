@@ -523,7 +523,7 @@ body.view-inicio .topbar-brand { display:flex; }
 }
 .card-h {
   font-size: 14px; font-weight: 600; letter-spacing: -.01em;
-  display: flex; align-items: center; gap: 9px;
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap; row-gap: 2px;
 }
 .card-h .ico {
   width: 26px; height: 26px; border-radius: 7px;
@@ -531,7 +531,7 @@ body.view-inicio .topbar-brand { display:flex; }
   display: flex; align-items: center; justify-content: center;
   font-size: 12px;
 }
-.card-sub { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.card-sub { font-size: 12px; color: var(--ink-3); }
 /* cabeçalho de Posições (carteira) — organizado no mobile */
 .pos-head { flex-wrap: wrap; gap: 12px; }
 .pos-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -718,14 +718,15 @@ img, svg, canvas, video { max-width: 100%; }
   #dataTbl .td-asset .ds { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* ranking do Score (.tbl-rank): no mobile mostra Ativo · Score · Classificação, SEM rolar */
   table.tbl-rank { width: 100% !important; min-width: 0 !important; table-layout: fixed; }
-  table.tbl-rank th, table.tbl-rank td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 9px; padding-right: 9px; }
+  table.tbl-rank td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 9px; padding-right: 9px; }
+  table.tbl-rank th { white-space: normal; overflow: visible; text-overflow: clip; padding-left: 9px; padding-right: 9px; font-size: 9.5px; line-height: 1.25; vertical-align: bottom; }
   table.tbl-rank th:nth-child(1), table.tbl-rank td:nth-child(1),
   table.tbl-rank th:nth-child(3), table.tbl-rank td:nth-child(3),
   table.tbl-rank th:nth-child(4), table.tbl-rank td:nth-child(4) { display: none; }
   table.tbl-rank th:first-child, table.tbl-rank td:first-child { position: static; }
-  table.tbl-rank th:nth-child(2), table.tbl-rank td:nth-child(2) { width: 50%; }
+  table.tbl-rank th:nth-child(2), table.tbl-rank td:nth-child(2) { width: 46%; }
   table.tbl-rank th:nth-child(5), table.tbl-rank td:nth-child(5) { width: 22%; }
-  table.tbl-rank th:nth-child(6), table.tbl-rank td:nth-child(6) { width: 28%; overflow: visible; text-overflow: clip; }
+  table.tbl-rank th:nth-child(6), table.tbl-rank td:nth-child(6) { width: 32%; overflow: visible; text-overflow: clip; }
 }
 @media (max-width: 460px) {
   .content { padding: 15px 15px 20px; }
@@ -2121,7 +2122,7 @@ body.report-open { overflow:hidden; }
 .rx-rec-why { font-size:12px; line-height:1.55; color:var(--ink-2); }
 .rx-rec-ok { display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:var(--ink-2); line-height:1.5; padding:6px 0; }
 .rx-rec-ok i { color:var(--brand); margin-top:2px; }
-.rx-aporte-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; cursor:pointer; transition:border-color .18s var(--ease), box-shadow .18s var(--ease); }
+.rx-aporte-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top:16px; cursor:pointer; transition:border-color .18s var(--ease), box-shadow .18s var(--ease); }
 .rx-aporte-cta:hover { border-color:color-mix(in srgb,var(--brand) 35%,transparent); box-shadow:var(--sh); }
 .rx-aporte-l { display:flex; align-items:flex-start; gap:12px; min-width:0; }
 .rx-aporte-t { font-size:14px; font-weight:600; color:var(--ink); }
@@ -3784,7 +3785,7 @@ function tourKey(e){ if(!_tourActive) return; if(e.key==='ArrowRight') tourNext(
 function tourNext(){ if(tourStep<TOUR.length-1){ tourStep++; tourShow(); } else endTour(); }
 function tourPrev(){ if(tourStep>0){ tourStep--; tourShow(); } }
 function tourReposition(){ if(_tourActive) tourPlace(TOUR[tourStep]); }
-function tourShow(){ const s=TOUR[tourStep]; if(s.pre){ try{ s.pre(); }catch(e){} } setTimeout(()=>tourPlace(s), s.pre?320:60); }
+function tourShow(){ const s=TOUR[tourStep]; if(s.pre){ try{ s.pre(); }catch(e){} } setTimeout(()=>tourPlace(s), s.pre?320:60); setTimeout(()=>{ if(_tourActive) tourPlace(s); }, s.pre?600:340); }
 function tourPopHTML(s){
   const last=tourStep===TOUR.length-1;
   return `<div class="tour-pop-h">${s.ic?`<i class="fa-solid ${s.ic}"></i> `:''}${s.title}</div>
@@ -3805,7 +3806,7 @@ function tourPlace(s){
   const pw=Math.min(320, vw-24); pop.style.width=pw+'px';
   if(!el){ spot.style.display='none'; box(T,0,0,vw,vh); [B,L,R].forEach(e=>{ if(e) e.style.display='none'; }); pop.classList.add('center'); pop.style.left='50%'; pop.style.top='50%'; pop.style.transform='translate(-50%,-50%)'; return; }
   pop.classList.remove('center'); pop.style.transform='';
-  try{ el.scrollIntoView({block:'center',behavior:'auto'}); }catch(e){}
+  try{ el.scrollIntoView({block:'center',behavior:'instant'}); }catch(e){ try{ el.scrollIntoView(); }catch(_){} }
   const r=el.getBoundingClientRect(), pad=7;
   const sx=r.left-pad, sy=r.top-pad, sw=r.width+pad*2, sh=r.height+pad*2;
   spot.style.display='block'; spot.style.left=sx+'px'; spot.style.top=sy+'px'; spot.style.width=sw+'px'; spot.style.height=sh+'px';
@@ -4443,7 +4444,7 @@ function viewCarteira(){
   </div>
 
   <div class="pos-section">
-    <div class="card-head pos-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="card-sub">· ${n} ativo${n!==1?'s':''}</span></div><div class="pos-actions"><button class="btn btn-ghost btn-sm" onclick="openReportConfig()" title="Relatório mensal da carteira (Investidor Pro)"><i class="fa-solid fa-file-lines"></i> Relatório${isProTier()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:10px"></i>'}</button><button class="btn btn-ghost btn-sm" onclick="importCarteiraCSV()" title="Importar aportes de um arquivo CSV"><i class="fa-solid fa-file-import"></i> Importar</button><button class="btn btn-ghost btn-sm" onclick="openExportConfig()" title="Exportar carteira em CSV"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">Premium</span>'}</button>${addBtn}</div></div>
+    <div class="card-head pos-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições</div><div class="pos-actions"><button class="btn btn-ghost btn-sm" onclick="openReportConfig()" title="Relatório mensal da carteira (Investidor Pro)"><i class="fa-solid fa-file-lines"></i> Relatório${isProTier()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:10px"></i>'}</button><button class="btn btn-ghost btn-sm" onclick="importCarteiraCSV()" title="Importar aportes de um arquivo CSV"><i class="fa-solid fa-file-import"></i> Importar</button><button class="btn btn-ghost btn-sm" onclick="openExportConfig()" title="Exportar carteira em CSV"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">Premium</span>'}</button>${addBtn}</div></div>
     <div class="pos-grid">${holdings}</div>
   </div>
 
@@ -5142,7 +5143,7 @@ function viewScore(){
   <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">${cards}</div>
 
   <div class="card card-pad">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-ranking-star"></i></span> Ranking geral de qualidade</div><span class="card-sub">${pro?ranked.length+' ativos avaliados':'Top 8 · '+ranked.length+' no Premium'}</span></div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-ranking-star"></i></span> Ranking geral de qualidade</div>${pro?'':'<span class="card-sub">Top 8 no Premium</span>'}</div>
     <div class="tbl-wrap"><table class="tbl tbl-rank">
       <thead><tr><th>#</th><th>Ativo</th><th>Tipo</th><th>Distribuição</th><th>Score</th><th>Classificação</th></tr></thead>
       <tbody>${rows}</tbody>
