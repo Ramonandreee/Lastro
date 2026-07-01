@@ -4464,7 +4464,7 @@ function viewCarteira(){
       <div class="pex-l">${assetLogo(p.tk,p.k,'sm')}<div class="pex-id"><div class="pex-tk">${p.tk}</div><div class="pex-d"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(p.date.toISOString().slice(0,10))}</div></div></div>
       <div class="pex-r"><div class="pex-v up">${brl(p.valor)}</div><div class="pex-s">${p.cotas} cota${p.cotas!==1?'s':''} · YoC ${pc(yoc,2)}%</div></div></div>`; }).join('');
     return `<div class="card card-pad" style="margin-top:16px">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Extrato de proventos <span class="card-sub" style="margin-left:6px">· ${pays.length} pagamentos</span></div><div class="pex-total"><div class="pex-total-v">${brl(total)}</div><div class="pex-total-l">líquido no período</div></div></div>
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Extrato de proventos</div><div class="pex-total"><div class="pex-total-v">${brl(total)}</div><div class="pex-total-l">líquido no período</div></div></div>
       <div class="prov-extract">${rows}</div>
       <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Pagamentos mensais estimados a partir do rendimento atual e da data de cada aporte. Conecte o provedor de proventos por data-com para valores exatos.</div>
     </div>`; })()}
@@ -4529,7 +4529,7 @@ function viewWatchlist(){
     </tr>`;
   }).join('');
   return `<div class="card card-pad">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-star"></i></span> Watchlist <span class="card-sub">· ${items.length}</span></div>${cta}</div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-star"></i></span> Watchlist</div>${cta}</div>
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr><th class="cell-left">Ativo</th><th>Classe</th><th>Cotação</th><th>Var.</th><th>Score</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
@@ -6955,12 +6955,12 @@ function viewAlertas(){
   };
   return `
     <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-bell"></i></span> Alertas ativos <span class="card-sub">· ${ativos.length}</span></div></div>
+      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-bell"></i></span> Alertas ativos</div></div>
       ${ativos.length? `<div class="alert-list">${ativos.map(row).join('')}</div>` : `<div class="muted" style="padding:10px 2px;font-size:13px">Nenhum alerta ativo no momento.</div>`}
       <div class="al-note"><i class="fa-solid fa-circle-info"></i> Os alertas são verificados com as cotações ao vivo enquanto o app está aberto.</div>
     </div>
     ${disp.length?`<div class="card card-pad" style="margin-top:16px">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-circle-check"></i></span> Disparados <span class="card-sub">· ${disp.length}</span></div><button class="btn btn-ghost btn-sm" onclick="clearFiredAlerts()"><i class="fa-solid fa-broom"></i> Limpar</button></div>
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-circle-check"></i></span> Disparados</div><button class="btn btn-ghost btn-sm" onclick="clearFiredAlerts()"><i class="fa-solid fa-broom"></i> Limpar</button></div>
       <div class="alert-list">${disp.map(row).join('')}</div>
     </div>`:''}`;
 }
