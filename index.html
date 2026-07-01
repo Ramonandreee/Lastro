@@ -134,11 +134,18 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust
 .splash-name { font-size:34px; font-weight:800; letter-spacing:-.02em; margin-top:20px; animation:spUp .7s var(--ease-out) .18s both; }
 .splash-tag { font-size:13px; font-weight:500; color:rgba(255,255,255,.78); margin-top:6px; animation:spUp .7s var(--ease-out) .3s both; }
 .splash-load { position:absolute; bottom:calc(46px + env(safe-area-inset-bottom,0px)); width:120px; height:3px; border-radius:3px; background:rgba(255,255,255,.18); overflow:hidden; animation:spUp .6s var(--ease-out) .5s both; }
-.splash-load i { display:block; height:100%; width:0%; border-radius:3px; background:#fff; animation:spLoad 2.7s var(--ease-out) .3s forwards; }
+.splash-load i { display:block; height:100%; width:0%; border-radius:3px; background:linear-gradient(90deg, rgba(255,255,255,.55), #fff); box-shadow:0 0 12px rgba(255,255,255,.5); animation:spLoad 2.7s var(--ease-out) .3s forwards; }
+/* profundidade e brilho do splash (acabamento premium) */
+#splash::before { content:''; position:absolute; top:26%; left:50%; width:560px; height:560px; margin-left:-280px; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.15), transparent 62%); pointer-events:none; animation:spGlow 4s ease-in-out infinite; }
+#splash::after { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(130% 100% at 50% 42%, transparent 52%, rgba(0,0,0,.38) 100%); }
+.splash-inner { position:relative; z-index:1; }
+.splash-mark { position:relative; }
+.splash-mark::after { content:''; position:absolute; inset:-16px; border-radius:32px; z-index:-1; background:radial-gradient(circle, rgba(255,255,255,.22), transparent 70%); animation:spGlow 3.2s ease-in-out infinite; }
+@keyframes spGlow { 0%,100%{ opacity:.45; transform:scale(1);} 50%{ opacity:.9; transform:scale(1.07);} }
 @keyframes spMark { from{opacity:0; transform:scale(.7) translateY(8px);} to{opacity:1; transform:none;} }
 @keyframes spUp { from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;} }
 @keyframes spLoad { 0%{width:0%;} 65%{width:72%;} 100%{width:100%;} }
-@media (prefers-reduced-motion:reduce){ .splash-mark,.splash-name,.splash-tag,.splash-load,.splash-load i { animation:none; } }
+@media (prefers-reduced-motion:reduce){ .splash-mark,.splash-name,.splash-tag,.splash-load,.splash-load i,#splash::before,.splash-mark::after { animation:none; } }
 body {
   font-family: var(--sans);
   background: var(--canvas);
