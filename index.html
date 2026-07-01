@@ -1892,8 +1892,10 @@ table.tbl tbody tr.no-hover td { border:none; }
 .ob-nav > .btn { min-width:118px; justify-content:center; }
 .ob-skip { position:absolute; top:14px; right:16px; font-size:12.5px; font-weight:600; color:var(--ink-3); background:none; border:none; cursor:pointer; z-index:2; padding:4px 6px; border-radius:7px; }
 .ob-skip:hover { color:var(--ink); background:var(--surface-3); }
-@keyframes obFade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
-#obBody { animation:obFade .28s var(--ease-out); }
+@keyframes obFade { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+.ob-in { animation:obFade .3s var(--ease-out); }
+.ob-count { font-size:12px; font-weight:500; color:var(--ink-3); }
+@media (prefers-reduced-motion:reduce){ .ob-in { animation:none; } }
 body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 
 /* ── card de decisão (data → decisão) ── */
@@ -3728,17 +3730,21 @@ function renderOb(){
     ? `<div class="ob-hero"><div class="ob-logo">${OB_LOGO}</div><div class="ob-title">${s.title}</div><div class="ob-sub">${s.sub}</div></div>`
     : `<div class="ob-hero"><div class="ob-stepic" style="background:var(--${bg}-l);color:var(--${bg})"><i class="fa-solid ${s.ic}"></i></div><div class="ob-title">${s.title}</div><div class="ob-sub">${s.sub}</div></div>`;
   const feats = s.feats? `<div class="ob-feats">${s.feats.map(([ic,t,d])=>`<div class="ob-feat"><div class="of-ic" style="background:var(--${bg}-l);color:var(--${bg})"><i class="fa-solid ${ic}"></i></div><div><div class="of-t">${t}</div><div class="of-s">${d}</div></div></div>`).join('')}</div>` : '';
-  const B=$('#obBody'); if(B) B.innerHTML = hero + feats;
-  const D=$('#obDots'); if(D) D.innerHTML = OB_STEPS.map((_,i)=>`<span class="ob-dot ${i===obStep?'on':''}" onclick="obGoto(${i})"></span>`).join('');
+  const B=$('#obBody'); if(B){ B.innerHTML = hero + feats; B.classList.remove('ob-in'); void B.offsetWidth; B.classList.add('ob-in'); }
+  const D=$('#obDots'); if(D) D.innerHTML = OB_STEPS.map((_,i)=>`<span class="ob-dot ${i===obStep?'on':''}" role="button" aria-label="Passo ${i+1}" onclick="obGoto(${i})"></span>`).join('');
   const F=$('#obFoot'); if(F) F.innerHTML = last
     ? `<button class="btn btn-primary" style="width:100%;justify-content:center" onclick="closeOnboarding();openAuth('signup')"><i class="fa-solid fa-user-plus"></i> Criar conta grátis</button><button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:9px" onclick="closeOnboarding()">Explorar sem conta</button>`
-    : `<div class="ob-nav">${obStep>0?`<button class="btn btn-ghost" onclick="obPrev()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>`:'<span></span>'}<button class="btn btn-primary" onclick="obNext()">Próximo <i class="fa-solid fa-arrow-right"></i></button></div>`;
+    : `<div class="ob-nav">${obStep>0?`<button class="btn btn-ghost" onclick="obPrev()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>`:'<span class="ob-count">Passo ${obStep+1} de ${OB_STEPS.length}</span>'}<button class="btn btn-primary" onclick="obNext()">Próximo <i class="fa-solid fa-arrow-right"></i></button></div>`;
 }
-function obNext(){ if(obStep<OB_STEPS.length-1){ obStep++; renderOb(); } }
+function obNext(){ if(obStep<OB_STEPS.length-1){ obStep++; renderOb(); } else { closeOnboarding(); } }
 function obPrev(){ if(obStep>0){ obStep--; renderOb(); } }
 function obGoto(i){ if(i>=0&&i<OB_STEPS.length){ obStep=i; renderOb(); } }
-function openOnboarding(){ obStep=0; renderOb(); const m=$('#obModal'); if(m) m.classList.add('open'); }
-function closeOnboarding(){ const m=$('#obModal'); if(m) m.classList.remove('open'); localStorage.setItem('lastro_onboarded','1'); }
+function obKey(e){ if(e.key==='ArrowRight') obNext(); else if(e.key==='ArrowLeft') obPrev(); else if(e.key==='Escape') closeOnboarding(); }
+let _obTX=0;
+function obTouchStart(e){ _obTX=e.changedTouches[0].clientX; }
+function obTouchEnd(e){ const dx=e.changedTouches[0].clientX-_obTX; if(Math.abs(dx)>50){ if(dx<0) obNext(); else obPrev(); } }
+function openOnboarding(){ obStep=0; renderOb(); const m=$('#obModal'); if(m){ m.classList.add('open'); document.addEventListener('keydown',obKey); const c=m.querySelector('.ob-card'); if(c){ c.addEventListener('touchstart',obTouchStart,{passive:true}); c.addEventListener('touchend',obTouchEnd,{passive:true}); } } }
+function closeOnboarding(){ const m=$('#obModal'); if(m){ m.classList.remove('open'); const c=m.querySelector('.ob-card'); if(c){ c.removeEventListener('touchstart',obTouchStart); c.removeEventListener('touchend',obTouchEnd); } } document.removeEventListener('keydown',obKey); localStorage.setItem('lastro_onboarded','1'); }
 
 /* polish: anima a entrada da tela e gera skeleton de carregamento */
 function animateContent(){ const c=$('#content'); if(!c) return; c.classList.remove('content-anim'); void c.offsetWidth; c.classList.add('content-anim'); }
