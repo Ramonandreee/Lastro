@@ -2051,6 +2051,13 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 .rx-modebar button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
 .rx-modebar button:not(.on):hover { color:var(--ink-2); }
 .acomp-badge { font-size:10px; font-weight:700; background:var(--down); color:#fff; border-radius:20px; padding:1px 6px; line-height:1.5; }
+/* Aporte inteligente: item com motivo */
+.ap-item { padding:11px 6px; border-bottom:1px solid var(--line); cursor:pointer; border-radius:9px; transition:background .14s var(--ease); }
+.ap-item:last-child { border-bottom:none; }
+.ap-item:hover { background:var(--surface-2,var(--brand-l)); }
+.ap-top { display:flex; align-items:center; gap:11px; }
+.ap-why { font-size:11.5px; color:var(--ink-3); line-height:1.5; margin:6px 0 0 45px; }
+@media (max-width:560px){ .ap-why { margin-left:0; } }
 .rx-upload { text-align:center; display:flex; flex-direction:column; align-items:center; padding:40px 24px; }
 .rx-up-ic { width:64px; height:64px; border-radius:18px; background:var(--brand-l); color:var(--brand); display:flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:14px; }
 .rx-up-ic.spin { background:var(--surface-3); color:var(--ink-3); }
@@ -4718,15 +4725,31 @@ function initProventosCharts(){
 /* ══════════════════════════════════════════════════════════
    VIEW: APORTE INTELIGENTE
    ══════════════════════════════════════════════════════════ */
+function aporteMotivo(strat, g, total){
+  const a=g.f.a, k=g.f.k, wOld=total? g.val/total*100 : 0;
+  if(strat==='score') return `Score ${a.score||'—'}/100 — a qualidade direciona um aporte maior.`;
+  if(strat==='dy') return `DY de ${pc(a.dy||0,1)}% — prioriza a geração de renda.`;
+  if(strat==='value') return k==='fiis'? `P/VP ${pc(a.pvp||0,2)} — valuation atrativo, entra mais barato.` : `P/L ${a.pl?pc(a.pl,1)+'x':'—'} — preço atrativo frente ao lucro.`;
+  if(strat==='quality') return `Score ${a.score||'—'} com ${k==='fiis'?'P/VP '+pc(a.pvp||0,2):'P/L '+(a.pl?pc(a.pl,1)+'x':'—')} — qualidade a bom preço.`;
+  if(strat==='consist') return `Consistência de ${a.consist!=null?pc(a.consist*100,0)+'%':'—'} — histórico estável de resultados.`;
+  return `Peso atual de ${pc(wOld,1)}% — recompõe a participação rumo ao equilíbrio.`;
+}
 function aportePlan(valor, strat){
   const groups=portfolioByTicker().filter(g=>g.cotas>0 && g.f.a.px>0);
   if(!groups.length) return null;
   const total=groups.reduce((s,g)=>s+g.val,0), newTotal=total+valor, n=groups.length;
+  const wOf=g=>{ const a=g.f.a,k=g.f.k;
+    if(strat==='score') return Math.max(1,a.score||50);
+    if(strat==='dy') return Math.max(0.1,a.dy||1);
+    if(strat==='value'){ const v=k==='fiis'?(a.pvp||1):((a.pl||15)/8); return Math.max(0.15, 1/Math.max(0.2,v)); }
+    if(strat==='quality'){ const v=k==='fiis'?(a.pvp||1):((a.pl||15)/8); return Math.max(0.15, (a.score||50)/100/Math.max(0.25,v)); }
+    if(strat==='consist') return Math.max(0.1,(a.consist!=null?a.consist:0.6)*100);
+    return 1; // equal / rebalance
+  };
   let targets;
-  if(strat==='score'){ const ws=groups.map(g=>Math.max(1,g.f.a.score||50)), sum=ws.reduce((a,b)=>a+b,0); targets=ws.map(w=>w/sum*newTotal); }
-  else if(strat==='dy'){ const ws=groups.map(g=>Math.max(0.1,g.f.a.dy||1)), sum=ws.reduce((a,b)=>a+b,0); targets=ws.map(w=>w/sum*newTotal); }
-  else targets=groups.map(()=>newTotal/n);
-  const items=groups.map((g,i)=>({ g, tk:g.tk, px:g.f.a.px, cur:g.val, target:targets[i], deficit:Math.max(0,targets[i]-g.val), cotas:0, invest:0 }));
+  if(strat==='equal') targets=groups.map(()=>newTotal/n);
+  else { const ws=groups.map(wOf), sum=ws.reduce((a,b)=>a+b,0)||1; targets=ws.map(w=>w/sum*newTotal); }
+  const items=groups.map((g,i)=>({ g, tk:g.tk, px:g.f.a.px, cur:g.val, target:targets[i], deficit:Math.max(0,targets[i]-g.val), cotas:0, invest:0, motivo:aporteMotivo(strat,g,total) }));
   const totDef=items.reduce((s,x)=>s+x.deficit,0);
   items.forEach(x=>{ x.alloc = totDef>0 ? x.deficit/totDef*valor : valor/n; const c=Math.floor(x.alloc/x.px); x.cotas=c; x.invest=c*x.px; });
   let budget=valor-items.reduce((s,x)=>s+x.invest,0), guard=0;
@@ -4748,7 +4771,12 @@ function viewAporte(){
         <input id="apVal" class="form-input" type="text" inputmode="decimal" value="1.000" oninput="maskBRL(this);runAporte()" style="font-size:15px;font-weight:600"></div>
       <div class="form-col" style="flex-basis:180px"><label class="form-label">Estratégia</label>
         <select id="apStrat" class="form-select" onchange="runAporte()">
-          <option value="equal">Igualar pesos</option><option value="score">Priorizar maior Score</option><option value="dy">Priorizar maior DY</option>
+          <option value="equal">Rebalancear (igualar pesos)</option>
+          <option value="score">Priorizar qualidade (Score)</option>
+          <option value="dy">Priorizar renda (DY)</option>
+          <option value="value">Priorizar valor (mais barato)</option>
+          <option value="quality">Qualidade a bom preço</option>
+          <option value="consist">Priorizar consistência</option>
         </select></div>
     </div>
   </div>
@@ -4760,7 +4788,10 @@ function runAporte(){
   if(valor<=0){ host.innerHTML='<div class="card card-pad"><div class="faint" style="text-align:center;padding:12px">Informe um valor para ver o plano de compra.</div></div>'; return; }
   const r=aportePlan(valor, strat); if(!r){ host.innerHTML=''; return; }
   const rows=r.items.map(x=>{ const wOld=r.total? x.cur/r.total*100:0, wNew=r.newTotal? (x.cur+x.invest)/r.newTotal*100:0;
-    return `<div class="pex-row" onclick="quickView('${x.tk}')"><div class="pex-l">${assetLogo(x.tk,x.g.f.k,'sm')}<div class="pex-id"><div class="pex-tk">${x.tk}</div><div class="pex-d">${pc(wOld,1)}% → <strong style="color:var(--brand)">${pc(wNew,1)}%</strong></div></div></div><div class="pex-r"><div class="pex-v">${x.cotas} cota${x.cotas>1?'s':''}</div><div class="pex-s priv-blur">${brl(x.invest)}</div></div></div>`; }).join('');
+    return `<div class="ap-item" onclick="quickView('${x.tk}')">
+      <div class="ap-top">${assetLogo(x.tk,x.g.f.k,'sm')}<div class="pex-id"><div class="pex-tk">${x.tk}</div><div class="pex-d">${pc(wOld,1)}% → <strong style="color:var(--brand)">${pc(wNew,1)}%</strong></div></div><div class="pex-r"><div class="pex-v">${x.cotas} cota${x.cotas>1?'s':''}</div><div class="pex-s priv-blur">${brl(x.invest)}</div></div></div>
+      <div class="ap-why">${x.motivo}</div>
+    </div>`; }).join('');
   const investido=r.items.reduce((s,x)=>s+x.invest,0);
   host.innerHTML=`<div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-cart-shopping"></i></span> Plano de compra</div><div class="pex-total"><div class="pex-total-v priv-blur">${brl(investido)}</div><div class="pex-total-l">a investir · troco ${brl(r.sobra)}</div></div></div>
