@@ -954,20 +954,10 @@ img, svg, canvas, video { max-width: 100%; }
 <!-- ════════ ONBOARDING ════════ -->
 <div class="modal-scrim" id="obModal">
   <div class="modal-card ob-card" role="dialog" aria-modal="true" aria-label="Bem-vindo ao Lastro">
-    <div class="ob-hero">
-      <div class="ob-logo"><svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
-      <div class="ob-title">Bem-vindo ao Lastro</div>
-      <div class="ob-sub">Inteligência para o investidor brasileiro — renda variável com dados ao vivo, Score proprietário e IA.</div>
-    </div>
-    <div class="ob-feats">
-      <div class="ob-feat"><div class="of-ic" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-bolt"></i></div><div><div class="of-t">Cotações ao vivo</div><div class="of-s">Ações, FIIs, BDRs, ETFs e cripto, sempre atualizados.</div></div></div>
-      <div class="ob-feat"><div class="of-ic" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></div><div><div class="of-t">Score Lastro™</div><div class="of-s">Qualidade de cada ativo num índice transparente de 0 a 100.</div></div></div>
-      <div class="ob-feat"><div class="of-ic" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-wallet"></i></div><div><div class="of-t">Carteira e Watchlist</div><div class="of-s">Acompanhe patrimônio, renda e os ativos que você segue.</div></div></div>
-    </div>
-    <div class="ob-foot">
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="closeOnboarding();openAuth('signup')"><i class="fa-solid fa-user-plus"></i> Criar conta grátis</button>
-      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:9px" onclick="closeOnboarding()">Explorar sem conta</button>
-    </div>
+    <button class="ob-skip" onclick="closeOnboarding()">Pular</button>
+    <div id="obBody"></div>
+    <div class="ob-dots" id="obDots"></div>
+    <div class="ob-foot" id="obFoot"></div>
   </div>
 </div>
 
@@ -1893,6 +1883,17 @@ table.tbl tbody tr.no-hover td { border:none; }
 .of-t { font-size:14px; font-weight:600; }
 .of-s { font-size:12.5px; color:var(--ink-3); margin-top:2px; line-height:1.45; }
 .ob-foot { padding:8px 26px 26px; }
+.ob-card { position:relative; }
+.ob-stepic { width:60px; height:60px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 16px; box-shadow:var(--sh-sm); }
+.ob-dots { display:flex; gap:7px; justify-content:center; padding:4px 0 2px; }
+.ob-dot { width:7px; height:7px; border-radius:50%; background:var(--line-2); cursor:pointer; transition:all .2s var(--ease); }
+.ob-dot.on { width:22px; border-radius:4px; background:var(--brand); }
+.ob-nav { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.ob-nav > .btn { min-width:118px; justify-content:center; }
+.ob-skip { position:absolute; top:14px; right:16px; font-size:12.5px; font-weight:600; color:var(--ink-3); background:none; border:none; cursor:pointer; z-index:2; padding:4px 6px; border-radius:7px; }
+.ob-skip:hover { color:var(--ink); background:var(--surface-3); }
+@keyframes obFade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+#obBody { animation:obFade .28s var(--ease-out); }
 body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 
 /* ── card de decisão (data → decisão) ── */
@@ -3353,6 +3354,7 @@ function acctMenuHTML(){
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();openAssinatura()")}
       ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
+      ${item('fa-circle-play','Como funciona',"closeAcctMenu();openOnboarding()")}
       ${item(privOn()?'fa-eye':'fa-eye-slash', privOn()?'Mostrar meus valores':'Ocultar meus valores', "closeAcctMenu();togglePriv()")}
       ${themeRow}
       ${isOwner()? `<div class="acct-sep"></div><button class="acct-item acct-test ${testModeOn()?'on':''}" onclick="toggleTestMode()"><i class="fa-solid fa-flask-vial"></i> Modo teste<span class="acct-toggle">${testModeOn()?'ON':'OFF'}</span></button>`:''}
@@ -3364,6 +3366,7 @@ function acctMenuHTML(){
     ${item('fa-crown','Assinar Premium',"closeAcctMenu();goPricing()")}
     ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
     ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
+      ${item('fa-circle-play','Como funciona',"closeAcctMenu();openOnboarding()")}
     ${themeRow}`;
 }
 function toggleAcctMenu(e){ if(e) e.stopPropagation(); const m=$('#acctMenu'); if(!m) return; if(m.classList.contains('open')){ m.classList.remove('open'); return; } m.innerHTML=acctMenuHTML(); m.classList.add('open'); }
@@ -3711,7 +3714,30 @@ function maybeOnboard(){
   if(localStorage.getItem('lastro_onboarded')) return;
   setTimeout(openOnboarding, 600);
 }
-function openOnboarding(){ const m=$('#obModal'); if(m) m.classList.add('open'); }
+const OB_LOGO='<svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg>';
+const OB_STEPS=[
+  { logo:true, title:'Bem-vindo à Lastro', sub:'Inteligência para o investidor brasileiro — renda variável com dados ao vivo, Score proprietário e IA. Veja em 30 segundos o que dá pra fazer aqui.' },
+  { ic:'fa-chart-column', bg:'brand', title:'Explore o mercado', sub:'Ações, FIIs, BDRs, ETFs, Stocks e cripto — com fundamentos completos.', feats:[['fa-award','Score Lastro™','Qualidade de cada ativo, de 0 a 100, transparente'],['fa-filter','Rastreador','Filtre por DY, P/VP, P/L, ROE, setor e mais']] },
+  { ic:'fa-wallet', bg:'accent', title:'Sua carteira, viva', sub:'Acompanhe patrimônio, proventos e rentabilidade — sincronizados na nuvem no seu login.', feats:[['fa-magnifying-glass-chart','Raio-X da Carteira','Diversificação, Nota Lastro e recomendações'],['fa-coins','Proventos','Histórico, Yield on Cost e projeção de renda']] },
+  { ic:'fa-crown', bg:'gold', title:'Ferramentas Investidor Pro', sub:'Decisões com o nível de uma mesa profissional.', feats:[['fa-chart-line','Backtest','Histórico da carteira vs CDI e IBOV'],['fa-heart-pulse','Stress Test','Simule crises e veja o impacto em reais'],['fa-user-tie','Aporte Inteligente','Quanto e onde investir — com o motivo de cada ativo']] },
+];
+let obStep=0;
+function renderOb(){
+  const s=OB_STEPS[obStep], last=obStep===OB_STEPS.length-1, bg=s.bg||'brand';
+  const hero = s.logo
+    ? `<div class="ob-hero"><div class="ob-logo">${OB_LOGO}</div><div class="ob-title">${s.title}</div><div class="ob-sub">${s.sub}</div></div>`
+    : `<div class="ob-hero"><div class="ob-stepic" style="background:var(--${bg}-l);color:var(--${bg})"><i class="fa-solid ${s.ic}"></i></div><div class="ob-title">${s.title}</div><div class="ob-sub">${s.sub}</div></div>`;
+  const feats = s.feats? `<div class="ob-feats">${s.feats.map(([ic,t,d])=>`<div class="ob-feat"><div class="of-ic" style="background:var(--${bg}-l);color:var(--${bg})"><i class="fa-solid ${ic}"></i></div><div><div class="of-t">${t}</div><div class="of-s">${d}</div></div></div>`).join('')}</div>` : '';
+  const B=$('#obBody'); if(B) B.innerHTML = hero + feats;
+  const D=$('#obDots'); if(D) D.innerHTML = OB_STEPS.map((_,i)=>`<span class="ob-dot ${i===obStep?'on':''}" onclick="obGoto(${i})"></span>`).join('');
+  const F=$('#obFoot'); if(F) F.innerHTML = last
+    ? `<button class="btn btn-primary" style="width:100%;justify-content:center" onclick="closeOnboarding();openAuth('signup')"><i class="fa-solid fa-user-plus"></i> Criar conta grátis</button><button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:9px" onclick="closeOnboarding()">Explorar sem conta</button>`
+    : `<div class="ob-nav">${obStep>0?`<button class="btn btn-ghost" onclick="obPrev()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>`:'<span></span>'}<button class="btn btn-primary" onclick="obNext()">Próximo <i class="fa-solid fa-arrow-right"></i></button></div>`;
+}
+function obNext(){ if(obStep<OB_STEPS.length-1){ obStep++; renderOb(); } }
+function obPrev(){ if(obStep>0){ obStep--; renderOb(); } }
+function obGoto(i){ if(i>=0&&i<OB_STEPS.length){ obStep=i; renderOb(); } }
+function openOnboarding(){ obStep=0; renderOb(); const m=$('#obModal'); if(m) m.classList.add('open'); }
 function closeOnboarding(){ const m=$('#obModal'); if(m) m.classList.remove('open'); localStorage.setItem('lastro_onboarded','1'); }
 
 /* polish: anima a entrada da tela e gera skeleton de carregamento */
