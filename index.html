@@ -979,7 +979,7 @@ img, svg, canvas, video { max-width: 100%; }
   display: grid;
   grid-template-columns: 1.55fr 1fr;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 .hero-main {
   background: var(--surface);
@@ -1124,7 +1124,7 @@ img, svg, canvas, video { max-width: 100%; }
 .insight-send:active { transform: scale(.94); }
 
 /* metric strip */
-.mstrip { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+.mstrip { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
 /* cards de mercado da Home (IFIX/Dólar/SELIC/Bitcoin) — sparkline premium full-bleed */
 .mkt-cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px 16px 0; box-shadow: var(--sh-sm); overflow: hidden; cursor: default; transition: transform .22s var(--ease-out), box-shadow .22s var(--ease-out), border-color .22s var(--ease); }
 .mkt-cell:hover { transform: translateY(-3px); box-shadow: var(--sh-lg); border-color: var(--line-2); }
@@ -2566,6 +2566,11 @@ body.report-open { overflow:hidden; }
 .pat-val { font-family:var(--serif); font-size:30px; font-weight:500; letter-spacing:-.02em; line-height:1; color:var(--ink); }
 .pat-empty-t { font-size:19px; font-weight:600; letter-spacing:-.01em; color:var(--ink); }
 .pat-sub { font-size:12.5px; color:var(--ink-2); margin-top:8px; max-width:560px; }
+.pat-kpis { display:flex; gap:24px; flex-wrap:wrap; margin-top:13px; }
+.pat-kpi { display:flex; flex-direction:column; gap:2px; }
+.pat-kpi b { font-family:var(--mono); font-size:14px; font-weight:600; color:var(--ink); }
+.pat-kpi b.up { color:var(--up); } .pat-kpi b.down { color:var(--down); }
+.pat-kpi span { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.03em; }
 @media (max-width:760px){
   .opp-grid { grid-template-columns:1fr 1fr; }
   .pat-card { padding:16px; }
@@ -3970,7 +3975,7 @@ function oppCard(o){
   return `<div class="opp-card" style="--sc:${scoreColor(a.score)}" onclick="quickView('${a.tk}')">
     <div class="opp-top">${assetLogo(a.tk,k,'sm')}<div class="opp-id"><div class="tk">${a.tk}</div><div class="nm">${esc(a.nm||'')}</div></div></div>
     <div class="opp-row"><span class="score-pill" style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)}"></span>Score ${a.score}</span><span class="opp-px mono">${brl(a.px)}</span></div>
-    <div class="opp-meta">${metric}</div>
+    <div class="opp-meta">${metric} · <span class="${(a.var||0)>=0?'up':'down'}">${(a.var||0)>=0?'+':''}${pc(a.var||0)}% hoje</span></div>
   </div>`;
 }
 function goView(v){ const el=document.querySelector('.nav-item[data-view="'+v+'"]'); nav(v, el); }
@@ -4065,7 +4070,11 @@ function viewPainel(){
       <div class="pat-l">
         <div class="pat-eyebrow"><i class="fa-solid fa-wallet"></i> Sua carteira <button class="priv-eye" style="width:26px;height:26px;font-size:11px;margin-left:6px" onclick="event.stopPropagation();togglePriv()" title="Mostrar/ocultar"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
         <div class="pat-val priv-blur">R$ <span id="patVal">0</span></div>
-        <div class="pat-sub priv-blur"><span class="chip ${p.lucro>=0?'chip-up':'chip-down'}">${p.lucro>=0?'+':''}${brl(p.lucro)} (${p.lucroP.toFixed(1).replace('.',',')}%)</span> · ${p.nAtivos} ativo${p.nAtivos!==1?'s':''} · renda ~${brl(p.renda)}/mês</div>
+        <div class="pat-kpis priv-blur">
+          <div class="pat-kpi"><b class="${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':''}${brl(p.lucro)}</b><span>resultado · ${p.lucroP.toFixed(1).replace('.',',')}%</span></div>
+          <div class="pat-kpi"><b>${p.nAtivos}</b><span>ativo${p.nAtivos!==1?'s':''}</span></div>
+          <div class="pat-kpi"><b>${brl(p.renda)}</b><span>renda/mês</span></div>
+        </div>
       </div>
       <button class="btn btn-ghost" onclick="goView('carteira')">Ver carteira <i class="fa-solid fa-arrow-right"></i></button>
     </div>` : `
