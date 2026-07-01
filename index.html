@@ -1900,7 +1900,7 @@ table.tbl tbody tr.no-hover td { border:none; }
 /* tour guiado (coach marks) */
 .tour-ov { position:fixed; inset:0; z-index:400; display:none; }
 .tour-ov.open { display:block; }
-.tour-mask { position:fixed; background:rgba(8,12,17,.38); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); z-index:401; pointer-events:auto; transition:all .28s var(--ease-out); }
+.tour-blur { position:fixed; inset:0; background:rgba(8,12,17,.38); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); z-index:401; pointer-events:auto; }
 .tour-spot { position:fixed; border-radius:12px; border:2px solid var(--brand); box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 26%,transparent); z-index:402; pointer-events:none; transition:left .3s var(--ease-out), top .3s var(--ease-out), width .3s var(--ease-out), height .3s var(--ease-out); }
 .tour-pop { position:fixed; z-index:403; background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--sh-xl); padding:16px 16px 14px; transition:left .28s var(--ease-out), top .28s var(--ease-out); }
 .tour-pop-h { font-size:15px; font-weight:700; letter-spacing:-.01em; color:var(--ink); display:flex; align-items:center; gap:8px; padding-right:22px; }
@@ -3778,7 +3778,9 @@ const TOUR=[
   { sel:'.hdr-profile', pre:tourTopPre, title:'Sua conta', text:'Perfil, plano, tema claro/escuro e este tour (em "Como funciona") ficam aqui no seu avatar.' },
   { center:true, ic:'fa-circle-check', title:'Tudo pronto!', text:'Explore à vontade. Você pode rever este tour quando quiser no menu da conta.' },
 ];
-function ensureTourEls(){ if(document.getElementById('tourOv')) return; const o=document.createElement('div'); o.id='tourOv'; o.className='tour-ov'; o.innerHTML='<div class="tour-mask" id="tmT"></div><div class="tour-mask" id="tmB"></div><div class="tour-mask" id="tmL"></div><div class="tour-mask" id="tmR"></div><div id="tourSpot" class="tour-spot"></div><div id="tourPop" class="tour-pop"></div>'; document.body.appendChild(o); }
+function ensureTourEls(){ if(document.getElementById('tourOv')) return; const o=document.createElement('div'); o.id='tourOv'; o.className='tour-ov'; o.innerHTML='<div class="tour-blur" id="tourBlur"></div><div id="tourSpot" class="tour-spot"></div><div id="tourPop" class="tour-pop"></div>'; document.body.appendChild(o); }
+function tourRRPath(x,y,w,h,r){ r=Math.max(0,Math.min(r,w/2,h/2)); return `M${x+r} ${y}h${w-2*r}a${r} ${r} 0 0 1 ${r} ${r}v${h-2*r}a${r} ${r} 0 0 1 ${-r} ${r}h${-(w-2*r)}a${r} ${r} 0 0 1 ${-r} ${-r}v${-(h-2*r)}a${r} ${r} 0 0 1 ${r} ${-r}z`; }
+function tourMaskURL(vw,vh,x,y,w,h,r){ const p=`M0 0H${vw}V${vh}H0Z`+tourRRPath(x,y,w,h,r); const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='${vw}' height='${vh}'><path d='${p}' fill='white' fill-rule='evenodd'/></svg>`; return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`; }
 function startTour(){ if(typeof closeAcctMenu==='function') closeAcctMenu(); localStorage.setItem('lastro_onboarded','1'); ensureTourEls(); tourStep=0; _tourActive=true; $('#tourOv').classList.add('open'); document.addEventListener('keydown',tourKey); window.addEventListener('resize',tourReposition); tourShow(); }
 function endTour(){ _tourActive=false; closeSidebar(); const o=$('#tourOv'); if(o) o.classList.remove('open'); document.removeEventListener('keydown',tourKey); window.removeEventListener('resize',tourReposition); }
 function tourKey(e){ if(!_tourActive) return; if(e.key==='ArrowRight') tourNext(); else if(e.key==='ArrowLeft') tourPrev(); else if(e.key==='Escape') endTour(); }
@@ -3797,23 +3799,21 @@ function tourPopHTML(s){
     ${!last?`<button class="tour-skip" onclick="endTour()" aria-label="Pular tour"><i class="fa-solid fa-xmark"></i></button>`:''}`;
 }
 function tourPlace(s){
-  const spot=$('#tourSpot'), pop=$('#tourPop'); if(!spot||!pop) return;
-  const T=$('#tmT'),B=$('#tmB'),L=$('#tmL'),R=$('#tmR');
+  const spot=$('#tourSpot'), pop=$('#tourPop'), blur=$('#tourBlur'); if(!spot||!pop||!blur) return;
   const vw=window.innerWidth, vh=window.innerHeight;
-  const box=(e,x,y,w,h)=>{ if(!e) return; if(w<=0||h<=0){ e.style.display='none'; return; } e.style.display='block'; e.style.left=x+'px'; e.style.top=y+'px'; e.style.width=w+'px'; e.style.height=h+'px'; };
   pop.innerHTML=tourPopHTML(s);
   const el = (!s.center && s.sel) ? document.querySelector(s.sel) : null;
   const pw=Math.min(320, vw-24); pop.style.width=pw+'px';
-  if(!el){ spot.style.display='none'; box(T,0,0,vw,vh); [B,L,R].forEach(e=>{ if(e) e.style.display='none'; }); pop.classList.add('center'); pop.style.left='50%'; pop.style.top='50%'; pop.style.transform='translate(-50%,-50%)'; return; }
+  if(!el){ spot.style.display='none'; blur.style.webkitMaskImage='none'; blur.style.maskImage='none'; pop.classList.add('center'); pop.style.left='50%'; pop.style.top='50%'; pop.style.transform='translate(-50%,-50%)'; return; }
   pop.classList.remove('center'); pop.style.transform='';
   try{ el.scrollIntoView({block:'center',behavior:'instant'}); }catch(e){ try{ el.scrollIntoView(); }catch(_){} }
   const r=el.getBoundingClientRect(), pad=7;
   const sx=r.left-pad, sy=r.top-pad, sw=r.width+pad*2, sh=r.height+pad*2;
-  spot.style.display='block'; spot.style.left=sx+'px'; spot.style.top=sy+'px'; spot.style.width=sw+'px'; spot.style.height=sh+'px';
-  box(T,0,0,vw,Math.max(0,sy));
-  box(B,0,sy+sh,vw,Math.max(0,vh-(sy+sh)));
-  box(L,0,sy,Math.max(0,sx),sh);
-  box(R,sx+sw,sy,Math.max(0,vw-(sx+sw)),sh);
+  const elR=parseFloat(getComputedStyle(el).borderTopLeftRadius)||10;
+  const hr=Math.max(8, Math.min(24, elR+pad));
+  spot.style.display='block'; spot.style.left=sx+'px'; spot.style.top=sy+'px'; spot.style.width=sw+'px'; spot.style.height=sh+'px'; spot.style.borderRadius=hr+'px';
+  const mk=tourMaskURL(vw,vh,sx,sy,sw,sh,hr);
+  blur.style.webkitMaskImage=mk; blur.style.maskImage=mk;
   const ph=pop.offsetHeight||180;
   let top=r.bottom+12; if(top+ph>vh-12) top=Math.max(12, r.top-ph-12);
   let left=Math.min(Math.max(12, r.left+r.width/2-pw/2), vw-pw-12);
