@@ -2097,6 +2097,12 @@ body.report-open { overflow:hidden; }
 .rx-rec-why { font-size:12px; line-height:1.55; color:var(--ink-2); }
 .rx-rec-ok { display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:var(--ink-2); line-height:1.5; padding:6px 0; }
 .rx-rec-ok i { color:var(--brand); margin-top:2px; }
+.rx-aporte-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; cursor:pointer; transition:border-color .18s var(--ease), box-shadow .18s var(--ease); }
+.rx-aporte-cta:hover { border-color:color-mix(in srgb,var(--brand) 35%,transparent); box-shadow:var(--sh); }
+.rx-aporte-l { display:flex; align-items:flex-start; gap:12px; min-width:0; }
+.rx-aporte-t { font-size:14px; font-weight:600; color:var(--ink); }
+.rx-aporte-cta .btn { flex:none; }
+@media (max-width:560px){ .rx-aporte-cta .btn { width:100%; justify-content:center; } }
 .rx-photo-banner button { margin-left:auto; display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:var(--accent); background:var(--surface); border:1px solid color-mix(in srgb,var(--accent) 30%,transparent); border-radius:8px; padding:6px 11px; cursor:pointer; }
 /* Stress test */
 .stress-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
@@ -6141,11 +6147,11 @@ function viewRaioX(){
     </div>
     <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sugestões educativas geradas a partir da composição, concentração e Score Lastro — não são recomendação personalizada de investimento.</div>
   </div>
-  ${!isFoto?`<div class="card card-pad cons-tool" style="margin-top:16px">
-    <div class="card-h" style="margin-bottom:6px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Quanto e onde investir agora?</div>
-    <p class="faint" style="font-size:12.5px;margin:0 0 12px;line-height:1.55">Diga quanto você tem para aportar este mês e o Lastro sugere onde, com base na composição atual da sua carteira.</p>
-    <div class="cons-input"><span class="cons-cur">R$</span><input id="consultorAmt" type="text" inputmode="decimal" placeholder="3.000" oninput="maskBRL(this)" onkeydown="if(event.key==='Enter')runConsultor()"><button class="btn btn-primary" onclick="runConsultor()"><i class="fa-solid fa-arrow-right"></i> Analisar</button></div>
-    <div id="consultorOut"></div>
+  ${!isFoto?`<div class="card card-pad rx-aporte-cta" onclick="nav('aporte')">
+    <div class="rx-aporte-l"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+      <div><div class="rx-aporte-t">Quanto e onde investir agora?</div><div class="faint" style="font-size:12px;margin-top:2px">Informe o valor do aporte e receba o plano de compra completo em cotas inteiras, com 6 estratégias e o motivo de cada ativo.</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="event.stopPropagation();nav('aporte')"><i class="fa-solid fa-scale-balanced"></i> Aporte Inteligente</button>
   </div>`:''}
   <div class="rx-cols" style="margin-top:16px">
     <div class="card card-pad">
