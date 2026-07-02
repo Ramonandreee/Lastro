@@ -919,9 +919,9 @@ img, svg, canvas, video { max-width: 100%; }
   <div class="modal-card premium-modal" role="dialog" aria-modal="true" aria-label="Recurso Premium"></div>
 </div>
 
-<div class="modal-scrim" id="authModal" onclick="if(event.target===this)closeAuth()">
+<div class="modal-scrim" id="authModal" onclick="if(event.target===this)closeAuthGuarded()">
   <div class="modal-card" role="dialog" aria-modal="true" aria-label="Conta">
-    <div class="modal-head"><span id="authTitle">Entrar na Lastro</span><button class="drawer-close" onclick="closeAuth()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-head"><span id="authTitle">Entrar na Lastro</span><button class="drawer-close" onclick="closeAuthGuarded()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body" id="authBody"></div>
   </div>
 </div>
@@ -2040,7 +2040,7 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .confirm-card { width:380px; max-width:92vw; padding:24px 24px 20px; text-align:center; }
 .confirm-t { font-size:17px; font-weight:700; letter-spacing:-.01em; }
 .confirm-m { font-size:13.5px; color:var(--ink-2); line-height:1.6; margin:10px 0 20px; }
-.confirm-acts { display:flex; gap:10px; }
+.confirm-acts { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
 .confirm-acts .btn { flex:1; justify-content:center; }
 .btn-danger { background:var(--down); color:#fff; border:none; }
 .btn-danger:hover { filter:brightness(1.06); }
@@ -2062,7 +2062,7 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 @media (max-width:460px){ .fld-grid { grid-template-columns:1fr; } }
 .prof-lbl { font-size:12px; font-weight:500; color:var(--ink-2); margin-bottom:8px; }
 .prof-chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
-.prof-chip { flex:1; min-width:90px; padding:9px 12px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
+.prof-chip { flex:1; min-width:90px; padding:9px 12px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); text-align:center; display:flex; align-items:center; justify-content:center; }
 .prof-chip:hover { border-color:var(--line-2); }
 .prof-chip.on { background:var(--brand-l); border-color:color-mix(in srgb,var(--brand) 40%,transparent); color:var(--brand); }
 .prof-conn { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); }
@@ -2076,6 +2076,17 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .prof-conn-tx small { font-size:12px; color:var(--ink-3); }
 .prof-conn-btn { flex:none; padding:7px 14px; border:1px solid var(--line-2); border-radius:999px; background:var(--surface); color:var(--ink); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
 .prof-conn-btn:hover { border-color:var(--brand); color:var(--brand); }
+.prof-av-del { position:absolute; right:-3px; top:-3px; z-index:3; width:22px; height:22px; border-radius:50%; background:var(--down); color:#fff; display:flex; align-items:center; justify-content:center; font-size:9px; border:2px solid var(--surface); cursor:pointer; }
+.prof-note { display:flex; gap:8px; align-items:flex-start; font-size:12px; color:var(--ink-3); line-height:1.5; margin:10px 0 4px; padding:10px 12px; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-sm); }
+.prof-note i { color:var(--ink-3); margin-top:1px; }
+.code-card { width:400px; padding:26px 24px 20px; text-align:center; }
+.code-ic { width:52px; height:52px; margin:0 auto 14px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--brand); background:var(--brand-l); }
+.code-t { font-weight:700; font-size:17px; letter-spacing:-.01em; }
+.code-m { font-size:13px; color:var(--ink-3); line-height:1.5; margin:8px 0 16px; }
+.code-inp { width:100%; text-align:center; font-family:var(--mono); font-size:26px; letter-spacing:.4em; padding:12px; border:1px solid var(--line-2); border-radius:var(--r); background:var(--surface-2); color:var(--ink); }
+.code-inp:focus { border-color:var(--accent); background:var(--surface); }
+.code-card .confirm-acts { margin-top:16px; }
+.code-resend { margin-top:12px; background:none; border:none; color:var(--brand); font-size:12.5px; font-weight:600; cursor:pointer; }
 /* cropper de foto */
 .crop-stage { position:relative; width:256px; max-width:100%; aspect-ratio:1; margin:0 auto 16px; border-radius:14px; overflow:hidden; background:#0a0e13; touch-action:none; }
 .crop-stage canvas { width:100%; height:100%; display:block; cursor:grab; }
@@ -3550,6 +3561,7 @@ const SUPPORT_FAQ=[
 ];
 function faqToggle(el){ const it=el.closest('.faq-item'); if(it) it.classList.toggle('open'); }
 function openSupport(){
+  _profileOpen=false;
   const u=currentUser(); const tier=planTier();
   const planChip = tier==='pro'?'<span class="acct-plan pro"><i class="fa-solid fa-crown"></i> Investidor Pro</span>':tier==='premium'?'<span class="acct-plan prem"><i class="fa-solid fa-crown"></i> Premium</span>':'<span class="acct-plan free">Gratuito</span>';
   const faq=SUPPORT_FAQ.map(([q,a])=>`<div class="faq-item"><button class="faq-q" onclick="faqToggle(this)"><span>${q}</span><i class="fa-solid fa-chevron-down"></i></button><div class="faq-a"><p>${a}</p></div></div>`).join('');
@@ -3586,12 +3598,15 @@ function openSupport(){
 document.addEventListener('click', e=>{ if(!e.target.closest('.acct-wrap')) closeAcctMenu(); });
 function openAccount(){ toggleAcctMenu(); }
 /* confirmação genérica (evita logout acidental, etc.) */
-function showConfirm(title, msg, yesLabel, onYes, danger){
+function showConfirm(title, msg, yesLabel, onYes, danger, opts){
+  opts=opts||{};
   let el=document.getElementById('confirmModal');
   if(!el){ el=document.createElement('div'); el.id='confirmModal'; el.className='modal-scrim'; document.body.appendChild(el); }
-  el.innerHTML=`<div class="modal-card confirm-card"><div class="confirm-t">${esc(title)}</div><div class="confirm-m">${esc(msg)}</div><div class="confirm-acts"><button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button><button class="btn ${danger?'btn-danger':'btn-primary'}" id="confirmYes">${esc(yesLabel)}</button></div></div>`;
+  const altBtn = opts.altLabel ? `<button class="btn btn-ghost" id="confirmAlt">${esc(opts.altLabel)}</button>` : '';
+  el.innerHTML=`<div class="modal-card confirm-card"><div class="confirm-t">${esc(title)}</div><div class="confirm-m">${esc(msg)}</div><div class="confirm-acts"><button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>${altBtn}<button class="btn ${danger?'btn-danger':'btn-primary'}" id="confirmYes">${esc(yesLabel)}</button></div></div>`;
   el.classList.add('open'); el.onclick=ev=>{ if(ev.target===el) closeConfirm(); };
   document.getElementById('confirmYes').onclick=()=>{ closeConfirm(); onYes&&onYes(); };
+  if(opts.altLabel){ document.getElementById('confirmAlt').onclick=()=>{ closeConfirm(); opts.onAlt&&opts.onAlt(); }; }
 }
 function closeConfirm(){ const el=document.getElementById('confirmModal'); if(el) el.classList.remove('open'); }
 function confirmLogout(){ showConfirm('Sair da sua conta?','Tem certeza que deseja sair? Você precisará entrar novamente para sincronizar seus dados.','Sair', authLogout, true); }
@@ -3636,18 +3651,106 @@ function bindCropDrag(){ const cv=$('#cropCanvas'); if(!cv||cv._bound) return; c
   cv.addEventListener('touchstart',down,{passive:false}); cv.addEventListener('touchmove',move,{passive:false}); cv.addEventListener('touchend',up);
 }
 function closeCropper(){ $('#cropModal').classList.remove('open'); }
-function saveCrop(){ if(!_crop) return; const data=$('#cropCanvas').toDataURL('image/jpeg',0.85); const p=getProfile(); p.photo=data; saveProfile(p); closeCropper(); updateAuthUI(); openProfile(); toast('Foto atualizada ✓'); }
-function removeProfilePhoto(){ const p=getProfile(); delete p.photo; saveProfile(p); updateAuthUI(); openProfile(); }
-/* campos cadastrais extras (base de leads) */
-const PROF_FIELDS=['phone','cpf','birth','city','uf','goal','exp','wealth'];
+function saveCrop(){ if(!_crop) return; const data=$('#cropCanvas').toDataURL('image/jpeg',0.85); const p=getProfile(); p.photo=data; saveProfile(p); closeCropper(); updateAuthUI(); refreshProfileAvatar(); toast('Foto atualizada ✓'); }
+function removeProfilePhoto(){ const p=getProfile(); delete p.photo; saveProfile(p); updateAuthUI(); refreshProfileAvatar(); toast('Foto removida'); }
+/* atualiza só o avatar do modal de perfil (sem re-render, preserva o que foi digitado) */
+function refreshProfileAvatar(){
+  const head=document.querySelector('#authBody .prof-head'); if(!head) return;
+  const u=currentUser(); const inner=head.querySelector('.prof-av-inner');
+  if(inner) inner.innerHTML=avatarInner((profileName()[0]||(u&&u.email[0])||'?').toUpperCase());
+  let del=head.querySelector('.prof-av-del');
+  if(profilePhoto()){ if(!del){ const av=head.querySelector('.prof-av'); if(av){ del=document.createElement('span'); del.className='prof-av-del'; del.title='Remover foto'; del.setAttribute('onclick','event.stopPropagation();removeProfilePhoto()'); del.innerHTML='<i class="fa-solid fa-trash-can"></i>'; av.appendChild(del); } } }
+  else if(del){ del.remove(); }
+}
+/* dados cadastrais (base de leads) — UFs e cidades */
+const BR_UF=['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+const BR_CITIES={
+  AC:['Rio Branco','Cruzeiro do Sul','Sena Madureira','Tarauacá','Feijó'],
+  AL:['Maceió','Arapiraca','Rio Largo','Palmeira dos Índios','União dos Palmares'],
+  AP:['Macapá','Santana','Laranjal do Jari','Oiapoque','Mazagão'],
+  AM:['Manaus','Parintins','Itacoatiara','Manacapuru','Coari'],
+  BA:['Salvador','Feira de Santana','Vitória da Conquista','Camaçari','Itabuna','Juazeiro','Ilhéus','Lauro de Freitas','Barreiras','Porto Seguro'],
+  CE:['Fortaleza','Caucaia','Juazeiro do Norte','Maracanaú','Sobral','Crato','Itapipoca'],
+  DF:['Brasília'],
+  ES:['Vitória','Vila Velha','Serra','Cariacica','Cachoeiro de Itapemirim','Linhares','Colatina','Guarapari'],
+  GO:['Goiânia','Aparecida de Goiânia','Anápolis','Rio Verde','Luziânia','Águas Lindas de Goiás','Valparaíso de Goiás'],
+  MA:['São Luís','Imperatriz','São José de Ribamar','Timon','Caxias','Codó','Paço do Lumiar'],
+  MT:['Cuiabá','Várzea Grande','Rondonópolis','Sinop','Tangará da Serra','Cáceres'],
+  MS:['Campo Grande','Dourados','Três Lagoas','Corumbá','Ponta Porã'],
+  MG:['Belo Horizonte','Uberlândia','Contagem','Juiz de Fora','Betim','Montes Claros','Ribeirão das Neves','Uberaba','Governador Valadares','Ipatinga','Sete Lagoas','Divinópolis','Poços de Caldas'],
+  PA:['Belém','Ananindeua','Santarém','Marabá','Parauapebas','Castanhal','Abaetetuba'],
+  PB:['João Pessoa','Campina Grande','Santa Rita','Patos','Bayeux','Sousa'],
+  PR:['Curitiba','Londrina','Maringá','Ponta Grossa','Cascavel','São José dos Pinhais','Foz do Iguaçu','Colombo','Guarapuava','Paranaguá'],
+  PE:['Recife','Jaboatão dos Guararapes','Olinda','Caruaru','Petrolina','Paulista','Cabo de Santo Agostinho','Camaragibe'],
+  PI:['Teresina','Parnaíba','Picos','Floriano','Piripiri'],
+  RJ:['Rio de Janeiro','São Gonçalo','Duque de Caxias','Nova Iguaçu','Niterói','Belford Roxo','São João de Meriti','Campos dos Goytacazes','Petrópolis','Volta Redonda','Macaé','Cabo Frio','Angra dos Reis'],
+  RN:['Natal','Mossoró','Parnamirim','São Gonçalo do Amarante','Ceará-Mirim'],
+  RS:['Porto Alegre','Caxias do Sul','Canoas','Pelotas','Santa Maria','Gravataí','Novo Hamburgo','Viamão','São Leopoldo','Rio Grande','Passo Fundo','Bagé'],
+  RO:['Porto Velho','Ji-Paraná','Ariquemes','Vilhena','Cacoal'],
+  RR:['Boa Vista','Rorainópolis','Caracaraí','Alto Alegre'],
+  SC:['Florianópolis','Joinville','Blumenau','São José','Chapecó','Criciúma','Itajaí','Jaraguá do Sul','Lages','Balneário Camboriú','Palhoça'],
+  SP:['São Paulo','Guarulhos','Campinas','São Bernardo do Campo','Santo André','Osasco','São José dos Campos','Ribeirão Preto','Sorocaba','Santos','Mauá','São José do Rio Preto','Mogi das Cruzes','Diadema','Jundiaí','Piracicaba','Carapicuíba','Bauru','Franca','Praia Grande'],
+  SE:['Aracaju','Nossa Senhora do Socorro','Lagarto','Itabaiana','São Cristóvão'],
+  TO:['Palmas','Araguaína','Gurupi','Porto Nacional','Paraíso do Tocantins']
+};
+function cityOptions(uf, sel){
+  const list=BR_CITIES[uf]||[];
+  let opts=`<option value="">${uf?'Selecione a cidade…':'Selecione o estado primeiro'}</option>`;
+  const has=list.includes(sel);
+  opts+=list.map(c=>`<option ${c===sel?'selected':''} value="${esc(c)}">${esc(c)}</option>`).join('');
+  if(sel && !has) opts+=`<option selected value="${esc(sel)}">${esc(sel)}</option>`;
+  return opts;
+}
+function onProfUfChange(){
+  const uf=($('#prof_uf')&&$('#prof_uf').value)||''; const cs=$('#prof_city'); if(!cs) return;
+  cs.innerHTML=cityOptions(uf, ''); cs.disabled=!uf;
+}
+const PROF_CADASTRO=['phone','birth','city','uf'];
+const PROF_INVEST=['goal','exp','wealth'];
 function profField(k){ return getProfile()[k]||''; }
-function setProfRisk(v){ const p=getProfile(); p.risk=v; saveProfile(p); openProfile(); }
+/* seleção de risco sem re-render (preserva dados digitados) */
+function selectProfRisk(el){ document.querySelectorAll('#authBody .prof-chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); }
+function currentRiskSel(){ const on=document.querySelector('#authBody .prof-chip.on'); return on?on.getAttribute('data-risk'):''; }
 function connectAccount(prov){ toast(`Em breve: conectar com ${prov}`); }
-async function saveProfileName(){
-  const v=($('#profName').value||'').trim(); const p=getProfile(); if(v) p.name=v; else delete p.name;
-  PROF_FIELDS.forEach(k=>{ const el=document.getElementById('prof_'+k); if(el){ const val=(el.value||'').trim(); if(val) p[k]=val; else delete p[k]; } });
+/* verificação por código (2FA / alterações sensíveis) — demonstração */
+function openCodeVerify(o){
+  o=o||{}; let el=document.getElementById('codeModal');
+  if(!el){ el=document.createElement('div'); el.id='codeModal'; el.className='modal-scrim'; document.body.appendChild(el); el.onclick=ev=>{ if(ev.target===el) el.classList.remove('open'); }; }
+  el.innerHTML=`<div class="modal-card code-card">
+    <div class="code-ic"><i class="fa-solid fa-shield-halved"></i></div>
+    <div class="code-t">${esc(o.title||'Confirmação de segurança')}</div>
+    <div class="code-m">${esc(o.desc||'Digite o código de 6 dígitos que enviamos para você.')}</div>
+    <input id="codeInp" class="code-inp" inputmode="numeric" maxlength="6" placeholder="••••••" oninput="this.value=this.value.replace(/\\D/g,'')">
+    <div id="codeErr" class="fld-err" style="text-align:center"></div>
+    <div class="confirm-acts"><button class="btn btn-ghost" onclick="document.getElementById('codeModal').classList.remove('open')">Cancelar</button><button class="btn btn-primary" onclick="verifyCode()">Confirmar</button></div>
+    <button class="code-resend" onclick="toast('Novo código enviado')">Reenviar código</button>
+  </div>`;
+  el.classList.add('open'); _codeCb=o.onVerify||null; setTimeout(()=>{ const i=$('#codeInp'); if(i) i.focus(); }, 60);
+}
+let _codeCb=null;
+function verifyCode(){
+  const v=($('#codeInp')&&$('#codeInp').value||'').trim();
+  if(v.length<6){ const e=$('#codeErr'); if(e) e.textContent='Digite os 6 dígitos.'; return; }
+  const el=document.getElementById('codeModal'); if(el) el.classList.remove('open');
+  const cb=_codeCb; _codeCb=null; if(cb) cb();
+}
+function changePassword(){ openCodeVerify({ title:'Alterar senha', desc:'Para sua segurança, enviamos um código de confirmação para o seu e-mail.', onVerify:()=>toast('Código confirmado — em breve: definição da nova senha') }); }
+function toggle2FA(kind){
+  const p=getProfile(); const key=kind==='wa'?'twofaWa':'twofaEmail';
+  const sw=document.querySelector(`#authBody .prof-switch[data-2fa="${kind}"]`);
+  if(p[key]){ // desativar
+    p[key]=false; saveProfile(p); if(sw) sw.classList.remove('on'); toast('Verificação em duas etapas desativada'); return;
+  }
+  if(kind==='wa' && !getProfile().phone){ toast('Cadastre seu celular/WhatsApp primeiro'); return; }
+  const alvo = kind==='wa' ? 'o seu WhatsApp' : 'o seu e-mail';
+  openCodeVerify({ title:'Ativar verificação em 2 etapas', desc:`Enviamos um código para ${alvo}. Confirme para ativar.`, onVerify:()=>{ const pp=getProfile(); pp[key]=true; saveProfile(pp); if(sw) sw.classList.add('on'); toast('Verificação em duas etapas ativada ✓'); } });
+}
+async function saveProfileCadastro(silent){
+  const p=getProfile(); const v=($('#profName').value||'').trim(); if(v) p.name=v; else delete p.name;
+  PROF_CADASTRO.forEach(k=>{ const el=document.getElementById('prof_'+k); if(el){ const val=(el.value||'').trim(); if(val) p[k]=val; else delete p[k]; } });
   saveProfile(p);
-  const msg=$('#profMsg'); const u=currentUser(); const newEmail=($('#profEmail')&&$('#profEmail').value||'').trim().toLowerCase();
+  const msg=$('#profMsg'); if(msg) msg.textContent='';
+  const u=currentUser(); const newEmail=($('#profEmail')&&$('#profEmail').value||'').trim().toLowerCase();
   if(u && newEmail && newEmail!==u.email){
     if(!/.+@.+\..+/.test(newEmail)){ if(msg) msg.textContent='E-mail inválido.'; return; }
     const c=_sb(), s=getSession();
@@ -3658,16 +3761,41 @@ async function saveProfileName(){
       }catch(e){ if(msg) msg.textContent='Sem conexão para alterar o e-mail.'; }
     }
   }
-  updateAuthUI(); toast('Perfil atualizado ✓');
+  updateAuthUI(); refreshProfileAvatar(); if(!silent) toast('Dados cadastrais salvos ✓');
+}
+function saveProfileInvestidor(silent){
+  const p=getProfile(); const risk=currentRiskSel(); if(risk) p.risk=risk; else delete p.risk;
+  PROF_INVEST.forEach(k=>{ const el=document.getElementById('prof_'+k); if(el){ const val=(el.value||'').trim(); if(val) p[k]=val; else delete p[k]; } });
+  saveProfile(p); if(!silent) toast('Perfil de investidor salvo ✓');
+}
+/* aviso de alterações não salvas ao fechar o perfil */
+let _profileOpen=false;
+function profileDirty(){
+  if(!_profileOpen) return false;
+  const g=getProfile(), u=currentUser();
+  const chk=[['profName', profileName()], ['profEmail', u?u.email:''], ['prof_phone', g.phone||''], ['prof_birth', g.birth||''], ['prof_city', g.city||''], ['prof_uf', g.uf||''], ['prof_goal', g.goal||''], ['prof_exp', g.exp||''], ['prof_wealth', g.wealth||'']];
+  for(const [id,base] of chk){ const el=document.getElementById(id); if(el && (el.value||'').trim()!==(base||'')) return true; }
+  if(currentRiskSel()!==(g.risk||'')) return true;
+  return false;
+}
+function closeAuthGuarded(){
+  if(_profileOpen && profileDirty()){
+    showConfirm('Salvar alterações?','Você fez alterações que ainda não foram salvas.','Salvar e sair',
+      async ()=>{ await saveProfileCadastro(true); saveProfileInvestidor(true); _profileOpen=false; closeAuth(); },
+      false, { altLabel:'Sair sem salvar', onAlt:()=>{ _profileOpen=false; closeAuth(); } });
+    return;
+  }
+  _profileOpen=false; closeAuth();
 }
 function openProfile(){
   const u=currentUser(); if(!u){ openAuth('login'); return; }
   $('#authTitle').textContent='Meu perfil';
-  const p=portfolioStats(), tier=planTier();
+  const p=portfolioStats(), tier=planTier(), g=getProfile();
   const planChip = tier==='pro'?'<span class="acct-plan pro"><i class="fa-solid fa-crown"></i> Investidor Pro</span>':tier==='premium'?'<span class="acct-plan prem"><i class="fa-solid fa-crown"></i> Premium</span>':'<span class="acct-plan free">Gratuito</span>';
+  const twofaSwitch=(kind,on)=>`<button class="prof-switch ${on?'on':''}" data-2fa="${kind}" role="switch" aria-checked="${!!on}" onclick="toggle2FA('${kind}')"><span></span></button>`;
   $('#authBody').innerHTML=`
     <div class="prof-head">
-      <button class="prof-av prof-av-edit" onclick="pickProfilePhoto()" title="Trocar foto"><span class="prof-av-inner">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</span><span class="prof-av-cam"><i class="fa-solid fa-camera"></i></span></button>
+      <button class="prof-av prof-av-edit" onclick="pickProfilePhoto()" title="Trocar foto"><span class="prof-av-inner">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</span><span class="prof-av-cam"><i class="fa-solid fa-camera"></i></span>${profilePhoto()?`<span class="prof-av-del" title="Remover foto" onclick="event.stopPropagation();removeProfilePhoto()"><i class="fa-solid fa-trash-can"></i></span>`:''}</button>
       <div class="prof-id"><div class="prof-nm">${esc(profileName())}</div><div class="prof-em">${esc(u.email)}</div>${planChip}</div>
     </div>
     <div class="prof-stats">
@@ -3680,24 +3808,24 @@ function openProfile(){
         <label class="fld"><span>Nome completo</span><input id="profName" value="${esc(profileName())}" maxlength="60" placeholder="Seu nome completo"></label>
         <label class="fld"><span>E-mail</span><input id="profEmail" type="email" value="${esc(u.email)}" placeholder="voce@email.com"></label>
         <label class="fld"><span>Celular / WhatsApp</span><input id="prof_phone" type="tel" value="${esc(profField('phone'))}" placeholder="(00) 00000-0000"></label>
-        <label class="fld"><span>CPF</span><input id="prof_cpf" value="${esc(profField('cpf'))}" placeholder="000.000.000-00"></label>
         <label class="fld"><span>Data de nascimento</span><input id="prof_birth" type="date" value="${esc(profField('birth'))}"></label>
-        <label class="fld"><span>Cidade</span><input id="prof_city" value="${esc(profField('city'))}" placeholder="Sua cidade"></label>
-        <label class="fld"><span>Estado (UF)</span><input id="prof_uf" value="${esc(profField('uf'))}" maxlength="2" placeholder="UF" style="text-transform:uppercase"></label>
+        <label class="fld"><span>Estado</span><select id="prof_uf" onchange="onProfUfChange()"><option value="">Selecione o estado…</option>${BR_UF.map(uf=>`<option ${profField('uf')===uf?'selected':''} value="${uf}">${uf}</option>`).join('')}</select></label>
+        <label class="fld"><span>Cidade</span><select id="prof_city" ${profField('uf')?'':'disabled'}>${cityOptions(profField('uf'), profField('city'))}</select></label>
       </div>
+      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileCadastro()"><i class="fa-solid fa-check"></i> Salvar dados cadastrais</button></div>
+      <div id="profMsg" class="fld-err" style="margin-top:4px"></div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Perfil de investidor</div>
       <div class="prof-lbl">Perfil de risco</div>
       <div class="prof-chips">
-        ${['Conservador','Moderado','Arrojado'].map(r=>`<button class="prof-chip ${getProfile().risk===r?'on':''}" onclick="setProfRisk('${r}')">${r}</button>`).join('')}
+        ${['Conservador','Moderado','Arrojado'].map(r=>`<button class="prof-chip ${g.risk===r?'on':''}" data-risk="${r}" onclick="selectProfRisk(this)">${r}</button>`).join('')}
       </div>
       <div class="fld-grid">
         <label class="fld"><span>Objetivo principal</span><select id="prof_goal">${['','Renda passiva / dividendos','Crescimento do patrimônio','Aposentadoria','Reserva de emergência','Especulação de curto prazo'].map(o=>`<option ${profField('goal')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
         <label class="fld"><span>Experiência</span><select id="prof_exp">${['','Iniciante','Intermediário','Avançado'].map(o=>`<option ${profField('exp')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
         <label class="fld"><span>Patrimônio para investir</span><select id="prof_wealth">${['','Até R$ 10 mil','R$ 10 mil – R$ 50 mil','R$ 50 mil – R$ 250 mil','R$ 250 mil – R$ 1 mi','Acima de R$ 1 mi'].map(o=>`<option ${profField('wealth')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
       </div>
-      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileName()"><i class="fa-solid fa-check"></i> Salvar alterações</button>${profilePhoto()?`<button class="btn btn-ghost btn-sm" onclick="removeProfilePhoto()">Remover foto</button>`:''}</div>
-      <div id="profMsg" class="fld-err" style="margin-top:4px"></div>
+      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileInvestidor()"><i class="fa-solid fa-check"></i> Salvar perfil de investidor</button></div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Contas conectadas</div>
       <div class="prof-conn"><span class="prof-conn-ic pc-google"><i class="fa-brands fa-google"></i></span><div class="prof-conn-tx"><b>Google</b><small>Login e sincronização</small></div><button class="prof-conn-btn" onclick="connectAccount('Google')">Conectar</button></div>
@@ -3705,10 +3833,15 @@ function openProfile(){
       <div class="prof-conn"><span class="prof-conn-ic pc-b3"><i class="fa-solid fa-building-columns"></i></span><div class="prof-conn-tx"><b>Corretora / B3</b><small>Importar carteira automaticamente</small></div><button class="prof-conn-btn" onclick="connectAccount('sua corretora')">Conectar</button></div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Segurança</div>
-      <button class="btn btn-ghost prof-btn" onclick="toast('Em breve: alteração de senha')"><i class="fa-solid fa-key"></i> Alterar senha</button>
+      <button class="btn btn-ghost prof-btn" onclick="changePassword()"><i class="fa-solid fa-key"></i> Alterar senha</button>
+      <div class="prof-lbl" style="margin-top:14px">Verificação em duas etapas (2FA)</div>
+      <div class="prof-row"><span><i class="fa-solid fa-envelope"></i> Confirmação por e-mail</span>${twofaSwitch('email', g.twofaEmail)}</div>
+      <div class="prof-row"><span><i class="fa-brands fa-whatsapp"></i> Confirmação por WhatsApp</span>${twofaSwitch('wa', g.twofaWa)}</div>
+      <div class="prof-note"><i class="fa-solid fa-circle-info"></i> Alterações de e-mail, senha ou 2FA exigem um código de confirmação enviado a você.</div>
       <div class="prof-row sub"><span><i class="fa-solid fa-mobile-screen"></i> Sessão atual</span><b>este dispositivo</b></div>
     </div>
-    <button class="btn btn-danger prof-out" onclick="closeAuth();confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>`;
+    <button class="btn btn-danger prof-out" onclick="_profileOpen=false;closeAuth();confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>`;
+  _profileOpen=true;
   $('#authModal').classList.add('open');
 }
 /* uso de IA no dia (limite do plano free) */
@@ -3900,7 +4033,7 @@ function updateAuthUI(){
 }
 function togglePass(btn){ const inp=$('#auPass'); if(!inp) return; const show=inp.type==='password'; inp.type=show?'text':'password'; btn.innerHTML=`<i class="fa-regular fa-eye${show?'-slash':''}"></i>`; inp.focus(); }
 function openAuth(mode){ renderAuth(mode||'login'); $('#authModal').classList.add('open'); }
-function closeAuth(){ $('#authModal').classList.remove('open'); }
+function closeAuth(){ _profileOpen=false; $('#authModal').classList.remove('open'); }
 function accountClick(){ openAuth(); }
 function renderAuth(mode){
   const body=$('#authBody'), u=currentUser();
@@ -8654,7 +8787,7 @@ function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SE
 
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
-  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); closeAuth(); closeCropper&&closeCropper(); closeConfirm&&closeConfirm();
+  if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); closeAuthGuarded(); closeCropper&&closeCropper(); closeConfirm&&closeConfirm();
     typeof closeAlertModal==='function'&&closeAlertModal(); typeof closeIndHistory==='function'&&closeIndHistory(); typeof closeCarteira==='function'&&closeCarteira(); typeof closeOnboarding==='function'&&closeOnboarding(); typeof closePremiumModal==='function'&&closePremiumModal(); }
   // trap de foco: mantém o Tab dentro do modal/painel aberto (acessibilidade)
   if(e.key==='Tab'){
