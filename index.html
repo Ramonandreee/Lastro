@@ -5453,7 +5453,7 @@ function viewAdmin(){
   const tab=(k,ic,l)=>`<button class="ad-tab ${adminTab===k?'on':''}" onclick="adminGoto('${k}')"><i class="fa-solid ${ic}"></i> ${l}</button>`;
   /* cards no modelo dos indicadores (toque abre a definição) */
   const adCard=(term,st,val,tag)=>{ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span><span class="ind-ics"><button class="ind-ic" onclick="event.stopPropagation();openAdminHist('${term}')" aria-label="Evolução"><i class="fa-solid fa-chart-column"></i></button></span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`; };
-  const plCard=(ic,st,val,lbl,tag)=>`<div class="ind-card" data-st="${st}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${ic}"></i></span><span class="ind-l">${lbl}</span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`;
+  const plCard=(ic,st,val,lbl,tag,term)=>`<div class="ind-card${term?' ind-tappable':''}" data-st="${st}"${term?` data-term="${term}"`:''}><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${ic}"></i></span><span class="ind-l">${lbl}</span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`;
 
   let panel='';
   if(adminTab==='overview'){
@@ -5468,10 +5468,10 @@ function viewAdmin(){
     const sugItems=sug.map(([ic,st,t])=>`<li class="ad-sug-i" data-st="${st}"><span class="ad-sug-ic"><i class="fa-solid ${ic}"></i></span><span>${t}</span></li>`).join('');
     panel=`
       <div class="ind-grid">
-        ${plCard('fa-users','neu', all.length, 'Cadastros', trials+' em teste')}
-        ${plCard('fa-crown','warn', clientes.length, 'Pagantes', Math.round(conv)+'% conversão')}
+        ${plCard('fa-users','neu', all.length, 'Cadastros', trials+' em teste', 'cadastros')}
+        ${plCard('fa-crown','warn', clientes.length, 'Pagantes', Math.round(conv)+'% conversão', 'pagantes')}
         ${adCard('mrr','pos', brl0(mrr), 'Recorrente/mês')}
-        ${plCard('fa-user-plus','neu', leads.length, 'Leads', 'no gratuito')}
+        ${plCard('fa-user-plus','neu', leads.length, 'Leads', 'no gratuito', 'leads')}
       </div>
       <div class="card card-pad" style="margin-top:16px">
         <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Crescimento</div><span class="chip ilus"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
@@ -8290,7 +8290,10 @@ const TERM_CARDS={
   refGanhos:{ nome:'Ganhos', icon:'fa-sack-dollar', descricao:'O total de comissões que você já acumulou com as suas indicações.', formula:'Soma de todas as comissões creditadas', interpretacao:'Cresce a cada mês em que seus indicados mantêm a assinatura ativa.', faixaIdeal:'Quanto mais indicados ativos, maior fica.' },
   refAtivos:{ nome:'Ativos', icon:'fa-user-check', descricao:'Amigos que você indicou e estão com assinatura ativa, gerando comissão recorrente para você.', interpretacao:'Cada indicado ativo paga uma comissão todo mês enquanto continuar assinante.', faixaIdeal:'Quanto mais, melhor.' },
   refPend:{ nome:'Pendentes', icon:'fa-hourglass-half', descricao:'Pessoas que se cadastraram pelo seu link mas ainda não assinaram um plano pago.', interpretacao:'São oportunidades — um empurrãozinho pode convertê-las em comissão.', pontosAtencao:'Convide-as a testar o Premium para virarem indicados ativos.' },
-  refProx:{ nome:'Próximo PIX', icon:'fa-calendar-check', descricao:'A data do próximo pagamento das suas comissões, feito automaticamente via PIX.', interpretacao:'Os pagamentos são mensais enquanto houver indicados ativos.' }
+  refProx:{ nome:'Próximo PIX', icon:'fa-calendar-check', descricao:'A data do próximo pagamento das suas comissões, feito automaticamente via PIX.', interpretacao:'Os pagamentos são mensais enquanto houver indicados ativos.' },
+  cadastros:{ nome:'Cadastros', icon:'fa-users', descricao:'O total de pessoas que criaram conta na Lastro — clientes pagantes somados aos leads gratuitos.', interpretacao:'Base total de usuários; cresce a cada novo cadastro.' },
+  pagantes:{ nome:'Clientes pagantes', icon:'fa-crown', descricao:'Pessoas com assinatura ativa (Premium ou Investidor Pro), gerando receita recorrente.', interpretacao:'Quanto maior a fatia de pagantes sobre o total, mais saudável o negócio.' },
+  leads:{ nome:'Leads', icon:'fa-user-plus', descricao:'Cadastros que ainda estão no plano gratuito — oportunidades de conversão para assinante.', interpretacao:'Ative os que estão em teste antes do prazo acabar para converter.' }
 };
 function termTipHTML(key){ const d=TERM_CARDS[key]; if(!d) return '';
   const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
