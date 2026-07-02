@@ -1876,7 +1876,8 @@ table.tbl tbody tr.no-hover td { border:none; }
 .ist-ic.ist-up { background:color-mix(in srgb,var(--up) 12%,transparent); color:var(--up); }
 .ist-ic.ist-blue { background:color-mix(in srgb,var(--accent) 12%,transparent); color:var(--accent); }
 .ind-stat b { display:block; font-family:var(--mono); font-size:17px; font-weight:600; letter-spacing:-.01em; line-height:1.1; }
-.ind-stat span { font-size:11px; color:var(--ink-3); font-weight:600; }
+.ind-stat span { font-size:11px; color:var(--ink-3); font-weight:600; white-space:nowrap; }
+.ind-stat > div { min-width:0; }
 .ref-sim { border:1px solid var(--line); border-radius:14px; padding:18px 18px 16px; background:linear-gradient(150deg, color-mix(in srgb,var(--up) 7%,transparent), transparent 60%); }
 .rs-out { text-align:center; margin-bottom:16px; }
 .rs-friends { font-size:14px; font-weight:600; color:var(--ink-2); }
@@ -1890,6 +1891,33 @@ table.tbl tbody tr.no-hover td { border:none; }
 .rs-range::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:22px; height:22px; border-radius:50%; background:var(--brand); border:3px solid var(--surface); box-shadow:0 2px 8px color-mix(in srgb,var(--brand) 45%,transparent); cursor:pointer; }
 .rs-range::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:var(--brand); border:3px solid var(--surface); box-shadow:0 2px 8px color-mix(in srgb,var(--brand) 45%,transparent); cursor:pointer; }
 .rs-scale { display:flex; justify-content:space-between; font-size:11px; color:var(--ink-3); margin-top:8px; font-family:var(--mono); }
+.rs-adv { width:100%; justify-content:center; margin-top:14px; }
+/* simulador avançado (modal) */
+.rsa-card { width:460px; }
+.rsa-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border-bottom:1px solid var(--line); }
+.rsa-t { font-weight:700; font-size:15.5px; display:flex; align-items:center; gap:9px; } .rsa-t i { color:var(--brand); }
+.rsa-x { width:32px; height:32px; flex:none; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); cursor:pointer; }
+.rsa-x:hover { color:var(--ink); border-color:var(--line-2); }
+.rsa-body { padding:18px; display:flex; flex-direction:column; gap:16px; }
+.rsa-field { display:flex; flex-direction:column; gap:8px; }
+.rsa-lbl { font-size:12px; font-weight:500; color:var(--ink-2); }
+.rsa-seg { display:flex; gap:6px; padding:4px; background:var(--surface-3); border-radius:var(--r-sm); }
+.rsa-seg-b { flex:1; padding:9px; border:none; border-radius:calc(var(--r-sm) - 2px); background:none; color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
+.rsa-seg-b.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
+.rsa-rates { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.rsa-rate { display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface); cursor:pointer; transition:all .14s var(--ease); }
+.rsa-rate b { font-size:20px; font-family:var(--mono); font-weight:700; color:var(--ink); }
+.rsa-rate small { font-size:11px; color:var(--ink-3); font-weight:600; }
+.rsa-rate.on { border-color:color-mix(in srgb,var(--brand) 45%,transparent); background:var(--brand-l); }
+.rsa-rate.on b { color:var(--brand); }
+.rsa-out { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px; border:1px solid var(--line); border-radius:var(--r); background:linear-gradient(150deg, color-mix(in srgb,var(--up) 8%,transparent), transparent 60%); }
+.rsa-o { display:flex; flex-direction:column; gap:2px; text-align:center; }
+.rsa-o span { font-size:11.5px; color:var(--ink-3); font-weight:600; }
+.rsa-o b { font-size:23px; font-family:var(--mono); font-weight:700; letter-spacing:-.02em; }
+.rsa-upsell { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:13px 15px; border-radius:var(--r); background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 28%,transparent); font-size:12.5px; color:var(--ink-2); line-height:1.5; }
+.rsa-upsell > div { flex:1; min-width:200px; } .rsa-upsell i { color:var(--gold); }
+.rsa-upsell .btn { flex:none; }
+.rsa-upsell.ok { background:var(--up-l); border-color:color-mix(in srgb,var(--up) 26%,transparent); } .rsa-upsell.ok i { color:var(--up); }
 .ref-link { display:flex; gap:8px; margin-top:6px; }
 .ref-link input { flex:1; min-width:0; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--ink); font-size:13px; font-family:var(--mono); }
 .ref-link .btn { flex:none; }
@@ -2027,6 +2055,27 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .hdr-profile.has-av .av-img { width:100%; height:100%; }
 .acct-head .avatar { overflow:hidden; }
 .prof-actions { display:flex; gap:8px; margin-top:12px; }
+.fld-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.fld-grid .fld:first-child, .fld-grid .fld:nth-child(2) { grid-column:1 / -1; }
+.fld select { padding:11px 13px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2); color:var(--ink); font-size:14px; cursor:pointer; transition:border-color .15s var(--ease); }
+.fld select:focus { border-color:var(--accent); background:var(--surface); }
+@media (max-width:460px){ .fld-grid { grid-template-columns:1fr; } }
+.prof-lbl { font-size:12px; font-weight:500; color:var(--ink-2); margin-bottom:8px; }
+.prof-chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.prof-chip { flex:1; min-width:90px; padding:9px 12px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
+.prof-chip:hover { border-color:var(--line-2); }
+.prof-chip.on { background:var(--brand-l); border-color:color-mix(in srgb,var(--brand) 40%,transparent); color:var(--brand); }
+.prof-conn { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); }
+.prof-conn:last-child { border-bottom:none; }
+.prof-conn-ic { width:38px; height:38px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:17px; background:var(--surface-3); color:var(--ink-2); }
+.pc-google { color:#DB4437; background:color-mix(in srgb,#DB4437 12%,transparent); }
+.pc-apple { color:var(--ink); background:var(--surface-3); }
+.pc-b3 { color:var(--brand); background:var(--brand-l); }
+.prof-conn-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.prof-conn-tx b { font-size:14px; font-weight:650; }
+.prof-conn-tx small { font-size:12px; color:var(--ink-3); }
+.prof-conn-btn { flex:none; padding:7px 14px; border:1px solid var(--line-2); border-radius:999px; background:var(--surface); color:var(--ink); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
+.prof-conn-btn:hover { border-color:var(--brand); color:var(--brand); }
 /* cropper de foto */
 .crop-stage { position:relative; width:256px; max-width:100%; aspect-ratio:1; margin:0 auto 16px; border-radius:14px; overflow:hidden; background:#0a0e13; touch-action:none; }
 .crop-stage canvas { width:100%; height:100%; display:block; cursor:grab; }
@@ -3491,6 +3540,13 @@ const SUPPORT_FAQ=[
   ['Os preços e proventos são em tempo real?','Nesta demonstração os dados são ilustrativos. Com a integração de mercado ativa, cotações e proventos passam a ser atualizados automaticamente.'],
   ['Como funciona o teste grátis do Premium?','São 7 dias com acesso completo, sem precisar de cartão. Ao final, você escolhe se quer continuar — sem cobrança automática surpresa.'],
   ['Como cancelo minha assinatura?','Em Gerenciar assinatura você pode cancelar quando quiser. O acesso permanece até o fim do período já pago.'],
+  ['Qual a diferença entre Premium e Investidor Pro?','O Premium libera carteira real, proventos, aporte, IR, rastreador e alertas. O Investidor Pro acrescenta consultor de IA da carteira, Raio-X com Nota Lastro, detector de deterioração, backtest, stress test e comissão de indicação dobrada (40%).'],
+  ['Como funciona o programa Indique e Ganhe?','Você compartilha seu link exclusivo e ganha uma comissão recorrente (20%, ou 40% sendo Investidor Pro) sobre a assinatura de cada amigo que assinar — paga via PIX enquanto ele permanecer ativo.'],
+  ['A Lastro dá recomendação de compra ou venda?','Não. A Lastro é uma ferramenta de organização e análise. Todos os indicadores e scores são informativos e educacionais — a decisão de investimento é sempre sua.'],
+  ['Meus valores aparecem para outras pessoas?','Não. E você ainda pode ativar o modo privacidade (ícone de olho) para ocultar todos os valores da tela — útil em locais públicos ou ao gravar a tela.'],
+  ['Posso usar em mais de um dispositivo?','Sim. Ao entrar com a mesma conta, sua carteira e configurações são sincronizadas automaticamente entre celular, tablet e computador.'],
+  ['Como altero ou recupero minha senha?','Em Meu perfil → Segurança você pode alterar a senha. Para recuperação, use a opção "Esqueci minha senha" na tela de login.'],
+  ['Quais formas de pagamento são aceitas?','Cartão de crédito e PIX. Na assinatura anual o valor sai mais barato por mês em relação ao plano mensal.'],
 ];
 function faqToggle(el){ const it=el.closest('.faq-item'); if(it) it.classList.toggle('open'); }
 function openSupport(){
@@ -3520,7 +3576,6 @@ function openSupport(){
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Recursos</div>
       <button class="btn btn-ghost prof-btn" onclick="closeAuth();startTour&&startTour()"><i class="fa-solid fa-compass" style="color:var(--brand)"></i> Refazer o tour guiado</button>
-      <button class="btn btn-ghost prof-btn" onclick="closeAuth();nav('planos')"><i class="fa-solid fa-crown" style="color:var(--gold)"></i> Ver planos e recursos</button>
     </div>
     <div class="sup-foot">
       <span class="sup-status"><span class="sup-dot"></span> Todos os sistemas operando</span>
@@ -3583,8 +3638,15 @@ function bindCropDrag(){ const cv=$('#cropCanvas'); if(!cv||cv._bound) return; c
 function closeCropper(){ $('#cropModal').classList.remove('open'); }
 function saveCrop(){ if(!_crop) return; const data=$('#cropCanvas').toDataURL('image/jpeg',0.85); const p=getProfile(); p.photo=data; saveProfile(p); closeCropper(); updateAuthUI(); openProfile(); toast('Foto atualizada ✓'); }
 function removeProfilePhoto(){ const p=getProfile(); delete p.photo; saveProfile(p); updateAuthUI(); openProfile(); }
+/* campos cadastrais extras (base de leads) */
+const PROF_FIELDS=['phone','cpf','birth','city','uf','goal','exp','wealth'];
+function profField(k){ return getProfile()[k]||''; }
+function setProfRisk(v){ const p=getProfile(); p.risk=v; saveProfile(p); openProfile(); }
+function connectAccount(prov){ toast(`Em breve: conectar com ${prov}`); }
 async function saveProfileName(){
-  const v=($('#profName').value||'').trim(); const p=getProfile(); if(v) p.name=v; else delete p.name; saveProfile(p);
+  const v=($('#profName').value||'').trim(); const p=getProfile(); if(v) p.name=v; else delete p.name;
+  PROF_FIELDS.forEach(k=>{ const el=document.getElementById('prof_'+k); if(el){ const val=(el.value||'').trim(); if(val) p[k]=val; else delete p[k]; } });
+  saveProfile(p);
   const msg=$('#profMsg'); const u=currentUser(); const newEmail=($('#profEmail')&&$('#profEmail').value||'').trim().toLowerCase();
   if(u && newEmail && newEmail!==u.email){
     if(!/.+@.+\..+/.test(newEmail)){ if(msg) msg.textContent='E-mail inválido.'; return; }
@@ -3600,15 +3662,9 @@ async function saveProfileName(){
 }
 function openProfile(){
   const u=currentUser(); if(!u){ openAuth('login'); return; }
-  const pref=getThemePref();
   $('#authTitle').textContent='Meu perfil';
   const p=portfolioStats(), tier=planTier();
   const planChip = tier==='pro'?'<span class="acct-plan pro"><i class="fa-solid fa-crown"></i> Investidor Pro</span>':tier==='premium'?'<span class="acct-plan prem"><i class="fa-solid fa-crown"></i> Premium</span>':'<span class="acct-plan free">Gratuito</span>';
-  const themeBtns=`<div class="acct-theme-btns">
-    <button class="${pref==='light'?'on':''}" onclick="setThemePref('light');openProfile()" title="Claro"><i class="fa-solid fa-sun"></i></button>
-    <button class="${pref==='dark'?'on':''}" onclick="setThemePref('dark');openProfile()" title="Escuro"><i class="fa-solid fa-moon"></i></button>
-    <button class="${pref==='auto'?'on':''}" onclick="setThemePref('auto');openProfile()" title="Automático"><i class="fa-solid fa-circle-half-stroke"></i></button>
-  </div>`;
   $('#authBody').innerHTML=`
     <div class="prof-head">
       <button class="prof-av prof-av-edit" onclick="pickProfilePhoto()" title="Trocar foto"><span class="prof-av-inner">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</span><span class="prof-av-cam"><i class="fa-solid fa-camera"></i></span></button>
@@ -3619,19 +3675,34 @@ function openProfile(){
       <div class="prof-stat"><b class="priv-blur">${brl0(p.atual)}</b><span>patrimônio</span></div>
       <div class="prof-stat"><b class="priv-blur">${brl0(p.renda)}</b><span>renda/mês</span></div>
     </div>
-    <div class="prof-sec"><div class="prof-sec-t">Dados pessoais</div>
-      <label class="fld"><span>Nome de usuário</span><input id="profName" value="${esc(profileName())}" maxlength="32" placeholder="Seu nome"></label>
-      <label class="fld"><span>E-mail</span><input id="profEmail" type="email" value="${esc(u.email)}" placeholder="voce@email.com"></label>
-      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileName()"><i class="fa-solid fa-check"></i> Salvar</button>${profilePhoto()?`<button class="btn btn-ghost btn-sm" onclick="removeProfilePhoto()">Remover foto</button>`:''}</div>
+    <div class="prof-sec"><div class="prof-sec-t">Dados cadastrais</div>
+      <div class="fld-grid">
+        <label class="fld"><span>Nome completo</span><input id="profName" value="${esc(profileName())}" maxlength="60" placeholder="Seu nome completo"></label>
+        <label class="fld"><span>E-mail</span><input id="profEmail" type="email" value="${esc(u.email)}" placeholder="voce@email.com"></label>
+        <label class="fld"><span>Celular / WhatsApp</span><input id="prof_phone" type="tel" value="${esc(profField('phone'))}" placeholder="(00) 00000-0000"></label>
+        <label class="fld"><span>CPF</span><input id="prof_cpf" value="${esc(profField('cpf'))}" placeholder="000.000.000-00"></label>
+        <label class="fld"><span>Data de nascimento</span><input id="prof_birth" type="date" value="${esc(profField('birth'))}"></label>
+        <label class="fld"><span>Cidade</span><input id="prof_city" value="${esc(profField('city'))}" placeholder="Sua cidade"></label>
+        <label class="fld"><span>Estado (UF)</span><input id="prof_uf" value="${esc(profField('uf'))}" maxlength="2" placeholder="UF" style="text-transform:uppercase"></label>
+      </div>
+    </div>
+    <div class="prof-sec"><div class="prof-sec-t">Perfil de investidor</div>
+      <div class="prof-lbl">Perfil de risco</div>
+      <div class="prof-chips">
+        ${['Conservador','Moderado','Arrojado'].map(r=>`<button class="prof-chip ${getProfile().risk===r?'on':''}" onclick="setProfRisk('${r}')">${r}</button>`).join('')}
+      </div>
+      <div class="fld-grid">
+        <label class="fld"><span>Objetivo principal</span><select id="prof_goal">${['','Renda passiva / dividendos','Crescimento do patrimônio','Aposentadoria','Reserva de emergência','Especulação de curto prazo'].map(o=>`<option ${profField('goal')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
+        <label class="fld"><span>Experiência</span><select id="prof_exp">${['','Iniciante','Intermediário','Avançado'].map(o=>`<option ${profField('exp')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
+        <label class="fld"><span>Patrimônio para investir</span><select id="prof_wealth">${['','Até R$ 10 mil','R$ 10 mil – R$ 50 mil','R$ 50 mil – R$ 250 mil','R$ 250 mil – R$ 1 mi','Acima de R$ 1 mi'].map(o=>`<option ${profField('wealth')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
+      </div>
+      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileName()"><i class="fa-solid fa-check"></i> Salvar alterações</button>${profilePhoto()?`<button class="btn btn-ghost btn-sm" onclick="removeProfilePhoto()">Remover foto</button>`:''}</div>
       <div id="profMsg" class="fld-err" style="margin-top:4px"></div>
     </div>
-    <div class="prof-sec"><div class="prof-sec-t">Preferências</div>
-      <div class="prof-row"><span><i class="fa-solid fa-palette"></i> Tema</span>${themeBtns}</div>
-      <div class="prof-row"><span><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i> Ocultar meus valores</span><button class="prof-switch ${privOn()?'on':''}" role="switch" aria-checked="${privOn()}" onclick="togglePriv();openProfile()"><span></span></button></div>
-    </div>
-    <div class="prof-sec"><div class="prof-sec-t">Plano e convites</div>
-      <button class="btn btn-ghost prof-btn" onclick="closeAuth();openAssinatura()"><i class="fa-solid fa-crown" style="color:var(--gold)"></i> Gerenciar assinatura</button>
-      <button class="btn btn-ghost prof-btn" onclick="closeAuth();nav('indicar')"><i class="fa-solid fa-gift" style="color:var(--up)"></i> Indique e Ganhe</button>
+    <div class="prof-sec"><div class="prof-sec-t">Contas conectadas</div>
+      <div class="prof-conn"><span class="prof-conn-ic pc-google"><i class="fa-brands fa-google"></i></span><div class="prof-conn-tx"><b>Google</b><small>Login e sincronização</small></div><button class="prof-conn-btn" onclick="connectAccount('Google')">Conectar</button></div>
+      <div class="prof-conn"><span class="prof-conn-ic pc-apple"><i class="fa-brands fa-apple"></i></span><div class="prof-conn-tx"><b>Apple</b><small>Login com Apple ID</small></div><button class="prof-conn-btn" onclick="connectAccount('Apple')">Conectar</button></div>
+      <div class="prof-conn"><span class="prof-conn-ic pc-b3"><i class="fa-solid fa-building-columns"></i></span><div class="prof-conn-tx"><b>Corretora / B3</b><small>Importar carteira automaticamente</small></div><button class="prof-conn-btn" onclick="connectAccount('sua corretora')">Conectar</button></div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Segurança</div>
       <button class="btn btn-ghost prof-btn" onclick="toast('Em breve: alteração de senha')"><i class="fa-solid fa-key"></i> Alterar senha</button>
@@ -4828,6 +4899,55 @@ function updRefSim(per){
   if(mEl) mEl.textContent=money(per*n);
   if(yEl) yEl.textContent=money(per*n*12);
 }
+/* simulador avançado de indicações */
+let _rsa={plan:'mensal', rate:isProTier()?40:20};
+function rsaMoney(v){ return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function rsaCalc(rate){ const r=rate/100, n=_rsa.n||0; if(_rsa.plan==='mensal'){ const m=n*PLANS.premium.mensal*r; return {m, y:m*12}; } const y=n*PLANS.premium.anualTotal*r; return {m:y/12, y}; }
+function rsaSetPlan(p){ _rsa.plan=p; const a=document.getElementById('rsaPlanM'), b=document.getElementById('rsaPlanA'); if(a)a.classList.toggle('on',p==='mensal'); if(b)b.classList.toggle('on',p==='anual'); updRefAdv(); }
+function rsaSetRate(r){ _rsa.rate=r; const a=document.getElementById('rsaR20'), b=document.getElementById('rsaR40'); if(a)a.classList.toggle('on',r===20); if(b)b.classList.toggle('on',r===40); updRefAdv(); }
+function updRefAdv(){
+  const el=document.getElementById('rsaN'); if(!el) return;
+  _rsa.n=Math.max(0, Math.min(100000, parseInt(el.value||'0',10)||0));
+  const cur=rsaCalc(_rsa.rate);
+  const mEl=document.getElementById('rsaMon'), yEl=document.getElementById('rsaYr');
+  if(mEl) mEl.textContent=rsaMoney(cur.m); if(yEl) yEl.textContent=rsaMoney(cur.y);
+  const delta=rsaCalc(40).y-rsaCalc(20).y, up=document.getElementById('rsaUpsell'); if(!up) return;
+  if(_rsa.rate===20){
+    up.className='rsa-upsell';
+    up.innerHTML=`<div><i class="fa-solid fa-crown"></i> Como <strong>Investidor Pro</strong> sua comissão dobra para <strong>40%</strong> — você ganharia <strong class="up">+${rsaMoney(delta)} por ano</strong> com os mesmos indicados.</div><button class="btn btn-premium btn-sm" onclick="closeRefSimAdv();goPricing()">Fazer upgrade para Pro</button>`;
+  } else {
+    up.className='rsa-upsell ok';
+    up.innerHTML=`<div><i class="fa-solid fa-circle-check"></i> Você está na taxa <strong>Investidor Pro (40%)</strong> — o dobro de um assinante comum: <strong class="up">+${rsaMoney(delta)} por ano</strong> vs. 20%.</div>`;
+  }
+}
+function closeRefSimAdv(){ const el=document.getElementById('refSimModal'); if(el) el.classList.remove('open'); }
+function openRefSimAdv(){
+  let el=document.getElementById('refSimModal');
+  if(!el){ el=document.createElement('div'); el.id='refSimModal'; el.className='modal-scrim'; document.body.appendChild(el); el.onclick=ev=>{ if(ev.target===el) closeRefSimAdv(); }; }
+  _rsa={plan:'mensal', rate:isProTier()?40:20, n:10};
+  el.innerHTML=`<div class="modal-card rsa-card">
+    <div class="rsa-head"><div class="rsa-t"><i class="fa-solid fa-calculator"></i> Simulador avançado de indicações</div><button class="rsa-x" onclick="closeRefSimAdv()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="rsa-body">
+      <label class="fld"><span>Número de indicados ativos</span><input id="rsaN" type="number" inputmode="numeric" min="1" max="100000" value="10" oninput="updRefAdv()"></label>
+      <div class="rsa-field"><span class="rsa-lbl">Plano do indicado</span>
+        <div class="rsa-seg"><button id="rsaPlanM" class="rsa-seg-b on" onclick="rsaSetPlan('mensal')">Mensal</button><button id="rsaPlanA" class="rsa-seg-b" onclick="rsaSetPlan('anual')">Anual</button></div>
+      </div>
+      <div class="rsa-field"><span class="rsa-lbl">Sua comissão por indicado</span>
+        <div class="rsa-rates">
+          <button id="rsaR20" class="rsa-rate ${_rsa.rate===20?'on':''}" onclick="rsaSetRate(20)"><b>20%</b><small>Gratuito / Premium</small></button>
+          <button id="rsaR40" class="rsa-rate ${_rsa.rate===40?'on':''}" onclick="rsaSetRate(40)"><b>40%</b><small>Investidor Pro</small></button>
+        </div>
+      </div>
+      <div class="rsa-out">
+        <div class="rsa-o"><span>Por mês, recorrente</span><b class="up" id="rsaMon">—</b></div>
+        <div class="rsa-o"><span>Por ano</span><b class="up" id="rsaYr">—</b></div>
+      </div>
+      <div class="rsa-upsell" id="rsaUpsell"></div>
+    </div>
+  </div>`;
+  el.classList.add('open');
+  updRefAdv();
+}
 function viewIndicar(){
   const hero = `<div class="indique-hero">
     <div class="ih-ic"><i class="fa-solid fa-gift"></i></div>
@@ -4846,8 +4966,8 @@ function viewIndicar(){
   return `<div class="ind-page">
   ${hero}
   <div class="ind-stats">
-    <div class="ind-stat"><span class="ist-ic ist-gold"><i class="fa-solid fa-sack-dollar"></i></span><div><b class="priv-blur">${money(0)}</b><span>Ganho acumulado</span></div></div>
-    <div class="ind-stat"><span class="ist-ic ist-up"><i class="fa-solid fa-user-check"></i></span><div><b>0</b><span>Indicados ativos</span></div></div>
+    <div class="ind-stat"><span class="ist-ic ist-gold"><i class="fa-solid fa-sack-dollar"></i></span><div><b class="priv-blur">${money(0)}</b><span>Ganhos</span></div></div>
+    <div class="ind-stat"><span class="ist-ic ist-up"><i class="fa-solid fa-user-check"></i></span><div><b>0</b><span>Ativos</span></div></div>
     <div class="ind-stat"><span class="ist-ic"><i class="fa-solid fa-hourglass-half"></i></span><div><b>0</b><span>Pendentes</span></div></div>
     <div class="ind-stat"><span class="ist-ic ist-blue"><i class="fa-solid fa-calendar-check"></i></span><div><b>—</b><span>Próximo PIX</span></div></div>
   </div>
@@ -4855,7 +4975,7 @@ function viewIndicar(){
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-people-group"></i></span> Como funciona</div></div>
     <div class="ind-steps">
       ${step(1,'Compartilhe seu link único','Use o link de indicação abaixo para enviar a amigos e familiares.')}
-      ${step(2,'Seu indicado assina a Lastro','Quando alguém usar seu link e se tornar assinante, você é creditado em 20% do valor da assinatura.')}
+      ${step(2,'Seu indicado assina a Lastro',`Quando alguém usar seu link e se tornar assinante, você é creditado em ${ratePct}% do valor da assinatura${proRef?' — sua taxa dobrada de Investidor Pro':''}.`)}
       ${step(3,'Receba sua comissão via PIX','Você recebe parte da assinatura todos os meses enquanto seu indicado permanecer ativo, direto na sua conta.')}
     </div>
   </div>
@@ -4889,9 +5009,10 @@ function viewIndicar(){
         <div class="rs-earn"><b class="up" id="rsMon">${money(comM*simN0)}</b><span>por mês, recorrente</span></div>
         <div class="rs-year">Em 12 meses: <b id="rsYr">${money(comM*simN0*12)}</b></div>
       </div>
-      <input type="range" id="rsRange" class="rs-range" min="1" max="50" value="${simN0}" oninput="updRefSim(${comM})" aria-label="Número de amigos indicados">
-      <div class="rs-scale"><span>1</span><span>25</span><span>50</span></div>
+      <input type="range" id="rsRange" class="rs-range" min="1" max="100" value="${simN0}" oninput="updRefSim(${comM})" aria-label="Número de amigos indicados">
+      <div class="rs-scale"><span>1</span><span>50</span><span>100</span></div>
     </div>
+    <button class="btn btn-ghost rs-adv" onclick="openRefSimAdv()"><i class="fa-solid fa-sliders"></i> Abrir simulador avançado</button>
   </div>
 
   <div class="card card-pad">
