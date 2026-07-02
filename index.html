@@ -1651,9 +1651,11 @@ table.tbl tbody tr.no-hover td { border:none; }
 .row-act.danger:hover { color:var(--down); border-color:var(--down); background:var(--down-l); }
 
 /* modal genérico (posição) */
-.modal-scrim { position:fixed; inset:0; z-index:260; background:rgba(10,14,19,.55); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; padding:calc(20px + env(safe-area-inset-top,0px)) calc(20px + env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) calc(20px + env(safe-area-inset-left,0px)); }
-.modal-scrim .modal-card { margin:auto; max-height:calc(100vh - 40px); overflow-y:auto; }
+.modal-scrim { position:fixed; inset:0; z-index:260; background:rgba(10,14,19,.55); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; overflow-y:auto; padding:calc(20px + env(safe-area-inset-top,0px)) calc(20px + env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) calc(20px + env(safe-area-inset-left,0px)); }
+.modal-scrim .modal-card { margin:auto; max-height:calc(100dvh - 40px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)); overflow-y:auto; }
 .modal-scrim.open { display:flex; animation:fadeIn .2s var(--ease); }
+/* ao interagir com um gráfico, a página não rola (fica travada no gesto) */
+canvas { touch-action:none; }
 .modal-card { width:440px; max-width:94vw; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-lg); box-shadow:var(--sh-xl); overflow:hidden; animation:panelIn .28s var(--ease-out); }
 .modal-head { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--line); font-size:15px; font-weight:600; }
 .modal-body { padding:20px; display:flex; flex-direction:column; gap:14px; }
@@ -2068,9 +2070,10 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .prof-conn { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); }
 .prof-conn:last-child { border-bottom:none; }
 .prof-conn-ic { width:38px; height:38px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:17px; background:var(--surface-3); color:var(--ink-2); }
-.pc-google { color:#DB4437; background:color-mix(in srgb,#DB4437 12%,transparent); }
-.pc-apple { color:var(--ink); background:var(--surface-3); }
-.pc-b3 { color:var(--brand); background:var(--brand-l); }
+.prof-conn-ic svg { display:block; }
+.pc-google { background:#fff; }
+.pc-apple { background:#000; color:#fff; }
+.pc-b3 { background:#0A2A66; color:#fff; }
 .prof-conn-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
 .prof-conn-tx b { font-size:14px; font-weight:650; }
 .prof-conn-tx small { font-size:12px; color:var(--ink-3); }
@@ -3774,6 +3777,17 @@ function profField(k){ return getProfile()[k]||''; }
 function selectProfRisk(el){ document.querySelectorAll('#authBody .prof-chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); }
 function currentRiskSel(){ const on=document.querySelector('#authBody .prof-chip.on'); return on?on.getAttribute('data-risk'):''; }
 function connectAccount(prov){ toast(`Em breve: conectar com ${prov}`); }
+/* máscara de telefone BR — (47) 99246-4048 */
+function maskPhoneBR(v){ const d=String(v||'').replace(/\D/g,'').slice(0,11);
+  if(!d) return ''; if(d.length<=2) return '('+d;
+  if(d.length<=6) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+  if(d.length<=10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`; }
+function maskPhone(el){ const p=el.selectionStart, old=el.value; el.value=maskPhoneBR(el.value); if(p!=null && p<old.length){ try{ el.setSelectionRange(p,p); }catch(e){} } }
+/* logos oficiais (contas conectadas) */
+const LOGO_GOOGLE=`<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>`;
+const LOGO_APPLE=`<svg viewBox="0 0 384 512" width="17" height="20" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>`;
+const LOGO_B3=`<svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><text x="20" y="21" text-anchor="middle" dominant-baseline="central" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="19" letter-spacing="-0.5" fill="currentColor">B3</text></svg>`;
 /* verificação por código (2FA / alterações sensíveis) — demonstração */
 function openCodeVerify(o){
   o=o||{}; let el=document.getElementById('codeModal');
@@ -3864,7 +3878,7 @@ function openProfile(){
       <div class="fld-grid">
         <label class="fld"><span>Nome completo</span><input id="profName" value="${esc(profileName())}" maxlength="60" placeholder="Seu nome completo"></label>
         <label class="fld"><span>E-mail</span><input id="profEmail" type="email" value="${esc(u.email)}" placeholder="voce@email.com"></label>
-        <label class="fld"><span>Celular / WhatsApp</span><input id="prof_phone" type="tel" value="${esc(profField('phone'))}" placeholder="(00) 00000-0000"></label>
+        <label class="fld"><span>Celular / WhatsApp</span><input id="prof_phone" type="tel" inputmode="tel" value="${esc(maskPhoneBR(profField('phone')))}" placeholder="(47) 99246-4048" oninput="maskPhone(this)"></label>
         <label class="fld"><span>Data de nascimento</span><input id="prof_birth" type="date" value="${esc(profField('birth'))}"></label>
         <label class="fld"><span>Estado</span><select id="prof_uf" onchange="onProfUfChange()"><option value="">Selecione o estado…</option>${BR_UF.map(uf=>`<option ${profField('uf')===uf?'selected':''} value="${uf}">${uf}</option>`).join('')}</select></label>
         <label class="fld"><span>Cidade</span><select id="prof_city" ${profField('uf')?'':'disabled'}>${cityOptions(profField('uf'), profField('city'))}</select></label>
@@ -3885,9 +3899,9 @@ function openProfile(){
       <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileInvestidor()"><i class="fa-solid fa-check"></i> Salvar perfil de investidor</button></div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Contas conectadas</div>
-      <div class="prof-conn"><span class="prof-conn-ic pc-google"><i class="fa-brands fa-google"></i></span><div class="prof-conn-tx"><b>Google</b><small>Login e sincronização</small></div><button class="prof-conn-btn" onclick="connectAccount('Google')">Conectar</button></div>
-      <div class="prof-conn"><span class="prof-conn-ic pc-apple"><i class="fa-brands fa-apple"></i></span><div class="prof-conn-tx"><b>Apple</b><small>Login com Apple ID</small></div><button class="prof-conn-btn" onclick="connectAccount('Apple')">Conectar</button></div>
-      <div class="prof-conn"><span class="prof-conn-ic pc-b3"><i class="fa-solid fa-building-columns"></i></span><div class="prof-conn-tx"><b>Corretora / B3</b><small>Importar carteira automaticamente</small></div><button class="prof-conn-btn" onclick="connectAccount('sua corretora')">Conectar</button></div>
+      <div class="prof-conn"><span class="prof-conn-ic pc-google">${LOGO_GOOGLE}</span><div class="prof-conn-tx"><b>Google</b><small>Login e sincronização</small></div><button class="prof-conn-btn" onclick="connectAccount('Google')">Conectar</button></div>
+      <div class="prof-conn"><span class="prof-conn-ic pc-apple">${LOGO_APPLE}</span><div class="prof-conn-tx"><b>Apple</b><small>Login com Apple ID</small></div><button class="prof-conn-btn" onclick="connectAccount('Apple')">Conectar</button></div>
+      <div class="prof-conn"><span class="prof-conn-ic pc-b3">${LOGO_B3}</span><div class="prof-conn-tx"><b>B3</b><small>Importar sua carteira da bolsa</small></div><button class="prof-conn-btn" onclick="connectAccount('B3')">Conectar</button></div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Segurança</div>
       <button class="btn btn-ghost prof-btn" onclick="changePassword()"><i class="fa-solid fa-key"></i> Alterar senha</button>
@@ -4147,7 +4161,7 @@ function renderSignup(){
       ${tabs}${steps}
       <label class="fld auth-fld"><span>Nome completo</span><div class="auth-input"><i class="fa-regular fa-user"></i><input id="suName" value="${suEsc(_signup.name)}" maxlength="60" placeholder="Seu nome" autocomplete="name"></div></label>
       <label class="fld auth-fld"><span>E-mail</span><div class="auth-input"><i class="fa-regular fa-envelope"></i><input id="suEmail" type="email" inputmode="email" value="${suEsc(_signup.email)}" placeholder="voce@email.com" autocomplete="email"></div></label>
-      <label class="fld auth-fld"><span>Celular / WhatsApp</span><div class="auth-input"><i class="fa-brands fa-whatsapp"></i><input id="suPhone" type="tel" inputmode="tel" value="${suEsc(_signup.phone)}" placeholder="(00) 00000-0000" autocomplete="tel"></div></label>
+      <label class="fld auth-fld"><span>Celular / WhatsApp</span><div class="auth-input"><i class="fa-brands fa-whatsapp"></i><input id="suPhone" type="tel" inputmode="tel" value="${suEsc(maskPhoneBR(_signup.phone))}" placeholder="(47) 99246-4048" autocomplete="tel" oninput="maskPhone(this)"></div></label>
       <label class="fld auth-fld"><span>Senha</span><div class="auth-input"><i class="fa-solid fa-lock"></i><input id="suPass" type="password" value="${suEsc(_signup.pass)}" placeholder="mínimo 6 caracteres" autocomplete="new-password"><button type="button" class="auth-eye" onclick="togglePassId('suPass',this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
       <div id="auErr" class="fld-err"></div>
       <button class="btn btn-primary auth-submit" onclick="signupNext()">Continuar <i class="fa-solid fa-arrow-right"></i></button>
@@ -5279,6 +5293,8 @@ function refStats(){
   return { list, nAtivos:ativos.length, nPend:list.length-ativos.length,
     ganhos:list.reduce((s,x)=>s+x.acc,0), mensal:ativos.reduce((s,x)=>s+x.com,0), prox:d.toLocaleDateString('pt-BR') };
 }
+/* card de indicação no modelo dos indicadores (toque abre a definição) */
+function refCard(term,st,val){ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span></div><div class="ind-v">${val}</div></div>`; }
 function viewIndicar(){
   const hero = `<div class="indique-hero">
     <div class="ih-ic"><i class="fa-solid fa-gift"></i></div>
@@ -5298,11 +5314,11 @@ function viewIndicar(){
   const stG=rs?money(rs.ganhos):money(0), stA=rs?rs.nAtivos:0, stP=rs?rs.nPend:0, stX=rs?rs.prox:'—';
   return `<div class="ind-page">
   ${hero}
-  <div class="ind-stats">
-    <div class="ind-stat"><span class="ist-ic ist-gold"><i class="fa-solid fa-sack-dollar"></i></span><div><b class="priv-blur">${stG}</b><span>Ganhos</span></div></div>
-    <div class="ind-stat"><span class="ist-ic ist-up"><i class="fa-solid fa-user-check"></i></span><div><b>${stA}</b><span>Ativos</span></div></div>
-    <div class="ind-stat"><span class="ist-ic"><i class="fa-solid fa-hourglass-half"></i></span><div><b>${stP}</b><span>Pendentes</span></div></div>
-    <div class="ind-stat"><span class="ist-ic ist-blue"><i class="fa-solid fa-calendar-check"></i></span><div><b>${stX}</b><span>Próximo PIX</span></div></div>
+  <div class="ind-grid">
+    ${refCard('refGanhos','pos', `<span class="priv-blur">${stG}</span>`)}
+    ${refCard('refAtivos','pos', stA)}
+    ${refCard('refPend','warn', stP)}
+    ${refCard('refProx','neu', stX)}
   </div>
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-people-group"></i></span> Como funciona</div></div>
@@ -5370,7 +5386,6 @@ function viewIndicar(){
       <div class="ref-mine-sum">
         <div class="rms"><b class="up">${money(rs.mensal)}</b><span>por mês, recorrente</span></div>
         <div class="rms"><b>${money(rs.ganhos)}</b><span>acumulado até agora</span></div>
-        <div class="rms"><b>${rs.prox}</b><span>próximo PIX</span></div>
       </div>
       <div class="ad-scroll"><table class="ad-table"><thead><tr><th>Indicado</th><th>Plano</th><th>UF</th><th>Desde</th><th class="ar">Comissão/mês</th><th>Status</th></tr></thead><tbody>
         ${rs.list.map(x=>`<tr><td>${esc(x.name)}</td><td class="muted">${x.plan}</td><td class="muted">${x.uf}</td><td class="muted mono">${x.since.split('-').reverse().join('/')}</td><td class="ar mono up">${money(x.com)}</td><td>${x.status==='ativo'?'<span class="ad-badge ad-ok">Ativo</span>':'<span class="ad-badge ad-free">Pendente</span>'}</td></tr>`).join('')}
@@ -8250,7 +8265,11 @@ const TERM_CARDS={
   mrr:{ nome:'Receita Mensal', icon:'fa-sack-dollar', descricao:'A receita recorrente que entra todos os meses com as assinaturas ativas.', formula:'Soma das mensalidades de todos os assinantes ativos', interpretacao:'É o principal termômetro do negócio: quanto maior e mais estável, melhor. Cresce com novos assinantes e cai com cancelamentos.', faixaIdeal:'Deve subir mês a mês.', pontosAtencao:'Uma queda indica cancelamentos (churn) — investigue o motivo.' },
   arr:{ nome:'Receita Anual', icon:'fa-arrow-trend-up', descricao:'A receita recorrente projetada para 12 meses, mantendo os assinantes atuais.', formula:'Receita Mensal × 12', interpretacao:'Mostra o tamanho anual do negócio em regime recorrente — útil para planejar metas.', faixaIdeal:'Cresce junto com a Receita Mensal.' },
   ticket:{ nome:'Ticket médio', icon:'fa-receipt', descricao:'O valor médio que cada cliente pagante rende por mês.', formula:'Receita Mensal ÷ nº de clientes pagantes', interpretacao:'Sobe quando mais gente assina o plano mais caro (Investidor Pro).', faixaIdeal:'Quanto maior, mais cada cliente contribui.' },
-  conv:{ nome:'Conversão', icon:'fa-percent', descricao:'O percentual dos cadastros totais que viraram clientes pagantes.', formula:'Clientes pagantes ÷ cadastros totais × 100', interpretacao:'Mede a eficiência em transformar cadastros e testes em receita.', faixaIdeal:'Quanto maior, melhor.', pontosAtencao:'Foque em ativar quem está no período de teste antes de expirar.' }
+  conv:{ nome:'Conversão', icon:'fa-percent', descricao:'O percentual dos cadastros totais que viraram clientes pagantes.', formula:'Clientes pagantes ÷ cadastros totais × 100', interpretacao:'Mede a eficiência em transformar cadastros e testes em receita.', faixaIdeal:'Quanto maior, melhor.', pontosAtencao:'Foque em ativar quem está no período de teste antes de expirar.' },
+  refGanhos:{ nome:'Ganhos', icon:'fa-sack-dollar', descricao:'O total de comissões que você já acumulou com as suas indicações.', formula:'Soma de todas as comissões creditadas', interpretacao:'Cresce a cada mês em que seus indicados mantêm a assinatura ativa.', faixaIdeal:'Quanto mais indicados ativos, maior fica.' },
+  refAtivos:{ nome:'Ativos', icon:'fa-user-check', descricao:'Amigos que você indicou e estão com assinatura ativa, gerando comissão recorrente para você.', interpretacao:'Cada indicado ativo paga uma comissão todo mês enquanto continuar assinante.', faixaIdeal:'Quanto mais, melhor.' },
+  refPend:{ nome:'Pendentes', icon:'fa-hourglass-half', descricao:'Pessoas que se cadastraram pelo seu link mas ainda não assinaram um plano pago.', interpretacao:'São oportunidades — um empurrãozinho pode convertê-las em comissão.', pontosAtencao:'Convide-as a testar o Premium para virarem indicados ativos.' },
+  refProx:{ nome:'Próximo PIX', icon:'fa-calendar-check', descricao:'A data do próximo pagamento das suas comissões, feito automaticamente via PIX.', interpretacao:'Os pagamentos são mensais enquanto houver indicados ativos.' }
 };
 function termTipHTML(key){ const d=TERM_CARDS[key]; if(!d) return '';
   const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
