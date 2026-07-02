@@ -2290,6 +2290,7 @@ body.report-open { overflow:hidden; }
 .rc-asset .rc-a-bar i { display:block; height:100%; border-radius:4px; background:var(--brand); }
 /* gestão de assinatura */
 .as-cur { border:1.5px solid color-mix(in srgb,var(--gold) 30%,transparent); background:linear-gradient(165deg,var(--gold-l),transparent 40%); }
+.as-cur-pro { border-color:color-mix(in srgb,var(--gold) 46%,transparent); background:linear-gradient(150deg, color-mix(in srgb,var(--gold) 15%,transparent), transparent 46%); box-shadow:var(--sh); }
 .as-cur.free { border-color:var(--line); background:var(--surface); }
 .as-cur-h { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
 .as-plan { font-size:18px; font-weight:700; display:flex; align-items:center; gap:8px; }
@@ -3562,7 +3563,7 @@ function openAssinatura(){ closeAcctMenu(); currentView='assinatura'; document.q
 function viewAssinatura(){
   const pro=isPremium(); let s=getSub();
   if(pro && !s){ s={ cycle:'anual', since:new Date().toISOString(), card:'4242', brand:'Visa', amount:298.80 }; setSub(s); }
-  const benefits=['Carteira e watchlist ilimitadas','Rastreador avançado','Score Lastro completo + ranking','Comparador de 4 ativos','Análises de IA ilimitadas','Alertas de preço','Exportação da carteira (CSV)'];
+  const benefits = planTier()==='pro' ? PRO_BENEFITS : ['Carteira e watchlist ilimitadas','Rastreador avançado','Score Lastro completo + ranking','Comparador de 4 ativos','Análises de IA ilimitadas','Alertas de preço','Exportação da carteira (CSV)'];
   if(!pro){
     return `
     <button class="dt-back" onclick="goView('painel')"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
@@ -3581,7 +3582,7 @@ function viewAssinatura(){
   <button class="dt-back" onclick="goView('painel')"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
   <div class="sec-title">Gerenciar assinatura</div>
   <div class="sec-desc">Acompanhe e gerencie seu plano, pagamentos e cobranças.</div>
-  <div class="card card-pad as-cur">
+  <div class="card card-pad as-cur ${planTier()==='pro'?'as-cur-pro':''}">
     <div class="as-cur-h"><div><div class="as-plan"><i class="fa-solid fa-crown" style="color:var(--gold)"></i> ${s.plano||'Premium'} ${s.cycle==='anual'?'Anual':'Mensal'}</div><div class="as-sub">${brl(s.amount)} / ${s.cycle==='anual'?'ano':'mês'}</div></div><span class="chip ${s.canceled?'chip-down':'chip-up'}">${s.canceled?'Cancela ao fim do período':'Ativo'}</span></div>
     <div class="as-grid">
       <div class="as-item"><span>Ativado em</span><b>${fmtD(since)}</b></div>
@@ -3590,9 +3591,11 @@ function viewAssinatura(){
       <div class="as-item"><span>Renovação</span><b>${s.canceled?'Desativada':'Automática'}</b></div>
     </div>
     <div class="as-actions">
+      ${planTier()!=='pro'?`<button class="btn btn-premium btn-sm" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Upgrade para Investidor Pro</button>`:''}
+      <button class="btn btn-ghost btn-sm" onclick="goPricing()"><i class="fa-solid fa-layer-group"></i> Ver todos os planos</button>
       <button class="btn btn-ghost btn-sm" onclick="toast('Em breve: troca de cartão')"><i class="fa-solid fa-credit-card"></i> Alterar cartão</button>
-      ${s.cycle==='mensal'?`<button class="btn btn-ghost btn-sm" onclick="subscribePremium('anual')"><i class="fa-solid fa-arrow-up"></i> Mudar para Anual</button>`:`<button class="btn btn-ghost btn-sm" onclick="subscribePremium('mensal')">Mudar para Mensal</button>`}
-      ${s.canceled?`<button class="btn btn-ghost btn-sm" onclick="subscribePremium('${s.cycle}')">Reativar</button>`:`<button class="btn btn-ghost btn-sm danger" onclick="cancelSub()"><i class="fa-solid fa-ban"></i> Cancelar</button>`}
+      ${s.cycle==='mensal'?`<button class="btn btn-ghost btn-sm" onclick="subscribePremium('${planTier()}','anual')"><i class="fa-solid fa-arrow-up"></i> Mudar para Anual</button>`:`<button class="btn btn-ghost btn-sm" onclick="subscribePremium('${planTier()}','mensal')">Mudar para Mensal</button>`}
+      ${s.canceled?`<button class="btn btn-ghost btn-sm" onclick="subscribePremium('${planTier()}','${s.cycle}')">Reativar</button>`:`<button class="btn btn-ghost btn-sm danger" onclick="cancelSub()"><i class="fa-solid fa-ban"></i> Cancelar</button>`}
     </div>
   </div>
   <div class="dt-grid" style="margin-top:16px">
