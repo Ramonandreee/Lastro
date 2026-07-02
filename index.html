@@ -4921,7 +4921,7 @@ function posCard(g){
     <div class="pc-extra" id="more-${g.tk}" hidden>
       <div class="pc-extra-t">Dados complementares</div>
       ${row('Valor investido', `<span class="mono priv-blur">${brl(g.custo)}</span>`)}
-      ${row('Preço médio com proventos', `<span class="mono priv-blur">${fmtCur(pmProv,g.cur)}</span>`)}
+      ${row('Preço médio com proventos '+hlp('pmProv'), `<span class="mono priv-blur">${fmtCur(pmProv,g.cur)}</span>`)}
       ${row('Resultado sem proventos', `<span class="mono ${g.lucro>=0?'up':'down'} priv-blur">${g.lucro>=0?'+':''}${brl(g.lucro)} · ${g.lucro>=0?'+':''}${pc(g.lp,1)}%</span>`)}
       <div class="pc-extra-t" style="margin-top:14px">Histórico de aportes</div>
       ${lotsHtml}
@@ -5572,7 +5572,7 @@ function viewProventos(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Recebido (12m)</div><div class="vl priv-blur up">${brl(d.total12)}</div><div class="dl faint">renda passiva</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Média mensal</div><div class="vl priv-blur">${brl(d.media)}</div><div class="dl faint">por mês</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Crescimento a/a</div><div class="vl ${d.growth>=0?'up':'down'}">${gr}</div><div class="dl faint">vs 12m anteriores</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Yield on Cost</div><div class="vl" style="color:var(--brand)">${pc(yoc,1)}%</div><div class="dl faint">renda s/ custo</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Yield on Cost ${hlp('yoc')}</div><div class="vl" style="color:var(--brand)">${pc(yoc,1)}%</div><div class="dl faint">renda s/ custo</div></div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Proventos por mês <span class="card-sub" style="margin-left:6px">· últimos 12 meses</span></div><span class="chip ilus" title="Estimado a partir do rendimento atual — conecte a fonte por data-com para valores exatos"><i class="fa-solid fa-flask"></i> estimado</span></div>
@@ -5828,7 +5828,7 @@ function runDarf(){
     <div class="metric"><div class="ml">Ganho de capital</div><div class="mv ${cls}">${ganho>=0?'+':''}${brl(ganho)}</div></div>
     ${isento?`<div class="metric"><div class="ml">Isenção (vendas &lt; R$ 20k/mês)</div><div class="mv up">Isento ✓</div></div>`:''}
     <div class="divider"></div>
-    <div class="metric"><div class="ml" style="font-weight:700">DARF a pagar (${(aliq*100).toFixed(0)}%)</div><div class="mv" style="font-weight:700;color:${imposto>0?'var(--down)':'var(--brand)'}">${brl(imposto)}</div></div>
+    <div class="metric"><div class="ml" style="font-weight:700">DARF a pagar (${(aliq*100).toFixed(0)}%) ${hlp('darf')}</div><div class="mv" style="font-weight:700;color:${imposto>0?'var(--down)':'var(--brand)'}">${brl(imposto)}</div></div>
   </div>
   <div class="illus-note" style="margin-top:10px"><i class="fa-solid fa-circle-info"></i> Considera apenas esta venda. A isenção de R$ 20k vale para o total de vendas de ações no mês; compense prejuízos acumulados quando aplicável.</div>`;
 }
@@ -5876,7 +5876,7 @@ function viewScore(){
   }).join('');
 
   return `
-  <div class="sec-title">Score Lastro™</div>
+  <div class="sec-title">Score Lastro™ ${hlp('scoreLastro')}</div>
   <div class="sec-desc">Um índice proprietário de 0 a 100 que mede a qualidade de cada ativo combinando quatro pilares: sustentabilidade do dividendo (35%), valuation P/VP (30%), liquidez (20%) e consistência histórica (15%). Transparente e auditável.</div>
 
   <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">${cards}</div>
@@ -6763,12 +6763,12 @@ function viewBacktest(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Retorno no período</div><div class="vl ${m.ret>=0?'up':'down'}">${m.ret>=0?'+':''}${pc(m.ret,1)}%</div><div class="dl faint">${m.meses} meses</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">vs CDI</div><div class="vl ${vs>=0?'up':'down'}">${vs>=0?'+':''}${pc(vs,1)} p.p.</div><div class="dl faint">CDI ${pc(m.retCdi,1)}%</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">vs IBOV</div><div class="vl ${vsi>=0?'up':'down'}">${vsi>=0?'+':''}${pc(vsi,1)} p.p.</div><div class="dl faint">IBOV ${pc(m.retIbov,1)}%</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Volatilidade</div><div class="vl">${pc(m.vol,1)}%</div><div class="dl faint">anualizada</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Maior queda</div><div class="vl down">${pc(m.mdd,1)}%</div><div class="dl faint">pico → vale</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Volatilidade ${hlp('vol')}</div><div class="vl">${pc(m.vol,1)}%</div><div class="dl faint">anualizada</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Maior queda ${hlp('mdd')}</div><div class="vl down">${pc(m.mdd,1)}%</div><div class="dl faint">pico → vale</div></div>
   </div>
   <div class="mstrip" style="grid-template-columns:repeat(5,1fr);margin-top:12px">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Retorno anualizado</div><div class="vl ${m.cagr>=0?'up':'down'}">${m.cagr>=0?'+':''}${pc(m.cagr,1)}%</div><div class="dl faint">CAGR a.a.</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Índice de Sharpe</div><div class="vl ${m.sharpe>=0?'up':'down'}">${pc(m.sharpe,2)}</div><div class="dl faint">retorno/risco vs CDI</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Retorno anualizado ${hlp('cagr')}</div><div class="vl ${m.cagr>=0?'up':'down'}">${m.cagr>=0?'+':''}${pc(m.cagr,1)}%</div><div class="dl faint">CAGR a.a.</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Índice de Sharpe ${hlp('sharpe')}</div><div class="vl ${m.sharpe>=0?'up':'down'}">${pc(m.sharpe,2)}</div><div class="dl faint">retorno/risco vs CDI</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Meses positivos</div><div class="vl">${pc(m.posPct,0)}%</div><div class="dl faint">dos ${m.meses} meses</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Melhor mês</div><div class="vl up">+${pc(m.bestM,1)}%</div><div class="dl faint">no período</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Pior mês</div><div class="vl down">${pc(m.worstM,1)}%</div><div class="dl faint">no período</div></div>
@@ -6971,7 +6971,7 @@ function viewRaioX(){
   <div class="rx-grade card card-pad" style="margin-top:16px;border-color:${d.color}55">
     <div class="rx-grade-badge" style="background:${d.color}14;color:${d.color};border-color:${d.color}55"><span class="rx-grade-letter">${d.grade}</span></div>
     <div class="rx-grade-body">
-      <div class="rx-grade-h">Nota de Diversificação Lastro™ · <strong style="color:${d.color}">${d.label}</strong> <span class="mono faint">${d.score}/100</span></div>
+      <div class="rx-grade-h">Nota de Diversificação Lastro™ ${hlp('notaLastro')} · <strong style="color:${d.color}">${d.label}</strong> <span class="mono faint">${d.score}/100</span></div>
       <div class="rx-grade-track"><i style="width:${d.score}%;background:${d.color}"></i></div>
       <ul class="rx-reasons">${reasons}</ul>
     </div>
@@ -8165,6 +8165,21 @@ function indAnalysis(id,a,k,val){ if(typeof val!=='number') return ''; const d=I
   if(sec!=null){ const better = lowerBetter ? val<sec : val>sec; lines.push(better?`Comparativamente, é um ponto <span class="tone-pos">favorável</span>.`:`Vale checar se há razão fundamentalista para o desvio antes de concluir.`); }
   return lines.join(' '); }
 
+/* termos proprietários/derivados — "?" com explicação (reaproveita o sistema de tooltip data-tip) */
+const TERMS={
+  yoc:'Yield on Cost (YoC): o dividend yield calculado sobre o preço que você pagou, não sobre a cotação atual. Mostra o quanto sua renda rende sobre o custo original da posição.',
+  vol:'Volatilidade: o quanto o valor da carteira oscila ao longo do tempo (anualizada). Quanto maior, mais o patrimônio sobe e desce — mais risco.',
+  sharpe:'Índice de Sharpe: retorno acima do CDI dividido pelo risco (volatilidade). Acima de 1 já é bom; quanto maior, melhor a relação retorno/risco.',
+  mdd:'Maior queda (drawdown): a maior queda do topo ao fundo no período. Representa o pior tombo que a carteira teria enfrentado.',
+  cagr:'CAGR (retorno anualizado): a taxa média de crescimento por ano, como se o retorno tivesse sido constante ao longo do período.',
+  darf:'DARF: guia de pagamento do imposto sobre o lucro em vendas. Ações têm isenção até R$ 20 mil vendidos no mês; o que passa disso é tributado.',
+  notaLastro:'Nota de Diversificação Lastro™: nota de 0 a 100 que resume o equilíbrio da sua carteira — diversificação entre classes e setores, concentração e qualidade dos ativos.',
+  scoreLastro:'Score Lastro™: nota proprietária de 0 a 100 que resume a qualidade de um ativo combinando vários indicadores fundamentalistas em uma só medida.',
+  pmProv:'Preço médio com proventos: seu preço médio descontando os proventos já recebidos. Mostra o custo "líquido" da posição.',
+  cdi:'CDI: taxa de referência da renda fixa no Brasil, bem próxima da Selic. Serve de comparação para saber se a carteira rende mais que o básico.',
+  ibov:'IBOV (Ibovespa): principal índice da bolsa brasileira — serve de referência para comparar o desempenho da sua carteira com o mercado.'
+};
+function hlp(k){ const t=(TERMS&&TERMS[k])||k; return `<span class="hlp" data-tip="${esc(t)}">?</span>`; }
 /* popover rico (definição do indicador) */
 function indTipHTML(id){ const d=INDICATORS[id]; if(!d) return '';
   const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
@@ -8246,7 +8261,7 @@ function renderIndHistory(){
     <div class="hs"><div class="l">Máxima</div><div class="v">${fmtMetric(id,mx)}</div></div>
     <div class="hs"><div class="l">Mínima</div><div class="v">${fmtMetric(id,mn)}</div></div>
     <div class="hs"><div class="l">Mediana</div><div class="v">${fmtMetric(id,med)}</div></div>
-    <div class="hs"><div class="l">Volatilidade</div><div class="v">${cv?pc(cv,0)+'%':'—'}</div></div>`;
+    <div class="hs"><div class="l">Volatilidade ${hlp('vol')}</div><div class="v">${cv?pc(cv,0)+'%':'—'}</div></div>`;
   const ins=indInsights(id,a,k,val,h);
   $('#indMAnalysis').innerHTML = `<div class="hist-an-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Insights automáticos</div>${ins.length?`<ul class="hist-ins">${ins.join('')}</ul>`:`<p>${indAnalysis(id,a,k,val)}</p>`}<div class="hist-note">Série histórica ilustrativa · valor atual, média e percentil do setor com dados reais.</div>`;
 }
