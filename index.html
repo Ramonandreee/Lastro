@@ -2111,11 +2111,18 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .ad-stat { display:flex; align-items:center; gap:12px; padding:15px 16px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
 .ad-stat-ic { width:40px; height:40px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px; background:var(--surface-3); color:var(--ink-3); }
 .ad-stat-ic.ist-gold { background:var(--gold-l); color:var(--gold); } .ad-stat-ic.ist-up { background:var(--up-l); color:var(--up); } .ad-stat-ic.ist-blue { background:var(--accent-l); color:var(--accent); }
-.ad-stat-b { min-width:0; } .ad-stat-b b { display:block; font-family:var(--mono); font-size:20px; font-weight:700; letter-spacing:-.02em; line-height:1.1; }
-.ad-stat-b span { font-size:12px; color:var(--ink-2); font-weight:600; } .ad-stat-b small { display:block; font-size:11px; color:var(--ink-3); margin-top:1px; }
+.ad-stat-b { min-width:0; overflow:hidden; } .ad-stat-b b { display:block; font-family:var(--mono); font-size:20px; font-weight:700; letter-spacing:-.02em; line-height:1.1; white-space:nowrap; }
+.ad-stat-b span { font-size:12px; color:var(--ink-2); font-weight:600; white-space:nowrap; } .ad-stat-b small { display:block; font-size:11px; color:var(--ink-3); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hlp { display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:var(--surface-3); color:var(--ink-3); font-size:9px; font-weight:700; cursor:help; vertical-align:middle; }
+.hlp:hover { background:var(--brand-l); color:var(--brand); }
+.ad-badge.ad-ok { background:var(--up-l); color:var(--up); }
+.ref-mine-sum { display:flex; gap:22px; flex-wrap:wrap; padding:2px 0 14px; margin-bottom:8px; border-bottom:1px solid var(--line); }
+.rms { display:flex; flex-direction:column; gap:1px; }
+.rms b { font-family:var(--mono); font-size:19px; font-weight:700; letter-spacing:-.02em; line-height:1.1; white-space:nowrap; }
+.rms span { font-size:11.5px; color:var(--ink-3); font-weight:600; white-space:nowrap; }
 .ad-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .ad-bar-row { display:flex; align-items:center; gap:12px; padding:8px 0; font-size:13px; }
-.ad-bar-l { flex:none; width:140px; display:flex; align-items:center; gap:6px; color:var(--ink-2); }
+.ad-bar-l { flex:none; width:150px; display:flex; align-items:center; gap:6px; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ad-bar { flex:1; height:8px; border-radius:999px; background:var(--surface-3); overflow:hidden; }
 .ad-bar-f { display:block; height:100%; border-radius:999px; background:var(--brand); }
 .ad-bar-f.ad-pro { background:var(--gold); } .ad-bar-f.ad-premium { background:var(--brand); } .ad-bar-f.ad-free { background:var(--ink-3); }
@@ -2125,7 +2132,7 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .ad-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; }
 .ad-table { width:100%; border-collapse:collapse; font-size:13px; min-width:520px; }
 .ad-table th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); font-weight:700; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
-.ad-table td { padding:11px 10px; border-bottom:1px solid var(--line); color:var(--ink); vertical-align:middle; }
+.ad-table td { padding:11px 10px; border-bottom:1px solid var(--line); color:var(--ink); vertical-align:middle; white-space:nowrap; }
 .ad-table td.muted { color:var(--ink-3); } .ad-table td.ar, .ad-table th.ar { text-align:right; }
 .ad-table tr:last-child td { border-bottom:none; }
 .ad-table .ad-total td { font-weight:700; border-top:2px solid var(--line); }
@@ -5239,6 +5246,34 @@ function openRefSimAdv(){
   el.classList.add('open');
   updRefAdv();
 }
+/* dados de indicações — populados no Modo desenvolvedor (para demonstrar a leads) */
+function refStats(){
+  if(typeof devModeOn!=='function' || !devModeOn()) return null;
+  const rate=isProTier()?REF_RATE_PRO:REF_RATE, M=PLANS.premium.mensal, A=PLANS.premium.anualTotal;
+  const raw=[
+    ['Marina Alves','Anual','SP','2026-01-15','ativo'],
+    ['Rafael Souza','Mensal','RJ','2026-02-08','ativo'],
+    ['Carla Menezes','Mensal','MG','2026-03-02','ativo'],
+    ['Bruno Carvalho','Anual','PR','2026-03-20','ativo'],
+    ['Patrícia Lima','Mensal','RS','2026-04-06','ativo'],
+    ['Diego Fernandes','Mensal','CE','2026-05-11','ativo'],
+    ['Juliana Rocha','Anual','SC','2026-05-28','ativo'],
+    ['Anderson Pereira','Mensal','GO','2026-06-14','ativo'],
+    ['Lucas Martins','Mensal','SP','2026-06-30','pendente'],
+    ['Fernanda Dias','Mensal','BA','2026-06-25','pendente'],
+  ];
+  const now=new Date();
+  const list=raw.map(([name,plan,uf,since,status])=>{
+    const com = plan==='Anual' ? A*rate/12 : M*rate;
+    const [y,mo]=since.split('-').map(Number);
+    let months=(now.getFullYear()-y)*12+(now.getMonth()-(mo-1)); if(months<1) months=1;
+    return { name, plan, uf, since, status, com, acc: status==='ativo'?com*months:0 };
+  });
+  const ativos=list.filter(x=>x.status==='ativo');
+  let d=new Date(now.getFullYear(), now.getMonth(), 5); if(d.getTime()<now.getTime()) d=new Date(now.getFullYear(), now.getMonth()+1, 5);
+  return { list, nAtivos:ativos.length, nPend:list.length-ativos.length,
+    ganhos:list.reduce((s,x)=>s+x.acc,0), mensal:ativos.reduce((s,x)=>s+x.com,0), prox:d.toLocaleDateString('pt-BR') };
+}
 function viewIndicar(){
   const hero = `<div class="indique-hero">
     <div class="ih-ic"><i class="fa-solid fa-gift"></i></div>
@@ -5254,13 +5289,15 @@ function viewIndicar(){
   const step=(n,t,d)=>`<div class="ind-step"><span class="is-n">${n}</span><div><div class="is-t">${t}</div><div class="is-d">${d}</div></div></div>`;
   const money=v=>'R$ '+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
   const simN0=5;
+  const rs=refStats();
+  const stG=rs?money(rs.ganhos):money(0), stA=rs?rs.nAtivos:0, stP=rs?rs.nPend:0, stX=rs?rs.prox:'—';
   return `<div class="ind-page">
   ${hero}
   <div class="ind-stats">
-    <div class="ind-stat"><span class="ist-ic ist-gold"><i class="fa-solid fa-sack-dollar"></i></span><div><b class="priv-blur">${money(0)}</b><span>Ganhos</span></div></div>
-    <div class="ind-stat"><span class="ist-ic ist-up"><i class="fa-solid fa-user-check"></i></span><div><b>0</b><span>Ativos</span></div></div>
-    <div class="ind-stat"><span class="ist-ic"><i class="fa-solid fa-hourglass-half"></i></span><div><b>0</b><span>Pendentes</span></div></div>
-    <div class="ind-stat"><span class="ist-ic ist-blue"><i class="fa-solid fa-calendar-check"></i></span><div><b>—</b><span>Próximo PIX</span></div></div>
+    <div class="ind-stat"><span class="ist-ic ist-gold"><i class="fa-solid fa-sack-dollar"></i></span><div><b class="priv-blur">${stG}</b><span>Ganhos</span></div></div>
+    <div class="ind-stat"><span class="ist-ic ist-up"><i class="fa-solid fa-user-check"></i></span><div><b>${stA}</b><span>Ativos</span></div></div>
+    <div class="ind-stat"><span class="ist-ic"><i class="fa-solid fa-hourglass-half"></i></span><div><b>${stP}</b><span>Pendentes</span></div></div>
+    <div class="ind-stat"><span class="ist-ic ist-blue"><i class="fa-solid fa-calendar-check"></i></span><div><b>${stX}</b><span>Próximo PIX</span></div></div>
   </div>
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-people-group"></i></span> Como funciona</div></div>
@@ -5323,8 +5360,17 @@ function viewIndicar(){
   </div>
 
   <div class="card card-pad">
-    <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-users"></i></span> Minhas indicações</div></div>
-    ${emptyState('fa-user-group','Você ainda não tem indicações','Compartilhe seu link para começar a ganhar comissão a cada amigo que assinar.','')}
+    <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-users"></i></span> Minhas indicações</div>${rs?`<span class="chip chip-up">${rs.nAtivos} ativas</span>`:''}</div>
+    ${rs? `
+      <div class="ref-mine-sum">
+        <div class="rms"><b class="up">${money(rs.mensal)}</b><span>por mês, recorrente</span></div>
+        <div class="rms"><b>${money(rs.ganhos)}</b><span>acumulado até agora</span></div>
+        <div class="rms"><b>${rs.prox}</b><span>próximo PIX</span></div>
+      </div>
+      <div class="ad-scroll"><table class="ad-table"><thead><tr><th>Indicado</th><th>Plano</th><th>UF</th><th>Desde</th><th class="ar">Comissão/mês</th><th>Status</th></tr></thead><tbody>
+        ${rs.list.map(x=>`<tr><td>${esc(x.name)}</td><td class="muted">${x.plan}</td><td class="muted">${x.uf}</td><td class="muted mono">${x.since.split('-').reverse().join('/')}</td><td class="ar mono up">${money(x.com)}</td><td>${x.status==='ativo'?'<span class="ad-badge ad-ok">Ativo</span>':'<span class="ad-badge ad-free">Pendente</span>'}</td></tr>`).join('')}
+      </tbody></table></div>`
+    : emptyState('fa-user-group','Você ainda não tem indicações','Compartilhe seu link para começar a ganhar comissão a cada amigo que assinar.','')}
   </div>
 
   <div class="ind-terms">
@@ -5375,16 +5421,18 @@ function viewAdmin(){
   const trials=all.filter(x=>x.trial).length;
   const planBadge=p=>p==='pro'?'<span class="ad-badge ad-pro">Pro</span>':p==='premium'?'<span class="ad-badge ad-prem">Premium</span>':'<span class="ad-badge ad-free">Gratuito</span>';
   const tab=(k,ic,l)=>`<button class="ad-tab ${adminTab===k?'on':''}" onclick="adminGoto('${k}')"><i class="fa-solid ${ic}"></i> ${l}</button>`;
-  const stat=(ic,cls,val,lbl,sub)=>`<div class="ad-stat"><span class="ad-stat-ic ${cls}"><i class="fa-solid ${ic}"></i></span><div class="ad-stat-b"><b>${val}</b><span>${lbl}</span>${sub?`<small>${sub}</small>`:''}</div></div>`;
+  const stat=(ic,cls,val,lbl,sub,tip)=>`<div class="ad-stat"><span class="ad-stat-ic ${cls}"><i class="fa-solid ${ic}"></i></span><div class="ad-stat-b"><b>${val}</b><span>${lbl}${tip?` <span class="hlp" data-tip="${esc(tip)}">?</span>`:''}</span>${sub?`<small>${sub}</small>`:''}</div></div>`;
+  const TIP_MRR='MRR (Monthly Recurring Revenue): a receita recorrente que entra todo mês com as assinaturas ativas.';
+  const TIP_ARR='ARR (Annual Recurring Revenue): a receita recorrente projetada para 12 meses — equivale ao MRR × 12.';
 
   let panel='';
   if(adminTab==='overview'){
     panel=`
       <div class="ad-stats">
-        ${stat('fa-users','ist-blue', all.length, 'Cadastros totais', trials+' em teste Premium')}
-        ${stat('fa-crown','ist-gold', clientes.length, 'Clientes pagantes', Math.round(conv)+'% de conversão')}
-        ${stat('fa-sack-dollar','ist-up', brl0(mrr), 'MRR (receita/mês)', brl0(arr)+' /ano projetado')}
-        ${stat('fa-user-plus','', leads.length, 'Leads (gratuitos)', 'oportunidades de upgrade')}
+        ${stat('fa-users','ist-blue', all.length, 'Cadastros', trials+' em teste')}
+        ${stat('fa-crown','ist-gold', clientes.length, 'Pagantes', Math.round(conv)+'% conversão')}
+        ${stat('fa-sack-dollar','ist-up', brl0(mrr), 'MRR', brl0(arr)+'/ano', TIP_MRR)}
+        ${stat('fa-user-plus','', leads.length, 'Leads', 'plano gratuito')}
       </div>
       <div class="ad-grid2">
         <div class="card card-pad">
@@ -5414,10 +5462,10 @@ function viewAdmin(){
     const receberMes=mrr; const anoProj=arr;
     panel=`
       <div class="ad-stats">
-        ${stat('fa-sack-dollar','ist-up', brl0(mrr), 'MRR', 'receita recorrente/mês')}
-        ${stat('fa-arrow-trend-up','ist-gold', brl0(arr), 'ARR projetado', '12 meses')}
-        ${stat('fa-receipt','ist-blue', brl0(ticket), 'Ticket médio', 'por cliente pagante')}
-        ${stat('fa-percent','', Math.round(conv)+'%', 'Conversão', 'cadastro → pagante')}
+        ${stat('fa-sack-dollar','ist-up', brl0(mrr), 'MRR', 'receita/mês', TIP_MRR)}
+        ${stat('fa-arrow-trend-up','ist-gold', brl0(arr), 'ARR', '12 meses', TIP_ARR)}
+        ${stat('fa-receipt','ist-blue', brl0(ticket), 'Ticket médio', 'por pagante', 'Valor médio que cada cliente pagante rende por mês (MRR ÷ nº de pagantes).')}
+        ${stat('fa-percent','', Math.round(conv)+'%', 'Conversão', 'cadastro → pago', 'Percentual dos cadastros totais que viraram clientes pagantes.')}
       </div>
       <div class="card card-pad ad-tablewrap">
         <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Receita por plano</div></div>
@@ -7845,6 +7893,18 @@ function genTestCarteira(){
   });
   return lots;
 }
+function genTestWatch(){
+  const cart=new Set(CARTEIRA.map(l=>l.tk));
+  const pool=[...FIIS,...ACOES].filter(a=>a&&a.px>0&&!cart.has(a.tk)).map(a=>a.tk);
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+  return pool.slice(0,6);
+}
+function genTestAlerts(){
+  const list=[]; CARTEIRA.slice(0,4).forEach((l,idx)=>{ const r=assetLookup(l.tk); if(!r||!(r.a.px>0)) return;
+    const dir= idx%2 ? 'abaixo':'acima'; const price=+(r.a.px*(dir==='acima'?1.08:0.92)).toFixed(2);
+    list.push({ id:uid(), tk:r.a.tk, k:r.k, dir, price, created:Date.now(), status:idx===3?'disparado':'ativo', firedAt:idx===3?Date.now():undefined, firedPx:idx===3?r.a.px:undefined }); });
+  return list;
+}
 function toggleTestMode(){
   closeAcctMenu();
   if(!testModeOn()){
@@ -7852,10 +7912,13 @@ function toggleTestMode(){
     setPlan('premium');
     localStorage.setItem('lastro_sub', JSON.stringify({ tier:'pro', plano:'Investidor Pro', cycle:'anual', amount:588, brand:'Visa', card:'4242', canceled:false }));
     CARTEIRA=genTestCarteira(); savePortfolio();
-    toast('Modo desenvolvedor ON — Investidor Pro + carteira de teste ✓');
+    localStorage.setItem('lastro_watch', JSON.stringify(genTestWatch()));
+    setAlerts(genTestAlerts());
+    toast('Modo desenvolvedor ON — Investidor Pro + dados de teste em todas as telas ✓');
   } else {
     localStorage.removeItem('lastro_testmode');
     CARTEIRA=[]; savePortfolio();
+    localStorage.removeItem('lastro_watch'); setAlerts([]);
     localStorage.removeItem('lastro_sub'); setPlan('free');
     toast('Modo desenvolvedor OFF — tudo zerado ✓');
   }
