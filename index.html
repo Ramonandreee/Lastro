@@ -2023,6 +2023,15 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .prof-row.sub b { font-weight:500; color:var(--ink-3); }
 .prof-btn { width:100%; justify-content:flex-start; margin-top:8px; }
 .prof-out { width:100%; justify-content:center; margin-top:16px; }
+.prof-stats { display:flex; align-items:stretch; gap:0; margin:14px 0 4px; padding:12px 4px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface-2); }
+.prof-stat { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; padding:0 8px; position:relative; }
+.prof-stat + .prof-stat::before { content:""; position:absolute; left:0; top:15%; height:70%; width:1px; background:var(--line); }
+.prof-stat b { font-family:var(--mono,ui-monospace,monospace); font-weight:600; font-size:15px; color:var(--ink); line-height:1.1; letter-spacing:-.01em; }
+.prof-stat span { font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); font-weight:600; }
+.prof-switch { flex:none; width:42px; height:24px; border-radius:999px; border:none; padding:0; background:var(--surface-3); position:relative; cursor:pointer; transition:background .18s var(--ease); }
+.prof-switch > span { position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .18s var(--ease); }
+.prof-switch.on { background:var(--brand); }
+.prof-switch.on > span { transform:translateX(18px); }
 /* privacidade: oculta valores com uma tarja limpa (sem blur) */
 body.priv .priv-blur { position:relative; color:transparent !important; user-select:none; pointer-events:none; border-radius:6px; }
 body.priv .priv-blur * { visibility:hidden; }
@@ -3498,17 +3507,36 @@ function openProfile(){
   const u=currentUser(); if(!u){ openAuth('login'); return; }
   const pref=getThemePref();
   $('#authTitle').textContent='Meu perfil';
+  const p=portfolioStats(), tier=planTier();
+  const planChip = tier==='pro'?'<span class="acct-plan pro"><i class="fa-solid fa-crown"></i> Investidor Pro</span>':tier==='premium'?'<span class="acct-plan prem"><i class="fa-solid fa-crown"></i> Premium</span>':'<span class="acct-plan free">Gratuito</span>';
+  const themeBtns=`<div class="acct-theme-btns">
+    <button class="${pref==='light'?'on':''}" onclick="setThemePref('light');openProfile()" title="Claro"><i class="fa-solid fa-sun"></i></button>
+    <button class="${pref==='dark'?'on':''}" onclick="setThemePref('dark');openProfile()" title="Escuro"><i class="fa-solid fa-moon"></i></button>
+    <button class="${pref==='auto'?'on':''}" onclick="setThemePref('auto');openProfile()" title="Automático"><i class="fa-solid fa-circle-half-stroke"></i></button>
+  </div>`;
   $('#authBody').innerHTML=`
     <div class="prof-head">
       <button class="prof-av prof-av-edit" onclick="pickProfilePhoto()" title="Trocar foto"><span class="prof-av-inner">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</span><span class="prof-av-cam"><i class="fa-solid fa-camera"></i></span></button>
-      <div class="prof-id"><div class="prof-nm">${esc(profileName())}</div><div class="prof-em">${esc(u.email)}</div></div>
-      <span class="chip ${isPremium()?'chip-gold':'chip-neu'}">${isPremium()?'Premium':'Gratuito'}</span>
+      <div class="prof-id"><div class="prof-nm">${esc(profileName())}</div><div class="prof-em">${esc(u.email)}</div>${planChip}</div>
+    </div>
+    <div class="prof-stats">
+      <div class="prof-stat"><b>${p.nAtivos}</b><span>ativo${p.nAtivos!==1?'s':''}</span></div>
+      <div class="prof-stat"><b class="priv-blur">${brl0(p.atual)}</b><span>patrimônio</span></div>
+      <div class="prof-stat"><b class="priv-blur">${brl0(p.renda)}</b><span>renda/mês</span></div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Dados pessoais</div>
       <label class="fld"><span>Nome de usuário</span><input id="profName" value="${esc(profileName())}" maxlength="32" placeholder="Seu nome"></label>
       <label class="fld"><span>E-mail</span><input id="profEmail" type="email" value="${esc(u.email)}" placeholder="voce@email.com"></label>
       <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileName()"><i class="fa-solid fa-check"></i> Salvar</button>${profilePhoto()?`<button class="btn btn-ghost btn-sm" onclick="removeProfilePhoto()">Remover foto</button>`:''}</div>
       <div id="profMsg" class="fld-err" style="margin-top:4px"></div>
+    </div>
+    <div class="prof-sec"><div class="prof-sec-t">Preferências</div>
+      <div class="prof-row"><span><i class="fa-solid fa-palette"></i> Tema</span>${themeBtns}</div>
+      <div class="prof-row"><span><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i> Ocultar meus valores</span><button class="prof-switch ${privOn()?'on':''}" role="switch" aria-checked="${privOn()}" onclick="togglePriv();openProfile()"><span></span></button></div>
+    </div>
+    <div class="prof-sec"><div class="prof-sec-t">Plano e convites</div>
+      <button class="btn btn-ghost prof-btn" onclick="closeAuth();openAssinatura()"><i class="fa-solid fa-crown" style="color:var(--gold)"></i> Gerenciar assinatura</button>
+      <button class="btn btn-ghost prof-btn" onclick="closeAuth();nav('indicar')"><i class="fa-solid fa-gift" style="color:var(--up)"></i> Indique e Ganhe</button>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Segurança</div>
       <button class="btn btn-ghost prof-btn" onclick="toast('Em breve: alteração de senha')"><i class="fa-solid fa-key"></i> Alterar senha</button>
