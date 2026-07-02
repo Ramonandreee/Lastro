@@ -2103,7 +2103,13 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 /* painel administrativo */
 .ad-banner { display:flex; gap:11px; align-items:flex-start; padding:12px 15px; border-radius:var(--r); background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 26%,transparent); font-size:12.5px; color:var(--ink-2); line-height:1.5; margin-bottom:16px; }
 .ad-banner i { color:var(--gold); margin-top:2px; }
-.ad-tabs { display:flex; gap:8px; overflow-x:auto; margin-bottom:16px; padding-bottom:2px; -webkit-overflow-scrolling:touch; }
+.ad-tabs { display:flex; gap:8px; overflow-x:auto; margin-bottom:16px; padding-bottom:2px; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none; }
+.ad-tabs::-webkit-scrollbar { display:none; height:0; }
+.ad-sug { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; }
+.ad-sug-i { display:flex; gap:11px; align-items:flex-start; font-size:13px; line-height:1.55; color:var(--ink-2); }
+.ad-sug-ic { width:30px; height:30px; flex:none; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:12.5px; background:color-mix(in srgb,var(--st,var(--ink-4)) 14%,transparent); color:var(--st,var(--ink-3)); }
+.ad-sug-i[data-st="pos"]{ --st:var(--up); } .ad-sug-i[data-st="warn"]{ --st:var(--gold); } .ad-sug-i[data-st="neu"]{ --st:var(--accent); }
+.ad-sug-i strong { color:var(--ink); font-weight:700; }
 .ad-tab { flex:none; display:inline-flex; align-items:center; gap:7px; padding:9px 15px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
 .ad-tab:hover { border-color:var(--line-2); color:var(--ink); }
 .ad-tab.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
@@ -3683,6 +3689,11 @@ function pickProfilePhoto(){
     r.readAsDataURL(f); };
   inp.click();
 }
+/* opções da foto de perfil — remover aparece junto de trocar */
+function photoOptions(){
+  if(!profilePhoto()){ pickProfilePhoto(); return; }
+  showConfirm('Foto de perfil','O que você deseja fazer com a sua foto?','Trocar foto', pickProfilePhoto, false, { altLabel:'Remover foto', onAlt:removeProfilePhoto });
+}
 function openCropper(img){
   const S=256, base=S/Math.min(img.width,img.height);
   _crop={img, base, scale:1, x:0, y:0};
@@ -3712,9 +3723,6 @@ function refreshProfileAvatar(){
   const head=document.querySelector('#authBody .prof-head'); if(!head) return;
   const u=currentUser(); const inner=head.querySelector('.prof-av-inner');
   if(inner) inner.innerHTML=avatarInner((profileName()[0]||(u&&u.email[0])||'?').toUpperCase());
-  let del=head.querySelector('.prof-av-del');
-  if(profilePhoto()){ if(!del){ const av=head.querySelector('.prof-av'); if(av){ del=document.createElement('span'); del.className='prof-av-del'; del.title='Remover foto'; del.setAttribute('onclick','event.stopPropagation();removeProfilePhoto()'); del.innerHTML='<i class="fa-solid fa-trash-can"></i>'; av.appendChild(del); } } }
-  else if(del){ del.remove(); }
 }
 /* dados cadastrais (base de leads) — UFs e cidades */
 const BR_UF=['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
@@ -3849,13 +3857,8 @@ function openProfile(){
   const twofaSwitch=(kind,on)=>`<button class="prof-switch ${on?'on':''}" data-2fa="${kind}" role="switch" aria-checked="${!!on}" onclick="toggle2FA('${kind}')"><span></span></button>`;
   $('#authBody').innerHTML=`
     <div class="prof-head">
-      <button class="prof-av prof-av-edit" onclick="pickProfilePhoto()" title="Trocar foto"><span class="prof-av-inner">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</span><span class="prof-av-cam"><i class="fa-solid fa-camera"></i></span>${profilePhoto()?`<span class="prof-av-del" title="Remover foto" onclick="event.stopPropagation();removeProfilePhoto()"><i class="fa-solid fa-trash-can"></i></span>`:''}</button>
+      <button class="prof-av prof-av-edit" onclick="photoOptions()" title="Foto de perfil"><span class="prof-av-inner">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</span><span class="prof-av-cam"><i class="fa-solid fa-camera"></i></span></button>
       <div class="prof-id"><div class="prof-nm">${esc(profileName())}</div><div class="prof-em">${esc(u.email)}</div>${planChip}</div>
-    </div>
-    <div class="prof-stats">
-      <div class="prof-stat"><b>${p.nAtivos}</b><span>ativo${p.nAtivos!==1?'s':''}</span></div>
-      <div class="prof-stat"><b class="priv-blur">${brl0(p.atual)}</b><span>patrimônio</span></div>
-      <div class="prof-stat"><b class="priv-blur">${brl0(p.renda)}</b><span>renda/mês</span></div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Dados cadastrais</div>
       <div class="fld-grid">
@@ -4348,17 +4351,19 @@ let _tipScrim;
 function _tipNode(){ if(!_tip){ _tip=document.createElement('div'); _tip.className='tip'; _tip.addEventListener('click', e=>e.stopPropagation()); document.body.appendChild(_tip);
     _tipScrim=document.createElement('div'); _tipScrim.className='tip-scrim'; _tipScrim.addEventListener('click', hideTip); document.body.appendChild(_tipScrim); } return _tip; }
 function showTip(target){
-  const ind = target.getAttribute('data-ind'), txt = target.getAttribute('data-tip');
-  if(!ind && !txt){ hideTip(); return; }
+  const ind = target.getAttribute('data-ind'), term = target.getAttribute('data-term'), txt = target.getAttribute('data-tip');
+  if(!ind && !term && !txt){ hideTip(); return; }
+  const rich = ind || term;
   const el=_tipNode();
   // mobile (sem hover) + tooltip rico → bottom sheet
-  const sheet = ind && !matchMedia('(hover:hover)').matches && window.innerWidth<=640;
+  const sheet = rich && !matchMedia('(hover:hover)').matches && window.innerWidth<=640;
   if(ind){ el.innerHTML=indTipHTML(ind); el.classList.add('rich'); }
+  else if(term){ el.innerHTML=termTipHTML(term); el.classList.add('rich'); }
   else { el.textContent=txt; el.classList.remove('rich'); }
   el.classList.toggle('sheet', !!sheet);
   el._for=target;
   if(sheet){ el.style.maxWidth=''; el.style.left=''; el.style.top=''; el.classList.remove('below'); el.classList.add('show'); _tipScrim.classList.add('show'); return; }
-  el.style.maxWidth=Math.min(ind?340:280, window.innerWidth-24)+'px';
+  el.style.maxWidth=Math.min(rich?340:280, window.innerWidth-24)+'px';
   _tipScrim.classList.remove('show');
   el.classList.add('show');
   const r=target.getBoundingClientRect(), tw=el.offsetWidth, th=el.offsetHeight;
@@ -4371,7 +4376,7 @@ function showTip(target){
 }
 function hideTip(){ if(_tip){ _tip.classList.remove('show'); _tip._for=null; } if(_tipScrim){ _tipScrim.classList.remove('show'); } }
 document.addEventListener('click', e=>{
-  const t=e.target.closest('[data-tip],[data-ind]');
+  const t=e.target.closest('[data-tip],[data-ind],[data-term]');
   if(t){ if(_tip && _tip.classList.contains('show') && _tip._for===t) hideTip(); else showTip(t); }
   else hideTip();
 });
@@ -5421,28 +5426,45 @@ function viewAdmin(){
   const trials=all.filter(x=>x.trial).length;
   const planBadge=p=>p==='pro'?'<span class="ad-badge ad-pro">Pro</span>':p==='premium'?'<span class="ad-badge ad-prem">Premium</span>':'<span class="ad-badge ad-free">Gratuito</span>';
   const tab=(k,ic,l)=>`<button class="ad-tab ${adminTab===k?'on':''}" onclick="adminGoto('${k}')"><i class="fa-solid ${ic}"></i> ${l}</button>`;
-  const stat=(ic,cls,val,lbl,sub,tip)=>`<div class="ad-stat"><span class="ad-stat-ic ${cls}"><i class="fa-solid ${ic}"></i></span><div class="ad-stat-b"><b>${val}</b><span>${lbl}${tip?` <span class="hlp" data-tip="${esc(tip)}">?</span>`:''}</span>${sub?`<small>${sub}</small>`:''}</div></div>`;
-  const TIP_MRR='MRR (Monthly Recurring Revenue): a receita recorrente que entra todo mês com as assinaturas ativas.';
-  const TIP_ARR='ARR (Annual Recurring Revenue): a receita recorrente projetada para 12 meses — equivale ao MRR × 12.';
+  /* cards no modelo dos indicadores (toque abre a definição) */
+  const adCard=(term,st,val,tag)=>{ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span><span class="ind-ics"><button class="ind-ic" onclick="event.stopPropagation();openAdminHist('${term}')" aria-label="Evolução"><i class="fa-solid fa-chart-column"></i></button></span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`; };
+  const plCard=(ic,st,val,lbl,tag)=>`<div class="ind-card" data-st="${st}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${ic}"></i></span><span class="ind-l">${lbl}</span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`;
 
   let panel='';
   if(adminTab==='overview'){
+    const proN=all.filter(x=>x.plan==='pro').length, premN=all.filter(x=>x.plan==='premium').length, freeNoTrial=all.filter(x=>x.plan==='free'&&!x.trial).length;
+    const ufM={}; all.forEach(x=>{ if(x.uf&&x.uf!=='—') ufM[x.uf]=(ufM[x.uf]||0)+1; }); const ufTop=Object.entries(ufM).sort((a,b)=>b[1]-a[1]);
+    const sug=[];
+    if(trials>0) sug.push(['fa-clock','warn',`<strong>${trials}</strong> ${trials>1?'contas estão':'conta está'} em teste Premium — envie um lembrete antes de expirar para converter em pagante.`]);
+    if(freeNoTrial>0) sug.push(['fa-gift','pos',`<strong>${freeNoTrial}</strong> ${freeNoTrial>1?'leads no plano gratuito':'lead no plano gratuito'} — ofereça o teste de 7 dias do Premium por e-mail/WhatsApp.`]);
+    if(premN>0) sug.push(['fa-crown','warn',`<strong>${premN}</strong> ${premN>1?'clientes Premium':'cliente Premium'} — um upsell para Investidor Pro eleva o ticket médio e dobra a comissão de indicação.`]);
+    if(ufTop[0]) sug.push(['fa-location-dot','neu',`Maior concentração em <strong>${ufTop[0][0]}</strong> (${ufTop[0][1]} cadastros) — considere campanhas regionais nas praças com menos presença.`]);
+    sug.push(conv<40?['fa-arrow-trend-up','warn',`Conversão em <strong>${Math.round(conv)}%</strong> — priorize ativar quem está em teste antes do prazo acabar.`]:['fa-circle-check','pos',`Conversão saudável em <strong>${Math.round(conv)}%</strong> — mantenha o acompanhamento dos testes.`]);
+    const sugItems=sug.map(([ic,st,t])=>`<li class="ad-sug-i" data-st="${st}"><span class="ad-sug-ic"><i class="fa-solid ${ic}"></i></span><span>${t}</span></li>`).join('');
     panel=`
-      <div class="ad-stats">
-        ${stat('fa-users','ist-blue', all.length, 'Cadastros', trials+' em teste')}
-        ${stat('fa-crown','ist-gold', clientes.length, 'Pagantes', Math.round(conv)+'% conversão')}
-        ${stat('fa-sack-dollar','ist-up', brl0(mrr), 'MRR', brl0(arr)+'/ano', TIP_MRR)}
-        ${stat('fa-user-plus','', leads.length, 'Leads', 'plano gratuito')}
+      <div class="ind-grid">
+        ${plCard('fa-users','neu', all.length, 'Cadastros', trials+' em teste')}
+        ${plCard('fa-crown','warn', clientes.length, 'Pagantes', Math.round(conv)+'% conversão')}
+        ${adCard('mrr','pos', brl0(mrr), 'Recorrente/mês')}
+        ${plCard('fa-user-plus','neu', leads.length, 'Leads', 'no gratuito')}
       </div>
-      <div class="ad-grid2">
+      <div class="card card-pad" style="margin-top:16px">
+        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Crescimento</div><span class="chip ilus"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
+        <div style="position:relative;height:240px;margin-top:6px"><canvas id="adminGrowth" role="img" aria-label="Crescimento de cadastros e receita"></canvas></div>
+      </div>
+      <div class="ad-grid2" style="margin-top:16px">
         <div class="card card-pad">
           <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Distribuição por plano</div></div>
-          ${[['Investidor Pro','pro',all.filter(x=>x.plan==='pro').length],['Premium','premium',all.filter(x=>x.plan==='premium').length],['Gratuito','free',leads.length]].map(([l,p,n])=>{ const pc=all.length?Math.round(n/all.length*100):0; return `<div class="ad-bar-row"><span class="ad-bar-l">${planBadge(p)} ${l}</span><div class="ad-bar"><i class="ad-bar-f ad-${p}" style="width:${pc}%"></i></div><b>${n}</b></div>`; }).join('')}
+          ${[['Investidor Pro','pro',proN],['Premium','premium',premN],['Gratuito','free',leads.length]].map(([l,p,n])=>{ const pc=all.length?Math.round(n/all.length*100):0; return `<div class="ad-bar-row"><span class="ad-bar-l">${planBadge(p)} ${l}</span><div class="ad-bar"><i class="ad-bar-f ad-${p}" style="width:${pc}%"></i></div><b>${n}</b></div>`; }).join('')}
         </div>
         <div class="card card-pad">
           <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-location-dot"></i></span> Top estados</div></div>
-          ${(()=>{ const m={}; all.forEach(x=>{ if(x.uf&&x.uf!=='—') m[x.uf]=(m[x.uf]||0)+1; }); const top=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,6); const mx=top[0]?top[0][1]:1; return top.map(([uf,n])=>`<div class="ad-bar-row"><span class="ad-bar-l">${uf}</span><div class="ad-bar"><i class="ad-bar-f ad-premium" style="width:${Math.round(n/mx*100)}%"></i></div><b>${n}</b></div>`).join(''); })()}
+          ${(()=>{ const top=ufTop.slice(0,6); const mx=top[0]?top[0][1]:1; return top.map(([uf,n])=>`<div class="ad-bar-row"><span class="ad-bar-l">${uf}</span><div class="ad-bar"><i class="ad-bar-f ad-premium" style="width:${Math.round(n/mx*100)}%"></i></div><b>${n}</b></div>`).join(''); })()}
         </div>
+      </div>
+      <div class="card card-pad" style="margin-top:16px">
+        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Sugestões</div></div>
+        <ul class="ad-sug">${sugItems}</ul>
       </div>`;
   } else if(adminTab==='clientes'){
     panel=`<div class="card card-pad ad-tablewrap">
@@ -5459,17 +5481,20 @@ function viewAdmin(){
       </tbody></table></div>
     </div>`;
   } else {
-    const receberMes=mrr; const anoProj=arr;
     panel=`
-      <div class="ad-stats">
-        ${stat('fa-sack-dollar','ist-up', brl0(mrr), 'MRR', 'receita/mês', TIP_MRR)}
-        ${stat('fa-arrow-trend-up','ist-gold', brl0(arr), 'ARR', '12 meses', TIP_ARR)}
-        ${stat('fa-receipt','ist-blue', brl0(ticket), 'Ticket médio', 'por pagante', 'Valor médio que cada cliente pagante rende por mês (MRR ÷ nº de pagantes).')}
-        ${stat('fa-percent','', Math.round(conv)+'%', 'Conversão', 'cadastro → pago', 'Percentual dos cadastros totais que viraram clientes pagantes.')}
+      <div class="ind-grid">
+        ${adCard('mrr', 'pos', brl0(mrr), 'Receita/mês')}
+        ${adCard('arr', 'warn', brl0(arr), 'Projeção 12m')}
+        ${adCard('ticket', 'neu', brl0(ticket), 'Por pagante')}
+        ${adCard('conv', conv>=50?'pos':'warn', Math.round(conv)+'%', 'Cadastro → pago')}
       </div>
-      <div class="card card-pad ad-tablewrap">
-        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Receita por plano</div></div>
-        <div class="ad-scroll"><table class="ad-table"><thead><tr><th>Plano</th><th class="ar">Assinantes</th><th class="ar">Preço/mês</th><th class="ar">MRR</th></tr></thead><tbody>
+      <div class="card card-pad" style="margin-top:16px">
+        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Evolução da Receita Mensal</div><span class="chip ilus"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
+        <div style="position:relative;height:230px;margin-top:6px"><canvas id="adminMrr" role="img" aria-label="Evolução da receita mensal"></canvas></div>
+      </div>
+      <div class="card card-pad ad-tablewrap" style="margin-top:16px">
+        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-layer-group"></i></span> Receita por plano</div></div>
+        <div class="ad-scroll"><table class="ad-table"><thead><tr><th>Plano</th><th class="ar">Assinantes</th><th class="ar">Preço/mês</th><th class="ar">Receita/mês</th></tr></thead><tbody>
           ${[['Investidor Pro','pro',49],['Premium','premium',29]].map(([l,p,pr])=>{ const n=all.filter(x=>x.plan===p).length; return `<tr><td>${planBadge(p)} ${l}</td><td class="ar mono">${n}</td><td class="ar mono">${brl0(pr)}</td><td class="ar mono up">${brl0(n*pr)}</td></tr>`; }).join('')}
           <tr class="ad-total"><td>Total</td><td class="ar mono">${clientes.length}</td><td class="ar">—</td><td class="ar mono up">${brl0(mrr)}</td></tr>
         </tbody></table></div>
@@ -5481,6 +5506,45 @@ function viewAdmin(){
     <div class="ad-tabs">${tab('overview','fa-gauge-high','Visão geral')}${tab('clientes','fa-user-tie','Clientes')}${tab('leads','fa-user-plus','Leads')}${tab('financeiro','fa-money-bill-trend-up','Financeiro')}</div>
     ${panel}
   </div>`;
+}
+/* séries e gráficos do painel admin (ilustrativo) */
+function adminMonths(n){ const now=new Date(); const o=[]; for(let i=n-1;i>=0;i--){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); o.push(d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','')); } return o; }
+function adminRamp(end,n){ const o=[]; for(let i=0;i<n;i++){ const f=0.42+0.58*(i/(n-1)); o.push(Math.round(end*f)); } return o; }
+function initAdminCharts(){
+  if(typeof HAS_CHART!=='undefined' && !HAS_CHART) return;
+  if(typeof Chart==='undefined') return;
+  const all=adminAll(); const mrr=all.reduce((s,x)=>s+(x.mrr||0),0); const N=8, labels=adminMonths(N);
+  const br=cssVar('--brand'), up=cssVar('--up');
+  const g=document.getElementById('adminGrowth');
+  if(g){ if(charts.adminGrowth) charts.adminGrowth.destroy();
+    charts.adminGrowth=new Chart(g,{ type:'line', data:{ labels, datasets:[
+      { label:'Cadastros', data:adminRamp(all.length,N), borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5, yAxisID:'y' },
+      { label:'Receita Mensal', data:adminRamp(mrr,N), borderColor:up, backgroundColor:'transparent', fill:false, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2, yAxisID:'y1' } ] },
+      options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+        plugins:{ legend:{display:true,position:'top',align:'end',labels:{color:cssVar('--ink-2'),font:{size:11},usePointStyle:true,pointStyleWidth:9,boxHeight:7}}, tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.dataset.yAxisID==='y1'?brl0(c.parsed.y):c.parsed.y)}} },
+        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
+          y:{position:'left',grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
+          y1:{position:'right',grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v},border:{display:false}} } } }); }
+  const m=document.getElementById('adminMrr');
+  if(m){ if(charts.adminMrr) charts.adminMrr.destroy();
+    charts.adminMrr=new Chart(m,{ type:'bar', data:{ labels, datasets:[{ label:'Receita Mensal', data:adminRamp(mrr,N), backgroundColor:up, borderRadius:6, maxBarThickness:26 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>brl0(c.parsed.y)}} },
+        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}}, y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v},border:{display:false}} } } }); }
+}
+function openAdminHist(term){
+  const d=TERM_CARDS[term]||{nome:term,icon:'fa-chart-column',descricao:''};
+  const all=adminAll(); const mrr=all.reduce((s,x)=>s+(x.mrr||0),0); const clientes=all.filter(x=>x.plan!=='free').length;
+  const conv=all.length?clientes/all.length*100:0;
+  const endVal = term==='mrr'?mrr : term==='arr'?mrr*12 : term==='ticket'?(clientes?mrr/clientes:0) : Math.round(conv);
+  const isMoney = term!=='conv';
+  let el=document.getElementById('adminHistModal');
+  if(!el){ el=document.createElement('div'); el.id='adminHistModal'; el.className='modal-scrim'; document.body.appendChild(el); el.onclick=ev=>{ if(ev.target===el) el.classList.remove('open'); }; }
+  el.innerHTML=`<div class="modal-card rsa-card"><div class="rsa-head"><div class="rsa-t"><i class="fa-solid ${d.icon}"></i> ${esc(d.nome)} · evolução</div><button class="rsa-x" onclick="document.getElementById('adminHistModal').classList.remove('open')" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div><div class="rsa-body"><div style="position:relative;height:230px"><canvas id="adminHistCanvas"></canvas></div><p class="sec-desc" style="margin:12px 2px 0">${esc(d.descricao||'')}</p><span class="chip ilus" style="margin-top:8px"><i class="fa-solid fa-flask"></i> série ilustrativa</span></div></div>`;
+  el.classList.add('open');
+  setTimeout(()=>{ const c=document.getElementById('adminHistCanvas'); if(!c) return; if(typeof HAS_CHART!=='undefined'&&!HAS_CHART) return; if(typeof Chart==='undefined') return; if(charts.adminHist) charts.adminHist.destroy(); const N=8, col=cssVar('--brand');
+    charts.adminHist=new Chart(c,{ type:'line', data:{ labels:adminMonths(N), datasets:[{ label:d.nome, data:adminRamp(endVal,N), borderColor:col, backgroundColor:col+'1a', fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:x=>isMoney?brl0(x.parsed.y):x.parsed.y+'%'}} },
+        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}}, y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>isMoney?'R$'+v:v+'%'},border:{display:false}} } } }); }, 60);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -6466,6 +6530,7 @@ function afterRender(v, soft){
   if(v==='planos'){ initPlanCarousel(); }
   if(v==='recdetail'){ initRecCharts(); }
   if(v==='asset'){ initDetailCharts(); animateGauges(); animateCounts(); }
+  if(v==='admin'){ initAdminCharts(); }
 }
 function initPlanCarousel(){
   const car=$('#planCarousel'), dots=$('#planDots'); if(!car) return;
@@ -8180,6 +8245,17 @@ const TERMS={
   ibov:'IBOV (Ibovespa): principal índice da bolsa brasileira — serve de referência para comparar o desempenho da sua carteira com o mercado.'
 };
 function hlp(k){ const t=(TERMS&&TERMS[k])||k; return `<span class="hlp" data-tip="${esc(t)}">?</span>`; }
+/* termos com card rico (mesmo modelo dos indicadores dos ativos) — tocar abre a definição */
+const TERM_CARDS={
+  mrr:{ nome:'Receita Mensal', icon:'fa-sack-dollar', descricao:'A receita recorrente que entra todos os meses com as assinaturas ativas.', formula:'Soma das mensalidades de todos os assinantes ativos', interpretacao:'É o principal termômetro do negócio: quanto maior e mais estável, melhor. Cresce com novos assinantes e cai com cancelamentos.', faixaIdeal:'Deve subir mês a mês.', pontosAtencao:'Uma queda indica cancelamentos (churn) — investigue o motivo.' },
+  arr:{ nome:'Receita Anual', icon:'fa-arrow-trend-up', descricao:'A receita recorrente projetada para 12 meses, mantendo os assinantes atuais.', formula:'Receita Mensal × 12', interpretacao:'Mostra o tamanho anual do negócio em regime recorrente — útil para planejar metas.', faixaIdeal:'Cresce junto com a Receita Mensal.' },
+  ticket:{ nome:'Ticket médio', icon:'fa-receipt', descricao:'O valor médio que cada cliente pagante rende por mês.', formula:'Receita Mensal ÷ nº de clientes pagantes', interpretacao:'Sobe quando mais gente assina o plano mais caro (Investidor Pro).', faixaIdeal:'Quanto maior, mais cada cliente contribui.' },
+  conv:{ nome:'Conversão', icon:'fa-percent', descricao:'O percentual dos cadastros totais que viraram clientes pagantes.', formula:'Clientes pagantes ÷ cadastros totais × 100', interpretacao:'Mede a eficiência em transformar cadastros e testes em receita.', faixaIdeal:'Quanto maior, melhor.', pontosAtencao:'Foque em ativar quem está no período de teste antes de expirar.' }
+};
+function termTipHTML(key){ const d=TERM_CARDS[key]; if(!d) return '';
+  const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
+  return `<div class="tipcard"><div class="tc-h"><span class="tc-ico"><i class="fa-solid ${d.icon||'fa-circle-info'}"></i></span>${esc(d.nome)}</div><p>${esc(d.descricao)}</p>${row('Como é calculado', d.formula?`<b>${esc(d.formula)}</b>`:'')}${row('Como interpretar', esc(d.interpretacao||''))}${row('Referência', esc(d.faixaIdeal||''))}${d.pontosAtencao?row('⚠ Atenção', esc(d.pontosAtencao)):''}<div class="tc-close" onclick="hideTip()">Entendi</div></div>`;
+}
 /* popover rico (definição do indicador) */
 function indTipHTML(id){ const d=INDICATORS[id]; if(!d) return '';
   const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
