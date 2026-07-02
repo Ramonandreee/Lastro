@@ -1869,6 +1869,27 @@ table.tbl tbody tr.no-hover td { border:none; }
 .ind-pro-up { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:14px; padding:12px 14px; border-radius:12px; background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 28%,transparent); font-size:13px; color:var(--ink-2); }
 .ind-pro-up > div { flex:1; min-width:200px; }
 .ind-pro-up i { color:var(--gold); }
+.ind-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:16px 0; }
+.ind-stat { display:flex; align-items:center; gap:12px; padding:14px 16px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
+.ist-ic { width:38px; height:38px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px; background:var(--surface-3); color:var(--ink-3); }
+.ist-ic.ist-gold { background:var(--gold-l); color:var(--gold); }
+.ist-ic.ist-up { background:color-mix(in srgb,var(--up) 12%,transparent); color:var(--up); }
+.ist-ic.ist-blue { background:color-mix(in srgb,var(--accent) 12%,transparent); color:var(--accent); }
+.ind-stat b { display:block; font-family:var(--mono); font-size:17px; font-weight:600; letter-spacing:-.01em; line-height:1.1; }
+.ind-stat span { font-size:11px; color:var(--ink-3); font-weight:600; }
+.ref-sim { border:1px solid var(--line); border-radius:14px; padding:18px 18px 16px; background:linear-gradient(150deg, color-mix(in srgb,var(--up) 7%,transparent), transparent 60%); }
+.rs-out { text-align:center; margin-bottom:16px; }
+.rs-friends { font-size:14px; font-weight:600; color:var(--ink-2); }
+.rs-friends i { color:var(--brand); margin-right:4px; }
+.rs-friends span { color:var(--ink); font-family:var(--mono); }
+.rs-earn { margin:8px 0 4px; display:flex; flex-direction:column; align-items:center; gap:1px; }
+.rs-earn b { font-family:var(--mono); font-size:32px; font-weight:700; letter-spacing:-.02em; line-height:1; }
+.rs-earn span { font-size:12px; color:var(--ink-3); font-weight:600; }
+.rs-year { font-size:12.5px; color:var(--ink-2); } .rs-year b { color:var(--ink); font-family:var(--mono); }
+.rs-range { -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:999px; background:var(--surface-3); outline:none; cursor:pointer; }
+.rs-range::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:22px; height:22px; border-radius:50%; background:var(--brand); border:3px solid var(--surface); box-shadow:0 2px 8px color-mix(in srgb,var(--brand) 45%,transparent); cursor:pointer; }
+.rs-range::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:var(--brand); border:3px solid var(--surface); box-shadow:0 2px 8px color-mix(in srgb,var(--brand) 45%,transparent); cursor:pointer; }
+.rs-scale { display:flex; justify-content:space-between; font-size:11px; color:var(--ink-3); margin-top:8px; font-family:var(--mono); }
 .ref-link { display:flex; gap:8px; margin-top:6px; }
 .ref-link input { flex:1; min-width:0; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--ink); font-size:13px; font-family:var(--mono); }
 .ref-link .btn { flex:none; }
@@ -1881,7 +1902,7 @@ table.tbl tbody tr.no-hover td { border:none; }
 .it-t { font-weight:700; font-size:13.5px; color:var(--gold); display:flex; align-items:center; gap:8px; margin-bottom:8px; }
 .ind-terms ul { margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px; }
 .ind-terms li { font-size:12.5px; color:var(--ink-2); line-height:1.5; }
-@media (max-width:680px){ .ind-earn-grid { grid-template-columns:1fr; } .share-grid { grid-template-columns:repeat(2,1fr); } .indique-hero { padding:16px; } .ih-t { font-size:17px; } }
+@media (max-width:680px){ .ind-earn-grid { grid-template-columns:1fr; } .share-grid { grid-template-columns:repeat(2,1fr); } .indique-hero { padding:16px; } .ih-t { font-size:17px; } .ind-stats { grid-template-columns:repeat(2,1fr); } .rs-earn b { font-size:28px; } }
 @media (max-width:680px){ .pricing-title { font-size:24px; } .cmp-row { padding:12px 8px; gap:6px; } .cmp-row > span, .cmp-f { font-size:12px; } .value-anchor { font-size:12.5px; } }
 
 /* onboarding */
@@ -4725,6 +4746,14 @@ function shareRef(ch){ const l=refLink(); if(!l) return;
   const urls={ whatsapp:'https://wa.me/?text='+e, facebook:'https://www.facebook.com/sharer/sharer.php?u='+el, twitter:'https://twitter.com/intent/tweet?text='+e };
   if(urls[ch]) window.open(urls[ch], '_blank', 'noopener');
 }
+function updRefSim(per){
+  const r=document.getElementById('rsRange'); if(!r) return;
+  const n=+r.value, money=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const nEl=document.getElementById('rsN'), mEl=document.getElementById('rsMon'), yEl=document.getElementById('rsYr');
+  if(nEl) nEl.textContent=n;
+  if(mEl) mEl.textContent=money(per*n);
+  if(yEl) yEl.textContent=money(per*n*12);
+}
 function viewIndicar(){
   const hero = `<div class="indique-hero">
     <div class="ih-ic"><i class="fa-solid fa-gift"></i></div>
@@ -4738,8 +4767,16 @@ function viewIndicar(){
   const proRef=isProTier(), rate=proRef?REF_RATE_PRO:REF_RATE, ratePct=Math.round(rate*100);
   const comM=PLANS.premium.mensal*rate, comA=PLANS.premium.anualTotal*rate;
   const step=(n,t,d)=>`<div class="ind-step"><span class="is-n">${n}</span><div><div class="is-t">${t}</div><div class="is-d">${d}</div></div></div>`;
+  const money=v=>'R$ '+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const simN0=5;
   return `<div class="ind-page">
   ${hero}
+  <div class="ind-stats">
+    <div class="ind-stat"><span class="ist-ic ist-gold"><i class="fa-solid fa-sack-dollar"></i></span><div><b class="priv-blur">${money(0)}</b><span>Ganho acumulado</span></div></div>
+    <div class="ind-stat"><span class="ist-ic ist-up"><i class="fa-solid fa-user-check"></i></span><div><b>0</b><span>Indicados ativos</span></div></div>
+    <div class="ind-stat"><span class="ist-ic"><i class="fa-solid fa-hourglass-half"></i></span><div><b>0</b><span>Pendentes</span></div></div>
+    <div class="ind-stat"><span class="ist-ic ist-blue"><i class="fa-solid fa-calendar-check"></i></span><div><b>—</b><span>Próximo PIX</span></div></div>
+  </div>
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-people-group"></i></span> Como funciona</div></div>
     <div class="ind-steps">
@@ -4767,6 +4804,20 @@ function viewIndicar(){
       </div>
     </div>
     ${proRef?'':`<div class="ind-pro-up"><div><i class="fa-solid fa-crown"></i> <strong>Assinante Investidor Pro ganha o dobro:</strong> comissão de ${Math.round(REF_RATE_PRO*100)}% em vez de ${Math.round(REF_RATE*100)}%.</div><button class="btn btn-premium btn-sm" onclick="goPricing()">Conhecer o Pro</button></div>`}
+  </div>
+
+  <div class="card card-pad">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l,var(--brand-l));color:var(--up)"><i class="fa-solid fa-calculator"></i></span> Simule seus ganhos</div></div>
+    <p class="sec-desc" style="margin:6px 0 16px">Arraste para ver quanto você recebe por mês indicando amigos no plano mensal — comissão recorrente enquanto eles ficarem ativos.</p>
+    <div class="ref-sim">
+      <div class="rs-out">
+        <div class="rs-friends"><i class="fa-solid fa-user-group"></i> <span id="rsN">${simN0}</span> amigos indicados</div>
+        <div class="rs-earn"><b class="up" id="rsMon">${money(comM*simN0)}</b><span>por mês, recorrente</span></div>
+        <div class="rs-year">Em 12 meses: <b id="rsYr">${money(comM*simN0*12)}</b></div>
+      </div>
+      <input type="range" id="rsRange" class="rs-range" min="1" max="50" value="${simN0}" oninput="updRefSim(${comM})" aria-label="Número de amigos indicados">
+      <div class="rs-scale"><span>1</span><span>25</span><span>50</span></div>
+    </div>
   </div>
 
   <div class="card card-pad">
