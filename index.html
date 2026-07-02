@@ -2073,7 +2073,7 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .prof-conn-ic svg { display:block; }
 .pc-google { background:#fff; }
 .pc-apple { background:#000; color:#fff; }
-.pc-b3 { background:#0A2A66; color:#fff; }
+.pc-b3 { background:#003E92; color:#fff; }
 .prof-conn-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
 .prof-conn-tx b { font-size:14px; font-weight:650; }
 .prof-conn-tx small { font-size:12px; color:var(--ink-3); }
@@ -3611,16 +3611,11 @@ function supportEmail(){
 const SUPPORT_FAQ=[
   ['Meus dados de investimento ficam seguros?','Sim. Sua carteira fica salva no seu dispositivo e sincronizada de forma privada na sua conta. Nunca compartilhamos seus dados com terceiros.'],
   ['Como cadastro meus ativos na carteira?','Vá em Carteira → Adicionar ativo, busque pelo ticker (ex.: PETR4, HGLG11) e informe a quantidade e o preço médio. O restante é calculado automaticamente.'],
-  ['Os preços e proventos são em tempo real?','Nesta demonstração os dados são ilustrativos. Com a integração de mercado ativa, cotações e proventos passam a ser atualizados automaticamente.'],
   ['Como funciona o teste grátis do Premium?','São 7 dias com acesso completo, sem precisar de cartão. Ao final, você escolhe se quer continuar — sem cobrança automática surpresa.'],
   ['Como cancelo minha assinatura?','Em Gerenciar assinatura você pode cancelar quando quiser. O acesso permanece até o fim do período já pago.'],
   ['Qual a diferença entre Premium e Investidor Pro?','O Premium libera carteira real, proventos, aporte, IR, rastreador e alertas. O Investidor Pro acrescenta consultor de IA da carteira, Raio-X com Nota Lastro, detector de deterioração, backtest, stress test e comissão de indicação dobrada (40%).'],
   ['Como funciona o programa Indique e Ganhe?','Você compartilha seu link exclusivo e ganha uma comissão recorrente (20%, ou 40% sendo Investidor Pro) sobre a assinatura de cada amigo que assinar — paga via PIX enquanto ele permanecer ativo.'],
   ['A Lastro dá recomendação de compra ou venda?','Não. A Lastro é uma ferramenta de organização e análise. Todos os indicadores e scores são informativos e educacionais — a decisão de investimento é sempre sua.'],
-  ['Meus valores aparecem para outras pessoas?','Não. E você ainda pode ativar o modo privacidade (ícone de olho) para ocultar todos os valores da tela — útil em locais públicos ou ao gravar a tela.'],
-  ['Posso usar em mais de um dispositivo?','Sim. Ao entrar com a mesma conta, sua carteira e configurações são sincronizadas automaticamente entre celular, tablet e computador.'],
-  ['Como altero ou recupero minha senha?','Em Meu perfil → Segurança você pode alterar a senha. Para recuperação, use a opção "Esqueci minha senha" na tela de login.'],
-  ['Quais formas de pagamento são aceitas?','Cartão de crédito e PIX. Na assinatura anual o valor sai mais barato por mês em relação ao plano mensal.'],
 ];
 function faqToggle(el){ const it=el.closest('.faq-item'); if(it) it.classList.toggle('open'); }
 function openSupport(){
@@ -3787,7 +3782,7 @@ function maskPhone(el){ const p=el.selectionStart, old=el.value; el.value=maskPh
 /* logos oficiais (contas conectadas) */
 const LOGO_GOOGLE=`<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>`;
 const LOGO_APPLE=`<svg viewBox="0 0 384 512" width="17" height="20" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>`;
-const LOGO_B3=`<svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><text x="20" y="21" text-anchor="middle" dominant-baseline="central" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="19" letter-spacing="-0.5" fill="currentColor">B3</text></svg>`;
+const LOGO_B3=`<svg viewBox="0 0 58 44" width="33" height="25" aria-hidden="true"><g fill="#fff"><rect x="6" y="10" width="9" height="3.2"/><rect x="6" y="10" width="3.2" height="24"/><rect x="6" y="30.8" width="9" height="3.2"/><rect x="33" y="10" width="9" height="3.2"/><rect x="38.8" y="10" width="3.2" height="24"/><rect x="33" y="30.8" width="9" height="3.2"/></g><text x="24" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="26" fill="#fff">B</text><text x="51" y="15" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="12" fill="#fff">3</text></svg>`;
 /* verificação por código (2FA / alterações sensíveis) — demonstração */
 function openCodeVerify(o){
   o=o||{}; let el=document.getElementById('codeModal');
@@ -3824,7 +3819,7 @@ function toggle2FA(kind){
 async function saveProfileCadastro(silent){
   const p=getProfile(); const v=($('#profName').value||'').trim(); if(v) p.name=v; else delete p.name;
   PROF_CADASTRO.forEach(k=>{ const el=document.getElementById('prof_'+k); if(el){ const val=(el.value||'').trim(); if(val) p[k]=val; else delete p[k]; } });
-  saveProfile(p);
+  saveProfile(p); if(typeof flushCloudState==='function') flushCloudState();
   const msg=$('#profMsg'); if(msg) msg.textContent='';
   const u=currentUser(); const newEmail=($('#profEmail')&&$('#profEmail').value||'').trim().toLowerCase();
   if(u && newEmail && newEmail!==u.email){
@@ -3842,7 +3837,7 @@ async function saveProfileCadastro(silent){
 function saveProfileInvestidor(silent){
   const p=getProfile(); const risk=currentRiskSel(); if(risk) p.risk=risk; else delete p.risk;
   PROF_INVEST.forEach(k=>{ const el=document.getElementById('prof_'+k); if(el){ const val=(el.value||'').trim(); if(val) p[k]=val; else delete p[k]; } });
-  saveProfile(p); if(!silent) toast('Perfil de investidor salvo ✓');
+  saveProfile(p); if(typeof flushCloudState==='function') flushCloudState(); if(!silent) toast('Perfil de investidor salvo ✓');
 }
 /* aviso de alterações não salvas ao fechar o perfil */
 let _profileOpen=false;
@@ -4037,8 +4032,10 @@ async function authLogin(email, pass){
     return {ok:true};
   }catch(e){ return {error:'Sem conexão com o servidor'}; }
 }
-function authLogout(){
+async function authLogout(){
   const s=getSession(), c=_sb();
+  // grava o que estiver pendente ANTES de revogar o token (senão o último "Salvar" se perde)
+  try{ await flushCloudState(); }catch(e){}
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
@@ -4084,15 +4081,23 @@ async function loadCloudState(){
   }catch(e){}
 }
 let _cloudT;
+function cloudPayload(){ return { carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), plan:getPlan(), theme:getThemePref(), profile:getProfile(), sub:getSub(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } }; }
+function _postCloud(s,c,keepalive){
+  return fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data:cloudPayload(), updated_at:new Date().toISOString()}), keepalive:!!keepalive});
+}
 function saveCloudState(){
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
   clearTimeout(_cloudT);
-  return new Promise(res=>{ _cloudT=setTimeout(async()=>{
-    const data={ carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), plan:getPlan(), theme:getThemePref(), profile:getProfile(), sub:getSub(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } };
-    try{ await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data, updated_at:new Date().toISOString()})}); }catch(e){}
-    res();
-  }, 700); });
+  return new Promise(res=>{ _cloudT=setTimeout(async()=>{ try{ await _postCloud(s,c); }catch(e){} res(); }, 700); });
 }
+/* envia imediatamente o que estiver pendente (evita perder dados ao sair/fechar) */
+function flushCloudState(keepalive){
+  const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
+  clearTimeout(_cloudT);
+  return _postCloud(s,c,keepalive).catch(()=>{});
+}
+window.addEventListener('pagehide', ()=>{ try{ flushCloudState(true); }catch(e){} });
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden'){ try{ flushCloudState(true); }catch(e){} } });
 function updateAuthUI(){
   const u=currentUser();
   const av=document.querySelector('.user-chip .avatar'), nm=document.querySelector('.user-chip .nm'), pl=document.querySelector('.user-chip .pl');
@@ -6632,7 +6637,6 @@ function initIbov(){ homeWin=null; renderHomeChart(); }
 function renderHomeChart(soft){
   const ctx = $('#ibovChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
-  if(charts.ibov){ try{charts.ibov.destroy();}catch(e){} }
   const btn=$('#homeTypeBtn'); if(btn) btn.innerHTML = homeChartType==='candle' ? '<i class="fa-solid fa-chart-line"></i> Linha' : '<i class="fa-solid fa-chart-simple"></i> Candles';
   const p = indexSeries(homeChartPeriod);
   const F=p.d.length;
@@ -6640,18 +6644,29 @@ function renderHomeChart(soft){
   homeWin.from=Math.max(0,Math.min(Math.round(homeWin.from), F-5)); homeWin.to=Math.max(homeWin.from+5, Math.min(Math.round(homeWin.to), F));
   const a=homeWin.from, b=homeWin.to;
   const pl=p.l.slice(a,b), pd=p.d.slice(a,b);
-  const dur = soft?0:undefined;
   // escala inteligente: nunca começa em zero — enquadra a faixa visível
   const lo=Math.min(...pd), hi=Math.max(...pd), pad=Math.max((hi-lo)*0.18, hi*0.006);
+  const upc=cssVar('--up')||'#0E7C5A', downc=cssVar('--down')||'#D14343';
+  const ohlc = homeChartType==='candle' ? ohlcFrom(p.d, homeAsset.k+homeChartPeriod).slice(a,b) : null;
+  const colors = ohlc ? ohlc.map(x=> x.c>=x.o?upc:downc) : null;
+  const bw = ohlc ? Math.max(0.6, Math.min(2.4, 60/ohlc.length)) : 0;
+  /* ── atualização IN-PLACE durante gestos (pan/zoom): não destrói o gráfico,
+       evitando o flicker/"tremedeira" das velas ao interagir ── */
+  if(soft && charts.ibov && charts.ibov._htype===homeChartType){
+    const ch=charts.ibov; ch.data.labels=pl; ch._pl=pl; ch._ohlc=ohlc;
+    if(ohlc){
+      ch.data.datasets[0].data=ohlc.map(x=>[x.l,x.h]); ch.data.datasets[0].backgroundColor=colors; ch.data.datasets[0].barThickness=bw;
+      ch.data.datasets[1].data=ohlc.map(x=>[Math.min(x.o,x.c),Math.max(x.o,x.c)]); ch.data.datasets[1].backgroundColor=colors;
+    } else { ch.data.datasets[0].data=pd; }
+    ch.options.scales.y.min=lo-pad; ch.options.scales.y.max=hi+pad;
+    ch.update('none'); return;
+  }
+  if(charts.ibov){ try{charts.ibov.destroy();}catch(e){} }
   const baseScales = {
     x:{ grid:{display:false}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxRotation:0, autoSkipPadding:14 }, border:{display:false} },
     y:{ position:'right', min:lo-pad, max:hi+pad, grid:{color:cssVar('--line')}, ticks:{ color:cssVar('--ink-3'), font:{size:11}, maxTicksLimit:6, callback:v=>kfmt(v) }, border:{display:false} }
   };
   if(homeChartType==='candle'){
-    const ohlc=ohlcFrom(p.d, homeAsset.k+homeChartPeriod).slice(a,b);
-    const upc=cssVar('--up')||'#0E7C5A', downc=cssVar('--down')||'#D14343';
-    const colors=ohlc.map(x=> x.c>=x.o?upc:downc);
-    const bw=Math.max(0.6, Math.min(2.4, 60/ohlc.length));   // pavio afina/engrossa conforme densidade
     charts.ibov=new Chart(ctx,{ data:{ labels:pl, datasets:[
         { type:'bar', label:'wick', data:ohlc.map(x=>[x.l,x.h]), backgroundColor:colors, barThickness:bw, grouped:false, order:2 },
         { type:'bar', label:'corpo', data:ohlc.map(x=>[Math.min(x.o,x.c),Math.max(x.o,x.c)]), backgroundColor:colors, borderRadius:2, barPercentage:0.6, categoryPercentage:0.9, grouped:false, order:1 },
@@ -6659,7 +6674,7 @@ function renderHomeChart(soft){
       options:{ responsive:true, maintainAspectRatio:false, animation:{duration:soft?0:900,easing:'easeOutQuart'}, crosshair:true, crosshairFmt:kfmt,
         interaction:{intersect:false,mode:'index'},
         plugins:{ legend:{display:false}, tooltip:{ backgroundColor:cssVar('--ink'), titleColor:cssVar('--canvas'), bodyColor:cssVar('--canvas'), padding:11, displayColors:false, filter:i=>i.datasetIndex===1,
-          callbacks:{ title:items=>pl[items[0].dataIndex], label:c=>{ const d=ohlc[c.dataIndex]; const ch=d.o?((d.c-d.o)/d.o*100):0; return ['Abert. '+kfmt(d.o), 'Máx. '+kfmt(d.h), 'Mín. '+kfmt(d.l), 'Fech. '+kfmt(d.c), (ch>=0?'+':'')+ch.toFixed(2)+'%']; } } } },
+          callbacks:{ title:items=>{ const c=items[0].chart; return (c._pl||pl)[items[0].dataIndex]; }, label:c=>{ const arr=c.chart._ohlc||ohlc; const d=arr[c.dataIndex]; if(!d) return ''; const ch=d.o?((d.c-d.o)/d.o*100):0; return ['Abert. '+kfmt(d.o), 'Máx. '+kfmt(d.h), 'Mín. '+kfmt(d.l), 'Fech. '+kfmt(d.c), (ch>=0?'+':'')+ch.toFixed(2)+'%']; } } } },
         scales:baseScales } });
   } else {
     const br=cssVar('--accent')||'#3B6FD4';
@@ -6670,6 +6685,7 @@ function renderHomeChart(soft){
         plugins:{ legend:{display:false}, tooltip:{ backgroundColor:cssVar('--ink'), titleColor:cssVar('--canvas'), bodyColor:cssVar('--canvas'), padding:10, displayColors:false, callbacks:{ label:c=>kfmt(c.parsed.y)+(homeAsset.price?'':' pts') } } },
         interaction:{intersect:false,mode:'index'}, scales:baseScales } });
   }
+  charts.ibov._htype=homeChartType; charts.ibov._pl=pl; charts.ibov._ohlc=ohlc;
   if(!soft) bindHomeGestures();
 }
 /* zoom (pinça/roda) e pan (arraste) — janela de candles, estilo TradingView */
@@ -6687,7 +6703,7 @@ function bindHomeGestures(){
     if(mode==='pan'){ const vis=w0.to-w0.from; const shift=Math.round(-(e.touches[0].clientX-sx)/(area()/vis)); homeWin=clamp(w0.from+shift, w0.to+shift); }
     else if(mode==='pinch'){ const d=Math.abs(e.touches[0].clientX-e.touches[1].clientX)||1; let vis=Math.round(c0*(d0/d)); vis=Math.max(5,Math.min(fullLen(),vis)); const ctr=(w0.from+w0.to)/2; homeWin=clamp(Math.round(ctr-vis/2), Math.round(ctr-vis/2)+vis); }
     soft(); }, {passive:false});
-  cv.addEventListener('touchend', ()=>{ mode=null; renderHomeChart(); });
+  cv.addEventListener('touchend', ()=>{ mode=null; renderHomeChart(true); });
   cv.addEventListener('wheel', e=>{ e.preventDefault(); const vis=homeWin.to-homeWin.from; let nv=Math.round(vis*(e.deltaY>0?1.18:0.85)); nv=Math.max(5,Math.min(fullLen(),nv)); const ctr=(homeWin.from+homeWin.to)/2; homeWin=clamp(Math.round(ctr-nv/2), Math.round(ctr-nv/2)+nv); soft(); }, {passive:false});
   cv.addEventListener('dblclick', ()=>{ homeWin=null; renderHomeChart(); });   // reset
 }
