@@ -2087,6 +2087,50 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .code-inp:focus { border-color:var(--accent); background:var(--surface); }
 .code-card .confirm-acts { margin-top:16px; }
 .code-resend { margin-top:12px; background:none; border:none; color:var(--brand); font-size:12.5px; font-weight:600; cursor:pointer; }
+/* cadastro em etapas + verificação */
+.su-steps { display:flex; gap:6px; margin:0 0 16px; }
+.su-steps span { flex:1; height:4px; border-radius:999px; background:var(--surface-3); transition:background .2s var(--ease); }
+.su-steps span.on { background:var(--brand); }
+.auth-hero-sm { padding-top:2px; margin-bottom:14px; }
+.auth-hero-sm .auth-h { font-size:19px; }
+.su-verify { display:flex; flex-direction:column; gap:12px; margin:6px 0 16px; }
+.suv-row { display:flex; gap:13px; align-items:flex-start; padding:14px 15px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
+.suv-row.ok { border-color:color-mix(in srgb,var(--up) 30%,transparent); background:var(--up-l); }
+.suv-ic { width:38px; height:38px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:17px; background:var(--surface-3); color:var(--ink-2); }
+.suv-row.ok .suv-ic { background:color-mix(in srgb,var(--up) 16%,transparent); color:var(--up); }
+.suv-tx { flex:1; min-width:0; } .suv-tx b { font-size:14px; } .suv-tx small { display:block; font-size:12.5px; color:var(--ink-2); line-height:1.5; margin-top:2px; }
+.suv-code { display:flex; gap:8px; margin-top:10px; } .suv-code .code-inp { font-size:20px; letter-spacing:.3em; padding:9px; flex:1; }
+/* painel administrativo */
+.ad-banner { display:flex; gap:11px; align-items:flex-start; padding:12px 15px; border-radius:var(--r); background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 26%,transparent); font-size:12.5px; color:var(--ink-2); line-height:1.5; margin-bottom:16px; }
+.ad-banner i { color:var(--gold); margin-top:2px; }
+.ad-tabs { display:flex; gap:8px; overflow-x:auto; margin-bottom:16px; padding-bottom:2px; -webkit-overflow-scrolling:touch; }
+.ad-tab { flex:none; display:inline-flex; align-items:center; gap:7px; padding:9px 15px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
+.ad-tab:hover { border-color:var(--line-2); color:var(--ink); }
+.ad-tab.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
+.ad-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+.ad-stat { display:flex; align-items:center; gap:12px; padding:15px 16px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
+.ad-stat-ic { width:40px; height:40px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px; background:var(--surface-3); color:var(--ink-3); }
+.ad-stat-ic.ist-gold { background:var(--gold-l); color:var(--gold); } .ad-stat-ic.ist-up { background:var(--up-l); color:var(--up); } .ad-stat-ic.ist-blue { background:var(--accent-l); color:var(--accent); }
+.ad-stat-b { min-width:0; } .ad-stat-b b { display:block; font-family:var(--mono); font-size:20px; font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+.ad-stat-b span { font-size:12px; color:var(--ink-2); font-weight:600; } .ad-stat-b small { display:block; font-size:11px; color:var(--ink-3); margin-top:1px; }
+.ad-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.ad-bar-row { display:flex; align-items:center; gap:12px; padding:8px 0; font-size:13px; }
+.ad-bar-l { flex:none; width:140px; display:flex; align-items:center; gap:6px; color:var(--ink-2); }
+.ad-bar { flex:1; height:8px; border-radius:999px; background:var(--surface-3); overflow:hidden; }
+.ad-bar-f { display:block; height:100%; border-radius:999px; background:var(--brand); }
+.ad-bar-f.ad-pro { background:var(--gold); } .ad-bar-f.ad-premium { background:var(--brand); } .ad-bar-f.ad-free { background:var(--ink-3); }
+.ad-bar-row b { flex:none; width:28px; text-align:right; font-family:var(--mono); font-size:13px; }
+.ad-badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:10.5px; font-weight:700; }
+.ad-badge.ad-pro { background:var(--gold-l); color:var(--gold); } .ad-badge.ad-prem { background:var(--brand-l); color:var(--brand); } .ad-badge.ad-free { background:var(--surface-3); color:var(--ink-3); } .ad-badge.ad-trial { background:var(--accent-l); color:var(--accent); }
+.ad-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; }
+.ad-table { width:100%; border-collapse:collapse; font-size:13px; min-width:520px; }
+.ad-table th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); font-weight:700; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
+.ad-table td { padding:11px 10px; border-bottom:1px solid var(--line); color:var(--ink); vertical-align:middle; }
+.ad-table td.muted { color:var(--ink-3); } .ad-table td.ar, .ad-table th.ar { text-align:right; }
+.ad-table tr:last-child td { border-bottom:none; }
+.ad-table .ad-total td { font-weight:700; border-top:2px solid var(--line); }
+.ad-you { display:inline-block; font-size:10px; font-weight:700; padding:1px 6px; border-radius:999px; background:var(--brand-l); color:var(--brand); vertical-align:middle; }
+@media (max-width:760px){ .ad-stats { grid-template-columns:repeat(2,1fr); } .ad-grid2 { grid-template-columns:1fr; } }
 /* cropper de foto */
 .crop-stage { position:relative; width:256px; max-width:100%; aspect-ratio:1; margin:0 auto 16px; border-radius:14px; overflow:hidden; background:#0a0e13; touch-action:none; }
 .crop-stage canvas { width:100%; height:100%; display:block; cursor:grab; }
@@ -3389,6 +3433,7 @@ const PAGES = {
   deterioracao: { t:'Detector de Deterioração',s:'Alertas automáticos quando os fundamentos da sua carteira pioram' },
   planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
   indicar:      { t:'Indique e Ganhe',       s:'Ganhe 20% da assinatura de cada amigo que você indicar, via PIX' },
+  admin:        { t:'Painel administrativo',  s:'Clientes, leads, financeiro e métricas da Lastro' },
 };
 let currentView = 'painel';
 
@@ -3520,7 +3565,9 @@ function acctMenuHTML(){
       ${item('fa-circle-play','Como funciona',"closeAcctMenu();startTour()")}
       ${item(privOn()?'fa-eye':'fa-eye-slash', privOn()?'Mostrar meus valores':'Ocultar meus valores', "closeAcctMenu();togglePriv()")}
       ${themeRow}
-      ${isOwner()? `<div class="acct-sep"></div><button class="acct-item acct-test ${testModeOn()?'on':''}" onclick="toggleTestMode()"><i class="fa-solid fa-flask-vial"></i> Modo teste<span class="acct-toggle">${testModeOn()?'ON':'OFF'}</span></button>`:''}
+      ${isOwner()? `<div class="acct-sep"></div>
+      ${item('fa-gauge-high','Painel administrativo',"closeAcctMenu();nav('admin')",'acct-admin')}
+      <button class="acct-item acct-test ${devModeOn()?'on':''}" onclick="toggleDevMode()"><i class="fa-solid fa-code"></i> Modo desenvolvedor<span class="acct-toggle">${devModeOn()?'ON':'OFF'}</span></button>`:''}
       <div class="acct-sep"></div>
       ${item('fa-arrow-right-from-bracket','Sair',"closeAcctMenu();confirmLogout()",'danger')}`;
   }
@@ -4048,20 +4095,129 @@ function renderAuth(mode){
       <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="authLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>`;
     return;
   }
+  if(mode==='signup'){ _signupStep=1; renderSignup(); return; }
   $('#authTitle').textContent = '';
   body.innerHTML = `
     <div class="auth-hero">
       <div class="auth-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
-      <div class="auth-h">${mode==='signup'?'Crie sua conta grátis':'Bem-vindo de volta'}</div>
-      <div class="auth-sub">${mode==='signup'?'Crie sua conta e teste <strong>todos os recursos Premium grátis por 7 dias</strong> — sem cartão. Carteira e preferências sincronizadas entre seus dispositivos.':'Acesse sua carteira, watchlist e preferências, sincronizadas onde você estiver.'}</div>
+      <div class="auth-h">Bem-vindo de volta</div>
+      <div class="auth-sub">Acesse sua carteira, watchlist e preferências, sincronizadas onde você estiver.</div>
     </div>
-    <div class="auth-tabs"><button class="${mode==='login'?'on':''}" onclick="renderAuth('login')">Entrar</button><button class="${mode==='signup'?'on':''}" onclick="renderAuth('signup')">Criar conta</button></div>
+    <div class="auth-tabs"><button class="on" onclick="renderAuth('login')">Entrar</button><button onclick="renderAuth('signup')">Criar conta</button></div>
     <label class="fld auth-fld"><span>E-mail</span><div class="auth-input"><i class="fa-regular fa-envelope"></i><input id="auEmail" type="email" inputmode="email" placeholder="voce@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('#auPass').focus()"></div></label>
-    <label class="fld auth-fld"><span>Senha</span><div class="auth-input"><i class="fa-solid fa-lock"></i><input id="auPass" type="password" placeholder="mínimo 6 caracteres" autocomplete="${mode==='signup'?'new-password':'current-password'}" onkeydown="if(event.key==='Enter')authSubmit('${mode}')"><button type="button" class="auth-eye" onclick="togglePass(this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
+    <label class="fld auth-fld"><span>Senha</span><div class="auth-input"><i class="fa-solid fa-lock"></i><input id="auPass" type="password" placeholder="mínimo 6 caracteres" autocomplete="current-password" onkeydown="if(event.key==='Enter')authSubmit('login')"><button type="button" class="auth-eye" onclick="togglePass(this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
     <div id="auErr" class="fld-err"></div>
-    <button class="btn btn-primary auth-submit" onclick="authSubmit('${mode}')">${mode==='signup'?'Criar conta grátis':'Entrar'} <i class="fa-solid fa-arrow-right"></i></button>
+    <button class="btn btn-primary auth-submit" onclick="authSubmit('login')">Entrar <i class="fa-solid fa-arrow-right"></i></button>
     <div class="auth-foot"><i class="fa-solid fa-shield-halved"></i> Conexão segura · seus dados ficam protegidos e sincronizados</div>`;
   setTimeout(()=>{ const e=$('#auEmail'); e&&e.focus(); }, 60);
+}
+/* ── Cadastro em etapas (captação completa de leads) ── */
+let _signup={}, _signupStep=1;
+function suEsc(v){ return esc(v||''); }
+function signupGrab1(){
+  const g=id=>{ const el=document.getElementById(id); return el?(el.value||'').trim():''; };
+  _signup.name=g('suName'); _signup.email=g('suEmail'); _signup.phone=g('suPhone'); _signup.pass=(document.getElementById('suPass')||{}).value||'';
+}
+function signupGrab2(){
+  const g=id=>{ const el=document.getElementById(id); return el?(el.value||'').trim():''; };
+  _signup.uf=g('suUf'); _signup.city=g('suCity'); _signup.goal=g('suGoal'); _signup.exp=g('suExp'); _signup.wealth=g('suWealth');
+  const on=document.querySelector('#authBody .prof-chip.on'); _signup.risk=on?on.getAttribute('data-risk'):(_signup.risk||'');
+}
+function renderSignup(){
+  const body=$('#authBody'); $('#authTitle').textContent='';
+  const tabs=`<div class="auth-tabs"><button onclick="renderAuth('login')">Entrar</button><button class="on" onclick="renderAuth('signup')">Criar conta</button></div>`;
+  const steps=`<div class="su-steps"><span class="${_signupStep>=1?'on':''}"></span><span class="${_signupStep>=2?'on':''}"></span></div>`;
+  if(_signupStep===1){
+    body.innerHTML=`
+      <div class="auth-hero">
+        <div class="auth-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
+        <div class="auth-h">Crie sua conta grátis</div>
+        <div class="auth-sub">Teste <strong>todos os recursos Premium por 7 dias</strong>, sem cartão. Leva menos de 1 minuto.</div>
+      </div>
+      ${tabs}${steps}
+      <label class="fld auth-fld"><span>Nome completo</span><div class="auth-input"><i class="fa-regular fa-user"></i><input id="suName" value="${suEsc(_signup.name)}" maxlength="60" placeholder="Seu nome" autocomplete="name"></div></label>
+      <label class="fld auth-fld"><span>E-mail</span><div class="auth-input"><i class="fa-regular fa-envelope"></i><input id="suEmail" type="email" inputmode="email" value="${suEsc(_signup.email)}" placeholder="voce@email.com" autocomplete="email"></div></label>
+      <label class="fld auth-fld"><span>Celular / WhatsApp</span><div class="auth-input"><i class="fa-brands fa-whatsapp"></i><input id="suPhone" type="tel" inputmode="tel" value="${suEsc(_signup.phone)}" placeholder="(00) 00000-0000" autocomplete="tel"></div></label>
+      <label class="fld auth-fld"><span>Senha</span><div class="auth-input"><i class="fa-solid fa-lock"></i><input id="suPass" type="password" value="${suEsc(_signup.pass)}" placeholder="mínimo 6 caracteres" autocomplete="new-password"><button type="button" class="auth-eye" onclick="togglePassId('suPass',this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
+      <div id="auErr" class="fld-err"></div>
+      <button class="btn btn-primary auth-submit" onclick="signupNext()">Continuar <i class="fa-solid fa-arrow-right"></i></button>
+      <div class="auth-foot"><i class="fa-solid fa-shield-halved"></i> Enviamos um código para confirmar seu e-mail e WhatsApp.</div>`;
+    setTimeout(()=>{ const e=$('#suName'); e&&e.focus(); }, 60);
+  } else {
+    body.innerHTML=`
+      <div class="auth-hero auth-hero-sm">
+        <div class="auth-h">Seu perfil de investidor</div>
+        <div class="auth-sub">Assim personalizamos as recomendações para o seu momento. Você pode ajustar depois no seu perfil.</div>
+      </div>
+      ${steps}
+      <div class="fld-grid">
+        <label class="fld"><span>Estado</span><select id="suUf" onchange="suUfChange()"><option value="">Selecione…</option>${BR_UF.map(uf=>`<option ${_signup.uf===uf?'selected':''} value="${uf}">${uf}</option>`).join('')}</select></label>
+        <label class="fld"><span>Cidade</span><select id="suCity" ${_signup.uf?'':'disabled'}>${cityOptions(_signup.uf||'', _signup.city||'')}</select></label>
+      </div>
+      <div class="prof-lbl" style="margin:14px 0 8px">Perfil de risco</div>
+      <div class="prof-chips">${['Conservador','Moderado','Arrojado'].map(r=>`<button class="prof-chip ${_signup.risk===r?'on':''}" data-risk="${r}" onclick="selectProfRisk(this)">${r}</button>`).join('')}</div>
+      <div class="fld-grid" style="margin-top:14px">
+        <label class="fld"><span>Objetivo principal</span><select id="suGoal">${['','Renda passiva / dividendos','Crescimento do patrimônio','Aposentadoria','Reserva de emergência','Especulação de curto prazo'].map(o=>`<option ${(_signup.goal||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
+        <label class="fld"><span>Experiência</span><select id="suExp">${['','Iniciante','Intermediário','Avançado'].map(o=>`<option ${(_signup.exp||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
+        <label class="fld"><span>Patrimônio para investir</span><select id="suWealth">${['','Até R$ 10 mil','R$ 10 mil – R$ 50 mil','R$ 50 mil – R$ 250 mil','R$ 250 mil – R$ 1 mi','Acima de R$ 1 mi'].map(o=>`<option ${(_signup.wealth||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
+      </div>
+      <div id="auErr" class="fld-err" style="margin-top:8px"></div>
+      <button class="btn btn-primary auth-submit" onclick="signupCreate()">Criar conta grátis <i class="fa-solid fa-arrow-right"></i></button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:9px" onclick="signupBack()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>`;
+  }
+}
+function togglePassId(id,btn){ const inp=document.getElementById(id); if(!inp) return; const show=inp.type==='password'; inp.type=show?'text':'password'; btn.innerHTML=`<i class="fa-regular fa-eye${show?'-slash':''}"></i>`; inp.focus(); }
+function suUfChange(){ const uf=($('#suUf')&&$('#suUf').value)||''; const cs=$('#suCity'); if(cs){ cs.innerHTML=cityOptions(uf,''); cs.disabled=!uf; } _signup.uf=uf; }
+function signupNext(){
+  signupGrab1(); const err=$('#auErr');
+  if(_signup.name.length<2){ err.textContent='Informe seu nome.'; return; }
+  if(!/.+@.+\..+/.test(_signup.email)){ err.textContent='Informe um e-mail válido.'; return; }
+  const digits=(_signup.phone||'').replace(/\D/g,''); if(digits.length<10){ err.textContent='Informe um celular/WhatsApp válido com DDD.'; return; }
+  if((_signup.pass||'').length<6){ err.textContent='A senha precisa de ao menos 6 caracteres.'; return; }
+  _signupStep=2; renderSignup();
+}
+function signupBack(){ signupGrab2(); _signupStep=1; renderSignup(); }
+async function signupCreate(){
+  signupGrab2(); const err=$('#auErr'); if(err) err.innerHTML='<span class="faint">Criando sua conta…</span>';
+  const r=await authSignup(_signup.email, _signup.pass);
+  if(r.error){ if(err) err.textContent=r.error; return; }
+  const prof={ name:_signup.name, phone:_signup.phone, uf:_signup.uf, city:_signup.city, risk:_signup.risk, goal:_signup.goal, exp:_signup.exp, wealth:_signup.wealth, createdAt:new Date().toISOString(), emailVerified:!r.confirm, phoneVerified:false };
+  Object.keys(prof).forEach(k=>{ if(prof[k]===''||prof[k]==null) delete prof[k]; });
+  saveProfile(prof);
+  if(getSession() && typeof saveCloudState==='function') saveCloudState();
+  signupVerify(!!r.confirm);
+}
+function signupVerify(needEmail){
+  $('#authTitle').textContent='Confirme sua conta';
+  const email=_signup.email, phone=_signup.phone;
+  $('#authBody').innerHTML=`
+    <div class="su-verify">
+      <div class="suv-row ${needEmail?'':'ok'}">
+        <span class="suv-ic"><i class="fa-solid ${needEmail?'fa-envelope':'fa-circle-check'}"></i></span>
+        <div class="suv-tx"><b>E-mail</b><small>${needEmail?`Enviamos um link de confirmação para <strong>${esc(email)}</strong>. Abra e confirme para ativar o login.`:'E-mail confirmado ✓'}</small></div>
+      </div>
+      <div class="suv-row" id="suvPhoneRow">
+        <span class="suv-ic"><i class="fa-brands fa-whatsapp"></i></span>
+        <div class="suv-tx"><b>WhatsApp</b><small>Enviamos um código de 6 dígitos para <strong>${esc(phone)}</strong>.</small>
+          <div class="suv-code"><input id="suvCode" class="code-inp" inputmode="numeric" maxlength="6" placeholder="••••••" oninput="this.value=this.value.replace(/\\D/g,'')"><button class="btn btn-primary btn-sm" onclick="signupVerifyPhone()">Confirmar</button></div>
+          <button class="code-resend" onclick="toast('Novo código enviado por WhatsApp')">Reenviar código</button>
+        </div>
+      </div>
+    </div>
+    <div id="auErr" class="fld-err" style="text-align:center"></div>
+    <button class="btn ${needEmail?'btn-ghost':'btn-primary'}" style="width:100%;justify-content:center;margin-top:6px" onclick="signupFinish()">${needEmail?'Confirmar depois':'Começar a usar'} <i class="fa-solid fa-arrow-right"></i></button>`;
+}
+function signupVerifyPhone(){
+  const v=($('#suvCode')&&$('#suvCode').value||'').trim(); const err=$('#auErr');
+  if(v.length<6){ if(err) err.textContent='Digite os 6 dígitos do código.'; return; }
+  const p=getProfile(); p.phoneVerified=true; saveProfile(p); if(getSession()&&typeof saveCloudState==='function') saveCloudState();
+  const row=$('#suvPhoneRow'); if(row){ row.classList.add('ok'); row.querySelector('.suv-ic').innerHTML='<i class="fa-solid fa-circle-check"></i>'; const c=row.querySelector('.suv-code'); if(c) c.remove(); const rs=row.querySelector('.code-resend'); if(rs) rs.remove(); const sm=row.querySelector('small'); if(sm) sm.innerHTML='WhatsApp confirmado ✓'; }
+  if(err) err.textContent=''; toast('WhatsApp confirmado ✓');
+}
+function signupFinish(){
+  _signup={}; _signupStep=1; closeAuth();
+  refreshPlanUI(); render(currentView);
+  toast(trialActive()?`Conta criada 🎉 Premium liberado por ${trialDaysLeft()} dias!`:'Conta criada 🎉');
 }
 async function authSubmit(mode){
   const email=($('#auEmail').value||'').trim(), pass=$('#auPass').value||'', err=$('#auErr');
@@ -4225,6 +4381,7 @@ window.addEventListener('resize', hideTip);
 
 let navStack = [];
 function nav(v, el, noHist){
+  if(v==='admin' && !isOwner()) v='painel';
   if(!noHist && currentView && currentView!==v) navStack.push(currentView);
   if(navStack.length>30) navStack.shift();
   currentView = v;
@@ -4272,6 +4429,7 @@ function render(v, soft){
   else if(v==='barganhas')   c.innerHTML = viewBargain();
   else if(v==='consultor')   c.innerHTML = viewConsultor();
   else if(v==='deterioracao') c.innerHTML = viewDeterioracao();
+  else if(v==='admin')       c.innerHTML = isOwner()? viewAdmin() : viewPainel();
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
 }
@@ -5181,6 +5339,99 @@ function viewIndicar(){
   </div>
 
   <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Programa ilustrativo nesta demonstração — a apuração das indicações e os pagamentos via PIX entram em operação com a integração do backend.</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   VIEW: PAINEL ADMINISTRATIVO (somente dono)
+   ══════════════════════════════════════════════════════════ */
+let adminTab='overview';
+function adminGoto(t){ adminTab=t; render('admin'); animateContent(); $('#content').scrollTop=0; }
+const ADMIN_DEMO=[
+  { name:'Marina Alves',      email:'marina.alves@gmail.com',   phone:'(11) 98812-4471', uf:'SP', city:'São Paulo',      plan:'pro',     trial:false, mrr:49, since:'2026-01-08', risk:'Arrojado',    goal:'Crescimento do patrimônio' },
+  { name:'Rafael Souza',      email:'rafael.souza@outlook.com', phone:'(21) 99145-2093', uf:'RJ', city:'Niterói',        plan:'premium', trial:false, mrr:29, since:'2026-02-14', risk:'Moderado',    goal:'Renda passiva / dividendos' },
+  { name:'Carla Menezes',     email:'carla.m@hotmail.com',      phone:'(31) 98770-1188', uf:'MG', city:'Belo Horizonte', plan:'premium', trial:false, mrr:29, since:'2026-03-02', risk:'Conservador', goal:'Aposentadoria' },
+  { name:'Bruno Carvalho',    email:'brunoc.dev@gmail.com',     phone:'(41) 99632-7741', uf:'PR', city:'Curitiba',       plan:'pro',     trial:false, mrr:49, since:'2026-03-19', risk:'Arrojado',    goal:'Especulação de curto prazo' },
+  { name:'Patrícia Lima',     email:'paty.lima@gmail.com',      phone:'(51) 98123-9987', uf:'RS', city:'Porto Alegre',   plan:'premium', trial:false, mrr:29, since:'2026-04-05', risk:'Moderado',    goal:'Renda passiva / dividendos' },
+  { name:'Diego Fernandes',   email:'diego.fs@gmail.com',       phone:'(85) 99871-2210', uf:'CE', city:'Fortaleza',      plan:'free',    trial:true,  mrr:0,  since:'2026-06-21', risk:'Moderado',    goal:'Reserva de emergência' },
+  { name:'Juliana Rocha',     email:'ju.rocha@gmail.com',       phone:'(47) 99210-5567', uf:'SC', city:'Joinville',      plan:'free',    trial:true,  mrr:0,  since:'2026-06-27', risk:'Conservador', goal:'Renda passiva / dividendos' },
+  { name:'Anderson Pereira',  email:'anderson.p@yahoo.com',     phone:'(62) 98345-6621', uf:'GO', city:'Goiânia',        plan:'free',    trial:false, mrr:0,  since:'2026-05-30', risk:'Arrojado',    goal:'Crescimento do patrimônio' },
+  { name:'Fernanda Dias',     email:'fer.dias@gmail.com',       phone:'(71) 99988-3312', uf:'BA', city:'Salvador',       plan:'free',    trial:false, mrr:0,  since:'2026-06-11', risk:'Moderado',    goal:'Aposentadoria' },
+  { name:'Lucas Martins',     email:'lucas.mrt@gmail.com',      phone:'(11) 97654-8890', uf:'SP', city:'Campinas',       plan:'free',    trial:true,  mrr:0,  since:'2026-06-29', risk:'Iniciante',   goal:'Renda passiva / dividendos' },
+];
+function adminAll(){
+  const u=currentUser(), gp=getProfile();
+  const me={ name:profileName()||'Você', email:(u&&u.email)||'—', phone:gp.phone||'—', uf:gp.uf||'—', city:gp.city||'—', plan:planTier(), trial:trialActive(), mrr:(planTier()==='pro'?49:planTier()==='premium'?29:0), since:(gp.createdAt||'').slice(0,10)||'—', risk:gp.risk||'—', goal:gp.goal||'—', real:true };
+  return [me, ...ADMIN_DEMO];
+}
+function viewAdmin(){
+  const all=adminAll();
+  const clientes=all.filter(x=>x.plan==='pro'||x.plan==='premium');
+  const leads=all.filter(x=>x.plan==='free');
+  const mrr=all.reduce((s,x)=>s+(x.mrr||0),0);
+  const arr=mrr*12;
+  const ticket= clientes.length? mrr/clientes.length : 0;
+  const conv= all.length? clientes.length/all.length*100 : 0;
+  const trials=all.filter(x=>x.trial).length;
+  const planBadge=p=>p==='pro'?'<span class="ad-badge ad-pro">Pro</span>':p==='premium'?'<span class="ad-badge ad-prem">Premium</span>':'<span class="ad-badge ad-free">Gratuito</span>';
+  const tab=(k,ic,l)=>`<button class="ad-tab ${adminTab===k?'on':''}" onclick="adminGoto('${k}')"><i class="fa-solid ${ic}"></i> ${l}</button>`;
+  const stat=(ic,cls,val,lbl,sub)=>`<div class="ad-stat"><span class="ad-stat-ic ${cls}"><i class="fa-solid ${ic}"></i></span><div class="ad-stat-b"><b>${val}</b><span>${lbl}</span>${sub?`<small>${sub}</small>`:''}</div></div>`;
+
+  let panel='';
+  if(adminTab==='overview'){
+    panel=`
+      <div class="ad-stats">
+        ${stat('fa-users','ist-blue', all.length, 'Cadastros totais', trials+' em teste Premium')}
+        ${stat('fa-crown','ist-gold', clientes.length, 'Clientes pagantes', Math.round(conv)+'% de conversão')}
+        ${stat('fa-sack-dollar','ist-up', brl0(mrr), 'MRR (receita/mês)', brl0(arr)+' /ano projetado')}
+        ${stat('fa-user-plus','', leads.length, 'Leads (gratuitos)', 'oportunidades de upgrade')}
+      </div>
+      <div class="ad-grid2">
+        <div class="card card-pad">
+          <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Distribuição por plano</div></div>
+          ${[['Investidor Pro','pro',all.filter(x=>x.plan==='pro').length],['Premium','premium',all.filter(x=>x.plan==='premium').length],['Gratuito','free',leads.length]].map(([l,p,n])=>{ const pc=all.length?Math.round(n/all.length*100):0; return `<div class="ad-bar-row"><span class="ad-bar-l">${planBadge(p)} ${l}</span><div class="ad-bar"><i class="ad-bar-f ad-${p}" style="width:${pc}%"></i></div><b>${n}</b></div>`; }).join('')}
+        </div>
+        <div class="card card-pad">
+          <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-location-dot"></i></span> Top estados</div></div>
+          ${(()=>{ const m={}; all.forEach(x=>{ if(x.uf&&x.uf!=='—') m[x.uf]=(m[x.uf]||0)+1; }); const top=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,6); const mx=top[0]?top[0][1]:1; return top.map(([uf,n])=>`<div class="ad-bar-row"><span class="ad-bar-l">${uf}</span><div class="ad-bar"><i class="ad-bar-f ad-premium" style="width:${Math.round(n/mx*100)}%"></i></div><b>${n}</b></div>`).join(''); })()}
+        </div>
+      </div>`;
+  } else if(adminTab==='clientes'){
+    panel=`<div class="card card-pad ad-tablewrap">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-user-tie"></i></span> Clientes pagantes</div><span class="card-sub">${clientes.length} ativos</span></div>
+      <div class="ad-scroll"><table class="ad-table"><thead><tr><th>Nome</th><th>E-mail</th><th>Plano</th><th>Cidade/UF</th><th class="ar">MRR</th><th>Desde</th></tr></thead><tbody>
+        ${clientes.map(c=>`<tr><td>${esc(c.name)}${c.real?' <span class="ad-you">você</span>':''}</td><td class="muted">${esc(c.email)}</td><td>${planBadge(c.plan)}</td><td class="muted">${esc(c.city)}/${esc(c.uf)}</td><td class="ar mono">${brl0(c.mrr)}</td><td class="muted mono">${esc(c.since)}</td></tr>`).join('')}
+      </tbody></table></div>
+    </div>`;
+  } else if(adminTab==='leads'){
+    panel=`<div class="card card-pad ad-tablewrap">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-user-plus"></i></span> Leads e testes Premium</div><span class="card-sub">${leads.length} contatos</span></div>
+      <div class="ad-scroll"><table class="ad-table"><thead><tr><th>Nome</th><th>E-mail</th><th>WhatsApp</th><th>UF</th><th>Perfil</th><th>Objetivo</th><th>Status</th></tr></thead><tbody>
+        ${leads.map(c=>`<tr><td>${esc(c.name)}</td><td class="muted">${esc(c.email)}</td><td class="muted mono">${esc(c.phone)}</td><td class="muted">${esc(c.uf)}</td><td class="muted">${esc(c.risk)}</td><td class="muted">${esc(c.goal)}</td><td>${c.trial?'<span class="ad-badge ad-trial">Em teste</span>':'<span class="ad-badge ad-free">Gratuito</span>'}</td></tr>`).join('')}
+      </tbody></table></div>
+    </div>`;
+  } else {
+    const receberMes=mrr; const anoProj=arr;
+    panel=`
+      <div class="ad-stats">
+        ${stat('fa-sack-dollar','ist-up', brl0(mrr), 'MRR', 'receita recorrente/mês')}
+        ${stat('fa-arrow-trend-up','ist-gold', brl0(arr), 'ARR projetado', '12 meses')}
+        ${stat('fa-receipt','ist-blue', brl0(ticket), 'Ticket médio', 'por cliente pagante')}
+        ${stat('fa-percent','', Math.round(conv)+'%', 'Conversão', 'cadastro → pagante')}
+      </div>
+      <div class="card card-pad ad-tablewrap">
+        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Receita por plano</div></div>
+        <div class="ad-scroll"><table class="ad-table"><thead><tr><th>Plano</th><th class="ar">Assinantes</th><th class="ar">Preço/mês</th><th class="ar">MRR</th></tr></thead><tbody>
+          ${[['Investidor Pro','pro',49],['Premium','premium',29]].map(([l,p,pr])=>{ const n=all.filter(x=>x.plan===p).length; return `<tr><td>${planBadge(p)} ${l}</td><td class="ar mono">${n}</td><td class="ar mono">${brl0(pr)}</td><td class="ar mono up">${brl0(n*pr)}</td></tr>`; }).join('')}
+          <tr class="ad-total"><td>Total</td><td class="ar mono">${clientes.length}</td><td class="ar">—</td><td class="ar mono up">${brl0(mrr)}</td></tr>
+        </tbody></table></div>
+      </div>`;
+  }
+
+  return `<div class="ad-page">
+    <div class="ad-banner"><i class="fa-solid fa-shield-halved"></i> <div>Área restrita ao administrador. Exibindo <strong>sua conta real</strong> + dados de demonstração — a base completa de todos os clientes é conectada ao backend administrativo (acesso com credencial de serviço).</div></div>
+    <div class="ad-tabs">${tab('overview','fa-gauge-high','Visão geral')}${tab('clientes','fa-user-tie','Clientes')}${tab('leads','fa-user-plus','Leads')}${tab('financeiro','fa-money-bill-trend-up','Financeiro')}</div>
+    ${panel}
   </div>`;
 }
 
@@ -7573,10 +7824,12 @@ function importCarteiraCSV(){
   }; inp.click();
 }
 /* ── Carteira de demonstração (1 clique) — permite ver valor antes de digitar ── */
-/* ── Modo teste do dono (Ramon): gera dados aleatórios + Investidor Pro; desligar zera tudo ── */
+/* ── Modo desenvolvedor do dono (Ramon): gera dados + Investidor Pro + acesso admin ── */
 const OWNER_EMAIL = 'ramonandreee@gmail.com';
 function isOwner(){ const u=currentUser(); return !!u && String(u.email||'').toLowerCase()===OWNER_EMAIL; }
 function testModeOn(){ return localStorage.getItem('lastro_testmode')==='1'; }
+function devModeOn(){ return testModeOn(); }
+function toggleDevMode(){ toggleTestMode(); }
 function genTestCarteira(){
   const shuffle=arr=>{ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; };
   // garante pagadores de proventos (FIIs têm div; ações com DY>0) e NUNCA BDRs/stocks
@@ -7599,12 +7852,12 @@ function toggleTestMode(){
     setPlan('premium');
     localStorage.setItem('lastro_sub', JSON.stringify({ tier:'pro', plano:'Investidor Pro', cycle:'anual', amount:588, brand:'Visa', card:'4242', canceled:false }));
     CARTEIRA=genTestCarteira(); savePortfolio();
-    toast('Modo teste ON — Investidor Pro + carteira aleatória ✓');
+    toast('Modo desenvolvedor ON — Investidor Pro + carteira de teste ✓');
   } else {
     localStorage.removeItem('lastro_testmode');
     CARTEIRA=[]; savePortfolio();
     localStorage.removeItem('lastro_sub'); setPlan('free');
-    toast('Modo teste OFF — tudo zerado ✓');
+    toast('Modo desenvolvedor OFF — tudo zerado ✓');
   }
   refreshPlanUI(); applyPriv(); nav('painel');
 }
