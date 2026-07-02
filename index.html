@@ -2053,6 +2053,33 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .prof-switch > span { position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .18s var(--ease); }
 .prof-switch.on { background:var(--brand); }
 .prof-switch.on > span { transform:translateX(18px); }
+/* central de ajuda (suporte) */
+.sup-hero { display:flex; align-items:center; gap:13px; padding:14px 16px; border-radius:var(--r); background:linear-gradient(120deg, color-mix(in srgb,var(--brand) 12%,transparent), transparent 72%); border:1px solid color-mix(in srgb,var(--brand) 18%,transparent); margin-bottom:14px; }
+.sup-hero-ic { width:46px; height:46px; flex:none; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:20px; color:#fff; background:linear-gradient(135deg,var(--brand),var(--accent)); box-shadow:0 6px 18px color-mix(in srgb,var(--brand) 38%,transparent); }
+.sup-hero-t { font-weight:700; font-size:16px; letter-spacing:-.01em; }
+.sup-hero-s { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
+.sup-contact { display:flex; flex-direction:column; gap:10px; margin-bottom:4px; }
+.sup-c { display:flex; align-items:center; gap:12px; width:100%; padding:13px 14px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); cursor:pointer; text-align:left; transition:transform .14s var(--ease), box-shadow .14s var(--ease), border-color .14s var(--ease); }
+.sup-c:hover { transform:translateY(-1px); box-shadow:var(--sh-sm); border-color:var(--line-2); }
+.sup-c-ic { width:40px; height:40px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:19px; background:color-mix(in srgb,#25D366 14%,transparent); color:#25D366; }
+.sup-c-ic.sup-c-mail { background:var(--accent-l); color:var(--accent); }
+.sup-c-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.sup-c-tx b { font-size:14px; color:var(--ink); font-weight:650; }
+.sup-c-tx small { font-size:12px; color:var(--ink-3); }
+.sup-c-go { color:var(--ink-3); font-size:12px; flex:none; }
+.faq-list { display:flex; flex-direction:column; }
+.faq-item { border-bottom:1px solid var(--line); }
+.faq-item:last-child { border-bottom:none; }
+.faq-q { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; padding:12px 0; background:none; border:none; cursor:pointer; text-align:left; font-size:13.5px; font-weight:600; color:var(--ink); }
+.faq-q i { flex:none; color:var(--ink-3); font-size:11px; transition:transform .2s var(--ease); }
+.faq-item.open .faq-q i { transform:rotate(180deg); }
+.faq-a { max-height:0; overflow:hidden; transition:max-height .24s var(--ease); }
+.faq-item.open .faq-a { max-height:320px; }
+.faq-a p { margin:0; padding:0 0 12px; font-size:13px; line-height:1.55; color:var(--ink-2); }
+.sup-foot { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); font-size:11.5px; color:var(--ink-3); }
+.sup-status { display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--up); }
+.sup-dot { width:8px; height:8px; border-radius:50%; background:var(--up); box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 60%,transparent); animation:supPulse 2s infinite; }
+@keyframes supPulse { 0%{ box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 55%,transparent); } 70%{ box-shadow:0 0 0 6px transparent; } 100%{ box-shadow:0 0 0 0 transparent; } }
 /* privacidade: oculta valores com uma tarja limpa (sem blur) */
 body.priv .priv-blur { position:relative; color:transparent !important; user-select:none; pointer-events:none; border-radius:6px; }
 body.priv .priv-blur * { visibility:hidden; }
@@ -3448,11 +3475,58 @@ function acctMenuHTML(){
 function toggleAcctMenu(e){ if(e) e.stopPropagation(); const m=$('#acctMenu'); if(!m) return; if(m.classList.contains('open')){ m.classList.remove('open'); return; } m.innerHTML=acctMenuHTML(); m.classList.add('open'); }
 function closeAcctMenu(){ const m=$('#acctMenu'); if(m) m.classList.remove('open'); }
 const APP_VERSION='1.0.0';
-function openSupport(){
-  const u=currentUser(); const plan=isPremium()?'Premium':'Gratuito';
+function supportWhatsapp(){
+  const u=currentUser(); const plan=planTier()==='pro'?'Investidor Pro':isPremium()?'Premium':'Gratuito';
   let msg='Olá! Preciso de ajuda com minha conta no Lastro.';
   if(u) msg+=`\n\nUsuário: ${u.email}\nPlano: ${plan}\nVersão: ${APP_VERSION}`;
   window.open(`https://wa.me/5547992464048?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+}
+function supportEmail(){
+  const s=encodeURIComponent('Ajuda — Lastro'); const b=encodeURIComponent(`Olá, preciso de ajuda com:\n\n\n—\nVersão: ${APP_VERSION}`);
+  window.open(`mailto:suporte@lastro.app?subject=${s}&body=${b}`, '_blank');
+}
+const SUPPORT_FAQ=[
+  ['Meus dados de investimento ficam seguros?','Sim. Sua carteira fica salva no seu dispositivo e sincronizada de forma privada na sua conta. Nunca compartilhamos seus dados com terceiros.'],
+  ['Como cadastro meus ativos na carteira?','Vá em Carteira → Adicionar ativo, busque pelo ticker (ex.: PETR4, HGLG11) e informe a quantidade e o preço médio. O restante é calculado automaticamente.'],
+  ['Os preços e proventos são em tempo real?','Nesta demonstração os dados são ilustrativos. Com a integração de mercado ativa, cotações e proventos passam a ser atualizados automaticamente.'],
+  ['Como funciona o teste grátis do Premium?','São 7 dias com acesso completo, sem precisar de cartão. Ao final, você escolhe se quer continuar — sem cobrança automática surpresa.'],
+  ['Como cancelo minha assinatura?','Em Gerenciar assinatura você pode cancelar quando quiser. O acesso permanece até o fim do período já pago.'],
+];
+function faqToggle(el){ const it=el.closest('.faq-item'); if(it) it.classList.toggle('open'); }
+function openSupport(){
+  const u=currentUser(); const tier=planTier();
+  const planChip = tier==='pro'?'<span class="acct-plan pro"><i class="fa-solid fa-crown"></i> Investidor Pro</span>':tier==='premium'?'<span class="acct-plan prem"><i class="fa-solid fa-crown"></i> Premium</span>':'<span class="acct-plan free">Gratuito</span>';
+  const faq=SUPPORT_FAQ.map(([q,a])=>`<div class="faq-item"><button class="faq-q" onclick="faqToggle(this)"><span>${q}</span><i class="fa-solid fa-chevron-down"></i></button><div class="faq-a"><p>${a}</p></div></div>`).join('');
+  $('#authTitle').textContent='Central de ajuda';
+  $('#authBody').innerHTML=`
+    <div class="sup-hero">
+      <div class="sup-hero-ic"><i class="fa-solid fa-headset"></i></div>
+      <div><div class="sup-hero-t">Como podemos ajudar?</div><div class="sup-hero-s">Fale com a gente ou encontre respostas rápidas abaixo.</div></div>
+    </div>
+    <div class="sup-contact">
+      <button class="sup-c sup-wa" onclick="supportWhatsapp()">
+        <span class="sup-c-ic"><i class="fa-brands fa-whatsapp"></i></span>
+        <span class="sup-c-tx"><b>WhatsApp</b><small>Resposta rápida, em horário comercial</small></span>
+        <i class="fa-solid fa-arrow-up-right-from-square sup-c-go"></i>
+      </button>
+      <button class="sup-c" onclick="supportEmail()">
+        <span class="sup-c-ic sup-c-mail"><i class="fa-solid fa-envelope"></i></span>
+        <span class="sup-c-tx"><b>E-mail</b><small>suporte@lastro.app</small></span>
+        <i class="fa-solid fa-arrow-up-right-from-square sup-c-go"></i>
+      </button>
+    </div>
+    <div class="prof-sec"><div class="prof-sec-t">Perguntas frequentes</div>
+      <div class="faq-list">${faq}</div>
+    </div>
+    <div class="prof-sec"><div class="prof-sec-t">Recursos</div>
+      <button class="btn btn-ghost prof-btn" onclick="closeAuth();startTour&&startTour()"><i class="fa-solid fa-compass" style="color:var(--brand)"></i> Refazer o tour guiado</button>
+      <button class="btn btn-ghost prof-btn" onclick="closeAuth();nav('planos')"><i class="fa-solid fa-crown" style="color:var(--gold)"></i> Ver planos e recursos</button>
+    </div>
+    <div class="sup-foot">
+      <span class="sup-status"><span class="sup-dot"></span> Todos os sistemas operando</span>
+      <span>${u?planChip+' · ':''}Versão ${APP_VERSION}</span>
+    </div>`;
+  $('#authModal').classList.add('open');
 }
 document.addEventListener('click', e=>{ if(!e.target.closest('.acct-wrap')) closeAcctMenu(); });
 function openAccount(){ toggleAcctMenu(); }
