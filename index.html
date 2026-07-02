@@ -264,12 +264,17 @@ a { color: inherit; text-decoration: none; }
 }
 .nav-item i { width: 18px; font-size: 14px; text-align: center; transition: color .18s var(--ease); }
 .nav-item:hover { background: var(--surface-3); color: var(--ink); }
+.nav-item:hover i { color: var(--ink-2); }
 .nav-item.active {
   background: var(--brand-l);
   color: var(--brand-d);
-  font-weight: 500;
+  font-weight: 600;
 }
 .nav-item.active i { color: var(--brand); }
+.nav-item.active::before {
+  content: ''; position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 18px; border-radius: 3px; background: var(--brand);
+}
 .nav-item .nav-badge {
   margin-left: auto;
   font-size: 9.5px;
@@ -420,6 +425,13 @@ body.view-inicio .topbar-brand { display:flex; }
 .acct-id { min-width:0; }
 .acct-nm { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .acct-pl { font-size:11.5px; color:var(--ink-3); }
+.acct-head.is-sub { background:linear-gradient(135deg, color-mix(in srgb,var(--brand) 7%,transparent), transparent 62%); border-radius:12px; }
+.acct-plan { display:inline-flex; align-items:center; gap:5px; margin-top:4px; font-size:10px; font-weight:700; letter-spacing:.02em; padding:2px 8px; border-radius:20px; }
+.acct-plan i { font-size:9px; }
+.acct-plan.free { background:var(--surface-3); color:var(--ink-3); }
+.acct-plan.prem { background:var(--brand-l); color:var(--brand); }
+.acct-plan.pro { background:linear-gradient(135deg,#C8911F,#A87C2A); color:#fff; box-shadow:0 2px 6px color-mix(in srgb,#A87C2A 35%,transparent); }
+.acct-plan.trial { background:var(--gold-l); color:var(--gold); }
 .acct-item { display:flex; align-items:center; gap:11px; width:100%; padding:10px 11px; border-radius:9px; font-size:13.5px; font-weight:500; color:var(--ink); cursor:pointer; transition:background .12s var(--ease); text-align:left; }
 .acct-item:hover { background:var(--surface-3); }
 .acct-item i { width:16px; text-align:center; color:var(--ink-3); font-size:13px; }
@@ -3378,7 +3390,11 @@ function acctMenuHTML(){
     <button class="${pref==='auto'?'on':''}" onclick="setThemePref('auto')" title="Automático"><i class="fa-solid fa-circle-half-stroke"></i></button>
   </div></div>`;
   if(authed){
-    return `<div class="acct-head"><div class="avatar">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</div><div class="acct-id"><div class="acct-nm">${esc(profileName())}</div><div class="acct-pl">${isPremium()?'Plano Premium 👑':'Plano Gratuito'}</div></div></div>
+    const tier=planTier();
+    const planChip = tier==='pro' ? '<span class="acct-plan pro"><i class="fa-solid fa-crown"></i> Investidor Pro</span>'
+      : tier==='premium' ? '<span class="acct-plan prem"><i class="fa-solid fa-crown"></i> Premium</span>'
+      : (trialActive()? `<span class="acct-plan trial"><i class="fa-solid fa-clock"></i> Teste Premium · ${trialDaysLeft()}d</span>` : '<span class="acct-plan free">Plano Gratuito</span>');
+    return `<div class="acct-head ${tier!=='free'?'is-sub':''}"><div class="avatar">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</div><div class="acct-id"><div class="acct-nm">${esc(profileName())}</div>${planChip}</div></div>
       ${item('fa-user','Meu perfil',"closeAcctMenu();openProfile()")}
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();openAssinatura()")}
       ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
