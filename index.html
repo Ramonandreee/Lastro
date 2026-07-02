@@ -3819,7 +3819,8 @@ function toggle2FA(kind){
 async function saveProfileCadastro(silent){
   const p=getProfile(); const v=($('#profName').value||'').trim(); if(v) p.name=v; else delete p.name;
   PROF_CADASTRO.forEach(k=>{ const el=document.getElementById('prof_'+k); if(el){ const val=(el.value||'').trim(); if(val) p[k]=val; else delete p[k]; } });
-  saveProfile(p); if(typeof flushCloudState==='function') flushCloudState();
+  saveProfile(p);
+  const okSync = await flushCloudState();
   const msg=$('#profMsg'); if(msg) msg.textContent='';
   const u=currentUser(); const newEmail=($('#profEmail')&&$('#profEmail').value||'').trim().toLowerCase();
   if(u && newEmail && newEmail!==u.email){
@@ -3832,12 +3833,15 @@ async function saveProfileCadastro(silent){
       }catch(e){ if(msg) msg.textContent='Sem conexão para alterar o e-mail.'; }
     }
   }
-  updateAuthUI(); refreshProfileAvatar(); if(!silent) toast('Dados cadastrais salvos ✓');
+  updateAuthUI(); refreshProfileAvatar();
+  if(!silent) toast(okSync ? 'Dados cadastrais salvos e sincronizados ✓' : 'Salvo neste aparelho — não foi possível sincronizar agora. Tente novamente com internet.');
 }
-function saveProfileInvestidor(silent){
+async function saveProfileInvestidor(silent){
   const p=getProfile(); const risk=currentRiskSel(); if(risk) p.risk=risk; else delete p.risk;
   PROF_INVEST.forEach(k=>{ const el=document.getElementById('prof_'+k); if(el){ const val=(el.value||'').trim(); if(val) p[k]=val; else delete p[k]; } });
-  saveProfile(p); if(typeof flushCloudState==='function') flushCloudState(); if(!silent) toast('Perfil de investidor salvo ✓');
+  saveProfile(p);
+  const okSync = await flushCloudState();
+  if(!silent) toast(okSync ? 'Perfil de investidor salvo e sincronizado ✓' : 'Salvo neste aparelho — não foi possível sincronizar agora. Tente novamente com internet.');
 }
 /* aviso de alterações não salvas ao fechar o perfil */
 let _profileOpen=false;
@@ -3852,7 +3856,7 @@ function profileDirty(){
 function closeAuthGuarded(){
   if(_profileOpen && profileDirty()){
     showConfirm('Salvar alterações?','Você fez alterações que ainda não foram salvas.','Salvar e sair',
-      async ()=>{ await saveProfileCadastro(true); saveProfileInvestidor(true); _profileOpen=false; closeAuth(); },
+      async ()=>{ await saveProfileCadastro(true); await saveProfileInvestidor(true); _profileOpen=false; closeAuth(); },
       false, { altLabel:'Sair sem salvar', onAlt:()=>{ _profileOpen=false; closeAuth(); } });
     return;
   }
@@ -4063,7 +4067,7 @@ async function loadCloudState(){
       if(Array.isArray(d.alerts)) localStorage.setItem('lastro_alerts', JSON.stringify(d.alerts));
       if(d.plan) localStorage.setItem('lastro_plan', d.plan);
       if(d.theme){ localStorage.setItem('lastro_theme', d.theme); applyTheme(false); }
-      if(d.profile && typeof d.profile==='object'){ localStorage.setItem('lastro_profile', JSON.stringify(d.profile)); }
+      if(d.profile && typeof d.profile==='object'){ let loc={}; try{ loc=JSON.parse(localStorage.getItem('lastro_profile')||'{}'); }catch(e){} localStorage.setItem('lastro_profile', JSON.stringify({...loc, ...d.profile})); }
       if('sub' in d){ if(d.sub) localStorage.setItem('lastro_sub', JSON.stringify(d.sub)); else localStorage.removeItem('lastro_sub'); }
       const pf=d.prefs||{};
       if([30,50,100].includes(+pf.pgsize)){ sessionStorage.setItem('lastro_pgsize', pf.pgsize); Object.keys(tableState).forEach(k=>tableState[k].pageSize=+pf.pgsize); }
@@ -4090,11 +4094,12 @@ function saveCloudState(){
   clearTimeout(_cloudT);
   return new Promise(res=>{ _cloudT=setTimeout(async()=>{ try{ await _postCloud(s,c); }catch(e){} res(); }, 700); });
 }
-/* envia imediatamente o que estiver pendente (evita perder dados ao sair/fechar) */
+/* envia imediatamente o que estiver pendente (evita perder dados ao sair/fechar).
+   Resolve para true/false conforme o servidor confirmou a gravação. */
 function flushCloudState(keepalive){
-  const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
+  const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve(true);
   clearTimeout(_cloudT);
-  return _postCloud(s,c,keepalive).catch(()=>{});
+  return _postCloud(s,c,keepalive).then(r=>!!(r&&r.ok)).catch(()=>false);
 }
 window.addEventListener('pagehide', ()=>{ try{ flushCloudState(true); }catch(e){} });
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden'){ try{ flushCloudState(true); }catch(e){} } });
