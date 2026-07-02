@@ -986,7 +986,7 @@ img, svg, canvas, video { max-width: 100%; }
   border: 1px solid var(--line);
   border-radius: var(--r-xl);
   box-shadow: var(--sh);
-  padding: 28px 30px;
+  padding: 22px 26px 20px;
   position: relative;
   overflow: hidden;
 }
@@ -1094,9 +1094,6 @@ img, svg, canvas, video { max-width: 100%; }
   flex: 1;
 }
 .insight-body strong { color: var(--ink); font-weight: 600; }
-.insight-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
-.insight-chips button { font-size: 11.5px; font-weight: 500; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 20px; padding: 6px 12px; cursor: pointer; transition: border-color .14s var(--ease), color .14s var(--ease), background .14s var(--ease); }
-.insight-chips button:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-l); }
 .insight-input {
   display: flex; gap: 8px; margin-top: 16px;
 }
@@ -2539,11 +2536,15 @@ body.report-open { overflow:hidden; }
 }
 
 /* ════ HOME: hero de mercado, destaques e carteira compacta ════ */
-.hero-greet { display:flex; align-items:center; gap:11px; margin-bottom:18px; }
-.hero-greet-ic { width:38px; height:38px; flex:none; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--gold); background:linear-gradient(150deg,var(--gold-l),transparent); }
-.hero-greet-t { font-size:15px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
-.hero-greet-d { font-size:12px; color:var(--ink-3); text-transform:capitalize; margin-top:1px; }
-.hero-mkt-lbl { font-size:13px; color:var(--ink-3); font-weight:500; margin-bottom:4px; }
+.hero-greet { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
+.hero-greet-ic { width:34px; height:34px; flex:none; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--gold); background:linear-gradient(150deg,color-mix(in srgb,var(--gold) 16%,transparent),transparent); }
+.hero-greet-t { font-size:14.5px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
+.hero-greet-d { font-size:11.5px; color:var(--ink-3); text-transform:capitalize; margin-top:1px; }
+.hero-hr { height:1px; background:linear-gradient(90deg, var(--line-2), transparent 82%); margin-bottom:16px; }
+.hero-mkt-lbl { display:flex; align-items:center; gap:7px; font-size:11px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); margin-bottom:5px; }
+.hero-live { width:6px; height:6px; border-radius:50%; background:var(--up); box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 55%,transparent); animation:heroLive 2.2s var(--ease) infinite; }
+@keyframes heroLive { 0%{ box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 55%,transparent);} 70%{ box-shadow:0 0 0 6px transparent;} 100%{ box-shadow:0 0 0 0 transparent;} }
+@media (prefers-reduced-motion:reduce){ .hero-live { animation:none; } }
 .hero-pts { font-family:var(--sans); font-size:20px; font-weight:500; color:var(--ink-3); margin-left:6px; align-self:center; }
 .btn-sm { padding:7px 13px; font-size:12.5px; }
 .opp-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
@@ -4094,8 +4095,9 @@ function viewPainel(){
         <span class="hero-greet-ic"><i class="fa-solid ${greetingIcon()}"></i></span>
         <div><div class="hero-greet-t">${greetingLabel()}</div><div class="hero-greet-d">${todayLabel()}</div></div>
       </div>
+      <div class="hero-hr"></div>
       <div class="hero-mkt-head">
-        <div class="hero-mkt-lbl" id="heroIdxLbl">${ib.nm}</div>
+        <div class="hero-mkt-lbl" id="heroIdxLbl"><span class="hero-live" aria-hidden="true"></span>${ib.nm}</div>
       </div>
       <div class="hero-value"><span id="heroIdxVal">${ib.vl}</span><span class="hero-pts">pts</span></div>
       <div class="hero-delta">
@@ -4116,11 +4118,6 @@ function viewPainel(){
       <div class="insight-input">
         <input id="insightInput" placeholder="Pergunte sobre o mercado ou um ativo…" onkeydown="if(event.key==='Enter')askAI()">
         <button class="insight-send" onclick="askAI()"><i class="fa-solid fa-arrow-up"></i></button>
-      </div>
-      <div class="insight-chips">
-        <button onclick="askAISugg('Panorama do mercado brasileiro hoje')">Panorama do dia</button>
-        <button onclick="askAISugg('Quais FIIs de papel estão atrativos agora?')">FIIs atrativos</button>
-        <button onclick="askAISugg('Boas pagadoras de dividendos na bolsa hoje')">Dividendos</button>
       </div>
     </div>
   </div>
