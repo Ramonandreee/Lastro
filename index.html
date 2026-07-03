@@ -643,11 +643,13 @@ body.view-inicio .topbar-brand { display:flex; }
 /* ══════════════════════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════════════════════ */
-/* guardas globais: nunca rolar horizontalmente / nada além da viewport */
+/* guardas globais: nunca rolar horizontalmente / nada além da viewport.
+   OBS: NÃO usar overflow:clip/hidden em .content — isso cria um contexto de
+   recorte que faz o position:sticky da barra de abas tremer no iOS. O guard
+   horizontal fica só no html/body, que já impede rolagem lateral. */
 html, body { overflow-x: clip; max-width: 100%; }
 .app { max-width: 100%; }
 .main { min-width: 0; max-width: 100%; }
-.content { overflow-x: clip; }
 img, svg, canvas, video { max-width: 100%; }
 
 .menu-btn { display:none; width:38px; height:38px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--surface); color:var(--ink-2); align-items:center; justify-content:center; cursor:pointer; flex:none; margin-right:6px; }
