@@ -1927,7 +1927,7 @@ canvas { touch-action:none; }
 .share-btn { display:flex; flex-direction:column; align-items:center; gap:7px; padding:16px 8px; border-radius:12px; border:1px solid var(--line); background:var(--surface); cursor:pointer; font-size:12.5px; font-weight:600; color:var(--ink); transition:transform .14s var(--ease), box-shadow .14s var(--ease); }
 .share-btn:hover { transform:translateY(-2px); box-shadow:var(--sh-sm); }
 .share-btn i { font-size:22px; }
-.sh-wa i { color:#25D366; } .sh-fb i { color:#1877F2; } .sh-ig i { color:#E1306C; } .sh-tw i { color:var(--ink); }
+.sh-wa i { color:#25D366; } .sh-th i { color:var(--ink); } .sh-ig i { color:#E1306C; } .sh-tt i { color:var(--ink); }
 .ind-terms { background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 24%,transparent); border-radius:var(--r-lg); padding:16px 18px; margin-top:16px; }
 .it-t { font-weight:700; font-size:13.5px; color:var(--gold); display:flex; align-items:center; gap:8px; margin-bottom:8px; }
 .ind-terms ul { margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px; }
@@ -2113,6 +2113,23 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .ad-sug-ic { width:30px; height:30px; flex:none; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:12.5px; background:color-mix(in srgb,var(--st,var(--ink-4)) 14%,transparent); color:var(--st,var(--ink-3)); }
 .ad-sug-i[data-st="pos"]{ --st:var(--up); } .ad-sug-i[data-st="warn"]{ --st:var(--gold); } .ad-sug-i[data-st="neu"]{ --st:var(--accent); }
 .ad-sug-i strong { color:var(--ink); font-weight:700; }
+/* Ações — sugestão + plano de ação para aprovação */
+.ad-action { border:1px solid var(--line); border-left:3px solid var(--st,var(--accent)); border-radius:var(--r); background:var(--surface); padding:16px 18px; margin-bottom:14px; transition:box-shadow .2s var(--ease); }
+.ad-action[data-st="pos"]{ --st:var(--up); } .ad-action[data-st="warn"]{ --st:var(--gold); } .ad-action[data-st="neu"]{ --st:var(--accent); }
+.ad-action.ad-approved { opacity:.72; }
+.ad-action-h { display:flex; gap:12px; align-items:flex-start; }
+.ad-action-ic { width:38px; height:38px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px; background:color-mix(in srgb,var(--st) 14%,transparent); color:var(--st); }
+.ad-action-t { font-size:15px; font-weight:700; letter-spacing:-.01em; line-height:1.3; }
+.ad-action-d { font-size:12.5px; color:var(--ink-2); line-height:1.5; margin-top:3px; }
+.ad-action-plan { margin:14px 0 4px; padding:12px 14px; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-sm); }
+.ad-plan-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); display:flex; align-items:center; gap:7px; margin-bottom:8px; }
+.ad-plan-lbl i { color:var(--st,var(--accent)); }
+.ad-action-plan ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
+.ad-action-plan li { font-size:13px; color:var(--ink-2); line-height:1.5; }
+.ad-action-foot { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-top:14px; }
+.ad-action-meta { font-size:11.5px; font-weight:600; color:var(--ink-3); display:inline-flex; align-items:center; gap:6px; }
+.ad-action-btns { display:flex; gap:8px; }
+.ad-approved-tag { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; color:var(--up); }
 .ad-tab { flex:none; display:inline-flex; align-items:center; gap:7px; padding:9px 15px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
 .ad-tab:hover { border-color:var(--line-2); color:var(--ink); }
 .ad-tab.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
@@ -2136,6 +2153,8 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .ad-bar-f { display:block; height:100%; border-radius:999px; background:var(--brand); }
 .ad-bar-f.ad-pro { background:var(--gold); } .ad-bar-f.ad-premium { background:var(--brand); } .ad-bar-f.ad-free { background:var(--ink-3); }
 .ad-bar-row b { flex:none; width:28px; text-align:right; font-family:var(--mono); font-size:13px; }
+.ad-bar-row b.ad-bar-v { width:auto; min-width:48px; display:flex; align-items:baseline; justify-content:flex-end; gap:5px; }
+.ad-bar-v small { font-family:var(--font,inherit); font-size:10.5px; font-weight:600; color:var(--ink-3); }
 .ad-badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:10.5px; font-weight:700; }
 .ad-badge.ad-pro { background:var(--gold-l); color:var(--gold); } .ad-badge.ad-prem { background:var(--brand-l); color:var(--brand); } .ad-badge.ad-free { background:var(--surface-3); color:var(--ink-3); } .ad-badge.ad-trial { background:var(--accent-l); color:var(--accent); }
 .ad-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; }
@@ -2571,6 +2590,7 @@ body.report-open { overflow:hidden; }
 /* cards de métrica (Indique / painel admin): valor mais fino/premium + complemento */
 .ind-metric .ind-v { font-size:18px; font-weight:600; letter-spacing:-.01em; }
 .ind-metric .ind-tag { margin-top:6px; }
+.ind-unit { font-family:var(--font,inherit); font-size:12px; font-weight:600; color:var(--ink-3); letter-spacing:0; margin-left:2px; }
 .ind-tappable { cursor:pointer; }
 .ind-tappable:active { transform:scale(.985); }
 .ind-tag { display:inline-block; margin-top:7px; font-size:10.5px; font-weight:600; letter-spacing:.02em; padding:2px 8px; border-radius:20px; background:color-mix(in srgb,var(--st,var(--ink-4)) 13%,transparent); color:var(--st,var(--ink-2)); }
@@ -2671,8 +2691,10 @@ body.report-open { overflow:hidden; }
 }
 
 /* ════ PÁGINA DO ATIVO — abas e componentes ════ */
-.atabs { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:10px 2px 12px; margin-bottom:4px; position:sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); box-shadow:0 1px 0 var(--line); will-change:transform; -webkit-backface-visibility:hidden; backface-visibility:hidden; }
-.atabs::-webkit-scrollbar { display:none; }
+/* barra de abas do ativo: sticky FORA do scroller horizontal (evita o tremor no iOS) */
+.atabs { padding:10px 2px 12px; margin-bottom:4px; position:sticky; position:-webkit-sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); box-shadow:0 1px 0 var(--line); }
+.atabs-inner { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
+.atabs-inner::-webkit-scrollbar { display:none; }
 .atab { flex:none; display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:500; cursor:pointer; white-space:nowrap; transition:all .16s var(--ease-out); }
 .atab i { font-size:12px; opacity:.7; }
 .atab:hover { border-color:var(--line-2); color:var(--ink); }
@@ -5219,7 +5241,8 @@ function shareRef(ch){ const l=refLink(); if(!l) return;
   const msg='Conheça a Lastro — inteligência completa para investir em FIIs e ações da B3: carteira, proventos, Imposto de Renda e alertas. Comece grátis: '+l;
   const e=encodeURIComponent(msg), el=encodeURIComponent(l);
   if(ch==='instagram'){ copyRefLink(); toast('Link copiado — cole no seu story ou na bio do Instagram'); return; }
-  const urls={ whatsapp:'https://wa.me/?text='+e, facebook:'https://www.facebook.com/sharer/sharer.php?u='+el, twitter:'https://twitter.com/intent/tweet?text='+e };
+  if(ch==='tiktok'){ copyRefLink(); toast('Link copiado — cole na sua bio ou legenda do TikTok'); return; }
+  const urls={ whatsapp:'https://wa.me/?text='+e, threads:'https://www.threads.net/intent/post?text='+e };
   if(urls[ch]) window.open(urls[ch], '_blank', 'noopener');
 }
 function updRefSim(per){
@@ -5308,7 +5331,7 @@ function refStats(){
     ganhos:list.reduce((s,x)=>s+x.acc,0), mensal:ativos.reduce((s,x)=>s+x.com,0), prox:d.toLocaleDateString('pt-BR') };
 }
 /* card de indicação no modelo dos indicadores (toque abre a definição) */
-function refCard(term,st,val,comp){ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable ind-metric" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span></div><div class="ind-v">${val}</div>${comp?`<span class="ind-tag">${comp}</span>`:''}</div>`; }
+function refCard(term,st,val,unit,comp){ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable ind-metric" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span></div><div class="ind-v">${val}${unit?` <span class="ind-unit">${unit}</span>`:''}</div>${comp?`<span class="ind-tag">${comp}</span>`:''}</div>`; }
 function viewIndicar(){
   const hero = `<div class="indique-hero">
     <div class="ih-ic"><i class="fa-solid fa-gift"></i></div>
@@ -5329,10 +5352,10 @@ function viewIndicar(){
   return `<div class="ind-page">
   ${hero}
   <div class="ind-grid">
-    ${refCard('refGanhos','pos', `<span class="priv-blur">${stG}</span>`, 'acumulado')}
-    ${refCard('refAtivos','pos', stA, `indicado${stA===1?'':'s'} ativo${stA===1?'':'s'}`)}
-    ${refCard('refPend','warn', stP, 'aguardando assinar')}
-    ${refCard('refProx','neu', stX, 'via PIX')}
+    ${refCard('refGanhos','pos', `<span class="priv-blur">${stG}</span>`, '', 'acumulado')}
+    ${refCard('refAtivos','pos', stA, stA===1?'assinante':'assinantes', 'gerando comissão')}
+    ${refCard('refPend','warn', stP, stP===1?'prospect':'prospects', 'a converter')}
+    ${refCard('refProx','neu', stX, '', rs?'agendado':'sem pagamentos')}
   </div>
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-people-group"></i></span> Como funciona</div></div>
@@ -5388,9 +5411,9 @@ function viewIndicar(){
     <p class="sec-desc" style="margin:6px 0 12px">Clique para compartilhar com textos prontos e otimizados para cada rede.</p>
     <div class="share-grid">
       <button class="share-btn sh-wa" onclick="shareRef('whatsapp')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
-      <button class="share-btn sh-fb" onclick="shareRef('facebook')"><i class="fa-brands fa-facebook"></i> Facebook</button>
+      <button class="share-btn sh-th" onclick="shareRef('threads')"><i class="fa-brands fa-threads"></i> Threads</button>
       <button class="share-btn sh-ig" onclick="shareRef('instagram')"><i class="fa-brands fa-instagram"></i> Instagram</button>
-      <button class="share-btn sh-tw" onclick="shareRef('twitter')"><i class="fa-brands fa-x-twitter"></i> X / Twitter</button>
+      <button class="share-btn sh-tt" onclick="shareRef('tiktok')"><i class="fa-brands fa-tiktok"></i> TikTok</button>
     </div>
   </div>
 
@@ -5444,6 +5467,47 @@ function adminAll(){
   const me={ name:profileName()||'Você', email:(u&&u.email)||'—', phone:gp.phone||'—', uf:gp.uf||'—', city:gp.city||'—', plan:planTier(), trial:trialActive(), mrr:(planTier()==='pro'?49:planTier()==='premium'?29:0), since:(gp.createdAt||'').slice(0,10)||'—', risk:gp.risk||'—', goal:gp.goal||'—', real:true };
   return [me, ...ADMIN_DEMO];
 }
+/* sugestões com plano de ação pronto (para aprovação) */
+function adminSuggestions(all){
+  all = all || adminAll();
+  const clientes=all.filter(x=>x.plan!=='free'), conv=all.length?clientes.length/all.length*100:0;
+  const trials=all.filter(x=>x.trial).length, freeNoTrial=all.filter(x=>x.plan==='free'&&!x.trial).length, premN=all.filter(x=>x.plan==='premium').length;
+  const ufM={}; all.forEach(x=>{ if(x.uf&&x.uf!=='—') ufM[x.uf]=(ufM[x.uf]||0)+1; }); const ufTop=Object.entries(ufM).sort((a,b)=>b[1]-a[1]);
+  const out=[];
+  if(trials>0) out.push({ ic:'fa-clock', st:'warn', impact:'alto',
+    title:`Converter ${trials} teste${trials>1?'s':''} Premium em pagante${trials>1?'s':''}`,
+    detail:`${trials} conta${trials>1?'s estão':' está'} no teste de 7 dias e pode${trials>1?'m':''} expirar sem assinar.`,
+    plan:['Disparar lembrete por e-mail e WhatsApp 48h antes de expirar','Oferecer 20% de desconto na 1ª mensalidade','Destacar os recursos Premium mais usados pelo perfil','Reabordar quem não converter em 3 dias'],
+    cta:'Disparo de reativação de testes' });
+  if(freeNoTrial>0) out.push({ ic:'fa-gift', st:'pos', impact:'médio',
+    title:`Ativar ${freeNoTrial} lead${freeNoTrial>1?'s':''} do plano gratuito`,
+    detail:`${freeNoTrial} cadastro${freeNoTrial>1?'s seguem':' segue'} no gratuito sem nunca ter testado o Premium.`,
+    plan:['Enviar convite do teste de 7 dias grátis (sem cartão)','Mostrar 1 insight personalizado da carteira/perfil','Criar urgência com o prazo do teste','Acompanhar abertura e reenviar aos não-abertos'],
+    cta:'Campanha de ativação de leads' });
+  if(premN>0) out.push({ ic:'fa-crown', st:'warn', impact:'alto',
+    title:`Upsell de ${premN} Premium para Investidor Pro`,
+    detail:'Assinantes Premium podem subir para o Pro, elevando o ticket médio e dobrando a comissão de indicação.',
+    plan:['Segmentar Premium com patrimônio acima de R$ 50 mil','Oferecer 1 mês de Pro grátis para experimentar','Destacar Raio-X, Backtest e Consultor IA','Medir adesão em 14 dias'],
+    cta:'Campanha de upsell Premium → Pro' });
+  if(ufTop[0]) out.push({ ic:'fa-location-dot', st:'neu', impact:'médio',
+    title:'Expandir presença regional',
+    detail:`Maior concentração em ${ufTop[0][0]} (${ufTop[0][1]} cadastros); praças com menos presença têm espaço para crescer.`,
+    plan:[`Rodar anúncios geolocalizados fora de ${ufTop[0][0]}`,'Parcerias com criadores de conteúdo regionais','Landing com prova social por estado','Acompanhar o CAC por região'],
+    cta:'Plano de expansão regional' });
+  out.push(conv<40 ? { ic:'fa-arrow-trend-up', st:'warn', impact:'alto',
+    title:`Elevar a conversão (hoje em ${Math.round(conv)}%)`,
+    detail:'A taxa de cadastro → pagante está abaixo do ideal; priorize ativar quem já demonstrou interesse.',
+    plan:['Encurtar o caminho até o primeiro "momento aha"','Onboarding guiado destacando recursos Premium','Reduzir fricção no checkout (PIX em 1 toque)','Testar oferta de entrada por 7 dias'],
+    cta:'Plano de aumento de conversão' }
+  : { ic:'fa-circle-check', st:'pos', impact:'baixo',
+    title:`Manter a conversão saudável (${Math.round(conv)}%)`,
+    detail:'A conversão está boa; foque em manter o acompanhamento dos testes e a retenção.',
+    plan:['Monitorar o churn mensal','Pesquisa rápida de satisfação (NPS)','Manter o programa de indicações ativo'],
+    cta:'Plano de retenção' });
+  return out;
+}
+function approveAction(btn,label){ const card=btn.closest('.ad-action'); if(card){ card.classList.add('ad-approved'); const f=card.querySelector('.ad-action-btns'); if(f) f.innerHTML='<span class="ad-approved-tag"><i class="fa-solid fa-circle-check"></i> Execução aprovada</span>'; } toast('Aprovado: '+label+' — execução agendada ✓'); }
+function dismissAction(btn){ const card=btn.closest('.ad-action'); if(card){ card.style.transition='opacity .2s var(--ease), transform .2s var(--ease)'; card.style.opacity='0'; card.style.transform='scale(.98)'; setTimeout(()=>card.remove(),200); } }
 function viewAdmin(){
   const all=adminAll();
   const clientes=all.filter(x=>x.plan==='pro'||x.plan==='premium');
@@ -5457,25 +5521,18 @@ function viewAdmin(){
   const tab=(k,ic,l)=>`<button class="ad-tab ${adminTab===k?'on':''}" onclick="adminGoto('${k}')"><i class="fa-solid ${ic}"></i> ${l}</button>`;
   /* cards no modelo dos indicadores (toque abre a definição) */
   const adCard=(term,st,val,tag)=>{ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable ind-metric" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span><span class="ind-ics"><button class="ind-ic" onclick="event.stopPropagation();openAdminHist('${term}')" aria-label="Evolução"><i class="fa-solid fa-chart-column"></i></button></span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`; };
-  const plCard=(ic,st,val,lbl,tag,term)=>`<div class="ind-card ind-metric${term?' ind-tappable':''}" data-st="${st}"${term?` data-term="${term}"`:''}><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${ic}"></i></span><span class="ind-l">${lbl}</span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`;
+  const plCard=(ic,st,val,lbl,tag,term,unit)=>`<div class="ind-card ind-metric${term?' ind-tappable':''}" data-st="${st}"${term?` data-term="${term}"`:''}><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${ic}"></i></span><span class="ind-l">${lbl}</span></div><div class="ind-v">${val}${unit?` <span class="ind-unit">${unit}</span>`:''}</div><span class="ind-tag">${tag}</span></div>`;
 
   let panel='';
   if(adminTab==='overview'){
-    const proN=all.filter(x=>x.plan==='pro').length, premN=all.filter(x=>x.plan==='premium').length, freeNoTrial=all.filter(x=>x.plan==='free'&&!x.trial).length;
+    const proN=all.filter(x=>x.plan==='pro').length, premN=all.filter(x=>x.plan==='premium').length;
     const ufM={}; all.forEach(x=>{ if(x.uf&&x.uf!=='—') ufM[x.uf]=(ufM[x.uf]||0)+1; }); const ufTop=Object.entries(ufM).sort((a,b)=>b[1]-a[1]);
-    const sug=[];
-    if(trials>0) sug.push(['fa-clock','warn',`<strong>${trials}</strong> ${trials>1?'contas estão':'conta está'} em teste Premium — envie um lembrete antes de expirar para converter em pagante.`]);
-    if(freeNoTrial>0) sug.push(['fa-gift','pos',`<strong>${freeNoTrial}</strong> ${freeNoTrial>1?'leads no plano gratuito':'lead no plano gratuito'} — ofereça o teste de 7 dias do Premium por e-mail/WhatsApp.`]);
-    if(premN>0) sug.push(['fa-crown','warn',`<strong>${premN}</strong> ${premN>1?'clientes Premium':'cliente Premium'} — um upsell para Investidor Pro eleva o ticket médio e dobra a comissão de indicação.`]);
-    if(ufTop[0]) sug.push(['fa-location-dot','neu',`Maior concentração em <strong>${ufTop[0][0]}</strong> (${ufTop[0][1]} cadastros) — considere campanhas regionais nas praças com menos presença.`]);
-    sug.push(conv<40?['fa-arrow-trend-up','warn',`Conversão em <strong>${Math.round(conv)}%</strong> — priorize ativar quem está em teste antes do prazo acabar.`]:['fa-circle-check','pos',`Conversão saudável em <strong>${Math.round(conv)}%</strong> — mantenha o acompanhamento dos testes.`]);
-    const sugItems=sug.map(([ic,st,t])=>`<li class="ad-sug-i" data-st="${st}"><span class="ad-sug-ic"><i class="fa-solid ${ic}"></i></span><span>${t}</span></li>`).join('');
     panel=`
       <div class="ind-grid">
-        ${plCard('fa-users','neu', all.length, 'Cadastros', trials+' em teste', 'cadastros')}
-        ${plCard('fa-crown','warn', clientes.length, 'Pagantes', Math.round(conv)+'% conversão', 'pagantes')}
+        ${plCard('fa-users','neu', all.length, 'Cadastros', trials+' em teste', 'cadastros', all.length===1?'usuário':'usuários')}
+        ${plCard('fa-crown','warn', clientes.length, 'Pagantes', Math.round(conv)+'% conversão', 'pagantes', clientes.length===1?'assinante':'assinantes')}
         ${adCard('mrr','pos', brl0(mrr), 'Recorrente/mês')}
-        ${plCard('fa-user-plus','neu', leads.length, 'Leads', 'no gratuito', 'leads')}
+        ${plCard('fa-user-plus','neu', leads.length, 'Leads', 'no gratuito', 'leads', leads.length===1?'prospect':'prospects')}
       </div>
       <div class="card card-pad" style="margin-top:16px">
         <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Crescimento</div><span class="chip ilus"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
@@ -5484,17 +5541,22 @@ function viewAdmin(){
       <div class="ad-grid2" style="margin-top:16px">
         <div class="card card-pad">
           <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Distribuição por plano</div></div>
-          ${[['Investidor Pro','pro',proN],['Premium','premium',premN],['Gratuito','free',leads.length]].map(([l,p,n])=>{ const pc=all.length?Math.round(n/all.length*100):0; return `<div class="ad-bar-row"><span class="ad-bar-l">${planBadge(p)} ${l}</span><div class="ad-bar"><i class="ad-bar-f ad-${p}" style="width:${pc}%"></i></div><b>${n}</b></div>`; }).join('')}
+          ${[['Investidor Pro','pro',proN],['Premium','premium',premN],['Gratuito','free',leads.length]].map(([l,p,n])=>{ const pc=all.length?Math.round(n/all.length*100):0; return `<div class="ad-bar-row"><span class="ad-bar-l">${planBadge(p)} ${l}</span><div class="ad-bar"><i class="ad-bar-f ad-${p}" style="width:${pc}%"></i></div><b class="ad-bar-v">${pc}%<small>${n}</small></b></div>`; }).join('')}
         </div>
         <div class="card card-pad">
           <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-location-dot"></i></span> Top estados</div></div>
-          ${(()=>{ const top=ufTop.slice(0,6); const mx=top[0]?top[0][1]:1; return top.map(([uf,n])=>`<div class="ad-bar-row"><span class="ad-bar-l">${uf}</span><div class="ad-bar"><i class="ad-bar-f ad-premium" style="width:${Math.round(n/mx*100)}%"></i></div><b>${n}</b></div>`).join(''); })()}
+          ${(()=>{ const top=ufTop.slice(0,6); const mx=top[0]?top[0][1]:1; return top.map(([uf,n])=>{ const pc=all.length?Math.round(n/all.length*100):0; return `<div class="ad-bar-row"><span class="ad-bar-l">${uf}</span><div class="ad-bar"><i class="ad-bar-f ad-premium" style="width:${Math.round(n/mx*100)}%"></i></div><b class="ad-bar-v">${pc}%<small>${n}</small></b></div>`; }).join(''); })()}
         </div>
-      </div>
-      <div class="card card-pad" style="margin-top:16px">
-        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Sugestões</div></div>
-        <ul class="ad-sug">${sugItems}</ul>
       </div>`;
+  } else if(adminTab==='acoes'){
+    const sug=adminSuggestions(all);
+    panel = sug.length ? sug.map((s,i)=>`
+      <div class="ad-action" data-st="${s.st}">
+        <div class="ad-action-h"><span class="ad-action-ic"><i class="fa-solid ${s.ic}"></i></span><div><div class="ad-action-t">${s.title}</div><div class="ad-action-d">${s.detail}</div></div></div>
+        <div class="ad-action-plan"><div class="ad-plan-lbl"><i class="fa-solid fa-list-check"></i> Plano de ação sugerido</div><ol>${s.plan.map(p=>`<li>${p}</li>`).join('')}</ol></div>
+        <div class="ad-action-foot"><span class="ad-action-meta"><i class="fa-solid fa-gauge-high"></i> Impacto ${s.impact}</span><div class="ad-action-btns"><button class="btn btn-ghost btn-sm" onclick="dismissAction(this)">Dispensar</button><button class="btn btn-primary btn-sm" onclick="approveAction(this,'${esc(s.cta)}')"><i class="fa-solid fa-check"></i> Aprovar execução</button></div></div>
+      </div>`).join('')
+      : `<div class="card card-pad">${emptyState('fa-circle-check','Nada pendente','Sem ações recomendadas no momento — a base está saudável.','')}</div>`;
   } else if(adminTab==='clientes'){
     panel=`<div class="card card-pad ad-tablewrap">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-user-tie"></i></span> Clientes pagantes</div><span class="card-sub">${clientes.length} ativos</span></div>
@@ -5532,7 +5594,7 @@ function viewAdmin(){
 
   return `<div class="ad-page">
     <div class="ad-banner"><i class="fa-solid fa-shield-halved"></i> <div>Área restrita ao administrador. Exibindo <strong>sua conta real</strong> + dados de demonstração — a base completa de todos os clientes é conectada ao backend administrativo (acesso com credencial de serviço).</div></div>
-    <div class="ad-tabs">${tab('overview','fa-gauge-high','Visão geral')}${tab('clientes','fa-user-tie','Clientes')}${tab('leads','fa-user-plus','Leads')}${tab('financeiro','fa-money-bill-trend-up','Financeiro')}</div>
+    <div class="ad-tabs">${tab('overview','fa-gauge-high','Visão geral')}${tab('clientes','fa-user-tie','Clientes')}${tab('leads','fa-user-plus','Leads')}${tab('financeiro','fa-money-bill-trend-up','Financeiro')}${tab('acoes','fa-wand-magic-sparkles','Ações')}</div>
     ${panel}
   </div>`;
 }
@@ -5543,12 +5605,12 @@ function initAdminCharts(){
   if(typeof HAS_CHART!=='undefined' && !HAS_CHART) return;
   if(typeof Chart==='undefined') return;
   const all=adminAll(); const mrr=all.reduce((s,x)=>s+(x.mrr||0),0); const N=8, labels=adminMonths(N);
-  const br=cssVar('--brand'), up=cssVar('--up');
+  const cadColor=cssVar('--accent')||'#3B6FD4', recColor=cssVar('--gold')||'#B8860B', up=cssVar('--up');
   const g=document.getElementById('adminGrowth');
   if(g){ if(charts.adminGrowth) charts.adminGrowth.destroy();
     charts.adminGrowth=new Chart(g,{ type:'line', data:{ labels, datasets:[
-      { label:'Cadastros', data:adminRamp(all.length,N), borderColor:br, backgroundColor:br+'1a', fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5, yAxisID:'y' },
-      { label:'Receita Mensal', data:adminRamp(mrr,N), borderColor:up, backgroundColor:'transparent', fill:false, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2, yAxisID:'y1' } ] },
+      { label:'Cadastros', data:adminRamp(all.length,N), borderColor:cadColor, backgroundColor:cadColor+'1f', fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5, yAxisID:'y' },
+      { label:'Receita Mensal', data:adminRamp(mrr,N), borderColor:recColor, backgroundColor:'transparent', fill:false, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5, yAxisID:'y1' } ] },
       options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
         plugins:{ legend:{display:true,position:'top',align:'end',labels:{color:cssVar('--ink-2'),font:{size:11},usePointStyle:true,pointStyleWidth:9,boxHeight:7}}, tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.dataset.yAxisID==='y1'?brl0(c.parsed.y):c.parsed.y)}} },
         scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
@@ -9137,7 +9199,7 @@ function viewAssetDetail(tk){
     </div>
   </div>
 
-  <div class="atabs" id="assetTabs">${assetTabsHTML(k)}</div>
+  <div class="atabs" id="assetTabs"><div class="atabs-inner">${assetTabsHTML(k)}</div></div>
   <div id="assetBody">${assetTabContent(tk,a,k,f)}</div>
   `;
 }
