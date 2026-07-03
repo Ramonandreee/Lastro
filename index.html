@@ -2568,6 +2568,9 @@ body.report-open { overflow:hidden; }
 .ind-ic:hover { color:var(--gold); background:var(--gold-l); }
 /* número principal SEMPRE preto/tinta; cor só nos elementos auxiliares (barra, ícone, selo) */
 .ind-v { font-family:var(--mono); font-size:23px; font-weight:600; letter-spacing:-.015em; line-height:1.05; color:var(--ink) !important; }
+/* cards de métrica (Indique / painel admin): valor mais fino/premium + complemento */
+.ind-metric .ind-v { font-size:18px; font-weight:600; letter-spacing:-.01em; }
+.ind-metric .ind-tag { margin-top:6px; }
 .ind-tappable { cursor:pointer; }
 .ind-tappable:active { transform:scale(.985); }
 .ind-tag { display:inline-block; margin-top:7px; font-size:10.5px; font-weight:600; letter-spacing:.02em; padding:2px 8px; border-radius:20px; background:color-mix(in srgb,var(--st,var(--ink-4)) 13%,transparent); color:var(--st,var(--ink-2)); }
@@ -2668,7 +2671,7 @@ body.report-open { overflow:hidden; }
 }
 
 /* ════ PÁGINA DO ATIVO — abas e componentes ════ */
-.atabs { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:10px 2px 12px; margin-bottom:4px; position:sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); box-shadow:0 1px 0 var(--line); }
+.atabs { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:10px 2px 12px; margin-bottom:4px; position:sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); box-shadow:0 1px 0 var(--line); will-change:transform; -webkit-backface-visibility:hidden; backface-visibility:hidden; }
 .atabs::-webkit-scrollbar { display:none; }
 .atab { flex:none; display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:500; cursor:pointer; white-space:nowrap; transition:all .16s var(--ease-out); }
 .atab i { font-size:12px; opacity:.7; }
@@ -3923,7 +3926,7 @@ function goPricing(){
   currentView='planos';
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   $('#pageTitle').textContent = PAGES.planos.t; $('#pageSub').textContent = PAGES.planos.s;
-  render('planos'); animateContent(); $('#content').scrollTop=0; closeSidebar();
+  render('planos'); animateContent(); scrollToTop(); closeSidebar();
 }
 /* card de bloqueio (soft paywall) reutilizável */
 function paywall(title, sub){
@@ -4416,6 +4419,8 @@ window.addEventListener('scroll', hideTip, {passive:true});
 window.addEventListener('resize', hideTip);
 
 let navStack = [];
+/* garante que toda troca/volta de página comece do topo (o scroller é a janela) */
+function scrollToTop(){ const c=$('#content'); if(c) c.scrollTop=0; try{ window.scrollTo({top:0,behavior:'instant'}); }catch(e){ window.scrollTo(0,0); } }
 function nav(v, el, noHist){
   if(v==='admin' && !isOwner()) v='painel';
   if(!noHist && currentView && currentView!==v) navStack.push(currentView);
@@ -4427,8 +4432,7 @@ function nav(v, el, noHist){
   $('#pageSub').textContent = PAGES[v].s;
   render(v);
   animateContent();
-  $('#content').scrollTop = 0;
-  window.scrollTo({top:0, behavior:'instant'});
+  scrollToTop();
   closeSidebar();
 }
 /* menu lateral (mobile) */
@@ -5304,7 +5308,7 @@ function refStats(){
     ganhos:list.reduce((s,x)=>s+x.acc,0), mensal:ativos.reduce((s,x)=>s+x.com,0), prox:d.toLocaleDateString('pt-BR') };
 }
 /* card de indicação no modelo dos indicadores (toque abre a definição) */
-function refCard(term,st,val){ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span></div><div class="ind-v">${val}</div></div>`; }
+function refCard(term,st,val,comp){ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable ind-metric" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span></div><div class="ind-v">${val}</div>${comp?`<span class="ind-tag">${comp}</span>`:''}</div>`; }
 function viewIndicar(){
   const hero = `<div class="indique-hero">
     <div class="ih-ic"><i class="fa-solid fa-gift"></i></div>
@@ -5325,10 +5329,10 @@ function viewIndicar(){
   return `<div class="ind-page">
   ${hero}
   <div class="ind-grid">
-    ${refCard('refGanhos','pos', `<span class="priv-blur">${stG}</span>`)}
-    ${refCard('refAtivos','pos', stA)}
-    ${refCard('refPend','warn', stP)}
-    ${refCard('refProx','neu', stX)}
+    ${refCard('refGanhos','pos', `<span class="priv-blur">${stG}</span>`, 'acumulado')}
+    ${refCard('refAtivos','pos', stA, `indicado${stA===1?'':'s'} ativo${stA===1?'':'s'}`)}
+    ${refCard('refPend','warn', stP, 'aguardando assinar')}
+    ${refCard('refProx','neu', stX, 'via PIX')}
   </div>
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-people-group"></i></span> Como funciona</div></div>
@@ -5422,7 +5426,7 @@ function viewIndicar(){
    VIEW: PAINEL ADMINISTRATIVO (somente dono)
    ══════════════════════════════════════════════════════════ */
 let adminTab='overview';
-function adminGoto(t){ adminTab=t; render('admin'); animateContent(); $('#content').scrollTop=0; }
+function adminGoto(t){ adminTab=t; render('admin'); animateContent(); scrollToTop(); }
 const ADMIN_DEMO=[
   { name:'Marina Alves',      email:'marina.alves@gmail.com',   phone:'(11) 98812-4471', uf:'SP', city:'São Paulo',      plan:'pro',     trial:false, mrr:49, since:'2026-01-08', risk:'Arrojado',    goal:'Crescimento do patrimônio' },
   { name:'Rafael Souza',      email:'rafael.souza@outlook.com', phone:'(21) 99145-2093', uf:'RJ', city:'Niterói',        plan:'premium', trial:false, mrr:29, since:'2026-02-14', risk:'Moderado',    goal:'Renda passiva / dividendos' },
@@ -5452,8 +5456,8 @@ function viewAdmin(){
   const planBadge=p=>p==='pro'?'<span class="ad-badge ad-pro">Pro</span>':p==='premium'?'<span class="ad-badge ad-prem">Premium</span>':'<span class="ad-badge ad-free">Gratuito</span>';
   const tab=(k,ic,l)=>`<button class="ad-tab ${adminTab===k?'on':''}" onclick="adminGoto('${k}')"><i class="fa-solid ${ic}"></i> ${l}</button>`;
   /* cards no modelo dos indicadores (toque abre a definição) */
-  const adCard=(term,st,val,tag)=>{ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span><span class="ind-ics"><button class="ind-ic" onclick="event.stopPropagation();openAdminHist('${term}')" aria-label="Evolução"><i class="fa-solid fa-chart-column"></i></button></span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`; };
-  const plCard=(ic,st,val,lbl,tag,term)=>`<div class="ind-card${term?' ind-tappable':''}" data-st="${st}"${term?` data-term="${term}"`:''}><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${ic}"></i></span><span class="ind-l">${lbl}</span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`;
+  const adCard=(term,st,val,tag)=>{ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable ind-metric" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span><span class="ind-ics"><button class="ind-ic" onclick="event.stopPropagation();openAdminHist('${term}')" aria-label="Evolução"><i class="fa-solid fa-chart-column"></i></button></span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`; };
+  const plCard=(ic,st,val,lbl,tag,term)=>`<div class="ind-card ind-metric${term?' ind-tappable':''}" data-st="${st}"${term?` data-term="${term}"`:''}><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${ic}"></i></span><span class="ind-l">${lbl}</span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`;
 
   let panel='';
   if(adminTab==='overview'){
@@ -9154,7 +9158,7 @@ function backFromAsset(){
   const v=prevView||'painel'; currentView=v;
   $('#pageTitle').textContent=PAGES[v].t; $('#pageSub').textContent=PAGES[v].s;
   document.querySelectorAll('.nav-item').forEach(n=> n.classList.toggle('active', (n.getAttribute('onclick')||'').includes(`'${v}'`)));
-  render(v); animateContent(); $('#content').scrollTop=0;
+  render(v); animateContent(); scrollToTop();
 }
 function closeAsset(){ if(currentView==='asset') backFromAsset(); }
 function quickView(tk){ openAsset(tk); }
