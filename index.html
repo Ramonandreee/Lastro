@@ -352,6 +352,9 @@ a { color: inherit; text-decoration: none; }
   position: sticky;
   top: 0;
   z-index: 40;
+  /* isola a camada do blur para não reprocessar/tremer a barra de abas sticky abaixo */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 .topbar-left { display: flex; align-items: center; gap: 18px; min-width: 0; }
 .page-title { font-size: 19px; font-weight: 600; letter-spacing: -.015em; }
@@ -2113,23 +2116,49 @@ html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
 .ad-sug-ic { width:30px; height:30px; flex:none; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:12.5px; background:color-mix(in srgb,var(--st,var(--ink-4)) 14%,transparent); color:var(--st,var(--ink-3)); }
 .ad-sug-i[data-st="pos"]{ --st:var(--up); } .ad-sug-i[data-st="warn"]{ --st:var(--gold); } .ad-sug-i[data-st="neu"]{ --st:var(--accent); }
 .ad-sug-i strong { color:var(--ink); font-weight:700; }
-/* Ações — sugestão + plano de ação para aprovação */
-.ad-action { border:1px solid var(--line); border-left:3px solid var(--st,var(--accent)); border-radius:var(--r); background:var(--surface); padding:16px 18px; margin-bottom:14px; transition:box-shadow .2s var(--ease); }
+/* Ações — sugestão + plano de ação colapsável, aprovar/arquivar */
+.ad-actions-head { display:flex; gap:9px; align-items:flex-start; font-size:12.5px; color:var(--ink-3); line-height:1.5; margin-bottom:14px; padding:0 2px; }
+.ad-actions-head i { color:var(--brand); margin-top:2px; }
+.ad-actions-head strong { color:var(--ink-2); }
+.ad-action { border:1px solid var(--line); border-left:3px solid var(--st,var(--accent)); border-radius:var(--r); background:var(--surface); margin-bottom:12px; overflow:hidden; transition:box-shadow .2s var(--ease), border-color .2s var(--ease); }
 .ad-action[data-st="pos"]{ --st:var(--up); } .ad-action[data-st="warn"]{ --st:var(--gold); } .ad-action[data-st="neu"]{ --st:var(--accent); }
-.ad-action.ad-approved { opacity:.72; }
-.ad-action-h { display:flex; gap:12px; align-items:flex-start; }
+.ad-action:hover { box-shadow:var(--sh-sm); }
+.ad-action.ad-approved { background:linear-gradient(180deg, color-mix(in srgb,var(--up) 5%,transparent), transparent 40%); }
+.ad-action-h { display:flex; gap:12px; align-items:center; width:100%; padding:15px 16px; background:none; border:none; cursor:pointer; text-align:left; }
 .ad-action-ic { width:38px; height:38px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px; background:color-mix(in srgb,var(--st) 14%,transparent); color:var(--st); }
-.ad-action-t { font-size:15px; font-weight:700; letter-spacing:-.01em; line-height:1.3; }
-.ad-action-d { font-size:12.5px; color:var(--ink-2); line-height:1.5; margin-top:3px; }
-.ad-action-plan { margin:14px 0 4px; padding:12px 14px; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-sm); }
+.ad-action-tx { flex:1; min-width:0; }
+.ad-action-t { display:block; font-size:14.5px; font-weight:700; letter-spacing:-.01em; line-height:1.3; color:var(--ink); }
+.ad-action-d { display:block; font-size:12.5px; color:var(--ink-3); line-height:1.45; margin-top:3px; }
+.ad-chev { flex:none; color:var(--ink-3); font-size:12px; transition:transform .25s var(--ease); }
+.ad-action.open .ad-chev, .ad-archive.open .ad-chev { transform:rotate(180deg); }
+.ad-action-body { max-height:0; overflow:hidden; transition:max-height .28s var(--ease); }
+.ad-action.open .ad-action-body { max-height:640px; }
+.ad-action-plan { margin:0 16px; padding:12px 14px; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-sm); }
 .ad-plan-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); display:flex; align-items:center; gap:7px; margin-bottom:8px; }
 .ad-plan-lbl i { color:var(--st,var(--accent)); }
 .ad-action-plan ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
 .ad-action-plan li { font-size:13px; color:var(--ink-2); line-height:1.5; }
-.ad-action-foot { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-top:14px; }
-.ad-action-meta { font-size:11.5px; font-weight:600; color:var(--ink-3); display:inline-flex; align-items:center; gap:6px; }
-.ad-action-btns { display:flex; gap:8px; }
+.ad-badge2 { display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700; color:var(--up); background:var(--up-l); padding:2px 8px; border-radius:999px; vertical-align:middle; margin-left:4px; }
+.ad-action-foot { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:14px 16px; }
 .ad-approved-tag { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; color:var(--up); }
+/* pasta de arquivadas */
+.ad-archive { border:1px solid var(--line); border-radius:var(--r); background:var(--surface); overflow:hidden; margin-top:18px; }
+.ad-archive-h { display:flex; align-items:center; gap:10px; width:100%; padding:14px 16px; background:none; border:none; cursor:pointer; text-align:left; font-size:13.5px; font-weight:700; color:var(--ink); }
+.ad-arch-ic { width:32px; height:32px; flex:none; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:13px; background:var(--surface-3); color:var(--ink-3); }
+.ad-arch-count { min-width:20px; height:20px; padding:0 6px; border-radius:999px; background:var(--surface-3); color:var(--ink-2); font-size:11px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+.ad-archive-h .ad-chev { margin-left:auto; }
+.ad-archive-body { max-height:0; overflow:hidden; transition:max-height .3s var(--ease); }
+.ad-archive.open .ad-archive-body { max-height:2000px; }
+.ad-arch-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-top:1px solid var(--line); }
+.ad-arch-ic2 { width:32px; height:32px; flex:none; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:13px; background:color-mix(in srgb,var(--st,var(--ink-4)) 13%,transparent); color:var(--st,var(--ink-3)); }
+.ad-arch-ic2[data-st="pos"]{ --st:var(--up); } .ad-arch-ic2[data-st="warn"]{ --st:var(--gold); } .ad-arch-ic2[data-st="neu"]{ --st:var(--accent); }
+.ad-arch-tx { flex:1; min-width:0; }
+.ad-arch-t { font-size:13px; font-weight:600; color:var(--ink); line-height:1.3; }
+.ad-arch-d { font-size:11.5px; color:var(--ink-3); line-height:1.4; margin-top:2px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; }
+.ad-arch-btns { display:flex; gap:6px; flex:none; }
+.ad-arch-btns .ad-del { color:var(--down); }
+.ad-arch-btns .ad-del:hover { border-color:var(--down); }
+.ad-arch-empty { padding:14px 16px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-3); }
 .ad-tab { flex:none; display:inline-flex; align-items:center; gap:7px; padding:9px 15px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
 .ad-tab:hover { border-color:var(--line-2); color:var(--ink); }
 .ad-tab.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
@@ -5474,40 +5503,46 @@ function adminSuggestions(all){
   const trials=all.filter(x=>x.trial).length, freeNoTrial=all.filter(x=>x.plan==='free'&&!x.trial).length, premN=all.filter(x=>x.plan==='premium').length;
   const ufM={}; all.forEach(x=>{ if(x.uf&&x.uf!=='—') ufM[x.uf]=(ufM[x.uf]||0)+1; }); const ufTop=Object.entries(ufM).sort((a,b)=>b[1]-a[1]);
   const out=[];
-  if(trials>0) out.push({ ic:'fa-clock', st:'warn', impact:'alto',
+  if(trials>0) out.push({ id:'trials', ic:'fa-clock', st:'warn', impact:'alto',
     title:`Converter ${trials} teste${trials>1?'s':''} Premium em pagante${trials>1?'s':''}`,
     detail:`${trials} conta${trials>1?'s estão':' está'} no teste de 7 dias e pode${trials>1?'m':''} expirar sem assinar.`,
     plan:['Disparar lembrete por e-mail e WhatsApp 48h antes de expirar','Oferecer 20% de desconto na 1ª mensalidade','Destacar os recursos Premium mais usados pelo perfil','Reabordar quem não converter em 3 dias'],
     cta:'Disparo de reativação de testes' });
-  if(freeNoTrial>0) out.push({ ic:'fa-gift', st:'pos', impact:'médio',
+  if(freeNoTrial>0) out.push({ id:'leads', ic:'fa-gift', st:'pos', impact:'médio',
     title:`Ativar ${freeNoTrial} lead${freeNoTrial>1?'s':''} do plano gratuito`,
     detail:`${freeNoTrial} cadastro${freeNoTrial>1?'s seguem':' segue'} no gratuito sem nunca ter testado o Premium.`,
     plan:['Enviar convite do teste de 7 dias grátis (sem cartão)','Mostrar 1 insight personalizado da carteira/perfil','Criar urgência com o prazo do teste','Acompanhar abertura e reenviar aos não-abertos'],
     cta:'Campanha de ativação de leads' });
-  if(premN>0) out.push({ ic:'fa-crown', st:'warn', impact:'alto',
+  if(premN>0) out.push({ id:'upsell', ic:'fa-crown', st:'warn', impact:'alto',
     title:`Upsell de ${premN} Premium para Investidor Pro`,
     detail:'Assinantes Premium podem subir para o Pro, elevando o ticket médio e dobrando a comissão de indicação.',
     plan:['Segmentar Premium com patrimônio acima de R$ 50 mil','Oferecer 1 mês de Pro grátis para experimentar','Destacar Raio-X, Backtest e Consultor IA','Medir adesão em 14 dias'],
     cta:'Campanha de upsell Premium → Pro' });
-  if(ufTop[0]) out.push({ ic:'fa-location-dot', st:'neu', impact:'médio',
+  if(ufTop[0]) out.push({ id:'regional', ic:'fa-location-dot', st:'neu', impact:'médio',
     title:'Expandir presença regional',
     detail:`Maior concentração em ${ufTop[0][0]} (${ufTop[0][1]} cadastros); praças com menos presença têm espaço para crescer.`,
     plan:[`Rodar anúncios geolocalizados fora de ${ufTop[0][0]}`,'Parcerias com criadores de conteúdo regionais','Landing com prova social por estado','Acompanhar o CAC por região'],
     cta:'Plano de expansão regional' });
-  out.push(conv<40 ? { ic:'fa-arrow-trend-up', st:'warn', impact:'alto',
+  out.push(conv<40 ? { id:'conversion', ic:'fa-arrow-trend-up', st:'warn', impact:'alto',
     title:`Elevar a conversão (hoje em ${Math.round(conv)}%)`,
     detail:'A taxa de cadastro → pagante está abaixo do ideal; priorize ativar quem já demonstrou interesse.',
     plan:['Encurtar o caminho até o primeiro "momento aha"','Onboarding guiado destacando recursos Premium','Reduzir fricção no checkout (PIX em 1 toque)','Testar oferta de entrada por 7 dias'],
     cta:'Plano de aumento de conversão' }
-  : { ic:'fa-circle-check', st:'pos', impact:'baixo',
+  : { id:'conversion', ic:'fa-circle-check', st:'pos', impact:'baixo',
     title:`Manter a conversão saudável (${Math.round(conv)}%)`,
     detail:'A conversão está boa; foque em manter o acompanhamento dos testes e a retenção.',
     plan:['Monitorar o churn mensal','Pesquisa rápida de satisfação (NPS)','Manter o programa de indicações ativo'],
     cta:'Plano de retenção' });
   return out;
 }
-function approveAction(btn,label){ const card=btn.closest('.ad-action'); if(card){ card.classList.add('ad-approved'); const f=card.querySelector('.ad-action-btns'); if(f) f.innerHTML='<span class="ad-approved-tag"><i class="fa-solid fa-circle-check"></i> Execução aprovada</span>'; } toast('Aprovado: '+label+' — execução agendada ✓'); }
-function dismissAction(btn){ const card=btn.closest('.ad-action'); if(card){ card.style.transition='opacity .2s var(--ease), transform .2s var(--ease)'; card.style.opacity='0'; card.style.transform='scale(.98)'; setTimeout(()=>card.remove(),200); } }
+/* estado das ações (aprovar/arquivar/excluir) — persistido no perfil/nuvem */
+function adminActionState(){ const p=getProfile(); return (p.adminActions&&typeof p.adminActions==='object')?p.adminActions:{}; }
+function _setAdminAction(id, patch){ const p=getProfile(); const m=Object.assign({}, p.adminActions||{}); m[id]=Object.assign({}, m[id]||{}, patch); p.adminActions=m; saveProfile(p); if(typeof flushCloudState==='function') flushCloudState(); render('admin'); }
+function approveActionId(id,label){ _setAdminAction(id,{approved:true}); toast('Aprovado: '+label+' — execução agendada ✓'); }
+function archiveAction(id){ _setAdminAction(id,{state:'archived'}); toast('Ação arquivada'); }
+function restoreAction(id){ _setAdminAction(id,{state:'active'}); toast('Ação restaurada'); }
+function deleteAction(id){ _setAdminAction(id,{state:'deleted'}); toast('Ação excluída'); }
+function toggleAction(btn){ const c=btn.closest('.ad-action, .ad-archive'); if(c) c.classList.toggle('open'); }
 function viewAdmin(){
   const all=adminAll();
   const clientes=all.filter(x=>x.plan==='pro'||x.plan==='premium');
@@ -5549,14 +5584,35 @@ function viewAdmin(){
         </div>
       </div>`;
   } else if(adminTab==='acoes'){
-    const sug=adminSuggestions(all);
-    panel = sug.length ? sug.map((s,i)=>`
-      <div class="ad-action" data-st="${s.st}">
-        <div class="ad-action-h"><span class="ad-action-ic"><i class="fa-solid ${s.ic}"></i></span><div><div class="ad-action-t">${s.title}</div><div class="ad-action-d">${s.detail}</div></div></div>
-        <div class="ad-action-plan"><div class="ad-plan-lbl"><i class="fa-solid fa-list-check"></i> Plano de ação sugerido</div><ol>${s.plan.map(p=>`<li>${p}</li>`).join('')}</ol></div>
-        <div class="ad-action-foot"><span class="ad-action-meta"><i class="fa-solid fa-gauge-high"></i> Impacto ${s.impact}</span><div class="ad-action-btns"><button class="btn btn-ghost btn-sm" onclick="dismissAction(this)">Dispensar</button><button class="btn btn-primary btn-sm" onclick="approveAction(this,'${esc(s.cta)}')"><i class="fa-solid fa-check"></i> Aprovar execução</button></div></div>
-      </div>`).join('')
-      : `<div class="card card-pad">${emptyState('fa-circle-check','Nada pendente','Sem ações recomendadas no momento — a base está saudável.','')}</div>`;
+    const sug=adminSuggestions(all), stt=adminActionState();
+    const stOf=id=>stt[id]||{};
+    const active=sug.filter(s=>((stOf(s.id).state)||'active')==='active');
+    const archived=sug.filter(s=>stOf(s.id).state==='archived');
+    const actionCard=s=>{ const ap=!!stOf(s.id).approved; return `
+      <div class="ad-action${ap?' ad-approved':''}" data-st="${s.st}">
+        <button class="ad-action-h" onclick="toggleAction(this)" aria-expanded="false">
+          <span class="ad-action-ic"><i class="fa-solid ${s.ic}"></i></span>
+          <span class="ad-action-tx"><span class="ad-action-t">${s.title}${ap?' <span class="ad-badge2"><i class="fa-solid fa-circle-check"></i> Aprovada</span>':''}</span><span class="ad-action-d">${s.detail}</span></span>
+          <i class="fa-solid fa-chevron-down ad-chev"></i>
+        </button>
+        <div class="ad-action-body">
+          <div class="ad-action-plan"><div class="ad-plan-lbl"><i class="fa-solid fa-list-check"></i> Plano de ação · impacto ${s.impact}</div><ol>${s.plan.map(p=>`<li>${p}</li>`).join('')}</ol></div>
+          <div class="ad-action-foot">
+            <button class="btn btn-ghost btn-sm" onclick="archiveAction('${s.id}')"><i class="fa-solid fa-box-archive"></i> Arquivar</button>
+            ${ap?'<span class="ad-approved-tag"><i class="fa-solid fa-circle-check"></i> Execução aprovada</span>':`<button class="btn btn-primary btn-sm" onclick="approveActionId('${s.id}','${esc(s.cta)}')"><i class="fa-solid fa-check"></i> Aprovar execução</button>`}
+          </div>
+        </div>
+      </div>`; };
+    const activeHTML = active.length ? active.map(actionCard).join('')
+      : `<div class="card card-pad">${emptyState('fa-circle-check','Tudo em dia','Nenhuma ação pendente no momento — a base está saudável.','')}</div>`;
+    const archiveHTML = `
+      <div class="ad-archive${archived.length?'':' is-empty'}">
+        <button class="ad-archive-h" onclick="toggleAction(this)"><span class="ad-arch-ic"><i class="fa-solid fa-box-archive"></i></span> Arquivadas <span class="ad-arch-count">${archived.length}</span><i class="fa-solid fa-chevron-down ad-chev"></i></button>
+        <div class="ad-archive-body">
+          ${archived.length? archived.map(s=>`<div class="ad-arch-item"><span class="ad-arch-ic2" data-st="${s.st}"><i class="fa-solid ${s.ic}"></i></span><div class="ad-arch-tx"><div class="ad-arch-t">${s.title}</div><div class="ad-arch-d">${s.detail}</div></div><div class="ad-arch-btns"><button class="btn btn-ghost btn-sm" onclick="restoreAction('${s.id}')"><i class="fa-solid fa-rotate-left"></i> Restaurar</button><button class="btn btn-ghost btn-sm ad-del" onclick="deleteAction('${s.id}')"><i class="fa-solid fa-trash-can"></i></button></div></div>`).join('') : '<div class="ad-arch-empty">Nada arquivado ainda. As ações que você arquivar aparecem aqui.</div>'}
+        </div>
+      </div>`;
+    panel = `<div class="ad-actions-head"><i class="fa-solid fa-wand-magic-sparkles"></i> Recomendações geradas a partir dos seus dados. Expanda para ver o plano e <strong>aprovar a execução</strong>.</div>${activeHTML}${archiveHTML}`;
   } else if(adminTab==='clientes'){
     panel=`<div class="card card-pad ad-tablewrap">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-user-tie"></i></span> Clientes pagantes</div><span class="card-sub">${clientes.length} ativos</span></div>
