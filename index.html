@@ -705,7 +705,7 @@ img, svg, canvas, video { max-width: 100%; }
   table.tbl .td-asset .tk { font-size: 14px; }
   table.tbl .td-asset .ds { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .market-status, .data-status { display:none; }
-  .atabs, .ad-tabs { top:calc(64px + env(safe-area-inset-top,0px)); }
+  .atabs, .ad-tabs, .stabs, .rec-filters { top:calc(64px + env(safe-area-inset-top,0px)); }
   /* badge "Com Score Lastro" é redundante no mobile (já há o bloco Score Lastro acima) */
   .card-head .chip { display:none; }
   .card-pad { padding: 16px 16px; }
@@ -823,7 +823,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item premium-item" data-view="barganhas" onclick="nav('barganhas',this)"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Radar de Barganhas</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
       <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-layer-group"></i><span>Carteiras Recomendadas</span></div>
-      <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-snowflake"></i><span>Simulador</span></div>
+      <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-calculator"></i><span>Simuladores</span></div>
     </nav>
     </div>
 
@@ -2261,8 +2261,9 @@ body.priv .priv-blur::after { content:"••••••"; position:absolute; i
 .priv-eye:hover { color:var(--ink); border-color:var(--line-2); }
 .cart-sum-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
 /* carteiras recomendadas */
-.rec-filters { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:6px; margin-bottom:16px; }
-.rec-filters::-webkit-scrollbar { display:none; }
+.rec-filters { margin-bottom:16px; position:sticky; position:-webkit-sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); padding:10px 0 12px; box-shadow:0 1px 0 var(--line); }
+.rec-filters-inner { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
+.rec-filters-inner::-webkit-scrollbar { display:none; height:0; }
 .rec-chip { flex:none; padding:8px 15px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .15s var(--ease); }
 .rec-chip:hover { border-color:var(--line-2); color:var(--ink); }
 .rec-chip.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
@@ -2733,6 +2734,10 @@ body.report-open { overflow:hidden; }
 .atab:hover { border-color:var(--line-2); color:var(--ink); }
 .atab.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); box-shadow:var(--sh-sm); }
 .atab.on i { opacity:1; }
+/* barra de abas genérica (sticky) — reutiliza o botão .atab */
+.stabs { padding:2px 2px 12px; margin-bottom:4px; position:sticky; position:-webkit-sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); box-shadow:0 1px 0 var(--line); }
+.stabs-inner { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
+.stabs-inner::-webkit-scrollbar { display:none; height:0; }
 #assetBody { animation:viewIn .3s var(--ease-out); }
 .prov-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
 .prov-tbl td, .prov-tbl th { padding-top:12px; padding-bottom:12px; }
@@ -2775,7 +2780,7 @@ body.report-open { overflow:hidden; }
 .ckl-q { font-size:13.5px; font-weight:600; color:var(--ink); line-height:1.3; }
 .ckl-d { font-size:12px; color:var(--ink-3); margin-top:3px; font-family:var(--mono); }
 @media (max-width:640px){
-  .atabs, .ad-tabs { top:calc(64px + env(safe-area-inset-top,0px)); }
+  .atabs, .ad-tabs, .stabs, .rec-filters { top:calc(64px + env(safe-area-inset-top,0px)); }
   .prov-stats { grid-template-columns:1fr; }
   .donut-wrap { height:200px; }
   .ckl-list { grid-template-columns:1fr; }
@@ -3497,7 +3502,7 @@ const PAGES = {
   recdetail:    { t:'Carteira recomendada',  s:'Composição, desempenho e estratégia' },
   assinatura:   { t:'Gerenciar assinatura',  s:'Plano, pagamentos e cobranças' },
   noticias:     { t:'Notícias',              s:'Fatos relevantes e mercado em tempo real' },
-  simulador:    { t:'Simulador de Renda',    s:'Projete quanto precisa para viver de dividendos' },
+  simulador:    { t:'Simuladores',           s:'Renda passiva, juros compostos e meta de aposentadoria' },
   score:        { t:'Score Lastro',          s:'Ranking proprietário de qualidade dos ativos' },
   backtest:     { t:'Backtest da Carteira',  s:'Simulação histórica da sua carteira vs CDI e IBOV' },
   raiox:        { t:'Raio-X da Carteira',     s:'Diversificação, concentração e Nota Lastro da sua carteira' },
@@ -5701,7 +5706,15 @@ function openAdminHist(term){
 /* ══════════════════════════════════════════════════════════
    VIEW: SIMULADOR (signature)
    ══════════════════════════════════════════════════════════ */
+let simTab='renda';
+function setSimTab(t){ simTab=t; render('simulador'); animateContent(); }
 function viewSimulador(){
+  const tabs=[['renda','Viver de renda','fa-hand-holding-dollar'],['juros','Juros compostos','fa-chart-line'],['meta','Aposentadoria','fa-piggy-bank']];
+  const bar=`<div class="stabs"><div class="stabs-inner">${tabs.map(([k,l,ic])=>`<button class="atab ${simTab===k?'on':''}" onclick="setSimTab('${k}')"><i class="fa-solid ${ic}"></i> ${l}</button>`).join('')}</div></div>`;
+  const body = simTab==='juros'? simJurosHTML() : simTab==='meta'? simMetaHTML() : simRendaHTML();
+  return bar+body;
+}
+function simRendaHTML(){
   return `
   <div class="sec-title">Quanto você precisa para viver de dividendos?</div>
   <div class="sec-desc">Ajuste os parâmetros e veja a projeção do efeito bola de neve — reinvestindo proventos até atingir a renda passiva desejada. Cálculo transparente, sem promessas de rentabilidade.</div>
@@ -6380,7 +6393,7 @@ function viewRecomendadas(){
   return `
   <div class="sec-title">Carteiras recomendadas</div>
   <div class="sec-desc">Estratégias prontas montadas pela inteligência Lastro para diferentes perfis e objetivos. Referência de alocação — não é recomendação personalizada de investimento.</div>
-  <div class="rec-filters">${chips}</div>
+  <div class="rec-filters"><div class="rec-filters-inner">${chips}</div></div>
   <div class="rec-grid">${list.map(recCard).join('')||'<div class="search-empty">Nenhuma carteira nesta categoria.</div>'}</div>`;
 }
 function setRecFilter(c){ recFilter=c; render('recomendadas'); }
@@ -6676,7 +6689,7 @@ function afterRender(v, soft){
       callAI('Faça um resumo de 2 frases do dia no mercado brasileiro de renda variável, considerando: Ibovespa em máxima, Petrobras com dividendos extras, FIIs de papel atrativos com Selic 14,5%.', $('#newsAI'));
     }
   }
-  if(v==='simulador'){ runSim(); }
+  if(v==='simulador'){ initSimActive(); }
   if(v==='score'){ animateGauges(); }
   if(v==='planos'){ initPlanCarousel(); }
   if(v==='recdetail'){ initRecCharts(); }
@@ -7354,7 +7367,7 @@ function viewBargain(){
   return `
   <div class="sec-title">Radar de barganhas</div>
   <div class="sec-desc">Ativos de qualidade (Score Lastro alto) negociando <strong>abaixo da própria média histórica de P/VP</strong> — ordenados pelo maior desconto combinado à qualidade. Referência de valuation, não recomendação de compra.</div>
-  <div class="rec-filters">${chips}</div>
+  <div class="rec-filters"><div class="rec-filters-inner">${chips}</div></div>
   <div class="card card-pad bg-list">${rows}</div>
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Média histórica reconstruída de forma ilustrativa (10 anos). Desconto não garante retorno — verifique os fundamentos antes de decidir.</div>`;
 }
@@ -7547,6 +7560,106 @@ function runSim(){
     }
   });
 }
+/* ── Simulador 2: Juros compostos ── */
+function simJurosHTML(){
+  return `
+  <div class="sec-title">Juros compostos</div>
+  <div class="sec-desc">Veja o quanto seus aportes podem virar no longo prazo com o efeito dos juros sobre juros. Projeção determinística — não é promessa de rentabilidade.</div>
+  <div class="sim-grid">
+    <div class="card card-pad">
+      <div class="sim-control"><div class="lbl"><span class="n">Capital inicial</span><span class="v" id="jCapV">R$ 10.000</span></div><input type="range" id="jCap" min="0" max="500000" step="1000" value="10000" oninput="runSimJuros()"></div>
+      <div class="sim-control"><div class="lbl"><span class="n">Aporte mensal</span><span class="v" id="jApV">R$ 1.000</span></div><input type="range" id="jAp" min="0" max="20000" step="100" value="1000" oninput="runSimJuros()"></div>
+      <div class="sim-control"><div class="lbl"><span class="n">Rentabilidade (a.a.)</span><span class="v" id="jRateV">12,0%</span></div><input type="range" id="jRate" min="2" max="20" step="0.5" value="12" oninput="runSimJuros()"></div>
+      <div class="sim-control" style="margin-bottom:0"><div class="lbl"><span class="n">Prazo</span><span class="v" id="jYrV">20 anos</span></div><input type="range" id="jYr" min="1" max="40" step="1" value="20" oninput="runSimJuros()"></div>
+    </div>
+    <div>
+      <div class="sim-result">
+        <div class="sim-big"><div class="lbl">Patrimônio ao fim do prazo</div><div class="val" id="jPatr">R$ 0</div><div class="sub" id="jPatrSub">—</div></div>
+        <div class="sim-sec"><div class="lbl">Juros ganhos</div><div class="val up" id="jJuros">R$ 0</div><div class="sub" id="jJurosSub">—</div></div>
+      </div>
+      <div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Patrimônio vs total aportado</div></div><div style="position:relative;height:260px"><canvas id="jChart" role="img" aria-label="Projeção de juros compostos"></canvas></div></div>
+    </div>
+  </div>
+  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Rentabilidade constante e sem impostos/inflação — use como referência de planejamento.</div>`;
+}
+function runSimJuros(){
+  const g=id=>+((document.getElementById(id)||{}).value||0), setT=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+  const cap=g('jCap'), ap=g('jAp'), rate=g('jRate'), yr=g('jYr');
+  setT('jCapV', brl0(cap)); setT('jApV', brl0(ap)); setT('jRateV', pc(rate,1)+'%'); setT('jYrV', yr+(yr>1?' anos':' ano'));
+  const r=Math.pow(1+rate/100,1/12)-1, n=yr*12;
+  let pat=cap, aportado=cap; const labels=['0'], patS=[cap], apS=[cap];
+  for(let m=1;m<=n;m++){ pat=pat*(1+r)+ap; aportado+=ap; if(m%12===0){ labels.push(String(m/12)); patS.push(pat); apS.push(aportado); } }
+  const juros=Math.max(0,pat-aportado);
+  setT('jPatr', brl0(pat));
+  setT('jPatrSub', aportado>0?`${(pat/aportado).toFixed(1)}× o que você aportou`:'—');
+  setT('jJuros', brl0(juros));
+  setT('jJurosSub', `sobre ${brl0(aportado)} aportados`);
+  const ctx=document.getElementById('jChart'); if(!ctx) return;
+  if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
+  const br=cssVar('--brand'), ink4=cssVar('--ink-4');
+  if(charts.simJ){ charts.simJ.data.labels=labels; charts.simJ.data.datasets[0].data=patS; charts.simJ.data.datasets[1].data=apS; charts.simJ.update(); return; }
+  const grd=ctx.getContext('2d').createLinearGradient(0,0,0,240); grd.addColorStop(0,br+'33'); grd.addColorStop(1,br+'00');
+  charts.simJ=new Chart(ctx,{ type:'line', data:{ labels, datasets:[
+      { label:'Patrimônio', data:patS, borderColor:br, backgroundColor:grd, fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.6 },
+      { label:'Total aportado', data:apS, borderColor:ink4, borderDash:[5,4], fill:false, tension:.35, pointRadius:0, borderWidth:1.8 } ]},
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{ display:true, position:'top', align:'end', labels:{ color:cssVar('--ink-2'), font:{size:11}, usePointStyle:true, pointStyleWidth:9, boxHeight:7 } }, tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+brl0(c.parsed.y), title:items=>'Ano '+items[0].label } } },
+      scales:{ x:{ grid:{display:false}, ticks:{color:cssVar('--ink-3'),font:{size:10}}, border:{display:false} }, y:{ grid:{color:cssVar('--line')}, ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'}, border:{display:false} } } } });
+}
+/* ── Simulador 3: Meta de aposentadoria ── */
+function simMetaHTML(){
+  return `
+  <div class="sec-title">Meta de aposentadoria</div>
+  <div class="sec-desc">Descubra quanto você precisa acumular — e quanto aportar por mês — para se aposentar com a renda que deseja, vivendo dos rendimentos.</div>
+  <div class="sim-grid">
+    <div class="card card-pad">
+      <div class="sim-control"><div class="lbl"><span class="n">Renda mensal desejada</span><span class="v" id="mRendaV">R$ 8.000</span></div><input type="range" id="mRenda" min="1000" max="50000" step="500" value="8000" oninput="runSimMeta()"></div>
+      <div class="sim-control"><div class="lbl"><span class="n">Rendimento na aposentadoria (a.a.)</span><span class="v" id="mDyV">8,0%</span></div><input type="range" id="mDy" min="4" max="14" step="0.5" value="8" oninput="runSimMeta()"></div>
+      <div class="divider"></div>
+      <div class="sim-control"><div class="lbl"><span class="n">Já tenho investido</span><span class="v" id="mCapV">R$ 20.000</span></div><input type="range" id="mCap" min="0" max="1000000" step="5000" value="20000" oninput="runSimMeta()"></div>
+      <div class="sim-control"><div class="lbl"><span class="n">Rentabilidade até lá (a.a.)</span><span class="v" id="mRateV">12,0%</span></div><input type="range" id="mRate" min="2" max="20" step="0.5" value="12" oninput="runSimMeta()"></div>
+      <div class="sim-control" style="margin-bottom:0"><div class="lbl"><span class="n">Tempo até aposentar</span><span class="v" id="mYrV">25 anos</span></div><input type="range" id="mYr" min="1" max="45" step="1" value="25" oninput="runSimMeta()"></div>
+    </div>
+    <div>
+      <div class="sim-result">
+        <div class="sim-big"><div class="lbl">Aporte mensal necessário</div><div class="val" id="mAporte">R$ 0</div><div class="sub" id="mAporteSub">para atingir a meta no prazo</div></div>
+        <div class="sim-sec"><div class="lbl">Patrimônio-alvo</div><div class="val" id="mMeta">R$ 0</div><div class="sub" id="mMetaSub">gera a renda desejada</div></div>
+      </div>
+      <div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-piggy-bank"></i></span> Acúmulo até a meta</div><span class="chip chip-gold" id="mChip">—</span></div><div style="position:relative;height:260px"><canvas id="mChart" role="img" aria-label="Acúmulo até a aposentadoria"></canvas></div></div>
+    </div>
+  </div>
+  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Modelo simplificado (rentabilidade constante, sem inflação/impostos). O patrimônio-alvo assume viver só dos rendimentos, sem consumir o principal.</div>`;
+}
+function runSimMeta(){
+  const g=id=>+((document.getElementById(id)||{}).value||0), setT=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+  const renda=g('mRenda'), dy=g('mDy'), cap=g('mCap'), rate=g('mRate'), yr=g('mYr');
+  setT('mRendaV', brl0(renda)); setT('mDyV', pc(dy,1)+'%'); setT('mCapV', brl0(cap)); setT('mRateV', pc(rate,1)+'%'); setT('mYrV', yr+(yr>1?' anos':' ano'));
+  const meta = dy>0 ? renda*12/(dy/100) : 0;
+  const r=Math.pow(1+rate/100,1/12)-1, n=yr*12;
+  const futCap = cap*Math.pow(1+r,n);
+  let aporte = 0;
+  if(futCap < meta){ aporte = r>0 ? (meta-futCap)*r/(Math.pow(1+r,n)-1) : (meta-futCap)/n; }
+  setT('mMeta', brl0(meta));
+  setT('mAporte', brl0(Math.max(0,aporte)));
+  setT('mAporteSub', futCap>=meta ? '✓ o que você já tem chega à meta' : `por ${yr} ano${yr>1?'s':''}, além do que já tem`);
+  // série de acúmulo
+  const labels=['0'], serie=[cap]; let pat=cap;
+  for(let m=1;m<=n;m++){ pat=pat*(1+r)+Math.max(0,aporte); if(m%12===0){ labels.push(String(m/12)); serie.push(pat); } }
+  setT('mChip', `alvo ${brl0(meta)}`);
+  const ctx=document.getElementById('mChart'); if(!ctx) return;
+  if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
+  const gold=cssVar('--gold'), down=cssVar('--down');
+  const metaLine=labels.map(()=>meta);
+  if(charts.simM){ charts.simM.data.labels=labels; charts.simM.data.datasets[0].data=serie; charts.simM.data.datasets[1].data=metaLine; charts.simM.update(); return; }
+  const grd=ctx.getContext('2d').createLinearGradient(0,0,0,240); grd.addColorStop(0,gold+'33'); grd.addColorStop(1,gold+'00');
+  charts.simM=new Chart(ctx,{ type:'line', data:{ labels, datasets:[
+      { label:'Seu patrimônio', data:serie, borderColor:gold, backgroundColor:grd, fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.6 },
+      { label:'Meta', data:metaLine, borderColor:down, borderDash:[5,4], fill:false, pointRadius:0, borderWidth:1.6 } ]},
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{ display:true, position:'top', align:'end', labels:{ color:cssVar('--ink-2'), font:{size:11}, usePointStyle:true, pointStyleWidth:9, boxHeight:7 } }, tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+brl0(c.parsed.y), title:items=>'Ano '+items[0].label } } },
+      scales:{ x:{ grid:{display:false}, ticks:{color:cssVar('--ink-3'),font:{size:10}}, border:{display:false} }, y:{ grid:{color:cssVar('--line')}, ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'}, border:{display:false} } } } });
+}
+function initSimActive(){ if(simTab==='juros') runSimJuros(); else if(simTab==='meta') runSimMeta(); else runSim(); }
 function brl0(n){ return 'R$ '+Math.round(n).toLocaleString('pt-BR'); }
 
 /* ══════════════════════════════════════════════════════════
