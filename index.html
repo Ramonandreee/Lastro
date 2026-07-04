@@ -827,7 +827,6 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="screener" onclick="nav('screener',this)"><i class="fa-solid fa-filter"></i><span>Rastreador</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item premium-item" data-view="barganhas" onclick="nav('barganhas',this)"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Radar de Barganhas</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
       <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-layer-group"></i><span>Carteiras Recomendadas</span></div>
@@ -1298,6 +1297,25 @@ table.tbl tbody tr:hover { background: var(--surface-2); }
   display: flex; gap: 12px; align-items: stretch;
   margin-bottom: 18px; flex-wrap: wrap;
 }
+/* botão de filtros fundamentalistas (Rastreador embutido) */
+.filters-adv { display:inline-flex; align-items:center; gap:8px; padding:0 15px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:600; white-space:nowrap; flex:none; }
+.filters-adv:hover { border-color:var(--line-2); color:var(--ink); }
+.filters-adv.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
+.filters-adv .fbadge { min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--brand); color:#fff; font-size:11px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+.filters-adv.on .fbadge { background:var(--canvas); color:var(--ink); }
+.af-panel { margin-bottom:16px; animation:indIn .35s var(--ease-out) both; }
+.af-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.af-presets { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.af-presets button { display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); color:var(--ink-2); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
+.af-presets button:hover { border-color:var(--brand); color:var(--brand); }
+.af-presets button i { font-size:11px; color:var(--brand); }
+.af-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
+@media (max-width:560px){ .af-grid { grid-template-columns:1fr; } }
+.af-ctrl { display:flex; flex-direction:column; gap:7px; }
+.af-lbl { display:flex; align-items:center; justify-content:space-between; font-size:12.5px; }
+.af-lbl > span:first-child { color:var(--ink-2); font-weight:500; }
+.af-v { font-family:var(--mono); font-size:12.5px; color:var(--ink); font-weight:600; }
+.af-ctrl input[type=range] { width:100%; }
 /* campo de busca e selects compartilham a MESMA altura, raio e peso visual */
 .search-inp {
   flex: 1 1 220px; min-width: 200px; height: 46px; box-sizing: border-box;
@@ -3664,7 +3682,6 @@ function acctMenuHTML(){
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();openAssinatura()")}
       ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
-      ${item('fa-circle-play','Como funciona',"closeAcctMenu();startTour()")}
       ${item(privOn()?'fa-eye':'fa-eye-slash', privOn()?'Mostrar meus valores':'Ocultar meus valores', "closeAcctMenu();togglePriv()")}
       ${themeRow}
       ${isOwner()? `<div class="acct-sep"></div>
@@ -3678,7 +3695,6 @@ function acctMenuHTML(){
     ${item('fa-crown','Assinar Premium',"closeAcctMenu();goPricing()")}
     ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
     ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
-      ${item('fa-circle-play','Como funciona',"closeAcctMenu();startTour()")}
     ${themeRow}`;
 }
 function toggleAcctMenu(e){ if(e) e.stopPropagation(); const m=$('#acctMenu'); if(!m) return; if(m.classList.contains('open')){ m.classList.remove('open'); return; } m.innerHTML=acctMenuHTML(); m.classList.add('open'); }
@@ -3731,7 +3747,7 @@ function openSupport(){
       <div class="faq-list">${faq}</div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Recursos</div>
-      <button class="btn btn-ghost prof-btn" onclick="closeAuth();startTour&&startTour()"><i class="fa-solid fa-compass" style="color:var(--brand)"></i> Refazer o tour guiado</button>
+      <button class="btn btn-ghost prof-btn" onclick="closeAuth();startTour&&startTour()"><i class="fa-solid fa-circle-play" style="color:var(--brand)"></i> Como funciona · tour guiado</button>
     </div>
     <div class="sup-foot">
       <span class="sup-status"><span class="sup-dot"></span> Todos os sistemas operando</span>
@@ -4406,7 +4422,7 @@ const TOUR=[
   { sel:'[data-tour="carteira"]', pre:tourGroupPre, title:'Minha Carteira', text:'Cadastre seus aportes e acompanhe patrimônio, proventos, agenda de dividendos, watchlist, alertas e o Aporte Inteligente — sincronizado na nuvem.' },
   { sel:'[data-tour="analise"]', pre:tourGroupPre, title:'Análise', text:'Ferramentas de decisão: Raio-X da carteira, Backtest, Stress Test, Detector de Risco, Rastreador e Radar de Barganhas.' },
   { sel:'.insight', pre:tourContentPre, title:'Inteligência Lastro', text:'Pergunte sobre o mercado ou qualquer ativo — respostas por IA, com base nos dados. Você também pode ler uma carteira por foto no Raio-X.' },
-  { sel:'.hdr-profile', pre:tourTopPre, title:'Sua conta', text:'Perfil, plano, tema claro/escuro e este tour (em "Como funciona") ficam aqui no seu avatar.' },
+  { sel:'.hdr-profile', pre:tourTopPre, title:'Sua conta', text:'Perfil, plano e tema claro/escuro ficam aqui no seu avatar. Para rever este tour, abra Suporte → Recursos.' },
   { center:true, ic:'fa-circle-check', title:'Tudo pronto!', text:'Explore à vontade. Você pode rever este tour quando quiser no menu da conta.' },
 ];
 function ensureTourEls(){ if(document.getElementById('tourOv')) return; const o=document.createElement('div'); o.id='tourOv'; o.className='tour-ov'; o.innerHTML='<div class="tour-blur" id="tourBlur"></div><div id="tourSpot" class="tour-spot"></div><div id="tourPop" class="tour-pop"></div>'; document.body.appendChild(o); }
@@ -4524,6 +4540,7 @@ try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }cat
 })();
 function nav(v, el, noHist){
   if(v==='admin' && !isOwner()) v='painel';
+  if(v==='screener'){ v='acoes'; if(isPro()) tableState.acoes.fopen=true; }   // Rastreador incorporado às listagens
   if(!noHist && currentView && currentView!==v) navStack.push(currentView);
   if(navStack.length>30) navStack.shift();
   currentView = v;
@@ -4913,7 +4930,10 @@ const ASSET_CFG = {
 let tableState = {};
 let universeLoaded = false;
 function assetPageSize(){ const n=+sessionStorage.getItem('lastro_pgsize'); return [30,50,100].includes(n)?n:30; }
-Object.keys(ASSET_CFG).forEach(k=> tableState[k] = {q:'', seg:'', reg:'', sort:ASSET_CFG[k].sorts[0][0], dir:(ASSET_CFG[k].sorts[0][0]==='pvp'||ASSET_CFG[k].sorts[0][0]==='pl')?1:-1, page:1, pageSize:assetPageSize()});
+Object.keys(ASSET_CFG).forEach(k=> tableState[k] = {q:'', seg:'', reg:'', sort:ASSET_CFG[k].sorts[0][0], dir:(ASSET_CFG[k].sorts[0][0]==='pvp'||ASSET_CFG[k].sorts[0][0]==='pl')?1:-1, page:1, pageSize:assetPageSize(),
+  fopen:false, fdyMin:0, fscoreMin:0, fpvpMax:3, fplMax:40, froeMin:0, fliqMin:0});
+/* nº de filtros fundamentalistas ativos (P/VP e P/L no máximo = sem filtro) */
+function assetFilterCount(kind){ const s=tableState[kind]; let n=0; if(s.fdyMin>0)n++; if(s.fscoreMin>0)n++; if(s.fpvpMax<3)n++; if(s.fplMax<40)n++; if(s.froeMin>0)n++; if(s.fliqMin>0)n++; return n; }
 
 function viewAssets(kind){
   const cfg = ASSET_CFG[kind];
@@ -4928,13 +4948,20 @@ function viewAssets(kind){
     : cfg.intl ? `<span class="chip chip-blue"><i class="fa-solid fa-dollar-sign" style="font-size:10px"></i> Cotações em USD</span>`
     : `<span class="chip chip-neu">${cfg.label}</span>`;
 
+  const hasAdv = !!cfg.score;   // fundamentos disponíveis (FIIs e Ações)
+  const st = tableState[kind];
+  const nAdv = hasAdv ? assetFilterCount(kind) : 0;
+  const advBtn = hasAdv ? `<button class="btn btn-ghost filters-adv ${st.fopen?'on':''}" onclick="toggleAssetFilters('${kind}')"><i class="fa-solid fa-sliders"></i> Filtros${nAdv?` <span class="fbadge">${nAdv}</span>`:''}${isPro()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:11px"></i>'}</button>` : '';
+  const advPanel = (hasAdv && st.fopen && isPro()) ? assetFiltersPanel(kind) : '';
   return `
   <div class="filters">
-    <div class="search-inp"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="Buscar" oninput="tblFilter('${kind}','q',this.value)"></div>
+    <div class="search-inp"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="Buscar" value="${esc(st.q||'')}" oninput="tblFilter('${kind}','q',this.value)"></div>
     ${regSelect}
     ${segSelect}
     ${sortSelect}
+    ${advBtn}
   </div>
+  ${advPanel}
   <div class="card card-pad">
     <div class="card-head">
       <div class="card-h"><span class="ico"><i class="fa-${cfg.brand?'brands':'solid'} ${cfg.icon}"></i></span> ${cfg.label} <span class="card-sub" id="tblCount" style="margin-left:6px"></span>${(['acoes','fiis','bdrs'].includes(kind) && !universeLoaded)?'<span class="loading-chip" id="uniChip" style="margin-left:10px"><span class="spin"></span> carregando universo…</span>':''}</div>
@@ -4952,6 +4979,47 @@ function viewAssets(kind){
     <div id="tblAIOut" style="font-size:13px;color:var(--ink-2);line-height:1.65;margin-top:14px"></div>
   </div>`;
 }
+/* ── Filtros fundamentalistas por listagem (o antigo Rastreador, agora embutido) ── */
+function assetFiltersPanel(kind){
+  const s=tableState[kind], ac=(kind==='acoes');
+  const ctrl=(id,label,val,min,max,step,cur)=>`<div class="af-ctrl"><div class="af-lbl"><span>${label}</span><span class="af-v" id="afv_${id}_${kind}">${cur}</span></div><input type="range" id="af_${id}_${kind}" min="${min}" max="${max}" step="${step}" value="${val}" oninput="assetFilterUpd('${kind}')"></div>`;
+  return `<div class="card card-pad af-panel">
+    <div class="af-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-sliders"></i></span> Filtros fundamentalistas</div><button class="btn btn-ghost btn-sm" onclick="assetFilterReset('${kind}')"><i class="fa-solid fa-rotate-left"></i> Limpar</button></div>
+    <div class="af-presets">
+      <button onclick="assetFilterPreset('${kind}','dividendos')"><i class="fa-solid fa-coins"></i> Dividendos</button>
+      <button onclick="assetFilterPreset('${kind}','qualidade')"><i class="fa-solid fa-award"></i> Qualidade</button>
+      <button onclick="assetFilterPreset('${kind}','barganha')"><i class="fa-solid fa-magnifying-glass-dollar"></i> Barganha</button>
+    </div>
+    <div class="af-grid">
+      ${ctrl('dy','DY mínimo', s.fdyMin, 0,15,0.5, pc(s.fdyMin,1)+'%')}
+      ${ctrl('sc','Score Lastro mínimo', s.fscoreMin, 0,95,5, s.fscoreMin)}
+      ${ctrl('pvp','P/VP máximo', s.fpvpMax, 0.5,3,0.05, s.fpvpMax>=3?'sem limite':pc(s.fpvpMax,2))}
+      ${ac?ctrl('pl','P/L máximo', s.fplMax, 3,40,1, s.fplMax>=40?'sem limite':s.fplMax+'x'):''}
+      ${ac?ctrl('roe','ROE mínimo', s.froeMin, 0,30,1, s.froeMin+'%'):''}
+      ${ctrl('liq','Liquidez mínima', s.fliqMin, 0,50,1, s.fliqMin+' mi')}
+    </div>
+  </div>`;
+}
+function toggleAssetFilters(kind){ if(!isPro()){ proGate('screener'); return; } const st=tableState[kind]; st.fopen=!st.fopen; render(kind); }
+function assetFilterUpd(kind){
+  const s=tableState[kind], g=id=>{ const e=document.getElementById('af_'+id+'_'+kind); return e?+e.value:0; };
+  s.fdyMin=g('dy'); s.fscoreMin=g('sc'); s.fpvpMax=g('pvp'); s.fliqMin=g('liq');
+  if(document.getElementById('af_pl_'+kind)) s.fplMax=g('pl');
+  if(document.getElementById('af_roe_'+kind)) s.froeMin=g('roe');
+  const setv=(id,t)=>{ const e=document.getElementById('afv_'+id+'_'+kind); if(e) e.textContent=t; };
+  setv('dy', pc(s.fdyMin,1)+'%'); setv('sc', s.fscoreMin); setv('pvp', s.fpvpMax>=3?'sem limite':pc(s.fpvpMax,2));
+  setv('pl', s.fplMax>=40?'sem limite':s.fplMax+'x'); setv('roe', s.froeMin+'%'); setv('liq', s.fliqMin+' mi');
+  s.page=1; renderAssets(kind);
+  const btn=document.querySelector('.filters-adv'); if(btn){ let bd=btn.querySelector('.fbadge'); const n=assetFilterCount(kind); if(n>0){ if(!bd){ bd=document.createElement('span'); bd.className='fbadge'; btn.querySelector('i.fa-sliders').after(bd); } bd.textContent=n; } else if(bd) bd.remove(); }
+}
+function assetFilterPreset(kind,name){
+  const ac=(kind==='acoes');
+  const P={ dividendos:{fdyMin:8,fscoreMin:60,fpvpMax:3,fplMax:40,froeMin:0,fliqMin:5},
+            qualidade:{fdyMin:0,fscoreMin:80,fpvpMax:3,fplMax:40,froeMin:ac?15:0,fliqMin:0},
+            barganha:{fdyMin:6,fscoreMin:70,fpvpMax:ac?3:0.98,fplMax:9,froeMin:0,fliqMin:5} }[name];
+  if(!P) return; Object.assign(tableState[kind], P); tableState[kind].page=1; render(kind);
+}
+function assetFilterReset(kind){ Object.assign(tableState[kind], {fdyMin:0,fscoreMin:0,fpvpMax:3,fplMax:40,froeMin:0,fliqMin:0}); tableState[kind].page=1; render(kind); }
 
 function renderAssets(kind){
   const cfg = ASSET_CFG[kind], st = tableState[kind];
@@ -4959,6 +5027,13 @@ function renderAssets(kind){
   if(st.q) data = data.filter(a=> a.tk.includes(st.q.toUpperCase()) || (a.nm||'').toLowerCase().includes(st.q.toLowerCase()));
   if(st.seg) data = data.filter(a=> a.seg===st.seg);
   if(st.reg && cfg.regOf) data = data.filter(a=> cfg.regOf(a)===st.reg);
+  // filtros fundamentalistas (Rastreador embutido)
+  if(st.fdyMin>0)   data = data.filter(a=> (a.dy||0)>=st.fdyMin);
+  if(st.fscoreMin>0)data = data.filter(a=> (a.score||0)>=st.fscoreMin);
+  if(st.fpvpMax<3)  data = data.filter(a=> typeof a.pvp!=='number' || a.pvp<=st.fpvpMax);
+  if(st.fplMax<40)  data = data.filter(a=> typeof a.pl!=='number' || a.pl<=st.fplMax);
+  if(st.froeMin>0)  data = data.filter(a=> (a.roe||0)>=st.froeMin);
+  if(st.fliqMin>0)  data = data.filter(a=> (a.liq||0)>=st.fliqMin);
   data.sort((a,b)=> ((a[st.sort]??0)-(b[st.sort]??0))*st.dir );
 
   // paginação (performance: renderiza só a página atual)
