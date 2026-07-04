@@ -161,6 +161,15 @@ body {
   transition: background .4s var(--ease), color .4s var(--ease);
   overflow-x: hidden;
 }
+/* feel de app nativo: segurar em gráficos/controles não seleciona texto nem abre "copiar".
+   O texto de conteúdo (respostas de IA, notícias, valores) segue selecionável. */
+canvas, svg, .ind-card, .mcell, .mstrip, .nav-item, .topbar, .sidebar, .atabs, .ad-tabs, .stabs,
+.rec-filters, button, .atab, .chip, .badge, .ind-ico, .sim-control, .range-tabs, .seg {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+input, textarea, select, [contenteditable] {
+  -webkit-user-select: text; user-select: text; -webkit-touch-callout: default;
+}
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 input, select, textarea { font-family: inherit; outline: none; color: inherit; background: transparent; border: none; }
 .search-inp input { width: 100%; height: 22px; line-height: 22px; border: none; padding: 0; margin: 0; }
@@ -2039,9 +2048,9 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 .pt-lock .pw-t { font-size:15.5px; } .pt-lock .pw-s { margin:7px 0 16px; font-size:12.5px; }
 /* abas de autenticação */
 /* modais centralizados vertical e horizontalmente */
-/* trava o scroll do fundo quando qualquer camada está aberta */
+/* trava o scroll do fundo quando qualquer camada está aberta (menu, modal, busca) */
 body:has(.modal-scrim.open), body:has(.search-modal.open), body.nav-open { overflow:hidden; }
-html:has(.modal-scrim.open), html:has(.search-modal.open) { overflow:hidden; }
+html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) { overflow:hidden; overscroll-behavior:none; }
 .modal-scrim { background:rgba(10,14,19,.55) !important; backdrop-filter:blur(5px); }
 /* diálogo de confirmação */
 .confirm-card { width:380px; max-width:92vw; padding:24px 24px 20px; text-align:center; }
@@ -5730,7 +5739,7 @@ function simRendaHTML(){
         <input type="range" id="simAp" min="0" max="20000" step="100" value="2000" oninput="runSim()">
       </div>
       <div class="sim-control">
-        <div class="lbl"><span class="n">DY médio da carteira</span><span class="v" id="simDyV">11,0%</span></div>
+        <div class="lbl"><span class="n">DY médio da carteira ${hlp('dyMed')}</span><span class="v" id="simDyV">11,0%</span></div>
         <input type="range" id="simDy" min="6" max="16" step="0.1" value="11" oninput="runSim()">
       </div>
       <div class="sim-control">
@@ -5764,9 +5773,9 @@ function simRendaHTML(){
     </div>
   </div>
   <div class="mstrip sim-kpis" style="grid-template-columns:repeat(4,1fr);margin-top:16px">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Número mágico</div><div class="vl" id="simMagico">—</div><div class="dl faint">patrimônio p/ a meta</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Número mágico ${hlp('magico')}</div><div class="vl" id="simMagico">—</div><div class="dl faint">patrimônio p/ a meta</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Independência em</div><div class="vl" id="simTempo">—</div><div class="dl faint">no ritmo atual</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Cobertura da meta</div><div class="vl" id="simCob">—</div><div class="dl faint">renda ÷ meta</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Cobertura da meta ${hlp('cobertura')}</div><div class="vl" id="simCob">—</div><div class="dl faint">renda ÷ meta</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos no período</div><div class="vl up" id="simProvT">—</div><div class="dl faint">reinvestidos</div></div>
   </div>`;
 }
@@ -5950,7 +5959,7 @@ function viewFire(){
     <div>
       <div class="sim-result">
         <div class="sim-big"><div class="lbl">Despesas cobertas por dividendos</div><div class="val" id="fireCob">0%</div><div class="sub" id="fireCobSub">—</div></div>
-        <div class="sim-sec"><div class="lbl">Número mágico (capital-alvo)</div><div class="val" id="fireMagic">R$ 0</div><div class="sub" id="fireMagicSub">para viver de renda</div></div>
+        <div class="sim-sec"><div class="lbl">Número mágico (capital-alvo) ${hlp('magico')}</div><div class="val" id="fireMagic">R$ 0</div><div class="sub" id="fireMagicSub">para viver de renda</div></div>
       </div>
       <div class="card card-pad">
         <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-flag-checkered"></i></span> Caminho até a liberdade</div><span class="chip chip-blue" id="fireEta">—</span></div>
@@ -8517,7 +8526,12 @@ const TERMS={
   scoreLastro:'Score Lastro™: nota proprietária de 0 a 100 que resume a qualidade de um ativo combinando vários indicadores fundamentalistas em uma só medida.',
   pmProv:'Preço médio com proventos: seu preço médio descontando os proventos já recebidos. Mostra o custo "líquido" da posição.',
   cdi:'CDI: taxa de referência da renda fixa no Brasil, bem próxima da Selic. Serve de comparação para saber se a carteira rende mais que o básico.',
-  ibov:'IBOV (Ibovespa): principal índice da bolsa brasileira — serve de referência para comparar o desempenho da sua carteira com o mercado.'
+  ibov:'IBOV (Ibovespa): principal índice da bolsa brasileira — serve de referência para comparar o desempenho da sua carteira com o mercado.',
+  magico:'Número mágico: o patrimônio que você precisa acumular para que os rendimentos (dividendos/juros) paguem a renda mensal desejada — sem precisar vender os ativos.',
+  dyMed:'DY médio da carteira: a média do dividend yield dos seus ativos, ponderada pelo valor de cada um. Estima o quanto a carteira paga de proventos por ano em relação ao patrimônio.',
+  selic:'Selic: a taxa básica de juros da economia, definida pelo Banco Central. Serve de referência para a renda fixa e influencia FIIs e ações.',
+  ipca:'IPCA: o índice oficial de inflação do Brasil. Investimentos "IPCA+" pagam a inflação mais uma taxa fixa, protegendo o poder de compra.',
+  cobertura:'Cobertura da meta: quanto da sua renda-alvo os proventos projetados já cobrem. 100% significa que a carteira paga toda a renda desejada.'
 };
 function hlp(k){ const t=(TERMS&&TERMS[k])||k; return `<span class="hlp" data-tip="${esc(t)}">?</span>`; }
 /* termos com card rico (mesmo modelo dos indicadores dos ativos) — tocar abre a definição */
