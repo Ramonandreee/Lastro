@@ -454,10 +454,10 @@ body.view-inicio .topbar-brand { display:flex; }
 .acct-theme-btns button.on { background:var(--surface); color:var(--gold); box-shadow:var(--sh-sm); }
 .acct-login { width:100%; justify-content:center; margin:4px 2px 2px; }
 /* paginação da lista de ativos */
-.pager { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
-.pg-info { font-size:12px; color:var(--ink-4); display:inline-flex; align-items:center; gap:10px; }
-.pg-info .pg-range { color:var(--ink-3); font-variant-numeric:tabular-nums; }
-.pg-sel { appearance:none; -webkit-appearance:none; height:32px; padding:0 28px 0 12px; font-size:12.5px; font-weight:600; color:var(--ink-2); border:1px solid var(--line); border-radius:999px; background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238A93A0' stroke-width='3' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 11px center; cursor:pointer; transition:border-color .14s var(--ease); }
+.pager { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+.pg-info { font-size:12px; color:var(--ink-4); display:inline-flex; align-items:center; gap:8px; }
+.pg-info .pg-range { color:var(--ink-2); font-weight:600; font-variant-numeric:tabular-nums; }
+.pg-sel { appearance:none; -webkit-appearance:none; height:29px; padding:0 26px 0 11px; font-size:12px; font-weight:600; color:var(--ink-3); border:1px solid var(--line); border-radius:999px; background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238A93A0' stroke-width='3' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center; cursor:pointer; transition:border-color .14s var(--ease); }
 .pg-sel:hover { border-color:var(--line-2); color:var(--ink); }
 .pg-nav { display:inline-flex; align-items:center; gap:4px; background:var(--surface-3); padding:4px; border-radius:12px; }
 .pg-btn { min-width:34px; height:34px; padding:0 10px; border-radius:9px; background:transparent; color:var(--ink-2); font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; cursor:pointer; transition:all .14s var(--ease); }
@@ -719,14 +719,15 @@ img, svg, canvas, video { max-width: 100%; }
   .card-pad { padding: 16px 16px; }
   .dt-head { gap:12px; }
   .dt-id .tk { font-size:20px; }
-  /* filtros empilhados em largura total — sem truncamento de texto */
-  .filters { flex-wrap: wrap; gap: 10px; }
-  .filters .search-inp { flex: 1 1 100%; min-width: 0; }
-  .filters .sel-wrap.grow, .filters .sel-wrap.full { flex: 1 1 100%; width: 100%; }
+  /* a toolbar de filtros usa .filters-controls (grid 2-col) — nada a forçar aqui */
 }
 /* iOS: campos com 16px no mobile evitam o zoom automático ao focar */
 @media (max-width: 760px) {
-  input, select, textarea, .sel, .search-inp input, .cmp-input, .pg-sel, .fld input, .insight-input input, .search-bar input { font-size: 16px !important; }
+  /* zoom já está desativado globalmente, então os controles compactos podem usar
+     tamanhos mais finos; mantemos 16px só nos campos de digitação longos */
+  textarea, .cmp-input, .fld input, .insight-input input, .search-bar input { font-size: 16px !important; }
+  .sel, .search-inp input { font-size: 14px; }
+  .pg-sel { font-size: 12.5px; }
 }
 /* listas de ativos (#dataTbl): no mobile cabem 3 colunas — Ativo · Setor · Cotação — SEM rolar */
 @media (max-width: 760px) {
@@ -1293,12 +1294,22 @@ table.tbl tbody tr:hover { background: var(--surface-2); }
 .score-dot { width: 8px; height: 8px; border-radius: 50%; }
 
 /* filters */
-.filters {
-  display: flex; gap: 12px; align-items: stretch;
-  margin-bottom: 18px; flex-wrap: wrap;
+.filters { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+.filters-controls { display:flex; gap:10px; align-items:stretch; flex-wrap:wrap; }
+.filters-controls .sel-wrap { flex:1 1 170px; min-width:0; }
+.filters-controls .sel-wrap.full { flex:1 1 100%; }
+@media (max-width:640px){
+  .filters-controls { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .filters-controls .sel-wrap { flex:none; min-width:0; }
+  .filters-controls .sel-wrap.full { grid-column:1 / -1; }
+  .filters-adv { grid-column:1 / -1; }
+  /* controles mais finos no mobile */
+  .filters .search-inp, .filters-controls .sel-wrap, .filters-adv { height:42px; border-radius:var(--r-sm); }
+  .filters .search-inp .sel, .filters-controls .sel { border-radius:var(--r-sm); }
+  .filters .search-inp input, .filters-controls .sel { font-size:14px; }
 }
 /* botão de filtros fundamentalistas (Rastreador embutido) */
-.filters-adv { display:inline-flex; align-items:center; gap:8px; padding:0 15px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:600; white-space:nowrap; flex:none; }
+.filters-adv { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:46px; box-sizing:border-box; padding:0 16px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:600; white-space:nowrap; flex:1 1 auto; }
 .filters-adv:hover { border-color:var(--line-2); color:var(--ink); }
 .filters-adv.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
 .filters-adv .fbadge { min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--brand); color:#fff; font-size:11px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
@@ -3747,7 +3758,7 @@ function openSupport(){
       <div class="faq-list">${faq}</div>
     </div>
     <div class="prof-sec"><div class="prof-sec-t">Recursos</div>
-      <button class="btn btn-ghost prof-btn" onclick="closeAuth();startTour&&startTour()"><i class="fa-solid fa-circle-play" style="color:var(--brand)"></i> Como funciona · tour guiado</button>
+      <button class="btn btn-ghost prof-btn" onclick="closeAuth();startTour&&startTour()"><i class="fa-solid fa-circle-play" style="color:var(--brand)"></i> Como funciona</button>
     </div>
     <div class="sup-foot">
       <span class="sup-status"><span class="sup-dot"></span> Todos os sistemas operando</span>
@@ -4943,7 +4954,7 @@ function viewAssets(kind){
   const regSelect = cfg.regions ? `<div class="sel-wrap grow"><select class="sel" onchange="tblFilter('${kind}','reg',this.value)"><option value="">Nacional + Internacional</option>${cfg.regions.map(r=>`<option>${r}</option>`).join('')}</select><i class="fa-solid fa-chevron-down chev"></i></div>` : '';
   // ordenação: quando o primeiro critério é o Score Lastro, vira componente proprietário em destaque
   const sortIsScore = cfg.sorts[0] && cfg.sorts[0][0]==='score';
-  const sortSelect = `<div class="sel-wrap full has-lead ${sortIsScore?'sel-score':''}"><i class="fa-solid ${sortIsScore?'fa-award':'fa-arrow-down-wide-short'} lead"></i><select class="sel" onchange="tblFilter('${kind}','sort',this.value)">${sortOpts}</select><i class="fa-solid fa-chevron-down chev"></i></div>`;
+  const sortSelect = `<div class="sel-wrap grow has-lead ${sortIsScore?'sel-score':''}"><i class="fa-solid ${sortIsScore?'fa-award':'fa-arrow-down-wide-short'} lead"></i><select class="sel" onchange="tblFilter('${kind}','sort',this.value)">${sortOpts}</select><i class="fa-solid fa-chevron-down chev"></i></div>`;
   const badge = cfg.score ? `<span class="chip chip-gold"><i class="fa-solid fa-award" style="font-size:10px"></i> Com Score Lastro</span>`
     : cfg.intl ? `<span class="chip chip-blue"><i class="fa-solid fa-dollar-sign" style="font-size:10px"></i> Cotações em USD</span>`
     : `<span class="chip chip-neu">${cfg.label}</span>`;
@@ -4955,11 +4966,13 @@ function viewAssets(kind){
   const advPanel = (hasAdv && st.fopen && isPro()) ? assetFiltersPanel(kind) : '';
   return `
   <div class="filters">
-    <div class="search-inp"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="Buscar" value="${esc(st.q||'')}" oninput="tblFilter('${kind}','q',this.value)"></div>
-    ${regSelect}
-    ${segSelect}
-    ${sortSelect}
-    ${advBtn}
+    <div class="search-inp"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="Buscar por nome ou código" value="${esc(st.q||'')}" oninput="tblFilter('${kind}','q',this.value)"></div>
+    <div class="filters-controls">
+      ${regSelect}
+      ${segSelect}
+      ${sortSelect}
+      ${advBtn}
+    </div>
   </div>
   ${advPanel}
   <div class="card card-pad">
@@ -4969,14 +4982,6 @@ function viewAssets(kind){
     </div>
     <div class="tbl-wrap"><table class="tbl" id="dataTbl"></table></div>
     <div id="tblPager"></div>
-  </div>
-  <div class="card card-pad" style="margin-top:16px; background:var(--surface-2)">
-    <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff"><i class="fa-solid fa-sparkles"></i></span> Análise IA</div>
-    <div class="insight-input" style="margin-top:0">
-      <input id="tblAI" placeholder="${cfg.ai||'Pergunte sobre estes ativos…'}" onkeydown="if(event.key==='Enter')askAITbl()">
-      <button class="insight-send" onclick="askAITbl()"><i class="fa-solid fa-arrow-up"></i></button>
-    </div>
-    <div id="tblAIOut" style="font-size:13px;color:var(--ink-2);line-height:1.65;margin-top:14px"></div>
   </div>`;
 }
 /* ── Filtros fundamentalistas por listagem (o antigo Rastreador, agora embutido) ── */
