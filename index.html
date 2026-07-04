@@ -2,7 +2,7 @@
 <html lang="pt-BR" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Lastro — Inteligência para o investidor brasileiro. Análise de FIIs, ações B3, indicadores fundamentalistas e Score Lastro.">
 <meta name="theme-color" content="#F4F5F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0A0E13" media="(prefers-color-scheme: dark)">
@@ -160,17 +160,16 @@ body {
   font-feature-settings: "cv02","cv03","cv04","cv11";
   transition: background .4s var(--ease), color .4s var(--ease);
   overflow-x: hidden;
-}
-/* feel de app nativo: segurar em gráficos/controles não seleciona texto nem abre "copiar".
-   O texto de conteúdo (respostas de IA, notícias, valores) segue selecionável. */
-canvas, svg, .ind-card, .mcell, .mstrip, .nav-item, .topbar, .sidebar, .atabs, .ad-tabs, .stabs,
-.rec-filters, button, .atab, .chip, .badge, .ind-ico, .sim-control, .range-tabs, .seg {
+  /* feel de app nativo: segurar em qualquer coisa não cria seleção nem menu "copiar";
+     duplo-toque não dá zoom (touch-action manipulation) */
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  touch-action: manipulation;
 }
-input, textarea, select, [contenteditable] {
+/* apenas campos de formulário seguem selecionáveis/editáveis normalmente */
+input, textarea, select, [contenteditable], .selectable, .selectable * {
   -webkit-user-select: text; user-select: text; -webkit-touch-callout: default;
 }
-button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; touch-action: manipulation; }
 input, select, textarea { font-family: inherit; outline: none; color: inherit; background: transparent; border: none; }
 .search-inp input { width: 100%; height: 22px; line-height: 22px; border: none; padding: 0; margin: 0; }
 a { color: inherit; text-decoration: none; }
@@ -4515,6 +4514,14 @@ function scrollToTop(){
 }
 /* o navegador não deve restaurar a rolagem anterior ao trocar de tela (SPA) */
 try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
+/* bloqueia zoom por pinça (iOS ignora user-scalable=no). O duplo-toque já é
+   neutralizado por touch-action:manipulation no CSS, sem engolir toques rápidos. */
+(function(){
+  document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
+  document.addEventListener('gesturechange', e=>e.preventDefault(), {passive:false});
+  document.addEventListener('gestureend', e=>e.preventDefault(), {passive:false});
+  document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
+})();
 function nav(v, el, noHist){
   if(v==='admin' && !isOwner()) v='painel';
   if(!noHist && currentView && currentView!==v) navStack.push(currentView);
