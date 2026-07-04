@@ -1164,9 +1164,20 @@ img, svg, canvas, video { max-width: 100%; }
   border-radius: var(--r);
   padding: 16px 17px;
   box-shadow: var(--sh-sm);
-  transition: transform .2s var(--ease), box-shadow .2s var(--ease);
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease);
   cursor: default;
 }
+/* card de métrica clicável (abre a definição, no mesmo padrão dos indicadores) */
+.mcell[data-term] { cursor: pointer; }
+.mcell[data-term] .nm { display:flex; align-items:center; gap:6px; }
+.mcell[data-term] .nm::after { content:""; width:5px; height:5px; border-radius:50%; background:var(--ink-4); opacity:.55; flex:none; transition:opacity .16s var(--ease), background .16s var(--ease); }
+.mcell[data-term]:hover { border-color: var(--line-2); box-shadow: var(--sh); }
+.mcell[data-term]:hover .nm::after { opacity:1; background:var(--brand); }
+.mcell[data-term]:active { transform: scale(.99); }
+.sim-sec[data-term], .sim-big[data-term] { cursor:pointer; }
+.sim-sec[data-term] .lbl, .sim-big[data-term] .lbl { display:flex; align-items:center; gap:6px; }
+.sim-sec[data-term] .lbl::after, .sim-big[data-term] .lbl::after { content:""; width:5px; height:5px; border-radius:50%; background:var(--ink-4); opacity:.55; flex:none; }
+.sim-sec[data-term]:hover .lbl::after, .sim-big[data-term]:hover .lbl::after { opacity:1; background:var(--brand); }
 /* só os cartões de índice da Home (com mini-gráfico) usam layout em linha */
 .mcell:has(.spark-mini) { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .mcell:hover { transform: translateY(-2px); box-shadow: var(--sh); }
@@ -4489,7 +4500,17 @@ window.addEventListener('resize', hideTip);
 
 let navStack = [];
 /* garante que toda troca/volta de página comece do topo (o scroller é a janela) */
-function scrollToTop(){ const c=$('#content'); if(c) c.scrollTop=0; try{ window.scrollTo({top:0,behavior:'instant'}); }catch(e){ window.scrollTo(0,0); } }
+function scrollToTop(){
+  const c=$('#content'); if(c) c.scrollTop=0;
+  const html=document.documentElement;
+  // desliga o scroll suave momentaneamente para garantir salto imediato ao topo
+  const prev=html.style.scrollBehavior; html.style.scrollBehavior='auto';
+  try{ window.scrollTo(0,0); }catch(e){}
+  document.body.scrollTop=0; html.scrollTop=0;
+  requestAnimationFrame(()=>{ try{ window.scrollTo(0,0); }catch(e){} html.style.scrollBehavior=prev; });
+}
+/* o navegador não deve restaurar a rolagem anterior ao trocar de tela (SPA) */
+try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }catch(e){}
 function nav(v, el, noHist){
   if(v==='admin' && !isOwner()) v='painel';
   if(!noHist && currentView && currentView!==v) navStack.push(currentView);
@@ -5773,9 +5794,9 @@ function simRendaHTML(){
     </div>
   </div>
   <div class="mstrip sim-kpis" style="grid-template-columns:repeat(4,1fr);margin-top:16px">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Número mágico ${hlp('magico')}</div><div class="vl" id="simMagico">—</div><div class="dl faint">patrimônio p/ a meta</div></div>
+    <div class="mcell" data-term="magico"><div class="nm" style="margin-bottom:8px">Número mágico</div><div class="vl" id="simMagico">—</div><div class="dl faint">patrimônio p/ a meta</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Independência em</div><div class="vl" id="simTempo">—</div><div class="dl faint">no ritmo atual</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Cobertura da meta ${hlp('cobertura')}</div><div class="vl" id="simCob">—</div><div class="dl faint">renda ÷ meta</div></div>
+    <div class="mcell" data-term="cobertura"><div class="nm" style="margin-bottom:8px">Cobertura da meta</div><div class="vl" id="simCob">—</div><div class="dl faint">renda ÷ meta</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos no período</div><div class="vl up" id="simProvT">—</div><div class="dl faint">reinvestidos</div></div>
   </div>`;
 }
@@ -5809,7 +5830,7 @@ function viewProventos(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Recebido (12m)</div><div class="vl priv-blur up">${brl(d.total12)}</div><div class="dl faint">renda passiva</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Média mensal</div><div class="vl priv-blur">${brl(d.media)}</div><div class="dl faint">por mês</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Crescimento a/a</div><div class="vl ${d.growth>=0?'up':'down'}">${gr}</div><div class="dl faint">vs 12m anteriores</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Yield on Cost ${hlp('yoc')}</div><div class="vl" style="color:var(--brand)">${pc(yoc,1)}%</div><div class="dl faint">renda s/ custo</div></div>
+    <div class="mcell" data-term="yoc"><div class="nm" style="margin-bottom:8px">Yield on Cost</div><div class="vl" style="color:var(--brand)">${pc(yoc,1)}%</div><div class="dl faint">renda s/ custo</div></div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Proventos por mês <span class="card-sub" style="margin-left:6px">· últimos 12 meses</span></div><span class="chip ilus" title="Estimado a partir do rendimento atual — conecte a fonte por data-com para valores exatos"><i class="fa-solid fa-flask"></i> estimado</span></div>
@@ -5959,7 +5980,7 @@ function viewFire(){
     <div>
       <div class="sim-result">
         <div class="sim-big"><div class="lbl">Despesas cobertas por dividendos</div><div class="val" id="fireCob">0%</div><div class="sub" id="fireCobSub">—</div></div>
-        <div class="sim-sec"><div class="lbl">Número mágico (capital-alvo) ${hlp('magico')}</div><div class="val" id="fireMagic">R$ 0</div><div class="sub" id="fireMagicSub">para viver de renda</div></div>
+        <div class="sim-sec" data-term="magico"><div class="lbl">Número mágico (capital-alvo)</div><div class="val" id="fireMagic">R$ 0</div><div class="sub" id="fireMagicSub">para viver de renda</div></div>
       </div>
       <div class="card card-pad">
         <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-flag-checkered"></i></span> Caminho até a liberdade</div><span class="chip chip-blue" id="fireEta">—</span></div>
@@ -7012,12 +7033,12 @@ function viewBacktest(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Retorno no período</div><div class="vl ${m.ret>=0?'up':'down'}">${m.ret>=0?'+':''}${pc(m.ret,1)}%</div><div class="dl faint">${m.meses} meses</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">vs CDI</div><div class="vl ${vs>=0?'up':'down'}">${vs>=0?'+':''}${pc(vs,1)} p.p.</div><div class="dl faint">CDI ${pc(m.retCdi,1)}%</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">vs IBOV</div><div class="vl ${vsi>=0?'up':'down'}">${vsi>=0?'+':''}${pc(vsi,1)} p.p.</div><div class="dl faint">IBOV ${pc(m.retIbov,1)}%</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Volatilidade ${hlp('vol')}</div><div class="vl">${pc(m.vol,1)}%</div><div class="dl faint">anualizada</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Maior queda ${hlp('mdd')}</div><div class="vl down">${pc(m.mdd,1)}%</div><div class="dl faint">pico → vale</div></div>
+    <div class="mcell" data-term="vol"><div class="nm" style="margin-bottom:8px">Volatilidade</div><div class="vl">${pc(m.vol,1)}%</div><div class="dl faint">anualizada</div></div>
+    <div class="mcell" data-term="mdd"><div class="nm" style="margin-bottom:8px">Maior queda</div><div class="vl down">${pc(m.mdd,1)}%</div><div class="dl faint">pico → vale</div></div>
   </div>
   <div class="mstrip" style="grid-template-columns:repeat(5,1fr);margin-top:12px">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Retorno anualizado ${hlp('cagr')}</div><div class="vl ${m.cagr>=0?'up':'down'}">${m.cagr>=0?'+':''}${pc(m.cagr,1)}%</div><div class="dl faint">CAGR a.a.</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Índice de Sharpe ${hlp('sharpe')}</div><div class="vl ${m.sharpe>=0?'up':'down'}">${pc(m.sharpe,2)}</div><div class="dl faint">retorno/risco vs CDI</div></div>
+    <div class="mcell" data-term="cagr"><div class="nm" style="margin-bottom:8px">Retorno anualizado</div><div class="vl ${m.cagr>=0?'up':'down'}">${m.cagr>=0?'+':''}${pc(m.cagr,1)}%</div><div class="dl faint">CAGR a.a.</div></div>
+    <div class="mcell" data-term="sharpe"><div class="nm" style="margin-bottom:8px">Índice de Sharpe</div><div class="vl ${m.sharpe>=0?'up':'down'}">${pc(m.sharpe,2)}</div><div class="dl faint">retorno/risco vs CDI</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Meses positivos</div><div class="vl">${pc(m.posPct,0)}%</div><div class="dl faint">dos ${m.meses} meses</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Melhor mês</div><div class="vl up">+${pc(m.bestM,1)}%</div><div class="dl faint">no período</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Pior mês</div><div class="vl down">${pc(m.worstM,1)}%</div><div class="dl faint">no período</div></div>
@@ -8546,7 +8567,15 @@ const TERM_CARDS={
   refProx:{ nome:'Próximo PIX', icon:'fa-calendar-check', descricao:'A data do próximo pagamento das suas comissões, feito automaticamente via PIX.', interpretacao:'Os pagamentos são mensais enquanto houver indicados ativos.' },
   cadastros:{ nome:'Cadastros', icon:'fa-users', descricao:'O total de pessoas que criaram conta na Lastro — clientes pagantes somados aos leads gratuitos.', interpretacao:'Base total de usuários; cresce a cada novo cadastro.' },
   pagantes:{ nome:'Clientes pagantes', icon:'fa-crown', descricao:'Pessoas com assinatura ativa (Premium ou Investidor Pro), gerando receita recorrente.', interpretacao:'Quanto maior a fatia de pagantes sobre o total, mais saudável o negócio.' },
-  leads:{ nome:'Leads', icon:'fa-user-plus', descricao:'Cadastros que ainda estão no plano gratuito — oportunidades de conversão para assinante.', interpretacao:'Ative os que estão em teste antes do prazo acabar para converter.' }
+  leads:{ nome:'Leads', icon:'fa-user-plus', descricao:'Cadastros que ainda estão no plano gratuito — oportunidades de conversão para assinante.', interpretacao:'Ative os que estão em teste antes do prazo acabar para converter.' },
+  yoc:{ nome:'Yield on Cost', icon:'fa-seedling', descricao:'O dividend yield calculado sobre o preço que você pagou, não sobre a cotação atual.', formula:'Proventos anuais ÷ preço médio pago', interpretacao:'Mostra o quanto sua renda rende sobre o custo original — tende a crescer com o tempo.', faixaIdeal:'Quanto maior, melhor.' },
+  vol:{ nome:'Volatilidade', icon:'fa-wave-square', descricao:'O quanto o valor da carteira oscila ao longo do tempo (anualizada).', formula:'Desvio-padrão dos retornos mensais × √12', interpretacao:'Quanto maior, mais o patrimônio sobe e desce — mais risco.', faixaIdeal:'Depende do seu perfil: menor = mais estável.' },
+  sharpe:{ nome:'Índice de Sharpe', icon:'fa-scale-balanced', descricao:'Mede o retorno obtido acima do CDI para cada unidade de risco assumida.', formula:'(Retorno − CDI) ÷ Volatilidade', interpretacao:'Acima de 1 já é bom; quanto maior, melhor a relação retorno/risco.', faixaIdeal:'> 1 é considerado saudável.' },
+  mdd:{ nome:'Maior queda (drawdown)', icon:'fa-arrow-trend-down', descricao:'A maior queda do topo ao fundo no período analisado.', formula:'(Vale − Topo) ÷ Topo', interpretacao:'Representa o pior tombo que a carteira teria enfrentado — teste do seu estômago.', pontosAtencao:'Quedas grandes exigem mais tempo para recuperar.' },
+  cagr:{ nome:'Retorno anualizado (CAGR)', icon:'fa-chart-line', descricao:'A taxa média de crescimento por ano, como se o retorno tivesse sido constante.', formula:'(Valor final ÷ inicial)^(1/anos) − 1', interpretacao:'Facilita comparar investimentos de prazos diferentes.', faixaIdeal:'Compare com CDI e IBOV no mesmo período.' },
+  magico:{ nome:'Número mágico', icon:'fa-wand-sparkles', descricao:'O patrimônio que você precisa acumular para viver dos rendimentos, sem vender ativos.', formula:'Renda mensal desejada × 12 ÷ rendimento anual (%)', interpretacao:'É a sua meta de liberdade financeira em reais.', faixaIdeal:'Quanto antes atingir, mais cedo a independência.' },
+  dyMed:{ nome:'DY médio da carteira', icon:'fa-percent', descricao:'A média do dividend yield dos seus ativos, ponderada pelo valor de cada um.', formula:'Proventos anuais da carteira ÷ patrimônio', interpretacao:'Estima quanto a carteira paga de proventos por ano sobre o patrimônio.', faixaIdeal:'FIIs costumam elevar essa média.' },
+  cobertura:{ nome:'Cobertura da meta', icon:'fa-bullseye', descricao:'Quanto da sua renda-alvo os proventos projetados já cobrem.', formula:'Renda projetada ÷ renda desejada × 100', interpretacao:'100% significa que a carteira paga toda a renda que você quer.', faixaIdeal:'Objetivo: chegar e passar de 100%.' }
 };
 function termTipHTML(key){ const d=TERM_CARDS[key]; if(!d) return '';
   const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
