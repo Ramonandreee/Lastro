@@ -2194,6 +2194,10 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .ad-stat-b span { font-size:12px; color:var(--ink-2); font-weight:600; white-space:nowrap; } .ad-stat-b small { display:block; font-size:11px; color:var(--ink-3); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .hlp { display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:var(--surface-3); color:var(--ink-3); font-size:9px; font-weight:700; cursor:help; vertical-align:middle; }
 .hlp:hover { background:var(--brand-l); color:var(--brand); }
+/* rótulo de termo clicável (padrão único do site) — pontinho discreto no lugar do "?" */
+.term { cursor:pointer; display:inline-flex; align-items:center; gap:5px; }
+.term::after { content:""; width:5px; height:5px; border-radius:50%; background:var(--ink-4); opacity:.5; flex:none; transition:opacity .16s var(--ease), background .16s var(--ease); }
+.term:hover::after { opacity:1; background:var(--brand); }
 .ad-badge.ad-ok { background:var(--up-l); color:var(--up); }
 .ref-mine-sum { display:flex; gap:22px; flex-wrap:wrap; padding:2px 0 14px; margin-bottom:8px; border-bottom:1px solid var(--line); }
 .rms { display:flex; flex-direction:column; gap:1px; }
@@ -5044,7 +5048,7 @@ function posCard(g){
     <div class="pc-extra" id="more-${g.tk}" hidden>
       <div class="pc-extra-t">Dados complementares</div>
       ${row('Valor investido', `<span class="mono priv-blur">${brl(g.custo)}</span>`)}
-      ${row('Preço médio com proventos '+hlp('pmProv'), `<span class="mono priv-blur">${fmtCur(pmProv,g.cur)}</span>`)}
+      ${row(termLabel('pmProv','Preço médio com proventos'), `<span class="mono priv-blur">${fmtCur(pmProv,g.cur)}</span>`)}
       ${row('Resultado sem proventos', `<span class="mono ${g.lucro>=0?'up':'down'} priv-blur">${g.lucro>=0?'+':''}${brl(g.lucro)} · ${g.lucro>=0?'+':''}${pc(g.lp,1)}%</span>`)}
       <div class="pc-extra-t" style="margin-top:14px">Histórico de aportes</div>
       ${lotsHtml}
@@ -5760,7 +5764,7 @@ function simRendaHTML(){
         <input type="range" id="simAp" min="0" max="20000" step="100" value="2000" oninput="runSim()">
       </div>
       <div class="sim-control">
-        <div class="lbl"><span class="n">DY médio da carteira ${hlp('dyMed')}</span><span class="v" id="simDyV">11,0%</span></div>
+        <div class="lbl"><span class="n">${termLabel('dyMed','DY médio da carteira')}</span><span class="v" id="simDyV">11,0%</span></div>
         <input type="range" id="simDy" min="6" max="16" step="0.1" value="11" oninput="runSim()">
       </div>
       <div class="sim-control">
@@ -6086,7 +6090,7 @@ function runDarf(){
     <div class="metric"><div class="ml">Ganho de capital</div><div class="mv ${cls}">${ganho>=0?'+':''}${brl(ganho)}</div></div>
     ${isento?`<div class="metric"><div class="ml">Isenção (vendas &lt; R$ 20k/mês)</div><div class="mv up">Isento ✓</div></div>`:''}
     <div class="divider"></div>
-    <div class="metric"><div class="ml" style="font-weight:700">DARF a pagar (${(aliq*100).toFixed(0)}%) ${hlp('darf')}</div><div class="mv" style="font-weight:700;color:${imposto>0?'var(--down)':'var(--brand)'}">${brl(imposto)}</div></div>
+    <div class="metric"><div class="ml" style="font-weight:700">${termLabel('darf',`DARF a pagar (${(aliq*100).toFixed(0)}%)`)}</div><div class="mv" style="font-weight:700;color:${imposto>0?'var(--down)':'var(--brand)'}">${brl(imposto)}</div></div>
   </div>
   <div class="illus-note" style="margin-top:10px"><i class="fa-solid fa-circle-info"></i> Considera apenas esta venda. A isenção de R$ 20k vale para o total de vendas de ações no mês; compense prejuízos acumulados quando aplicável.</div>`;
 }
@@ -6134,7 +6138,7 @@ function viewScore(){
   }).join('');
 
   return `
-  <div class="sec-title">Score Lastro™ ${hlp('scoreLastro')}</div>
+  <div class="sec-title">${termLabel('scoreLastro','Score Lastro™')}</div>
   <div class="sec-desc">Um índice proprietário de 0 a 100 que mede a qualidade de cada ativo combinando quatro pilares: sustentabilidade do dividendo (35%), valuation P/VP (30%), liquidez (20%) e consistência histórica (15%). Transparente e auditável.</div>
 
   <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">${cards}</div>
@@ -7241,7 +7245,7 @@ function viewRaioX(){
   <div class="rx-grade card card-pad" style="margin-top:16px;border-color:${d.color}55">
     <div class="rx-grade-badge" style="background:${d.color}14;color:${d.color};border-color:${d.color}55"><span class="rx-grade-letter">${d.grade}</span></div>
     <div class="rx-grade-body">
-      <div class="rx-grade-h">Nota de Diversificação Lastro™ ${hlp('notaLastro')} · <strong style="color:${d.color}">${d.label}</strong> <span class="mono faint">${d.score}/100</span></div>
+      <div class="rx-grade-h">${termLabel('notaLastro','Nota de Diversificação Lastro™')} · <strong style="color:${d.color}">${d.label}</strong> <span class="mono faint">${d.score}/100</span></div>
       <div class="rx-grade-track"><i style="width:${d.score}%;background:${d.color}"></i></div>
       <ul class="rx-reasons">${reasons}</ul>
     </div>
@@ -8575,8 +8579,14 @@ const TERM_CARDS={
   cagr:{ nome:'Retorno anualizado (CAGR)', icon:'fa-chart-line', descricao:'A taxa média de crescimento por ano, como se o retorno tivesse sido constante.', formula:'(Valor final ÷ inicial)^(1/anos) − 1', interpretacao:'Facilita comparar investimentos de prazos diferentes.', faixaIdeal:'Compare com CDI e IBOV no mesmo período.' },
   magico:{ nome:'Número mágico', icon:'fa-wand-sparkles', descricao:'O patrimônio que você precisa acumular para viver dos rendimentos, sem vender ativos.', formula:'Renda mensal desejada × 12 ÷ rendimento anual (%)', interpretacao:'É a sua meta de liberdade financeira em reais.', faixaIdeal:'Quanto antes atingir, mais cedo a independência.' },
   dyMed:{ nome:'DY médio da carteira', icon:'fa-percent', descricao:'A média do dividend yield dos seus ativos, ponderada pelo valor de cada um.', formula:'Proventos anuais da carteira ÷ patrimônio', interpretacao:'Estima quanto a carteira paga de proventos por ano sobre o patrimônio.', faixaIdeal:'FIIs costumam elevar essa média.' },
-  cobertura:{ nome:'Cobertura da meta', icon:'fa-bullseye', descricao:'Quanto da sua renda-alvo os proventos projetados já cobrem.', formula:'Renda projetada ÷ renda desejada × 100', interpretacao:'100% significa que a carteira paga toda a renda que você quer.', faixaIdeal:'Objetivo: chegar e passar de 100%.' }
+  cobertura:{ nome:'Cobertura da meta', icon:'fa-bullseye', descricao:'Quanto da sua renda-alvo os proventos projetados já cobrem.', formula:'Renda projetada ÷ renda desejada × 100', interpretacao:'100% significa que a carteira paga toda a renda que você quer.', faixaIdeal:'Objetivo: chegar e passar de 100%.' },
+  scoreLastro:{ nome:'Score Lastro™', icon:'fa-award', descricao:'Nota proprietária de 0 a 100 que resume a qualidade de um ativo combinando vários indicadores fundamentalistas.', formula:'Valuation + rentabilidade + endividamento + pagamento de proventos', interpretacao:'Quanto maior, mais sólido é o ativo pelos fundamentos.', faixaIdeal:'Acima de 70 é considerado forte.' },
+  notaLastro:{ nome:'Nota de Diversificação Lastro™', icon:'fa-shield-halved', descricao:'Nota de 0 a 100 que resume o equilíbrio da sua carteira.', formula:'Diversificação entre classes e setores + concentração + qualidade dos ativos', interpretacao:'Quanto maior, mais equilibrada e resiliente a carteira.', faixaIdeal:'Acima de 70 indica boa diversificação.' },
+  darf:{ nome:'DARF', icon:'fa-file-invoice-dollar', descricao:'Guia de pagamento do imposto sobre o lucro nas vendas de ativos.', formula:'Lucro tributável × alíquota (15% ações · 20% FIIs/day trade)', interpretacao:'Ações têm isenção até R$ 20 mil vendidos no mês; o que passa é tributado.', pontosAtencao:'Emitir e pagar até o último dia útil do mês seguinte à venda.' },
+  pmProv:{ nome:'Preço médio com proventos', icon:'fa-tags', descricao:'Seu preço médio descontando os proventos já recebidos daquele ativo.', formula:'Preço médio − proventos recebidos por cota', interpretacao:'Mostra o custo "líquido" da posição; pode até ficar negativo em ativos muito antigos.', faixaIdeal:'Quanto menor, mais a posição já se pagou.' }
 };
+/* rótulo de termo clicável — abre a mesma ficha dos indicadores (sem "?") */
+function termLabel(key, text){ return `<span class="term" data-term="${key}">${text}</span>`; }
 function termTipHTML(key){ const d=TERM_CARDS[key]; if(!d) return '';
   const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
   return `<div class="tipcard"><div class="tc-h"><span class="tc-ico"><i class="fa-solid ${d.icon||'fa-circle-info'}"></i></span>${esc(d.nome)}</div><p>${esc(d.descricao)}</p>${row('Como é calculado', d.formula?`<b>${esc(d.formula)}</b>`:'')}${row('Como interpretar', esc(d.interpretacao||''))}${row('Referência', esc(d.faixaIdeal||''))}${d.pontosAtencao?row('⚠ Atenção', esc(d.pontosAtencao)):''}<div class="tc-close" onclick="hideTip()">Entendi</div></div>`;
@@ -8662,7 +8672,7 @@ function renderIndHistory(){
     <div class="hs"><div class="l">Máxima</div><div class="v">${fmtMetric(id,mx)}</div></div>
     <div class="hs"><div class="l">Mínima</div><div class="v">${fmtMetric(id,mn)}</div></div>
     <div class="hs"><div class="l">Mediana</div><div class="v">${fmtMetric(id,med)}</div></div>
-    <div class="hs"><div class="l">Volatilidade ${hlp('vol')}</div><div class="v">${cv?pc(cv,0)+'%':'—'}</div></div>`;
+    <div class="hs"><div class="l">${termLabel('vol','Volatilidade')}</div><div class="v">${cv?pc(cv,0)+'%':'—'}</div></div>`;
   const ins=indInsights(id,a,k,val,h);
   $('#indMAnalysis').innerHTML = `<div class="hist-an-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Insights automáticos</div>${ins.length?`<ul class="hist-ins">${ins.join('')}</ul>`:`<p>${indAnalysis(id,a,k,val)}</p>`}<div class="hist-note">Série histórica ilustrativa · valor atual, média e percentil do setor com dados reais.</div>`;
 }
