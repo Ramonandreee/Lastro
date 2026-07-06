@@ -1323,17 +1323,13 @@ table.tbl tbody tr:hover { background: var(--surface-2); }
 .filters-adv .fbadge { min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--brand); color:#fff; font-size:11px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
 .filters-adv.on .fbadge { background:var(--canvas); color:var(--ink); }
 .af-panel { margin-bottom:16px; animation:indIn .35s var(--ease-out) both; }
-.af-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
-.af-presets { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
-.af-presets button { display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); color:var(--ink-2); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
-.af-presets button:hover { border-color:var(--brand); color:var(--brand); }
-.af-presets button i { font-size:11px; color:var(--brand); }
-.af-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
-@media (max-width:560px){ .af-grid { grid-template-columns:1fr; } }
-.af-ctrl { display:flex; flex-direction:column; gap:7px; }
-.af-lbl { display:flex; align-items:center; justify-content:space-between; font-size:12.5px; }
+.af-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--line); }
+.af-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px 32px; }
+@media (max-width:560px){ .af-grid { grid-template-columns:1fr; gap:20px; } }
+.af-ctrl { display:flex; flex-direction:column; gap:10px; }
+.af-lbl { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; }
 .af-lbl > span:first-child { color:var(--ink-2); font-weight:500; }
-.af-v { font-family:var(--mono); font-size:12.5px; color:var(--ink); font-weight:600; }
+.af-v { font-family:var(--mono); font-size:13px; color:var(--ink); font-weight:600; white-space:nowrap; }
 .af-ctrl input[type=range] { width:100%; }
 /* campo de busca e selects compartilham a MESMA altura, raio e peso visual */
 .search-inp {
@@ -4977,8 +4973,8 @@ function viewAssets(kind){
     ${regSelect}
     ${segSelect}
     <div class="filters-row2 ${advBtn?'has-adv':''}">
-      ${sortSelect}
       ${advBtn}
+      ${sortSelect}
     </div>
   </div>
   ${advPanel}
@@ -4997,11 +4993,6 @@ function assetFiltersPanel(kind){
   const ctrl=(id,label,val,min,max,step,cur)=>`<div class="af-ctrl"><div class="af-lbl"><span>${label}</span><span class="af-v" id="afv_${id}_${kind}">${cur}</span></div><input type="range" id="af_${id}_${kind}" min="${min}" max="${max}" step="${step}" value="${val}" oninput="assetFilterUpd('${kind}')"></div>`;
   return `<div class="card card-pad af-panel">
     <div class="af-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-sliders"></i></span> Filtros fundamentalistas</div><button class="btn btn-ghost btn-sm" onclick="assetFilterReset('${kind}')"><i class="fa-solid fa-rotate-left"></i> Limpar</button></div>
-    <div class="af-presets">
-      <button onclick="assetFilterPreset('${kind}','dividendos')"><i class="fa-solid fa-coins"></i> Dividendos</button>
-      <button onclick="assetFilterPreset('${kind}','qualidade')"><i class="fa-solid fa-award"></i> Qualidade</button>
-      <button onclick="assetFilterPreset('${kind}','barganha')"><i class="fa-solid fa-magnifying-glass-dollar"></i> Barganha</button>
-    </div>
     <div class="af-grid">
       ${ctrl('dy','DY mínimo', s.fdyMin, 0,15,0.5, pc(s.fdyMin,1)+'%')}
       ${ctrl('sc','Score Lastro mínimo', s.fscoreMin, 0,95,5, s.fscoreMin)}
