@@ -1296,9 +1296,9 @@ table.tbl tbody tr:hover { background: var(--surface-2); }
 .score-dot { width: 8px; height: 8px; border-radius: 50%; }
 
 /* filters */
-.filters { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
-/* busca e selects de topo ocupam a linha inteira, com altura fixa */
-.filters > .search-inp { flex:0 0 auto; width:100%; min-width:0; height:46px; }
+/* GRID (não flex): os filhos não herdam flex-grow (que esticava vertical no iOS) */
+.filters { display:grid; gap:10px; margin-bottom:18px; }
+.filters > .search-inp { width:100%; min-width:0; height:46px; }
 .filters > .sel-wrap { width:100%; height:46px; }
 /* linha inferior: Ordenar + Filtros lado a lado (2 colunas) */
 .filters-row2 { display:grid; grid-template-columns:1fr; gap:10px; }
