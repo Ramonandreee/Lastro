@@ -1297,20 +1297,26 @@ table.tbl tbody tr:hover { background: var(--surface-2); }
 
 /* filters */
 .filters { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
-/* a busca é bloco de altura fixa (não deve esticar vertical no flex-column) */
+/* busca e selects de topo ocupam a linha inteira, com altura fixa */
 .filters > .search-inp { flex:0 0 auto; width:100%; min-width:0; height:46px; }
-/* GRID (não flex-wrap) evita o bug de espaçamento gigante no iOS */
-.filters-controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; align-items:stretch; }
-.filters-controls > * { min-width:0; }
-.filters-controls .sel-wrap { height:46px; }
+.filters > .sel-wrap { width:100%; height:46px; }
+/* linha inferior: Ordenar + Filtros lado a lado (2 colunas) */
+.filters-row2 { display:grid; grid-template-columns:1fr; gap:10px; }
+.filters-row2.has-adv { grid-template-columns:1fr 1fr; }
+.filters-row2 > * { min-width:0; }
+.filters-row2 .sel-wrap { width:100%; height:46px; }
+/* Ordenar: rótulo fixo em vez do valor selecionado (evita "Score Lastro" em destaque) */
+.sel-ordenar .sel-ghost { color:transparent; }
+.sel-ordenar .sel-ghost option { color:var(--ink); }
+.sel-ordenar .sel-fixed { position:absolute; left:40px; font-size:14px; font-weight:600; color:var(--ink-2); pointer-events:none; }
 /* botão de filtros fundamentalistas (Rastreador embutido) */
 .filters-adv { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:46px; box-sizing:border-box; padding:0 16px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:600; white-space:nowrap; width:100%; }
 @media (max-width:640px){
-  /* mobile: uma coluna, controles finos, sem cortar texto e sem gaps enormes */
-  .filters-controls { grid-template-columns:1fr; gap:9px; }
-  .filters > .search-inp, .filters-controls .sel-wrap, .filters-adv { height:44px; border-radius:var(--r-sm); }
-  .filters-controls .sel { border-radius:var(--r-sm); font-size:14.5px; }
+  /* mobile: controles finos */
+  .filters > .search-inp, .filters > .sel-wrap, .filters-row2 .sel-wrap, .filters-adv { height:44px; border-radius:var(--r-sm); }
+  .filters .sel { border-radius:var(--r-sm); font-size:14.5px; }
   .filters > .search-inp input { font-size:14.5px; }
+  .sel-ordenar .sel-fixed { font-size:14.5px; }
 }
 .filters-adv:hover { border-color:var(--line-2); color:var(--ink); }
 .filters-adv.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
@@ -4954,9 +4960,8 @@ function viewAssets(kind){
   const sortOpts = cfg.sorts.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('');
   const segSelect = cfg.segs.length ? `<div class="sel-wrap grow"><select class="sel" onchange="tblFilter('${kind}','seg',this.value)">${segOpts}</select><i class="fa-solid fa-chevron-down chev"></i></div>` : '';
   const regSelect = cfg.regions ? `<div class="sel-wrap grow"><select class="sel" onchange="tblFilter('${kind}','reg',this.value)"><option value="">Nacional + Internacional</option>${cfg.regions.map(r=>`<option>${r}</option>`).join('')}</select><i class="fa-solid fa-chevron-down chev"></i></div>` : '';
-  // ordenação: quando o primeiro critério é o Score Lastro, vira componente proprietário em destaque
-  const sortIsScore = cfg.sorts[0] && cfg.sorts[0][0]==='score';
-  const sortSelect = `<div class="sel-wrap grow has-lead ${sortIsScore?'sel-score':''}"><i class="fa-solid ${sortIsScore?'fa-award':'fa-arrow-down-wide-short'} lead"></i><select class="sel" onchange="tblFilter('${kind}','sort',this.value)">${sortOpts}</select><i class="fa-solid fa-chevron-down chev"></i></div>`;
+  // ordenação: rótulo fixo "Ordenar" (o valor atual não fica em destaque)
+  const sortSelect = `<div class="sel-wrap sel-ordenar has-lead"><i class="fa-solid fa-arrow-down-wide-short lead"></i><select class="sel sel-ghost" aria-label="Ordenar por" onchange="tblFilter('${kind}','sort',this.value)">${sortOpts}</select><span class="sel-fixed">Ordenar</span><i class="fa-solid fa-chevron-down chev"></i></div>`;
   const badge = cfg.score ? `<span class="chip chip-gold"><i class="fa-solid fa-award" style="font-size:10px"></i> Com Score Lastro</span>`
     : cfg.intl ? `<span class="chip chip-blue"><i class="fa-solid fa-dollar-sign" style="font-size:10px"></i> Cotações em USD</span>`
     : `<span class="chip chip-neu">${cfg.label}</span>`;
@@ -4969,9 +4974,9 @@ function viewAssets(kind){
   return `
   <div class="filters">
     <div class="search-inp"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="Buscar por nome ou código" value="${esc(st.q||'')}" oninput="tblFilter('${kind}','q',this.value)"></div>
-    <div class="filters-controls">
-      ${regSelect}
-      ${segSelect}
+    ${regSelect}
+    ${segSelect}
+    <div class="filters-row2 ${advBtn?'has-adv':''}">
       ${sortSelect}
       ${advBtn}
     </div>
