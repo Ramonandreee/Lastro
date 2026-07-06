@@ -429,6 +429,10 @@ body.view-inicio .topbar-brand { display:flex; }
 .acct-wrap { position:relative; }
 .acct-menu { position:absolute; right:0; top:calc(100% + 8px); z-index:120; width:248px; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-lg); box-shadow:var(--sh-xl); padding:7px; display:none; transform-origin:top right; }
 .acct-menu.open { display:block; animation:acctIn .16s var(--ease-out); }
+/* scrim transparente: intercepta o 1º toque fora (fecha o menu sem tocar no fundo) */
+.acct-scrim { position:fixed; inset:0; z-index:150; display:none; background:transparent; }
+.acct-scrim.show { display:block; }
+body.acct-open .topbar { z-index:200; }   /* topbar (e o menu dentro dela) acima do scrim */
 @keyframes acctIn { from{opacity:0; transform:translateY(-6px) scale(.97);} to{opacity:1; transform:none;} }
 .acct-head { display:flex; align-items:center; gap:11px; padding:9px 10px 11px; }
 .acct-head .avatar { width:38px; height:38px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; color:#fff; background:linear-gradient(150deg,#23B07E,#0E7C5A 60%,#09533C); }
@@ -3711,8 +3715,13 @@ function acctMenuHTML(){
     ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
     ${themeRow}`;
 }
-function toggleAcctMenu(e){ if(e) e.stopPropagation(); const m=$('#acctMenu'); if(!m) return; if(m.classList.contains('open')){ m.classList.remove('open'); return; } m.innerHTML=acctMenuHTML(); m.classList.add('open'); }
-function closeAcctMenu(){ const m=$('#acctMenu'); if(m) m.classList.remove('open'); }
+/* scrim invisível: o primeiro toque fora fecha o menu SEM interagir com o fundo */
+function ensureAcctScrim(){ let s=document.getElementById('acctScrim'); if(!s){ s=document.createElement('div'); s.id='acctScrim'; s.className='acct-scrim';
+    const swallow=ev=>{ ev.preventDefault(); ev.stopPropagation(); closeAcctMenu(); };
+    s.addEventListener('click', swallow); s.addEventListener('touchend', swallow, {passive:false});
+    document.body.appendChild(s); } return s; }
+function toggleAcctMenu(e){ if(e) e.stopPropagation(); const m=$('#acctMenu'); if(!m) return; if(m.classList.contains('open')){ closeAcctMenu(); return; } m.innerHTML=acctMenuHTML(); m.classList.add('open'); document.body.classList.add('acct-open'); ensureAcctScrim().classList.add('show'); }
+function closeAcctMenu(){ const m=$('#acctMenu'); if(m) m.classList.remove('open'); document.body.classList.remove('acct-open'); const s=document.getElementById('acctScrim'); if(s) s.classList.remove('show'); }
 const APP_VERSION='1.0.0';
 function supportWhatsapp(){
   const u=currentUser(); const plan=planTier()==='pro'?'Investidor Pro':isPremium()?'Premium':'Gratuito';
@@ -3769,11 +3778,7 @@ function openSupport(){
     </div>`;
   $('#authModal').classList.add('open');
 }
-/* fecha o menu do avatar ao tocar/clicar fora, ou ao rolar/redimensionar */
-function acctOutside(e){ const m=$('#acctMenu'); if(m && m.classList.contains('open') && !e.target.closest('.acct-wrap')) closeAcctMenu(); }
-document.addEventListener('click', acctOutside);
-document.addEventListener('touchstart', acctOutside, {passive:true});
-window.addEventListener('scroll', ()=>{ const m=$('#acctMenu'); if(m && m.classList.contains('open')) closeAcctMenu(); }, {passive:true});
+/* o fechamento por toque fora é feito pelo scrim (intercepta o toque). Só fecha em resize. */
 window.addEventListener('resize', ()=>{ const m=$('#acctMenu'); if(m && m.classList.contains('open')) closeAcctMenu(); });
 function openAccount(){ toggleAcctMenu(); }
 /* confirmação genérica (evita logout acidental, etc.) */
@@ -5071,9 +5076,10 @@ function renderAssets(kind){
 }
 /* janela de números de página (1 … 4 5 6 … N) */
 function pageWindow(page, pages){
-  if(pages<=7) return Array.from({length:pages},(_,i)=>i+1);
-  const out=[1]; const lo=Math.max(2,page-1), hi=Math.min(pages-1,page+1);
-  if(lo>2) out.push('…'); for(let p=lo;p<=hi;p++) out.push(p); if(hi<pages-1) out.push('…'); out.push(pages);
+  // janela compacta: no máximo 3 números (com as setas = 5 botões clicáveis)
+  if(pages<=3) return Array.from({length:pages},(_,i)=>i+1);
+  let hi=Math.min(pages, Math.max(page+1, 3)); let lo=Math.max(1, hi-2); hi=Math.min(pages, lo+2);
+  const out=[]; for(let p=lo;p<=hi;p++) out.push(p);
   return out;
 }
 function pagerHTML(kind, page, pages, total, ps, start, shown){
