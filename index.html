@@ -454,11 +454,10 @@ body.view-inicio .topbar-brand { display:flex; }
 .acct-theme-btns button.on { background:var(--surface); color:var(--gold); box-shadow:var(--sh-sm); }
 .acct-login { width:100%; justify-content:center; margin:4px 2px 2px; }
 /* paginação da lista de ativos */
-.pager { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:14px; padding:14px 2px 2px; border-top:1px solid var(--line); }
+.pager { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:16px; padding:16px 2px 4px; border-top:1px solid var(--line); }
+@media (max-width:520px){ .pager { flex-direction:column; gap:12px; } }
 .pg-info { font-size:12px; color:var(--ink-4); display:inline-flex; align-items:center; gap:5px; letter-spacing:.01em; }
 .pg-info .pg-range { color:var(--ink-2); font-weight:600; font-variant-numeric:tabular-nums; }
-.pg-right { display:inline-flex; align-items:center; gap:12px; }
-.pg-selwrap { display:inline-flex; align-items:center; gap:7px; font-size:11.5px; color:var(--ink-4); font-weight:500; }
 .pg-sel { appearance:none; -webkit-appearance:none; height:29px; padding:0 26px 0 11px; font-size:12px; font-weight:600; color:var(--ink-3); border:1px solid var(--line); border-radius:999px; background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238A93A0' stroke-width='3' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center; cursor:pointer; transition:border-color .14s var(--ease); }
 .pg-sel:hover { border-color:var(--line-2); color:var(--ink); }
 .pg-nav { display:inline-flex; align-items:center; gap:4px; background:var(--surface-3); padding:4px; border-radius:12px; }
@@ -2092,8 +2091,8 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 /* abas de autenticação */
 /* modais centralizados vertical e horizontalmente */
 /* trava o scroll do fundo quando qualquer camada está aberta (menu, modal, busca) */
-body:has(.modal-scrim.open), body:has(.search-modal.open), body.nav-open { overflow:hidden; }
-html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) { overflow:hidden; overscroll-behavior:none; }
+body:has(.modal-scrim.open), body:has(.search-modal.open), body.nav-open, body:has(.acct-menu.open) { overflow:hidden; }
+html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open), html:has(.acct-menu.open) { overflow:hidden; overscroll-behavior:none; }
 .modal-scrim { background:rgba(10,14,19,.55) !important; backdrop-filter:blur(5px); }
 /* diálogo de confirmação */
 .confirm-card { width:380px; max-width:92vw; padding:24px 24px 20px; text-align:center; }
@@ -3770,7 +3769,12 @@ function openSupport(){
     </div>`;
   $('#authModal').classList.add('open');
 }
-document.addEventListener('click', e=>{ if(!e.target.closest('.acct-wrap')) closeAcctMenu(); });
+/* fecha o menu do avatar ao tocar/clicar fora, ou ao rolar/redimensionar */
+function acctOutside(e){ const m=$('#acctMenu'); if(m && m.classList.contains('open') && !e.target.closest('.acct-wrap')) closeAcctMenu(); }
+document.addEventListener('click', acctOutside);
+document.addEventListener('touchstart', acctOutside, {passive:true});
+window.addEventListener('scroll', ()=>{ const m=$('#acctMenu'); if(m && m.classList.contains('open')) closeAcctMenu(); }, {passive:true});
+window.addEventListener('resize', ()=>{ const m=$('#acctMenu'); if(m && m.classList.contains('open')) closeAcctMenu(); });
 function openAccount(){ toggleAcctMenu(); }
 /* confirmação genérica (evita logout acidental, etc.) */
 function showConfirm(title, msg, yesLabel, onYes, danger, opts){
@@ -5040,7 +5044,7 @@ function renderAssets(kind){
   data.sort((a,b)=> ((a[st.sort]??0)-(b[st.sort]??0))*st.dir );
 
   // paginação (performance: renderiza só a página atual)
-  const total=data.length, ps=st.pageSize||assetPageSize(), pages=Math.max(1,Math.ceil(total/ps));
+  const total=data.length, ps=30, pages=Math.max(1,Math.ceil(total/ps));
   if(st.page>pages) st.page=pages; if(st.page<1) st.page=1;
   const start=(st.page-1)*ps;
   const pageData=data.slice(start, start+ps);
@@ -5078,10 +5082,7 @@ function pagerHTML(kind, page, pages, total, ps, start, shown){
   const nav = pages>1 ? `<div class="pg-nav" role="navigation" aria-label="Paginação">${btn(page>1?page-1:0,'<i class="fa-solid fa-chevron-left" aria-hidden="true"></i>','pg-arrow','Página anterior')}${nums}${btn(page<pages?page+1:0,'<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>','pg-arrow','Próxima página')}</div>` : '';
   return `<div class="pager">
     <span class="pg-info"><span class="pg-range">${start+1}–${start+shown}</span> de ${total}</span>
-    <div class="pg-right">
-      ${nav}
-      <label class="pg-selwrap"><span>Exibir</span><select class="pg-sel" aria-label="Ativos por página" onchange="setPageSize('${kind}',this.value)">${[30,50,100].map(n=>`<option value="${n}" ${n===ps?'selected':''}>${n}</option>`).join('')}</select></label>
-    </div>
+    ${nav}
   </div>`;
 }
 function gotoPage(kind, p){ tableState[kind].page=+p; renderAssets(kind); const c=$('#content'); if(c) c.scrollTop=0; window.scrollTo({top:0,behavior:'smooth'}); }
