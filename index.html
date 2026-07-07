@@ -5096,6 +5096,28 @@ function assetFilterPreset(kind,name){
 }
 function assetFilterReset(kind){ Object.assign(tableState[kind], {fdyMin:0,fscoreMin:0,fpvpMax:3,fplMax:40,froeMin:0,fliqMin:0}); tableState[kind].page=1; render(kind); }
 
+/* fundamentos reais (brapi) para as linhas visíveis da listagem */
+const FUND_LOADED = new Set();
+function fundamentalsEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.FUNDAMENTALS_ENDPOINT) || '/api/fundamentals'; }
+async function loadListFundamentals(kind, tickers){
+  if(!['acoes','fiis','bdrs'].includes(kind)) return;
+  const want=[...new Set(tickers)].filter(tk=>!FUND_LOADED.has(tk));
+  if(!want.length) return;
+  want.forEach(tk=>FUND_LOADED.add(tk));           // evita refetch (mesmo se vier vazio)
+  try{
+    const r=await fetch(`${fundamentalsEndpoint()}?symbols=${encodeURIComponent(want.join(','))}`);
+    if(!r.ok) return;
+    const d=await r.json(); const res=(d&&d.results)||[];
+    let any=false;
+    res.forEach(q=>{ const lk=assetLookup(q.symbol); if(!lk) return; const o=lk.a, kk=lk.k;
+      const setA=(key,v)=>{ if(v!=null) o[key]=v; };
+      if(kk==='acoes'){ setA('pl',q.pl); setA('pvp',q.pvp); setA('dy',q.dy); setA('roe',q.roe); setA('mgl',q.mgl); }
+      else { setA('pvp',q.pvp); setA('dy',q.dy); }
+      any=true;
+    });
+    if(any && currentView===kind) renderAssets(kind);
+  }catch(e){}
+}
 function renderAssets(kind){
   const cfg = ASSET_CFG[kind], st = tableState[kind];
   let data = cfg.data().slice();
@@ -5136,6 +5158,7 @@ function renderAssets(kind){
     : `<tbody><tr class="no-hover"><td colspan="${colspan}">${emptyState('fa-magnifying-glass','Nenhum ativo encontrado','Ajuste a busca ou os filtros para ver resultados.')}</td></tr></tbody>`;
   $('#dataTbl').innerHTML = `<thead>${thead}</thead>${body}`;
   const pg = $('#tblPager'); if(pg) pg.innerHTML = total ? pagerHTML(kind, st.page, pages, total, ps, start, pageData.length) : '';
+  loadListFundamentals(kind, pageData.map(a=>a.tk));   // completa fundamentos reais das linhas visíveis
 }
 /* janela de números de página (1 … 4 5 6 … N) */
 function pageWindow(page, pages){
