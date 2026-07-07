@@ -3,42 +3,15 @@
  * ────────────────────────────────────────────────────────────────────
  * Lista Fatos Relevantes, Comunicados ao Mercado, Avisos aos Acionistas e
  * demais eventos entregues à CVM, com link de download do documento oficial.
- * Fonte: portal de dados abertos da CVM (dataset IPE — Informações
- * Periódicas e Eventuais). Só é alcançável a partir do Brasil — a Vercel
- * roda em gru1 (São Paulo), então funciona server-side.
- *
- * O CSV do IPE traz TODAS as companhias do ano; filtramos pela companhia do
- * ticker (por nome e/ou CNPJ). Cache longo na borda (documentos mudam devagar).
+ * Fonte: portal de dados abertos da CVM (dataset IPE). Os arquivos anuais são
+ * ZIPs contendo um CSV; descompactamos server-side com zlib (sem dependência).
+ * Só é alcançável a partir do Brasil — a Vercel roda em gru1 (São Paulo).
  *
  * Uso: GET /api/documents?ticker=PETR4&name=Petroleo%20Brasileiro&cnpj=33000167000101
  */
-const IPE_BASE = 'https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS';
-const CKAN_PKG = 'https://dados.cvm.gov.br/api/3/action/package_show?id=cia_aberta-doc-ipe';
+import { inflateRawSync } from 'zlib';
 
-// Descobre as URLs reais dos CSVs do IPE via catálogo CKAN da CVM (evita chutar caminho).
-async function discoverCsvUrls(years, ms = 12000) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ms);
-  try {
-    const r = await fetch(CKAN_PKG, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LastroBot/1.0)', 'Accept': 'application/json' }, signal: ctrl.signal });
-    if (!r.ok) return { map: {}, status: r.status };
-    const j = await r.json();
-    const resources = (j && j.result && j.result.resources) || [];
-    const map = {};
-    for (const res of resources) {
-      const url = res && res.url ? String(res.url) : '';
-      const m = url.match(/ipe_cia_aberta_(\d{4})\.csv/i);
-      if (m && years.includes(Number(m[1]))) map[m[1]] = url;
-    }
-    const sample = resources.slice(0, 8).map((res) => (res && res.url) || (res && res.name) || null).filter(Boolean);
-    return { map, status: r.status, count: resources.length, sample, success: !!(j && j.success) };
-  } catch (e) {
-    return { map: {}, err: String((e && e.message) || e) };
-  } finally {
-    clearTimeout(timer);
-  }
-}
-// categorias relevantes para o investidor (o resto é ruído regulatório)
+const IPE_BASE = 'https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS';
 const KEEP_CATEGORIES = [
   'fato relevante', 'comunicado ao mercado', 'aviso aos acionistas',
   'assembleia', 'calendário de eventos corporativos', 'política',
@@ -50,26 +23,67 @@ function normalize(s) {
 }
 const onlyDigits = (s) => String(s || '').replace(/\D/g, '');
 
-// Retorna { text, status, url, err } — nunca lança.
-async function fetchCsv(url, ms = 25000) {
+// Baixa um arquivo binário. Retorna { buf, status, url, err }.
+async function fetchBuf(url, ms = 25000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   try {
-    const r = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LastroBot/1.0; +https://lastro-dun.vercel.app)', 'Accept': 'text/csv,*/*' },
-      signal: ctrl.signal,
-    });
-    if (!r.ok) return { text: null, status: r.status, url };
-    const buf = await r.arrayBuffer();
-    return { text: new TextDecoder('latin1').decode(buf), status: r.status, url }; // CVM usa ISO-8859-1
+    const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LastroBot/1.0)', 'Accept': '*/*' }, signal: ctrl.signal });
+    if (!r.ok) return { buf: null, status: r.status, url };
+    const ab = await r.arrayBuffer();
+    return { buf: Buffer.from(ab), status: r.status, url };
   } catch (e) {
-    return { text: null, status: 0, url, err: String((e && e.message) || e) };
+    return { buf: null, status: 0, url, err: String((e && e.message) || e) };
   } finally {
     clearTimeout(timer);
   }
 }
 
-// parser CSV simples (CVM usa ';' e não usa aspas nos campos)
+// Extrai o primeiro CSV de um ZIP (via central directory), decodifica latin1.
+function unzipFirstCsv(buf) {
+  // localiza o End of Central Directory (0x06054b50), varrendo do fim
+  let eocd = -1;
+  for (let i = buf.length - 22; i >= 0 && i > buf.length - 22 - 65536; i--) {
+    if (buf.readUInt32LE(i) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) return null;
+  const cdOffset = buf.readUInt32LE(eocd + 16);
+  const cdCount = buf.readUInt16LE(eocd + 10);
+  let p = cdOffset;
+  for (let n = 0; n < cdCount; n++) {
+    if (buf.readUInt32LE(p) !== 0x02014b50) break;
+    const method = buf.readUInt16LE(p + 10);
+    const compSize = buf.readUInt32LE(p + 20);
+    const fnLen = buf.readUInt16LE(p + 28);
+    const extraLen = buf.readUInt16LE(p + 30);
+    const commentLen = buf.readUInt16LE(p + 32);
+    const localOff = buf.readUInt32LE(p + 42);
+    const name = buf.toString('latin1', p + 46, p + 46 + fnLen);
+    if (/\.csv$/i.test(name)) {
+      // cabeçalho local: recalcula início dos dados
+      const lhFnLen = buf.readUInt16LE(localOff + 26);
+      const lhExtraLen = buf.readUInt16LE(localOff + 28);
+      const dataStart = localOff + 30 + lhFnLen + lhExtraLen;
+      const comp = buf.subarray(dataStart, dataStart + compSize);
+      const raw = method === 8 ? inflateRawSync(comp) : comp; // 8=deflate, 0=stored
+      return raw.toString('latin1');
+    }
+    p += 46 + fnLen + extraLen + commentLen;
+  }
+  return null;
+}
+
+async function fetchCsv(year, ms = 25000) {
+  const url = `${IPE_BASE}/ipe_cia_aberta_${year}.zip`;
+  const r = await fetchBuf(url, ms);
+  if (!r.buf) return { text: null, status: r.status, url, err: r.err };
+  try {
+    return { text: unzipFirstCsv(r.buf), status: r.status, url };
+  } catch (e) {
+    return { text: null, status: r.status, url, err: 'unzip: ' + String((e && e.message) || e) };
+  }
+}
+
 function parseCsv(text) {
   const lines = text.split(/\r?\n/).filter(Boolean);
   if (!lines.length) return { header: [], rows: [] };
@@ -100,16 +114,11 @@ export default async function handler(req, res) {
 
   try {
     const year = new Date().getFullYear();
-    const years = [year, year - 1];
-    // 1) descobre as URLs reais via CKAN; 2) cai para o padrão conhecido se não achar
-    const disc = await discoverCsvUrls(years);
-    const urlFor = (y) => disc.map[String(y)] || `${IPE_BASE}/ipe_cia_aberta_${y}.csv`;
-    const [cur, prev] = await Promise.all([fetchCsv(urlFor(year)), fetchCsv(urlFor(year - 1))]);
+    const [cur, prev] = await Promise.all([fetchCsv(year), fetchCsv(year - 1)]);
     if (!cur.text && !prev.text) {
       res.setHeader('Cache-Control', 'no-store');
       return res.status(502).json({
         error: 'CVM indisponível',
-        ckan: { status: disc.status || null, success: disc.success, count: disc.count, found: Object.keys(disc.map), sample: disc.sample || [], err: disc.err || null },
         diag: [
           { year, status: cur.status, url: cur.url, err: cur.err || null },
           { year: year - 1, status: prev.status, url: prev.url, err: prev.err || null },
@@ -156,7 +165,6 @@ export default async function handler(req, res) {
     docs.sort((a, b) => String(b.dataEntrega || '').localeCompare(String(a.dataEntrega || '')));
     const out = docs.slice(0, 40);
 
-    // documentos mudam devagar: cacheia 2h na borda + serve obsoleto por 12h
     res.setHeader('Cache-Control', 'public, s-maxage=7200, stale-while-revalidate=43200');
     return res.status(200).json({ ticker, count: out.length, docs: out });
   } catch (e) {
