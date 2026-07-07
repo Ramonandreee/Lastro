@@ -2,25 +2,27 @@
  * Proxy de ativo COMPLETO (brapi.dev Pro) — Lastro.
  * ────────────────────────────────────────────────────────────────────
  * Reúne, numa única resposta, tudo que o brapi oferece sobre um ativo:
- *   - cotação + variação + nome/moeda
+ *   - cotação + variação + nome/moeda + faixa 52 semanas + volume
  *   - histórico de preços (para o gráfico real)
- *   - proventos/dividendos (data + valor)
+ *   - proventos/dividendos (data + valor + tipo)
  *   - perfil da empresa (setor, indústria, descrição, site, funcionários)
  *   - fundamentos normalizados (P/L, P/VP, DY, ROE, margem, valor de mercado…)
- *   - módulos crus (balanço, DRE, fluxo de caixa) para exibição detalhada
+ *   - demonstrações (balanço, DRE, fluxo de caixa) quando o módulo existe
  *
- * O BRAPI_TOKEN fica só no servidor. Campos ausentes viram null (o front
- * mantém o valor curado como fallback). `_raw` acompanha valores crus dos
- * indicadores que exigem normalização (fração → %), para conferência.
+ * Robustez: os módulos são buscados UM A UM em paralelo — um nome de módulo
+ * inválido não derruba os outros. `modulesOk` retorna a lista dos que vieram.
+ * O DY é calculado a partir do histórico real de proventos (12 meses) quando o
+ * módulo de fundamentos não o traz. O BRAPI_TOKEN fica só no servidor.
  *
  * Uso: GET /api/asset?ticker=PETR4&range=1y&interval=1d
  * Env: BRAPI_TOKEN (Vercel → Environment Variables)
  */
 const BRAPI = 'https://brapi.dev/api';
-const MODULES = [
-  'summaryProfile', 'summaryDetail', 'defaultKeyStatistics', 'financialData',
-  'balanceSheetHistory', 'incomeStatementHistory', 'cashflowHistory',
-].join(',');
+// módulos candidatos (nomes do brapi/Yahoo) — buscados individualmente
+const CANDIDATE_MODULES = [
+  'summaryProfile', 'defaultKeyStatistics', 'financialData',
+  'balanceSheetHistory', 'incomeStatementHistory', 'summaryDetail',
+];
 const RANGES = new Set(['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max']);
 const INTERVALS = new Set(['1d', '1wk', '1mo']);
 
@@ -58,7 +60,22 @@ function normDividends(dd) {
       value: num(d.rate),
       label: d.label || d.relatedTo || null,
     }))
-    .filter((d) => d.value != null);
+    .filter((d) => d.value != null && d.date);
+}
+
+// DY calculado: soma dos proventos dos últimos 12 meses / preço atual.
+function calcDY(dividends, price) {
+  if (!price || !Array.isArray(dividends) || !dividends.length) return null;
+  const now = Date.now();
+  const YEAR = 365 * 24 * 3600 * 1000;
+  let sum = 0, any = false;
+  for (const d of dividends) {
+    const t = Date.parse(d.date);
+    if (!isFinite(t)) continue;
+    if (t <= now && now - t <= YEAR) { sum += d.value; any = true; }
+  }
+  if (!any) return null;
+  return Math.round((sum / price) * 1000) / 10; // %
 }
 
 function normProfile(sp) {
@@ -75,12 +92,12 @@ function normProfile(sp) {
   };
 }
 
-function normFund(q) {
-  const sd = q.summaryDetail || {};
-  const ks = q.defaultKeyStatistics || {};
-  const fd = q.financialData || {};
+function normFund(r) {
+  const sd = r.summaryDetail || {};
+  const ks = r.defaultKeyStatistics || {};
+  const fd = r.financialData || {};
   return {
-    pl: num(q.priceEarnings) ?? num(sd.trailingPE) ?? num(ks.trailingPE),
+    pl: num(r.priceEarnings) ?? num(sd.trailingPE) ?? num(ks.trailingPE),
     pvp: num(ks.priceToBook),
     dy: pct(sd.dividendYield),
     roe: pct(fd.returnOnEquity),
@@ -89,11 +106,11 @@ function normFund(q) {
     mgbruta: pct(fd.grossMargins),
     mgebit: pct(fd.operatingMargins),
     psr: num(sd.priceToSalesTrailing12Months),
-    dividaEbitda: num(fd.debtToEquity),
+    dividaPl: num(fd.debtToEquity),
     liqCorrente: num(fd.currentRatio),
-    lpa: num(q.earningsPerShare) ?? num(ks.trailingEps),
+    lpa: num(r.earningsPerShare) ?? num(ks.trailingEps),
     vpa: num(ks.bookValue),
-    mkt: num(sd.marketCap) ?? num(q.marketCap),
+    mkt: num(sd.marketCap) ?? num(r.marketCap),
     ev: num(ks.enterpriseValue),
     receita: num(fd.totalRevenue),
     lucro: num(fd.netIncomeToCommon) ?? num(ks.netIncomeToCommon),
@@ -104,10 +121,19 @@ function normFund(q) {
       returnOnEquity: num(fd.returnOnEquity),
       returnOnAssets: num(fd.returnOnAssets),
       profitMargins: num(fd.profitMargins),
-      priceEarnings: num(q.priceEarnings),
+      priceEarnings: num(r.priceEarnings),
       priceToBook: num(ks.priceToBook),
     },
   };
+}
+
+async function fetchModule(ticker, token, mod) {
+  const resp = await fetchJson(
+    `${BRAPI}/quote/${encodeURIComponent(ticker)}?token=${encodeURIComponent(token)}&modules=${mod}`
+  );
+  const r = resp.data && resp.data.results && resp.data.results[0];
+  const obj = r && r[mod];
+  return { mod, obj: obj || null, ok: !!obj };
 }
 
 export default async function handler(req, res) {
@@ -124,33 +150,37 @@ export default async function handler(req, res) {
   if (!ticker) return res.status(400).json({ error: 'ticker obrigatório' });
 
   try {
+    // 1) requisição base: cotação + histórico + proventos + fundamentos de topo
     const base = `${BRAPI}/quote/${encodeURIComponent(ticker)}?token=${encodeURIComponent(token)}`
       + `&range=${range}&interval=${interval}&fundamental=true&dividends=true`;
-    // 1ª tentativa: com módulos. Se o brapi rejeitar (módulo inválido derruba a
-    // requisição toda), refaz sem módulos para ainda entregar cotação/histórico/proventos.
-    let resp = await fetchJson(`${base}&modules=${MODULES}`);
-    let r = resp.data && resp.data.results && resp.data.results[0];
-    let modulesOk = !!r;
-    if (!r) {
-      resp = await fetchJson(base);
-      r = resp.data && resp.data.results && resp.data.results[0];
-    }
+    const baseResp = await fetchJson(base);
+    const r = baseResp.data && baseResp.data.results && baseResp.data.results[0];
     if (!r) {
       res.setHeader('Cache-Control', 'no-store');
-      return res.status(resp.status && resp.status !== 200 ? resp.status : 404).json({
+      return res.status(baseResp.status && baseResp.status !== 200 ? baseResp.status : 404).json({
         error: 'ativo não encontrado na brapi',
         ticker,
-        brapiStatus: resp.status,
-        brapiError: (resp.data && (resp.data.message || resp.data.error)) || resp.err || null,
+        brapiStatus: baseResp.status,
+        brapiError: (baseResp.data && (baseResp.data.message || baseResp.data.error)) || baseResp.err || null,
       });
     }
+
+    // 2) módulos individuais em paralelo — mescla os que vierem em `r`
+    const modResults = await Promise.all(CANDIDATE_MODULES.map((m) => fetchModule(ticker, token, m)));
+    const modulesOk = [];
+    modResults.forEach(({ mod, obj, ok }) => { if (ok) { r[mod] = obj; modulesOk.push(mod); } });
+
+    const price = num(r.regularMarketPrice);
+    const dividends = normDividends(r.dividendsData);
+    const fund = normFund(r);
+    if (fund.dy == null) fund.dy = calcDY(dividends, price); // DY real via proventos
 
     const payload = {
       symbol: r.symbol || ticker,
       modulesOk,
       name: r.longName || r.shortName || null,
       currency: r.currency || 'BRL',
-      price: num(r.regularMarketPrice),
+      price,
       change: num(r.regularMarketChangePercent),
       dayLow: num(r.regularMarketDayLow),
       dayHigh: num(r.regularMarketDayHigh),
@@ -159,17 +189,15 @@ export default async function handler(req, res) {
       volume: num(r.regularMarketVolume),
       logo: r.logourl || null,
       history: normHistory(r.historicalDataPrice),
-      dividends: normDividends(r.dividendsData),
+      dividends,
       profile: normProfile(r.summaryProfile),
-      fund: normFund(r),
+      fund,
       statements: {
-        balance: (r.balanceSheetHistory && r.balanceSheetHistory.balanceSheetStatements) || r.balanceSheetHistory || null,
-        income: (r.incomeStatementHistory && r.incomeStatementHistory.incomeStatementHistory) || r.incomeStatementHistory || null,
-        cashflow: (r.cashflowHistory && r.cashflowHistory.cashflowStatements) || r.cashflowHistory || null,
+        balance: (r.balanceSheetHistory && r.balanceSheetHistory.balanceSheetStatements) || null,
+        income: (r.incomeStatementHistory && r.incomeStatementHistory.incomeStatementHistory) || null,
       },
     };
 
-    // cotação muda intradia (cache curto); o resto muda devagar. Meio-termo: 15 min.
     res.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=3600');
     return res.status(200).json(payload);
   } catch (e) {
