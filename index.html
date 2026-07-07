@@ -9653,51 +9653,26 @@ function fiiCarteira(tk,a,f){
   return {tipoF, comp};
 }
 function tabCarteiraFii(tk,a,k,f){
-  const c=fiiCarteira(tk,a,f); window._FIIC=c.comp;
-  const r=rngF(seedFrom(tk+'cm'));
-  const tijolo=c.tipoF==='tijolo';
-  const stats = tijolo
-    ? [['Vacância física',pc(a.vac,1)+'%',a.vac<8?'up':'down'],['Inadimplência',pc(0.5+r()*2.5,1)+'%',''],['Imóveis',Math.round(8+r()*40),''],['Nº de inquilinos',Math.round(20+r()*180),'']]
-    : [['Ativos na carteira',Math.round(20+r()*60),''],['Duration média',pc(2+r()*4,1)+' anos',''],['Indexação IPCA',pc(40+r()*40,0)+'%',''],['Caixa',pc(5+r()*8,0)+'%','']];
+  const rows=(f?[
+    ['Tipo', f.tipo],['Gestão', f.gestao],['Segmento', a.seg],
+    ['Patrimônio líquido', f.plf],['Valor de mercado', f.mkt],
+    ['Nº de cotistas', f.cotistas],['Nº de cotas', f.cotas],
+    ['Taxa de administração', f.txadm],['Ativos', f.nat],
+    ['Vacância', (typeof a.vac==='number')?pc(a.vac,1)+'%':null],
+    ['Liquidez diária', f.liqf],
+  ]:[]).filter(r=>r[1]!=null&&r[1]!=='');
   return `
-  <div class="card card-pad" style="margin-bottom:16px">
-    <div class="ds-title">Composição da carteira</div>
-    <div class="dt-grid" style="align-items:center">
-      <div class="donut-wrap">
-        <canvas id="fiiCartChart"></canvas>
-        <div class="donut-center"><span>${tijolo?'Tijolo':c.tipoF==='fof'?'Fundos':'Papel'}</span><b>${c.comp.length} classes</b></div>
-      </div>
-      <div class="donut-leg">${donutLegend(c.comp)}</div>
-    </div>
-    ${illusNote('Composição ilustrativa · carteira real ao conectar o relatório gerencial do fundo.')}
-  </div>
   <div class="card card-pad">
-    <div class="ds-title">${tijolo?'Imóveis e ocupação':'Carteira de crédito'}</div>
-    <div class="prov-stats" style="grid-template-columns:repeat(4,1fr)">
-      ${stats.map(s=>`<div class="hstat"><div class="l">${s[0]}</div><div class="v ${s[2]||''}">${s[1]}</div></div>`).join('')}
-    </div>
+    <div class="ds-title">Dados do fundo</div>
+    ${rows.length?`<div class="fgroup">${rows.map(r=>fRow(r[0],r[1])).join('')}</div>`
+      :`<div style="font-size:13px;color:var(--ink-3);line-height:1.6"><i class="fa-solid fa-circle-info" style="color:var(--accent)"></i> Dados detalhados deste fundo em breve.</div>`}
   </div>`;
 }
 
 /* ── Sobre ── */
-function posicaoAcionaria(tk){
-  const r=rngF(seedFrom(tk+'pos'));
-  const names=['Controlador','Outros','Investidores estrangeiros','BNDESPar','Tesouraria','Gestoras nacionais'];
-  let parts=names.map((_,i)=> i===0?0.3+r()*0.25 : 0.05+r()*0.15); const sum=parts.reduce((s,v)=>s+v,0); parts=parts.map(p=>p/sum);
-  return names.map((n,i)=>({n, on:(parts[i]*100*(0.7+r()*0.6)).toFixed(2), tot:(parts[i]*100).toFixed(2)})).sort((x,y)=>y.tot-x.tot);
-}
 function tabSobre(tk,a,k,f){
-  const pos = (k==='acoes') ? posicaoAcionaria(tk) : null;
   return `
   ${aboutHTML(a,k,f)}
-  ${ pos ? `<div class="card card-pad" style="margin-top:16px">
-    <div class="ds-title">Posição acionária</div>
-    <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th class="cell-left">Acionista</th><th>% ON</th><th>% Total</th></tr></thead>
-      <tbody>${pos.map(p=>`<tr class="no-hover"><td class="cell-left">${esc(p.n)}</td><td class="mono muted">${p.on}%</td><td class="mono">${p.tot}%</td></tr>`).join('')}</tbody>
-    </table></div>
-    ${illusNote('Composição ilustrativa · posição acionária real ao conectar provedor.')}
-  </div>` : '' }
   <div style="margin-top:16px">${newsHTML(tk)}</div>`;
 }
 
@@ -9734,7 +9709,6 @@ function initAssetTabCharts(){
   if(assetTab==='geral') initDetailPriceChart();
   else if(assetTab==='proventos'){ initDyHistChart(); initDetailDivChart(); }
   else if(assetTab==='resultados'){ initResultChart(); }
-  else if(assetTab==='carteira'){ charts.fiiCart=donutChart('fiiCartChart', window._FIIC); }
   else if(assetTab==='documentos'){ loadDocuments(currentAssetTk); }
 }
 
