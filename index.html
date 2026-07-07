@@ -2841,8 +2841,11 @@ body.report-open { overflow:hidden; }
 .pdf-menu button { display:flex; align-items:center; gap:11px; background:none; border:0; text-align:left; padding:12px; border-radius:9px; font-size:14px; color:var(--ink); cursor:pointer; }
 .pdf-menu button i { width:18px; text-align:center; color:var(--brand); }
 @media (hover:hover){ .pdf-menu button:hover { background:var(--surface-2); } }
-.pdf-body { flex:1; min-height:0; background:#525659; }
-.pdf-frame { width:100%; height:100%; border:0; display:block; }
+.pdf-body { flex:1; min-height:0; background:#525659; overflow:auto; -webkit-overflow-scrolling:touch; }
+.pdf-pages { width:100%; padding:10px 0 30px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+.pdf-page { display:block; width:100%; height:auto; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.3); }
+.pdf-loading { color:#e7e9ec; font-size:13.5px; text-align:center; padding:40px 20px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+.pdf-loading i { font-size:20px; }
 body.pdf-lock { overflow:hidden; }
 .rl-leg, .donut-leg { display:flex; }
 .rl-leg { gap:16px; font-size:12px; color:var(--ink-2); }
@@ -9793,7 +9796,7 @@ function ensurePdfModal(){
     <button onclick="pdfDownload()"><i class="fa-solid fa-download"></i> Baixar</button>
     <button onclick="pdfOpenExternal()"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir no navegador</button>
   </div>
-  <div class="pdf-body"><iframe id="pdfFrame" class="pdf-frame" referrerpolicy="no-referrer" title="Documento"></iframe></div>`;
+  <div class="pdf-body" id="pdfBody"><div id="pdfPages" class="pdf-pages"></div></div>`;
   document.body.appendChild(m);
   return m;
 }
@@ -9801,17 +9804,61 @@ function openPdf(url, title){
   if(!url) return;
   _pdfUrl=url;
   const m=ensurePdfModal();
-  const f=document.getElementById('pdfFrame'); if(f) f.src=url+'#view=FitH&zoom=page-width'; // ajusta à largura
   const t=document.getElementById('pdfTitle'); if(t) t.textContent=title||'Documento';
   pdfCloseMenu();
   m.classList.add('open'); document.body.classList.add('pdf-lock');
   try{ history.pushState({pdf:1},''); }catch(e){}
+  renderPdf(url);
 }
 function closePdf(){
   const m=document.getElementById('pdfModal'); if(!m||!m.classList.contains('open')) return;
   pdfCloseMenu();
   m.classList.remove('open'); document.body.classList.remove('pdf-lock');
-  const f=document.getElementById('pdfFrame'); if(f) f.src='about:blank';
+  const c=document.getElementById('pdfPages'); if(c) c.innerHTML='';
+}
+/* carrega o PDF.js (cdnjs) sob demanda */
+let _pdfjsPromise=null;
+function loadPdfjs(){
+  if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if(_pdfjsPromise) return _pdfjsPromise;
+  _pdfjsPromise=new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload=()=>{ try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; res(window.pdfjsLib); }catch(e){ rej(e); } };
+    s.onerror=()=>rej(new Error('pdfjs load'));
+    document.head.appendChild(s);
+  });
+  return _pdfjsPromise;
+}
+/* renderiza o PDF ajustado à largura (cada página vira um canvas) */
+async function renderPdf(url){
+  const cont=document.getElementById('pdfPages'); if(!cont) return;
+  cont.innerHTML='<div class="pdf-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando documento…</div>';
+  try{
+    const lib=await loadPdfjs();
+    if(_pdfUrl!==url) return;
+    const doc=await lib.getDocument(url).promise;
+    if(_pdfUrl!==url) return;
+    cont.innerHTML='';
+    const cw=Math.max(1, cont.clientWidth || document.documentElement.clientWidth);
+    const dpr=Math.min(window.devicePixelRatio||1, 2);
+    for(let n=1;n<=doc.numPages;n++){
+      const page=await doc.getPage(n);
+      if(_pdfUrl!==url) return;
+      const base=page.getViewport({scale:1});
+      const scale=cw/base.width;                       // ajusta à largura
+      const vp=page.getViewport({scale:scale*dpr});
+      const canvas=document.createElement('canvas');
+      canvas.className='pdf-page';
+      canvas.width=vp.width; canvas.height=vp.height;
+      canvas.style.width='100%'; canvas.style.height='auto';
+      cont.appendChild(canvas);
+      await page.render({canvasContext:canvas.getContext('2d'), viewport:vp}).promise;
+    }
+  }catch(e){
+    if(_pdfUrl!==url) return;
+    cont.innerHTML='<div class="pdf-loading">Não foi possível exibir aqui. Use o menu ⋮ → “Abrir no navegador”.</div>';
+  }
 }
 function togglePdfMenu(e){ if(e){ e.stopPropagation(); } const m=document.getElementById('pdfMenu'); if(m) m.classList.toggle('open'); }
 function pdfCloseMenu(){ const m=document.getElementById('pdfMenu'); if(m) m.classList.remove('open'); }
