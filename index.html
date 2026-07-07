@@ -429,8 +429,9 @@ body.view-inicio .topbar-brand { display:flex; }
 .acct-wrap { position:relative; }
 .acct-menu { position:absolute; right:0; top:calc(100% + 8px); z-index:120; width:248px; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-lg); box-shadow:var(--sh-xl); padding:7px; display:none; transform-origin:top right; }
 .acct-menu.open { display:block; animation:acctIn .16s var(--ease-out); }
-/* scrim transparente: intercepta o 1º toque fora (fecha o menu sem tocar no fundo) */
-.acct-scrim { position:fixed; inset:0; z-index:150; display:none; background:transparent; }
+/* scrim transparente: intercepta o 1º toque fora e trava a rolagem SEM overflow:hidden
+   (que quebraria o position:sticky do cabeçalho e o fazia sumir ao rolar) */
+.acct-scrim { position:fixed; inset:0; z-index:150; display:none; background:transparent; touch-action:none; overscroll-behavior:none; }
 .acct-scrim.show { display:block; }
 /* topbar acima do scrim só para o MENU aparecer; mas nada do cabeçalho é clicável —
    qualquer toque (logo, menu lateral, avatar) atravessa e cai no scrim, que fecha o menu */
@@ -1507,6 +1508,9 @@ input[type=range]::-moz-range-thumb {
 /* logo preenche o quadrado arredondado (cobre o fundo branco) no formato da marca oficial */
 .logo-img { width:100%; height:100%; object-fit:cover; background:#fff; }
 .logo-mono { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-family:var(--sans); font-weight:700; letter-spacing:-.03em; color:#fff; background:var(--surface-3); text-transform:uppercase; }
+/* cripto: tile circular preenchido pela logo (ícone circular colorido), cor da marca ao fundo — sem branco */
+.logo.logo-cr { border-radius:50%; }
+.logo-cr .logo-img { border-radius:50%; object-fit:cover; }
 .logo.sm .logo-mono, .logo.xs .logo-mono { font-size:10px; }
 .logo.md .logo-mono { font-size:12px; } .logo.lg .logo-mono { font-size:14px; }
 /* placeholder por setor: ícone dimensionado ao tamanho do logo */
@@ -1613,6 +1617,10 @@ input[type=range]::-moz-range-thumb {
 }
 
 /* news feed */
+/* Notícias: no desktop o feed fica à esquerda; no mobile "Em alta" vem PRIMEIRO */
+.news-grid { display:grid; grid-template-columns:1fr 320px; grid-template-areas:"feed alta" "feed ai"; gap:16px; align-items:start; }
+.news-alta { grid-area:alta; } .news-feed-wrap { grid-area:feed; } .news-ai { grid-area:ai; }
+@media (max-width:900px){ .news-grid { grid-template-columns:1fr; grid-template-areas:"alta" "feed" "ai"; } }
 .news-feed { display: flex; flex-direction: column; }
 .news-item {
   padding: 16px 4px;
@@ -2098,8 +2106,8 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 /* abas de autenticação */
 /* modais centralizados vertical e horizontalmente */
 /* trava o scroll do fundo quando qualquer camada está aberta (menu, modal, busca) */
-body:has(.modal-scrim.open), body:has(.search-modal.open), body.nav-open, body:has(.acct-menu.open) { overflow:hidden; }
-html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open), html:has(.acct-menu.open) { overflow:hidden; overscroll-behavior:none; }
+body:has(.modal-scrim.open), body:has(.search-modal.open), body.nav-open { overflow:hidden; }
+html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) { overflow:hidden; overscroll-behavior:none; }
 .modal-scrim { background:rgba(10,14,19,.55) !important; backdrop-filter:blur(5px); }
 /* diálogo de confirmação */
 .confirm-card { width:380px; max-width:92vw; padding:24px 24px 20px; text-align:center; }
@@ -3395,6 +3403,8 @@ const CRIPTO = [
   { tk:'TRX',  nm:'TRON',      px:1.45,   mkt:'R$ 127B', v24:+0.30, v7:+2.10 },
   { tk:'NEAR', nm:'NEAR',      px:34.80,  mkt:'R$ 41B',  v24:+1.40, v7:+4.70 },
 ];
+/* cor de marca de cada cripto — usada como fundo da logo (no lugar do branco) */
+const CRYPTO_COLORS = { BTC:'#F7931A', ETH:'#627EEA', SOL:'#9945FF', BNB:'#F3BA2F', XRP:'#23292F', ADA:'#0033AD', DOGE:'#C2A633', AVAX:'#E84142', LINK:'#2A5ADA', DOT:'#E6007A', LTC:'#345D9D', MATIC:'#8247E5', TRX:'#EF0027', NEAR:'#111214' };
 
 /* ─── NOTÍCIAS (feed; em produção conecta a uma API de news) ─── */
 const NEWS = [
@@ -3722,6 +3732,9 @@ function acctMenuHTML(){
 function ensureAcctScrim(){ let s=document.getElementById('acctScrim'); if(!s){ s=document.createElement('div'); s.id='acctScrim'; s.className='acct-scrim';
     const swallow=ev=>{ ev.preventDefault(); ev.stopPropagation(); closeAcctMenu(); };
     s.addEventListener('click', swallow); s.addEventListener('touchend', swallow, {passive:false});
+    // trava a rolagem do fundo sem overflow:hidden (mantém o cabeçalho sticky intacto)
+    s.addEventListener('touchmove', ev=>ev.preventDefault(), {passive:false});
+    s.addEventListener('wheel', ev=>ev.preventDefault(), {passive:false});
     document.body.appendChild(s); } return s; }
 function toggleAcctMenu(e){ if(e) e.stopPropagation(); const m=$('#acctMenu'); if(!m) return; if(m.classList.contains('open')){ closeAcctMenu(); return; } m.innerHTML=acctMenuHTML(); m.classList.add('open'); document.body.classList.add('acct-open'); ensureAcctScrim().classList.add('show'); }
 function closeAcctMenu(){ const m=$('#acctMenu'); if(m) m.classList.remove('open'); document.body.classList.remove('acct-open'); const s=document.getElementById('acctScrim'); if(s) s.classList.remove('show'); }
@@ -6692,17 +6705,15 @@ function viewNoticias(){
     <div><div class="sec-title" style="margin-bottom:0">Notícias do mercado</div><div class="sec-desc" style="margin-bottom:0">Curadoria de renda variável — ações, FIIs, BDRs, ETFs, cripto e macro</div></div>
     <span class="market-status" id="newsStatus"><span class="pulse"></span> <span id="newsStatusTxt">Atualizado agora</span></span>
   </div>
-  <div class="grid" style="grid-template-columns:1fr 320px">
-    <div class="card card-pad"><div class="news-feed" id="newsFeed">${items}</div></div>
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="card card-pad">
-        <div class="card-h" style="margin-bottom:14px"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-fire"></i></span> Em alta agora</div>
-        <div class="rank" id="newsAlta">${newsAltaHTML()}</div>
-      </div>
-      <div class="card card-pad" style="background:var(--surface-2)">
-        <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff"><i class="fa-solid fa-sparkles"></i></span> Resumo IA do dia</div>
-        <div style="font-size:13px;color:var(--ink-2);line-height:1.65" id="newsAI"><span class="faint">Gerando resumo do dia…</span></div>
-      </div>
+  <div class="news-grid">
+    <div class="card card-pad news-alta">
+      <div class="card-h" style="margin-bottom:14px"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-fire"></i></span> Em alta agora</div>
+      <div class="rank" id="newsAlta">${newsAltaHTML()}</div>
+    </div>
+    <div class="card card-pad news-feed-wrap"><div class="news-feed" id="newsFeed">${items}</div></div>
+    <div class="card card-pad news-ai" style="background:var(--surface-2)">
+      <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff"><i class="fa-solid fa-sparkles"></i></span> Resumo IA do dia</div>
+      <div style="font-size:13px;color:var(--ink-2);line-height:1.65" id="newsAI"><span class="faint">Gerando resumo do dia…</span></div>
     </div>
   </div>`;
 }
@@ -8028,9 +8039,11 @@ function segIcon(tk,k){
 function assetLogo(tk,k,cls){
   const src=logoSrc(tk,k), fb=logoFallback(tk,k);
   const col=avatarColor(segOf(tk)||k||tk);
-  const mono=`<span class="logo-mono" style="background:${col};color:#fff${src?';display:none':''}"><i class="fa-solid ${segIcon(tk,k)}"></i></span>`;
-  const img=src?`<img class="logo-img" src="${src}" alt="${tk}" loading="lazy" onerror="logoErr(this,'${fb}')">`:'';
-  return `<span class="logo ${cls||''}">${img}${mono}</span>`;
+  const isCr = k==='cripto';
+  const crBg = isCr ? (CRYPTO_COLORS[tk] || '#1A1F27') : '';
+  const mono=`<span class="logo-mono" style="background:${isCr?crBg:col};color:#fff${src?';display:none':''}"><i class="fa-solid ${segIcon(tk,k)}"></i></span>`;
+  const img=src?`<img class="logo-img" src="${src}"${isCr?` style="background:${crBg}"`:''} alt="${tk}" loading="lazy" onerror="logoErr(this,'${fb}')">`:'';
+  return `<span class="logo ${cls||''}${isCr?' logo-cr':''}">${img}${mono}</span>`;
 }
 function kindFromLabel(lbl){ return lbl==='FII'?'fiis': lbl==='Ação'?'acoes': lbl==='BDR'?'bdrs': lbl==='ETF'?'etfs': lbl==='Stock'?'stocks':'cripto'; }
 function assetNews(tk){
