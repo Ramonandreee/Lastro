@@ -2820,8 +2820,8 @@ body.report-open { overflow:hidden; }
 .doc-list { display:flex; flex-direction:column; }
 .doc-item { display:flex; align-items:center; gap:13px; padding:13px 4px; border-bottom:1px solid var(--line); text-decoration:none; color:inherit; transition:background .15s var(--ease); }
 .doc-item:last-child { border-bottom:0; }
-@media (hover:hover){ .doc-item[href]:hover { background:var(--surface-2); } }
-.doc-item[href] { cursor:pointer; }
+@media (hover:hover){ .doc-item.doc-open:hover { background:var(--surface-2); } }
+.doc-item.doc-open { cursor:pointer; }
 .doc-ic { flex:none; width:38px; height:38px; border-radius:10px; display:grid; place-items:center; background:var(--brand-l); color:var(--brand); font-size:15px; }
 .doc-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
 .doc-tx b { font-size:13.5px; font-weight:600; color:var(--ink); }
@@ -2829,6 +2829,16 @@ body.report-open { overflow:hidden; }
 .doc-meta { flex:none; display:flex; align-items:center; gap:10px; color:var(--ink-4); font-size:11.5px; }
 .doc-date { font-variant-numeric:tabular-nums; }
 .doc-meta i { color:var(--brand); font-size:13px; }
+/* Visualizador de PDF in-app (documentos) */
+.pdf-modal { position:fixed; inset:0; z-index:400; background:var(--surface); display:none; flex-direction:column; }
+.pdf-modal.open { display:flex; }
+.pdf-bar { display:flex; align-items:center; gap:10px; padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 10px; background:var(--surface); border-bottom:1px solid var(--line); }
+.pdf-back { display:inline-flex; align-items:center; gap:7px; background:none; border:0; color:var(--brand); font-size:15px; font-weight:600; cursor:pointer; padding:4px 2px; }
+.pdf-title { flex:1; min-width:0; font-size:13px; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; }
+.pdf-open { color:var(--ink-3); font-size:16px; padding:4px 6px; text-decoration:none; }
+.pdf-body { flex:1; min-height:0; background:#525659; }
+.pdf-frame { width:100%; height:100%; border:0; display:block; }
+body.pdf-lock { overflow:hidden; }
 .rl-leg, .donut-leg { display:flex; }
 .rl-leg { gap:16px; font-size:12px; color:var(--ink-2); }
 .rl-leg span { display:inline-flex; align-items:center; gap:6px; }
@@ -9364,6 +9374,7 @@ function assetTabsFor(k){
   if(k==='acoes') return ['geral','indicadores','checklist','proventos','resultados','documentos','sobre'];
   if(k==='fiis')  return ['geral','indicadores','checklist','proventos','carteira','documentos','sobre'];
   if(k==='bdrs')  return ['geral','documentos','sobre'];
+  if(k==='etfs')  return ['geral','documentos','sobre'];
   return ['geral','sobre'];
 }
 function assetTabsHTML(k){
@@ -9762,6 +9773,34 @@ function docViewUrl(link){
   const ep=(window.LASTRO_CONFIG && window.LASTRO_CONFIG.DOC_FILE_ENDPOINT) || '/api/document';
   return `${ep}?u=${encodeURIComponent(link)}`;
 }
+/* visualizador de PDF dentro do app — "Voltar" retorna à página anterior */
+function ensurePdfModal(){
+  let m=document.getElementById('pdfModal'); if(m) return m;
+  m=document.createElement('div'); m.id='pdfModal'; m.className='pdf-modal';
+  m.innerHTML=`<div class="pdf-bar">
+    <button class="pdf-back" onclick="closePdf()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+    <span class="pdf-title" id="pdfTitle"></span>
+    <a class="pdf-open" id="pdfOpen" target="_blank" rel="noopener" title="Abrir em nova aba"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+  </div>
+  <div class="pdf-body"><iframe id="pdfFrame" class="pdf-frame" referrerpolicy="no-referrer" title="Documento"></iframe></div>`;
+  document.body.appendChild(m);
+  return m;
+}
+function openPdf(url, title){
+  if(!url) return;
+  const m=ensurePdfModal();
+  const f=document.getElementById('pdfFrame'); if(f) f.src=url;
+  const o=document.getElementById('pdfOpen'); if(o) o.href=url;
+  const t=document.getElementById('pdfTitle'); if(t) t.textContent=title||'Documento';
+  m.classList.add('open'); document.body.classList.add('pdf-lock');
+  try{ history.pushState({pdf:1},''); }catch(e){}
+}
+function closePdf(){
+  const m=document.getElementById('pdfModal'); if(!m||!m.classList.contains('open')) return;
+  m.classList.remove('open'); document.body.classList.remove('pdf-lock');
+  const f=document.getElementById('pdfFrame'); if(f) f.src='about:blank';
+}
+window.addEventListener('popstate', ()=>{ const m=document.getElementById('pdfModal'); if(m&&m.classList.contains('open')) closePdf(); });
 function renderDocsList(docs){
   const el=document.getElementById('docsList'); if(!el) return;
   if(!docs || !docs.length){ el.innerHTML=docsError('Sem documentos recentes na CVM para este ativo.'); return; }
@@ -9769,12 +9808,12 @@ function renderDocsList(docs){
     const dt=fmtDocDate(d.dataEntrega||d.dataRef);
     const cat=esc(d.categoria||'Documento');
     const assunto=esc(d.assunto||d.tipo||'');
-    const link=d.link?esc(docViewUrl(d.link)):'';
-    return `<a class="doc-item" ${link?`href="${link}" target="_blank" rel="noopener"`:''}>
+    const url=d.link?docViewUrl(d.link):'';
+    return `<div class="doc-item${url?' doc-open':''}" ${url?`data-url="${esc(url)}" data-title="${cat}" onclick="openPdf(this.dataset.url,this.dataset.title)"`:''}>
       <span class="doc-ic"><i class="fa-solid ${docIcon(d.categoria)}"></i></span>
       <span class="doc-tx"><b>${cat}</b>${assunto?`<small>${assunto}</small>`:''}</span>
-      <span class="doc-meta">${dt?`<span class="doc-date">${dt}</span>`:''}${link?'<i class="fa-solid fa-arrow-up-right-from-square"></i>':''}</span>
-    </a>`;
+      <span class="doc-meta">${dt?`<span class="doc-date">${dt}</span>`:''}${url?'<i class="fa-solid fa-arrow-up-right-from-square"></i>':''}</span>
+    </div>`;
   }).join('')}</div>
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Fonte: Portal de Dados Abertos da CVM (IPE). Toque para abrir o documento (PDF).</div>`;
 }
