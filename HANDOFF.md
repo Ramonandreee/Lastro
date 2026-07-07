@@ -1,91 +1,65 @@
 # HANDOFF — Projeto Lastro
 
-> Cole este documento no início da conversa com o Claude Code para retomar o projeto de onde paramos.
-> Os arquivos do projeto já estão nesta pasta/repositório.
+> Documento de contexto para retomar o projeto (com Claude Code ou com um novo dev).
+> Para o guia técnico completo, veja o **README.md**. Este arquivo resume estado e histórico.
 
 ---
 
 ## O que é o Lastro
 
-Plataforma web de inteligência para o investidor brasileiro, **focada em renda variável** — concorrente direto do Investidor10, com proposta de design premium, recursos exclusivos e IA integrada. Produto será comercializado futuramente (pensar em escalabilidade).
+Plataforma web de inteligência para o investidor brasileiro, focada em **renda variável** — concorrente premium do Investidor10, com design refinado, Score proprietário e IA integrada. Produto será comercializado (planos Free / Premium / Investidor Pro).
 
-Identidade: **Lastro** (termo financeiro = reserva que dá respaldo). Tagline: "Inteligência para o investidor brasileiro".
-- Cores: esmeralda `#0E7C5A` (ganho/marca), clay `#D14343` (perda), ouro `#A87C2A` (elite do Score), azul `#2563EB` (interativo).
-- Tipografia: Fraunces (display), Inter (UI), IBM Plex Mono (dados).
+- Identidade: **Lastro** (reserva que dá respaldo). Marca esmeralda `#0E7C5A`/`#23B07E`, ouro para elite do Score, tinta quase-preta, dark mode nativo.
+- App é **single-file**: `index.html` (~9.900 linhas, HTML + CSS + JS puro, sem framework).
 
-## Stack atual
+## Estado atual (jul/2026)
 
-- **Front:** `index.html` — single-file (HTML + CSS + JS puro), ~2.160 linhas. Charts via Chart.js (CDN), ícones Font Awesome (CDN), fontes Google Fonts. Sem framework ainda.
-- **Backend de notícias:** `backend/` — coletor Node (`scripts/fetch-news.mjs`) que busca RSS de portais BR + Fatos Relevantes da CVM, classifica (tag/ticker), grava no Supabase. Agendado por GitHub Actions (`.github/workflows/news.yml`, cron a cada 20 min).
-- **IA:** proxy serverless em `api/ai.js` (Vercel) para proteger a chave da Anthropic.
-- **Dados de mercado:** hoje são **estáticos** (arrays no `index.html`). Hooks prontos para brapi.dev (cotações) e CoinGecko (cripto), mas ainda não conectados.
+Muito além do MVP inicial. Já implementado e no ar (`main`):
 
-## Estrutura de arquivos
+- **Mercado:** Início, Ações, FIIs, BDRs, ETFs, Stocks, Cripto, Notícias, Agenda, Score Lastro™. Filtros fundamentalistas (o antigo Rastreador) **embutidos** em cada listagem (botão Filtros, Pro).
+- **Carteira:** Carteira, Proventos, Aporte, FIRE, Imposto de Renda, Acompanhar (watchlist+alertas), Comparador.
+- **Ferramentas Pro:** Raio-X, Backtest, Stress Test, Radar de Barganhas, Consultor IA, Detector de Deterioração, Carteiras Recomendadas, **Simuladores** (renda, juros compostos, aposentadoria).
+- **Conta/negócio:** cadastro em etapas com **captação de leads**, Perfil completo (dados cadastrais + perfil de investidor + contas conectadas + segurança/2FA), Assinatura, **Indique e Ganhe** (com simulador de comissão), Suporte (FAQ + tour), Planos.
+- **Painel administrativo** (só para o e‑mail do dono): visão geral, clientes, leads, financeiro (MRR/ARR), e uma aba **Ações** com plano de ação por sugestão (aprovar/arquivar), tudo persistido.
+- **Auth + sincronização na nuvem** (Supabase): sessão, perfil e carteira sincronizam entre dispositivos.
+- **UX premium:** tour guiado, onboarding, busca global (⌘K), dark mode, PWA instalável, tooltips de termos como cards clicáveis, barras de abas sticky, zoom/seleção desativados no mobile (feel de app nativo).
 
-```
-lastro/
-├── index.html              # app completo (15 telas)
-├── config.js               # chaves (VAZIO no repo; preencher localmente) — está no .gitignore
-├── api/ai.js               # proxy serverless da IA (Vercel)
-├── backend/
-│   ├── scripts/fetch-news.mjs    # coletor de notícias
-│   ├── supabase/schema.sql       # schema do banco
-│   ├── package.json
-│   ├── README-backend.md         # guia de setup do backend
-│   └── .env.example
-├── .github/workflows/news.yml    # cron do coletor (GitHub Actions)
-├── .gitignore              # protege config.js e .env
-├── README.md               # visão geral, deploy GoDaddy, arquitetura
-└── HANDOFF.md              # este arquivo
-```
+## Stack
 
-## Telas já implementadas (15)
+- **Front:** `index.html` — HTML + CSS + JS puro. Chart.js (CDN), Font Awesome (CDN), ícones de cripto via jsDelivr (`cryptocurrency-icons`).
+- **Auth + DB + sync + notícias:** Supabase (Postgres + Auth + RLS). Tabela `user_state` guarda o estado do usuário (jsonb).
+- **IA:** proxy serverless `api/ai.js` (Vercel) protegendo a chave da Anthropic.
+- **Cotações:** brapi.dev (B3) — token em `config.js`; sem token, modo Demonstração.
+- **Coletor de notícias:** Node em `backend/` + GitHub Actions (cron).
+- **Deploy:** Vercel (`vercel.json`).
 
-**Mercado:** Painel · Ações · FIIs · BDRs · ETFs · Stocks (EUA) · Criptomoedas
-**Ferramentas:** Minha Carteira · Comparador · Rastreador (Screener) · Agenda de Dividendos · Carteiras Recomendadas · Notícias
-**Inteligência:** Simulador de Renda Passiva · Score Lastro™
-
-Recursos: busca global (⌘K), dark mode, microinterações, IA integrada em várias telas.
-Sistema de tabela genérico e configurável (objeto `ASSET_CFG`) — adicionar nova classe de ativo é só adicionar config.
-
-### Score Lastro™ (diferencial proprietário)
-Índice 0–100 transparente: DY sustentável (35%) + Valuation P/VP (30%) + Liquidez (20%) + Consistência (15%). Função `scoreLastro()` no `index.html`.
+Estrutura de arquivos e como rodar: ver **README.md** (seções 3 e 4). Configuração: `config.example.js` → `config.js` (gitignored).
 
 ## Contexto do GitHub
 
-- Repositório: `lastro` (owner: Ramonandreee), criado **público** (para ter GitHub Actions gratuito e ilimitado). Migrar para privado no futuro.
-- **Regra de ouro (repo público):** NENHUM segredo no código. Chaves vão em GitHub Secrets e variáveis de ambiente. O `config.js` no repo fica com placeholders vazios.
+- Repositório `lastro` (owner: Ramonandreee). Colaborador adicionado para ajudar no desenvolvimento.
+- **Regra de ouro:** nenhum segredo no código. `config.js` fica fora do git; chaves de servidor (Anthropic) vão nas env vars da Vercel; chaves de servidor do coletor, em GitHub Secrets. A chave **publishable/anon** do Supabase é pública por design (protegida por RLS).
 
-## Estado atual / o que falta (roadmap)
+## Ainda importante saber
 
-Já feito:
-- [x] Front com 15 telas, design premium, dark mode
-- [x] Score Lastro, Simulador, Comparador, Screener
-- [x] Backend de notícias (RSS + CVM) com GitHub Actions + Supabase
-- [x] Proxy de IA (Vercel)
+- **Dados são de demonstração** na maior parte (arrays no `index.html`, com selo "ilustrativo"). O maior salto de valor é torná-los reais.
+- **Fundamentos** (P/VP, ROE, vacância) são o ponto caro: brapi cobre cotações; fundamentos completos exigem fonte paga.
+- **Coletor CVM** é geobloqueado nos runners do GitHub (resolver via origem BR).
+- **Assinatura de commit:** neste ambiente os commits aparecem como "Unverified" (chave SSH de assinatura vazia). O e‑mail do committer está correto — é só a assinatura ausente, sem impacto no código.
 
-Próximos passos (a decidir prioridade):
-- [x] Subir o projeto para o repositório GitHub (primeiro commit)
-- [x] Conectar cotações ao vivo (brapi.dev) substituindo os arrays estáticos, com fallback
-      → preço e variação de Ações/FIIs/BDRs/ETFs + cripto. Token em config.js (BRAPI_TOKEN);
-        sem token cai em modo Demonstração. Indicador de status no topbar. Fundamentos seguem estáticos.
-- [x] Configurar Supabase (rodar schema.sql) e secrets do GitHub para ativar as notícias reais
-      → Supabase no ar, schema rodado, chaves novas (publishable + secret), cron coletando RSS.
-        CVM geobloqueada nos runners do GitHub (ETIMEDOUT) — tratada e documentada; resolver via origem BR.
-- [~] Deploy na Vercel (front + proxy IA + config seguro) — PREPARADO, falta o passo final do usuário
-      → vercel.json (região gru1), api/config.js gera config.js das env vars (nada de chave no git),
-        rewrite /config.js→/api/config. Falta: importar repo na Vercel e definir env vars. Ver README §3.5.
-- [ ] Autenticação + carteira em nuvem (Supabase Auth)
-- [ ] App mobile React Native (reaproveitar Score e lógica)
-- [ ] Billing/planos (Free/Pro)
+## Roadmap curto (o que falta para "produção de verdade")
 
-## Decisões técnicas importantes
+1. **Cotações ao vivo** (B3 + cripto) substituindo os dados estáticos.
+2. **Import de carteira** (B3/CEI ou nota/extrato da corretora).
+3. **Proventos e IR reais** (data-com, DARF, informe anual).
+4. **2FA real** (hoje é demonstração) + rodapé institucional (CNPJ, termos, LGPD).
+5. Rentabilidade real (TWR/MWR) vs CDI/IBOV/IPCA; exportar relatórios (PDF/Excel).
 
-- Plano gratuito em tudo por enquanto: GitHub Actions (cron), Supabase (DB + API), Vercel (proxy/deploy).
-- O cron a cada 20 min mantém Supabase vivo (pausa após 7 dias) e o repo ativo (Actions desativa após 60 dias).
-- Notícias exibem título + link para a fonte (nunca o texto completo) — conformidade com direitos autorais.
-- Dados fundamentalistas (P/VP, ROE, vacância) são o ponto difícil/caro: brapi cobre cotações; fundamentos completos exigiriam fonte paga no futuro.
+> Regra combinada com o dono: **dados reais só quando ele avisar.** Até lá, evoluir UX, organização e recursos client-side.
 
-## Primeira tarefa sugerida para o Claude Code
+## Convenções (resumo — detalhe no README §8)
 
-"Inicialize o git neste diretório, confira que o `.gitignore` está protegendo `config.js` e `.env`, garanta que não há nenhuma chave secreta nos arquivos, e me ajude a fazer o primeiro commit e push para o repositório `lastro` no GitHub."
+- Validar CSS (chaves balanceadas) + JS (sintaxe) antes de cada commit.
+- Trabalhar em branch; `main` é produção.
+- Mobile-first / iOS: cuidado com `viewport`, `touch-action`, `user-select` e `position: sticky`.
+- Explicar jargão sempre com o padrão de **termo clicável** (`termLabel`/`TERM_CARDS`), nunca espalhando "?".

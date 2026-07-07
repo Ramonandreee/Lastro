@@ -1,262 +1,174 @@
 # Lastro · Inteligência de Investimentos
 
-Plataforma de análise de investimentos para o mercado brasileiro — FIIs, ações B3, indicadores fundamentalistas e o **Score Lastro™** proprietário, com Inteligência Artificial integrada.
+Plataforma de análise para o investidor brasileiro — FIIs, ações da B3, BDRs, ETFs, stocks e cripto — com indicadores fundamentalistas, **Score Lastro™** proprietário, simuladores, diagnóstico de carteira e **IA integrada**. Posicionamento: concorrente premium do Investidor10, com foco em **decisão**, não só em dados.
 
-> Posicionamento: concorrente direto do Investidor10, com foco em **decisão**, não apenas em dados. Design premium, Score proprietário, simulador de renda passiva e diagnóstico de carteira por IA.
-
----
-
-## 1. O que diferencia o Lastro
-
-A plataforma cobre **renda variável de ponta a ponta** em 15 telas:
-
-**Mercado:** Painel · Ações · FIIs · BDRs · ETFs · Stocks (EUA) · Criptomoedas
-**Ferramentas:** Minha Carteira · Comparador · Rastreador (Screener) · Agenda de Dividendos · Carteiras Recomendadas · Notícias
-**Inteligência:** Simulador de Renda · Score Lastro™
-
-| Recurso | Lastro | Investidor10 |
-|---|---|---|
-| Score de qualidade proprietário (0–100) | ✅ Score Lastro™ transparente | ❌ |
-| Comparador lado a lado com destaque do melhor | ✅ | ⚠️ |
-| Rastreador com filtros interativos (sliders) | ✅ | ✅ |
-| Simulador de renda passiva (bola de neve) | ✅ Interativo | ⚠️ Limitado |
-| Agenda de dividendos personalizada | ✅ Calcula por cotas | ✅ |
-| Carteiras recomendadas por perfil | ✅ | ✅ (pago) |
-| Notícias em tempo real com tags | ✅ | ✅ |
-| Diagnóstico de carteira por IA | ✅ Nativo em todas as telas | ❌ |
-| Dark mode premium | ✅ | ❌ |
-| Busca global (⌘K) | ✅ | ⚠️ |
-| Identidade visual própria | ✅ | Genérica |
-
-### Score Lastro™ — fórmula transparente
-```
-Score = DY sustentável (35%) + Valuation P/VP (30%) + Liquidez (20%) + Consistência (15%)
-```
-Diferente de "selos" opacos, o Score é auditável: cada pilar é exibido com sua contribuição.
+> **Para o colaborador:** este README é o guia completo para desenvolver o Lastro. Leia as seções **4 (rodar local)**, **6 (arquitetura do `index.html`)** e **8 (convenções)** antes de mexer no código.
 
 ---
 
-## 2. Estrutura do projeto (web)
+## 1. Visão geral do produto
+
+O app é um **SPA single-file**: quase tudo vive em `index.html` (~9.900 linhas, HTML + CSS + JS puro, sem framework). Abre em qualquer navegador e funciona **em modo demonstração** sem backend; com `config.js` preenchido, liga login, sincronização, IA e dados reais.
+
+**Telas principais** (todas em `index.html`):
+
+- **Mercado:** Início (painel), Ações, FIIs, BDRs, ETFs, Stocks (EUA), Criptomoedas, Notícias, Agenda de Dividendos, Score Lastro™.
+- **Minha carteira:** Carteira, Proventos, Aporte Inteligente, Independência (FIRE), Imposto de Renda, Acompanhar (watchlist + alertas), Comparador.
+- **Ferramentas Pro:** Raio-X da Carteira, Backtest, Stress Test, Radar de Barganhas, Consultor IA, Detector de Deterioração, Carteiras Recomendadas, Simuladores (renda, juros compostos, aposentadoria).
+- **Conta / negócio:** Perfil (cadastro completo + captação de leads), Assinatura, Indique e Ganhe, Suporte, Planos, e um **Painel administrativo** (visão geral, clientes, leads, financeiro, ações) — visível só para o e‑mail do dono.
+
+**Filtros fundamentalistas** (antigo "Rastreador") ficam embutidos em cada listagem de Ações/FIIs (botão **Filtros**, recurso Pro).
+
+### Score Lastro™
+Nota proprietária de 0–100 que resume a qualidade de um ativo combinando vários indicadores (valuation, rentabilidade, endividamento, pagamento de proventos). É explicada em qualquer lugar do app tocando no rótulo (padrão de "termo clicável", ver seção 6).
+
+---
+
+## 2. Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Front | `index.html` — HTML + CSS + JS puro (sem build, sem framework) |
+| Gráficos | Chart.js (CDN) |
+| Ícones | Font Awesome 6.5 (CDN) · ícones de cripto via `cryptocurrency-icons` (jsDelivr) |
+| Auth + sync + notícias | Supabase (Postgres + Auth + RLS) |
+| IA | Proxy serverless `api/ai.js` (Vercel) protegendo a chave da Anthropic |
+| Cotações | brapi.dev (B3) e coincap/coingecko (cripto) — hooks prontos |
+| Coletor de notícias | Node em `backend/` (cron via GitHub Actions) |
+| PWA | `manifest.webmanifest` + `sw.js` (notificações de alerta; **não** faz cache de HTML) |
+| Deploy | Vercel (`vercel.json`) |
+
+---
+
+## 3. Estrutura do repositório
 
 ```
 lastro/
-├── index.html        ← Aplicação completa (HTML + CSS + JS, single-file)
-├── config.js         ← Chaves de API (NÃO versionar)
-├── .gitignore
-└── README.md
-```
-
-O `index.html` é **autossuficiente** — abre em qualquer navegador. Charts via Chart.js (CDN), ícones via Font Awesome (CDN), fontes via Google Fonts. Funciona offline com dados estáticos; com conexão, busca dados ao vivo e ativa a IA.
-
----
-
-## 3. Deploy no GoDaddy
-
-### Via cPanel (mais simples)
-1. Painel GoDaddy → **cPanel** → **Gerenciador de Arquivos**
-2. Entre em `public_html/`
-3. Suba `index.html` (renomeie para `index.html` se quiser que seja a home)
-4. Acesse seu domínio — está no ar
-
-### Apontar o domínio
-- Em **DNS Management**, garanta que o registro `A` aponta para o IP do seu hosting
-- Para HTTPS, ative o **SSL gratuito** (AutoSSL) no cPanel
-
-### Performance (recomendado)
-- Ative **compressão Gzip** e **cache** no `.htaccess`:
-```apache
-<IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/css application/javascript
-</IfModule>
-<IfModule mod_expires.c>
-  ExpiresActive On
-  ExpiresByType text/css "access plus 1 month"
-  ExpiresByType application/javascript "access plus 1 month"
-</IfModule>
+├── index.html              # o app inteiro (HTML + CSS + JS)
+├── config.js               # chaves (NÃO versionado — está no .gitignore)
+├── config.example.js       # template do config — copie para config.js
+├── api/ai.js               # proxy serverless da IA (Vercel)
+├── backend/
+│   ├── supabase/schema.sql       # schema do Postgres (tabelas + RLS)
+│   ├── scripts/fetch-news.mjs    # coletor de notícias (RSS + CVM → Supabase)
+│   ├── README-backend.md         # setup do backend
+│   └── package.json
+├── .github/workflows/            # cron do coletor de notícias (GitHub Actions)
+├── sw.js, manifest.webmanifest   # PWA
+├── icons / favicons
+├── vercel.json                   # config de deploy
+├── README.md                     # este arquivo
+└── HANDOFF.md                    # estado atual / histórico
 ```
 
 ---
 
-## 3.5. Deploy na Vercel (recomendado) ⭐
+## 4. Rodar localmente
 
-A forma mais simples de subir **front + proxy de IA + config seguro** de uma vez,
-no plano gratuito. Já existe `vercel.json` configurado no repositório.
+Não há build. É um site estático — precisa apenas ser **servido por HTTP** (abrir o `file://` direto quebra o `fetch` do `config.js` e da IA).
 
-**Como funciona:**
-- O front (`index.html`) é servido como estático.
-- `api/ai.js` é o proxy serverless da Anthropic (a chave fica só no servidor).
-- `api/config.js` gera o `config.js` a partir das variáveis de ambiente — assim
-  **nenhuma chave é versionada** e o front recebe a config real em produção
-  (o `vercel.json` faz o rewrite de `/config.js` → `/api/config`).
-- As funções rodam na região **São Paulo (`gru1`)** — menor latência para o BR.
-
-**Passos:**
-1. Acesse [vercel.com](https://vercel.com) → **Add New → Project** → importe o repositório `Lastro`.
-2. Em **Settings → Environment Variables**, defina:
-
-   | Variável | Valor | Exposta ao navegador? |
-   |---|---|---|
-   | `ANTHROPIC_API_KEY` | `sk-ant-...` | **Não** (só o proxy `/api/ai` usa) |
-   | `SUPABASE_URL` | `https://xxxx.supabase.co` | Sim (público) |
-   | `SUPABASE_ANON_KEY` | `sb_publishable_...` | Sim (público, RLS protege) |
-   | `BRAPI_TOKEN` | token da brapi.dev | Sim (já é client-side) |
-   | `REFRESH_MS` / `NEWS_REFRESH_MS` | *(opcional)* | Sim |
-
-3. **Deploy**. Pronto: `https://seu-projeto.vercel.app` no ar, com IA e dados ao vivo.
-4. Domínio próprio: **Settings → Domains** → adicione seu domínio e ajuste o DNS.
-
-> **CVM via `gru1`:** como as funções rodam em São Paulo, dá para mover a coleta dos
-> Fatos Relevantes da CVM (hoje geobloqueada no GitHub Actions) para um **Vercel Cron**
-> que roda um endpoint na `gru1`. Ver `backend/README-backend.md`.
-
----
-
-## 4. Segurança da API — OBRIGATÓRIO em produção
-
-⚠️ **Nunca** exponha a chave da Anthropic no HTML público. Crie um **proxy serverless**.
-
-### Proxy na Vercel (grátis)
-`api/ai.js`:
-```js
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify(req.body)
-  });
-  res.status(200).json(await r.json());
-}
-```
-No `index.html`, troque a URL de `https://api.anthropic.com/v1/messages` para `/api/ai` (sem header de chave). O navegador nunca vê a chave.
-
----
-
-## 5. Dados ao vivo
-
-| Fonte | Uso | Custo |
-|---|---|---|
-| [brapi.dev](https://brapi.dev) | Cotações B3, FIIs, índices | Grátis (15 req/min) |
-| [Anthropic](https://console.anthropic.com) | Inteligência Lastro | Por uso |
-| CoinGecko | Cripto | Grátis |
-
-Para integração B3 oficial (carteira sincronizada), avaliar **Pluggy**, **Belvo** ou **B3/CERC** via parceria.
-
-### Cotações ao vivo (já implementado)
-
-O `index.html` busca cotações reais da **brapi.dev** e atualiza preço (`px`) e
-variação (`var`) das telas de Ações, FIIs, BDRs e ETFs, além das criptomoedas.
-Funciona assim:
-
-1. Pegue um token gratuito em [brapi.dev](https://brapi.dev) e coloque em
-   `config.js → BRAPI_TOKEN`. **Sem token**, o app segue em modo *Demonstração*
-   usando os dados estáticos (fallback silencioso).
-2. O indicador no topo (`Ao vivo · HH:MM` / `Demonstração` / `Offline · em cache`)
-   mostra a fonte atual; clicar nele força uma atualização.
-3. O polling roda a cada `REFRESH_MS` (config.js, mín. 30s), pausando quando a
-   aba fica em segundo plano para economizar requisições. As cotações são
-   buscadas em lotes de 10 tickers para respeitar o limite do plano gratuito.
-
-> Fundamentos (P/VP, ROE, DY, vacância) seguem estáticos por enquanto — exigem
-> fonte de dados dedicada. A integração ao vivo cobre **preço e variação**.
-
----
-
-## 6. App mobile — React Native (iOS + Android)
-
-Repositório separado, compartilhando a lógica de negócio (Score Lastro, simulador) com a web via pacote comum.
-
-```
-lastro-app/
-├── src/
-│   ├── screens/        Painel · FIIs · Acoes · Carteira · Simulador · Score
-│   ├── components/     ScoreGauge · MetricCard · AssetRow · AIInsight · SnowballChart
-│   ├── lib/
-│   │   ├── score.ts    ← scoreLastro() — MESMA fórmula da web (pacote compartilhado)
-│   │   ├── api.ts      ← brapi + proxy IA
-│   │   └── theme.ts    ← tokens de design (espelham as CSS vars do index.html)
-│   ├── store/          Zustand (carteira, preferências)
-│   └── navigation/
-├── app.json
-└── eas.json
-```
-
-### Stack
-- **Expo** (managed) — build e submit simplificados para as lojas
-- **React Navigation** — bottom tabs + stack
-- **Victory Native** ou **react-native-gifted-charts** — gráficos
-- **Zustand** + **MMKV** — estado e persistência local
-- **Expo Notifications** — alertas de dividendos e preço
-
-### Criar e publicar
 ```bash
-npx create-expo-app lastro-app -t expo-template-blank-typescript
-cd lastro-app
-npx expo install expo-notifications expo-secure-store
-npm i zustand react-native-mmkv @react-navigation/native @react-navigation/bottom-tabs
+# 1. Configuração (opcional — sem isso, roda em modo demonstração)
+cp config.example.js config.js
+#    edite config.js com os valores reais (peça ao Ramon)
 
-# Build nas lojas (requer conta Apple Developer US$99/ano e Google Play US$25 único)
-npm i -g eas-cli
-eas build --platform ios && eas submit --platform ios
-eas build --platform android && eas submit --platform android
+# 2. Sirva a pasta com qualquer servidor estático:
+python3 -m http.server 5173
+#    ou:  npx serve .
+
+# 3. Abra http://localhost:5173
 ```
+
+Para a **IA** funcionar localmente, use `vercel dev` (roda o proxy `api/ai.js`) em vez do servidor estático simples.
 
 ---
 
-## 7. Arquitetura para escala (comercialização)
+## 5. Configuração (`config.js`)
 
-Quando virar produto pago, a evolução natural:
+`config.js` é **gitignored** (contém chaves). Cada dev cria o seu a partir do `config.example.js`. Campos:
 
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
-│  Web (SPA)  │     │  App (RN)    │     │  Landing/Vendas │
-└──────┬──────┘     └──────┬───────┘     └────────┬────────┘
-       └───────────────────┼───────────────────────┘
-                           │  API REST/GraphQL
-                  ┌────────▼─────────┐
-                  │  Backend (Node)  │  Auth · Carteiras · Score · Billing
-                  └────────┬─────────┘
-          ┌────────────────┼─────────────────┐
-     ┌────▼────┐      ┌─────▼─────┐     ┌─────▼──────┐
-     │ Postgres│      │ Redis cache│     │ Proxy IA   │
-     │ (Supabase)     │ (cotações) │     │ (Anthropic)│
-     └─────────┘      └───────────┘     └────────────┘
-```
+- `SUPABASE_URL` / `SUPABASE_ANON_KEY` — projeto Supabase. Use a chave **publishable/anon** (é pública por design; a escrita é protegida por RLS). Liga login, sincronização de carteira/perfil e o feed de notícias.
+- `BRAPI_TOKEN` — cotações da B3 (grátis em brapi.dev).
+- `AI_ENDPOINT` — normalmente `/api/ai`.
 
-### Decisões recomendadas
-- **Auth + DB**: Supabase (Postgres + Auth + Realtime, generoso no free tier)
-- **Pagamentos BR**: Stripe ou Pagar.me / Asaas (PIX, boleto, recorrência)
-- **Planos**: Free (dados básicos) · Pro (Score, simulador, IA, carteira ilimitada)
-- **Cache de cotações**: Redis com TTL de 60s para reduzir custo de API
-- **Migração da web**: o `index.html` atual vira a base de um app Vite + React, reaproveitando todo o design system (já está em CSS variables) e a lógica (já modularizável)
+O objeto vira `window.LASTRO_CONFIG`, lido pela função `_sb()` no `index.html`.
 
 ---
 
-## 8. Roadmap
+## 6. Arquitetura do `index.html` (guia do desenvolvedor)
 
-**MVP (atual)** ✅
-- [x] Painel, FIIs, Ações, Carteira, Simulador, Score Lastro
-- [x] Design premium + dark mode
-- [x] Busca global, microinterações, animações
-- [x] Hooks de IA e dados ao vivo
+Tudo é organizado por convenções simples. Onde procurar:
 
-**Próximo**
-- [ ] Proxy serverless de IA (segurança)
-- [ ] Autenticação + carteira em nuvem (Supabase)
-- [ ] Integração B3 (carteira automática)
-- [ ] Alertas push (dividendos, preço, Score)
-- [ ] App React Native nas lojas
-- [ ] Billing e planos (Free/Pro)
-- [ ] Landing page de vendas
+### Sistema de design (CSS)
+- Todas as cores/raios/sombras são **custom properties** (`--brand`, `--ink`, `--gold`, `--line`, `--surface`, `--r`, `--sh-*`, `--ease`) definidas em `:root`.
+- **Dark mode** por `[data-theme="dark"]` (e `prefers-color-scheme`). Estilize sempre via tokens — nunca cores fixas dentro do dark.
+- Números usam a fonte `--mono`.
+
+### Navegação e telas
+- `const PAGES = { chave: { t:'Título', s:'Subtítulo' } }` — registro de todas as telas.
+- `nav(view, el)` — troca de tela: seta título, chama `render()`, `scrollToTop()`, fecha sidebar.
+- `function render(v)` — um `switch` gigante que injeta `viewX()` em `#content`.
+- Cada tela é uma função `viewAlgo()` que **retorna uma string de HTML** (template literals).
+- `afterRender(v)` — roda depois do render para inicializar gráficos (Chart.js) e animações daquela tela.
+- Barras de abas fixas (sticky) usam o componente `.stabs`/`.atabs`/`.ad-tabs` (busca "barra de abas" no CSS).
+
+### Estado e persistência
+- `localStorage` guarda tudo do usuário: `lastro_session`, `lastro_profile`, `lastro_carteira`, `lastro_watch`, `lastro_alerts`, `lastro_plan`, `lastro_sub`, `lastro_theme`, `lastro_priv`…
+- `tableState[kind]` — estado das listagens de mercado (busca, segmento, ordenação, página, filtros fundamentalistas).
+- **Perfil/carteira sincronizam na nuvem** (Supabase tabela `user_state`, coluna `data` jsonb): `saveCloudState()` (debounce), `flushCloudState()` (imediato, usado ao salvar/sair) e `loadCloudState()` (no login).
+
+### Auth
+- Supabase Auth. Sessão salva em `lastro_session`. `currentUser()`, `isAuthed()`, `authLogin/authSignup/authLogout`.
+- Cadastro em etapas (dados + perfil de investidor + verificação) — captação de leads.
+- Dono/admin: `isOwner()` (compara com `OWNER_EMAIL`), "Modo desenvolvedor" e "Painel administrativo".
+
+### Helpers reutilizáveis (use em vez de reinventar)
+- `assetLogo(tk, kind, size)` — logo do ativo (imagem + fallback monograma). Cripto tem tile circular colorido.
+- `hlp(chave)` e `termLabel(chave, texto)` + os dicionários `TERMS`/`TERM_CARDS` — **explicação de termos**: qualquer jargão vira um rótulo clicável que abre uma ficha (o que é, como calcula, como interpretar). **Não** espalhe "?" — use esse padrão.
+- `scrollToTop()`, `brl()/brl0()`, `pc()`, `esc()`, `toast()`, `showConfirm()`.
+- Cotações: `refreshQuotes()`. IA: `callAI()` / `askAI()` via `AI_ENDPOINT`.
 
 ---
 
-## Identidade
+## 7. Backend
 
-- **Nome**: Lastro — o lastro é a reserva que dá respaldo a uma moeda. Inteligência como lastro das decisões.
-- **Cores**: Esmeralda `#0E7C5A` (ganho/marca) · Clay `#D14343` (perda) · Ouro `#A87C2A` (elite do Score) · Azul `#2563EB` (interativo)
-- **Tipografia**: Fraunces (display) · Inter (UI) · IBM Plex Mono (dados)
+- **Schema:** `backend/supabase/schema.sql` — tabelas `news`, `meta`, `user_state` (com RLS: cada usuário só acessa a própria linha). Rode no SQL Editor do Supabase ao provisionar.
+- **Notícias:** `backend/scripts/fetch-news.mjs` coleta RSS de portais BR + Fatos Relevantes da CVM, classifica e grava no Supabase. Agendado por GitHub Actions (`.github/workflows/`). Setup em `backend/README-backend.md`.
+- **IA:** `api/ai.js` é um proxy Vercel que injeta a chave da Anthropic no servidor (nunca no cliente).
+
+---
+
+## 8. Convenções de desenvolvimento
+
+- **Antes de cada commit, valide** (o `index.html` é um só arquivo — um erro de sintaxe quebra tudo):
+  ```bash
+  node -e 'const h=require("fs").readFileSync("index.html","utf8");
+    const st=[...h.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]).join("\n");
+    let b=0;for(const c of st){if(c=="{")b++;else if(c=="}")b--;}
+    const js=[...h.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
+    let ok=true;js.forEach((s,i)=>{try{new Function(s)}catch(e){ok=false;console.log("JS erro",i,e.message)}});
+    console.log("CSS chaves:",b,"| JS:",ok?"OK":"FALHA")'
+  ```
+  Espere `CSS chaves: 0` e `JS: OK`.
+- **Mobile-first / iOS:** zoom por pinça e duplo-toque estão desativados; segurar não seleciona texto (só campos). Cuidado ao mexer em `viewport`, `touch-action`, `user-select` e `position: sticky` (não usar `overflow:hidden` no `html/body` para travar scroll — quebra o cabeçalho sticky; use scrim/`touch-action`).
+- **Responsivo:** grids viram coluna única no mobile; tabelas rolam dentro do card; modais usam `100dvh`.
+- **Tema:** sempre via tokens; teste claro e escuro.
+- **Git:** trabalhe em branch; `main` é o que está no ar. Não commite `config.js`.
+
+---
+
+## 9. Deploy
+
+Deploy na **Vercel** (`vercel.json`). O push para a branch de produção publica o site estático + a função `api/ai.js`. As chaves de servidor (Anthropic) ficam nas variáveis de ambiente da Vercel; as do cliente, no `config.js` injetado no build.
+
+---
+
+## 10. Roadmap curto (o que falta para "produção de verdade")
+
+O produto está rico em UX; o próximo salto é **dado real** e confiança:
+1. Cotações ao vivo (B3 + cripto) substituindo os dados de demonstração.
+2. Import de carteira (B3/CEI ou nota/extrato da corretora).
+3. Proventos e IR reais (data-com, DARF, informe).
+4. 2FA real e rodapé institucional (CNPJ, termos, LGPD).
+
+Ver o `HANDOFF.md` para o histórico completo.
