@@ -8362,9 +8362,10 @@ function importCarteiraCSV(){
   }; inp.click();
 }
 /* ── Carteira de demonstração (1 clique) — permite ver valor antes de digitar ── */
-/* ── Modo desenvolvedor do dono (Ramon): gera dados + Investidor Pro + acesso admin ── */
-const OWNER_EMAIL = 'ramonandreee@gmail.com';
-function isOwner(){ const u=currentUser(); return !!u && String(u.email||'').toLowerCase()===OWNER_EMAIL; }
+/* ── Modo desenvolvedor dos donos (Ramon e Mikael): gera dados + Investidor Pro + acesso admin ── */
+const OWNER_EMAILS = ['ramonandreee@gmail.com', 'mikaelsouza2506@gmail.com'];
+const OWNER_EMAIL = OWNER_EMAILS[0];   // compat.: primeiro dono (referências legadas)
+function isOwner(){ const u=currentUser(); return !!u && OWNER_EMAILS.includes(String(u.email||'').toLowerCase()); }
 function testModeOn(){ return localStorage.getItem('lastro_testmode')==='1'; }
 function devModeOn(){ return testModeOn(); }
 function toggleDevMode(){ toggleTestMode(); }
