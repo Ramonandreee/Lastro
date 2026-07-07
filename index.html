@@ -2816,6 +2816,19 @@ body.report-open { overflow:hidden; }
 .prov-tbl td, .prov-tbl th { padding-top:12px; padding-bottom:12px; }
 .illus-note { display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--ink-4); margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
 .illus-note i { color:var(--ink-4); }
+/* Documentos (CVM) */
+.doc-list { display:flex; flex-direction:column; }
+.doc-item { display:flex; align-items:center; gap:13px; padding:13px 4px; border-bottom:1px solid var(--line); text-decoration:none; color:inherit; transition:background .15s var(--ease); }
+.doc-item:last-child { border-bottom:0; }
+@media (hover:hover){ .doc-item[href]:hover { background:var(--surface-2); } }
+.doc-item[href] { cursor:pointer; }
+.doc-ic { flex:none; width:38px; height:38px; border-radius:10px; display:grid; place-items:center; background:var(--brand-l); color:var(--brand); font-size:15px; }
+.doc-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.doc-tx b { font-size:13.5px; font-weight:600; color:var(--ink); }
+.doc-tx small { font-size:12px; color:var(--ink-3); line-height:1.4; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.doc-meta { flex:none; display:flex; align-items:center; gap:10px; color:var(--ink-4); font-size:11.5px; }
+.doc-date { font-variant-numeric:tabular-nums; }
+.doc-meta i { color:var(--brand); font-size:13px; }
 .rl-leg, .donut-leg { display:flex; }
 .rl-leg { gap:16px; font-size:12px; color:var(--ink-2); }
 .rl-leg span { display:inline-flex; align-items:center; gap:6px; }
@@ -9311,11 +9324,13 @@ const ASSET_TAB_DEFS = {
   proventos:   { label:'Proventos',   ico:'fa-coins' },
   resultados:  { label:'Resultados',  ico:'fa-chart-column' },
   carteira:    { label:'Carteira',    ico:'fa-building' },
+  documentos:  { label:'Documentos',  ico:'fa-file-lines' },
   sobre:       { label:'Sobre',       ico:'fa-circle-info' },
 };
 function assetTabsFor(k){
-  if(k==='acoes') return ['geral','indicadores','checklist','proventos','resultados','sobre'];
-  if(k==='fiis')  return ['geral','indicadores','checklist','proventos','carteira','sobre'];
+  if(k==='acoes') return ['geral','indicadores','checklist','proventos','resultados','documentos','sobre'];
+  if(k==='fiis')  return ['geral','indicadores','checklist','proventos','carteira','documentos','sobre'];
+  if(k==='bdrs')  return ['geral','documentos','sobre'];
   return ['geral','sobre'];
 }
 function assetTabsHTML(k){
@@ -9338,6 +9353,7 @@ function assetTabContent(tk,a,k,f){
     case 'proventos':   return tabProventos(tk,a,k,f);
     case 'resultados':  return tabResultados(tk,a,k,f);
     case 'carteira':    return tabCarteiraFii(tk,a,k,f);
+    case 'documentos':  return tabDocumentos(tk,a,k,f);
     case 'sobre':       return tabSobre(tk,a,k,f);
     default:            return tabGeral(tk,a,k,f);
   }
@@ -9686,6 +9702,60 @@ function initAssetTabCharts(){
   else if(assetTab==='proventos'){ initDyHistChart(); initDetailDivChart(); }
   else if(assetTab==='resultados'){ initResultChart(); initRecDonuts(); }
   else if(assetTab==='carteira'){ charts.fiiCart=donutChart('fiiCartChart', window._FIIC); }
+  else if(assetTab==='documentos'){ loadDocuments(currentAssetTk); }
+}
+
+/* ── Documentos (CVM: fatos relevantes, comunicados, eventos) ── */
+const DOCS_CACHE = {};   // tk -> { docs:[...] }
+function docsEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.DOCS_ENDPOINT) || '/api/documents'; }
+const DOC_ICONS = { 'fato relevante':'fa-bolt', 'comunicado':'fa-bullhorn', 'aviso':'fa-circle-info', 'assembleia':'fa-users', 'dividendos':'fa-coins', 'reunião':'fa-users', 'apresenta':'fa-chart-line', 'calend':'fa-calendar' };
+function docIcon(cat){ const c=String(cat||'').toLowerCase(); for(const key in DOC_ICONS){ if(c.includes(key)) return DOC_ICONS[key]; } return 'fa-file-lines'; }
+function fmtDocDate(s){ if(!s) return ''; const d=new Date(s); if(isNaN(d)){ const m=String(s).match(/(\d{4})-(\d{2})-(\d{2})/); return m?`${m[3]}/${m[2]}/${m[1]}`:String(s); } const p=x=>String(x).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`; }
+function tabDocumentos(tk,a,k,f){
+  return `
+  <div class="card card-pad" style="margin-bottom:16px;background:linear-gradient(135deg,var(--brand-l),transparent)">
+    <div class="ds-title" style="margin-bottom:6px"><i class="fa-solid fa-building-columns" style="color:var(--brand)"></i> Documentos oficiais (CVM)</div>
+    <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">Fatos relevantes, comunicados ao mercado, avisos aos acionistas e eventos corporativos entregues à CVM — em tempo real, com o documento oficial para download.</p>
+  </div>
+  <div class="card card-pad"><div id="docsList">${docsSkeleton()}</div></div>`;
+}
+function docsSkeleton(){
+  return `<div style="text-align:center;padding:26px 10px;color:var(--ink-3)"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:20px;color:var(--brand)"></i><div style="margin-top:10px;font-size:13px">Buscando documentos na CVM…</div></div>`;
+}
+function docsError(msg){
+  return `<div style="text-align:center;padding:26px 10px;color:var(--ink-3)"><i class="fa-solid fa-folder-open" style="font-size:22px;color:var(--ink-4)"></i><div style="margin-top:10px;font-size:13px">${esc(msg||'Nenhum documento encontrado para este ativo.')}</div></div>`;
+}
+function renderDocsList(docs){
+  const el=document.getElementById('docsList'); if(!el) return;
+  if(!docs || !docs.length){ el.innerHTML=docsError('Sem documentos recentes na CVM para este ativo.'); return; }
+  el.innerHTML=`<div class="doc-list">${docs.map(d=>{
+    const dt=fmtDocDate(d.dataEntrega||d.dataRef);
+    const cat=esc(d.categoria||'Documento');
+    const assunto=esc(d.assunto||d.tipo||'');
+    const link=d.link?esc(d.link):'';
+    return `<a class="doc-item" ${link?`href="${link}" target="_blank" rel="noopener"`:''}>
+      <span class="doc-ic"><i class="fa-solid ${docIcon(d.categoria)}"></i></span>
+      <span class="doc-tx"><b>${cat}</b>${assunto?`<small>${assunto}</small>`:''}</span>
+      <span class="doc-meta">${dt?`<span class="doc-date">${dt}</span>`:''}${link?'<i class="fa-solid fa-download"></i>':''}</span>
+    </a>`;
+  }).join('')}</div>
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Fonte: Portal de Dados Abertos da CVM (IPE). Os documentos abrem no site oficial da CVM.</div>`;
+}
+async function loadDocuments(tk){
+  if(!tk) return;
+  const el=document.getElementById('docsList'); if(!el) return;
+  if(DOCS_CACHE[tk]){ renderDocsList(DOCS_CACHE[tk]); return; }
+  el.innerHTML=docsSkeleton();
+  const lk=assetLookup(tk); const nm=(ASSET_LIVE[tk]&&ASSET_LIVE[tk].name) || (lk&&lk.a.nm) || '';
+  try{
+    const qs=new URLSearchParams({ ticker:tk }); if(nm) qs.set('name', nm);
+    const r=await fetch(`${docsEndpoint()}?${qs.toString()}`);
+    if(!r.ok){ el.innerHTML=docsError('Não foi possível consultar a CVM agora. Tente novamente em instantes.'); return; }
+    const d=await r.json();
+    const docs=(d&&d.docs)||[];
+    DOCS_CACHE[tk]=docs;
+    if(currentAssetTk===tk && assetTab==='documentos') renderDocsList(docs);
+  }catch(e){ if(el) el.innerHTML=docsError('Sem conexão para consultar a CVM.'); }
 }
 
 function viewAssetDetail(tk){
