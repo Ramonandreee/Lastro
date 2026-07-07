@@ -13,6 +13,30 @@
  * Uso: GET /api/documents?ticker=PETR4&name=Petroleo%20Brasileiro&cnpj=33000167000101
  */
 const IPE_BASE = 'https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS';
+const CKAN_PKG = 'https://dados.cvm.gov.br/api/3/action/package_show?id=cia_aberta-doc-ipe';
+
+// Descobre as URLs reais dos CSVs do IPE via catálogo CKAN da CVM (evita chutar caminho).
+async function discoverCsvUrls(years, ms = 12000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(CKAN_PKG, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LastroBot/1.0)', 'Accept': 'application/json' }, signal: ctrl.signal });
+    if (!r.ok) return { map: {}, status: r.status };
+    const j = await r.json();
+    const resources = (j && j.result && j.result.resources) || [];
+    const map = {};
+    for (const res of resources) {
+      const url = res && res.url ? String(res.url) : '';
+      const m = url.match(/ipe_cia_aberta_(\d{4})\.csv/i);
+      if (m && years.includes(Number(m[1]))) map[m[1]] = url;
+    }
+    return { map, status: r.status };
+  } catch (e) {
+    return { map: {}, err: String((e && e.message) || e) };
+  } finally {
+    clearTimeout(timer);
+  }
+}
 // categorias relevantes para o investidor (o resto é ruído regulatório)
 const KEEP_CATEGORIES = [
   'fato relevante', 'comunicado ao mercado', 'aviso aos acionistas',
@@ -26,8 +50,7 @@ function normalize(s) {
 const onlyDigits = (s) => String(s || '').replace(/\D/g, '');
 
 // Retorna { text, status, url, err } — nunca lança.
-async function fetchCsv(year, ms = 25000) {
-  const url = `${IPE_BASE}/ipe_cia_aberta_${year}.csv`;
+async function fetchCsv(url, ms = 25000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   try {
@@ -76,11 +99,16 @@ export default async function handler(req, res) {
 
   try {
     const year = new Date().getFullYear();
-    const [cur, prev] = await Promise.all([fetchCsv(year), fetchCsv(year - 1)]);
+    const years = [year, year - 1];
+    // 1) descobre as URLs reais via CKAN; 2) cai para o padrão conhecido se não achar
+    const disc = await discoverCsvUrls(years);
+    const urlFor = (y) => disc.map[String(y)] || `${IPE_BASE}/ipe_cia_aberta_${y}.csv`;
+    const [cur, prev] = await Promise.all([fetchCsv(urlFor(year)), fetchCsv(urlFor(year - 1))]);
     if (!cur.text && !prev.text) {
       res.setHeader('Cache-Control', 'no-store');
       return res.status(502).json({
         error: 'CVM indisponível',
+        ckan: { status: disc.status || null, found: Object.keys(disc.map), err: disc.err || null },
         diag: [
           { year, status: cur.status, url: cur.url, err: cur.err || null },
           { year: year - 1, status: prev.status, url: prev.url, err: prev.err || null },
