@@ -4160,6 +4160,17 @@ function isAuthed(){ return !!currentUser(); }
 function saveSession(s){ localStorage.setItem('lastro_session', JSON.stringify(s)); ensureTrial(); updateAuthUI(); refreshPlanUI(); }
 function clearSession(){ localStorage.removeItem('lastro_session'); updateAuthUI(); }
 
+/* traduz erros comuns do Supabase Auth para português */
+function translateAuthErr(msg){
+  const m=String(msg||'').toLowerCase();
+  if(/already\s*registered|already\s*exists/.test(m)) return 'Este e-mail já tem uma conta. Faça login.';
+  if(/email\s*not\s*confirmed/.test(m)) return 'Confirme seu e-mail pelo link que enviamos antes de entrar.';
+  if(/invalid\s*login|invalid\s*credentials/.test(m)) return 'E-mail ou senha inválidos.';
+  if(/password.*(6|short|least)/.test(m)) return 'A senha precisa de ao menos 6 caracteres.';
+  if(/rate\s*limit|too\s*many/.test(m)) return 'Muitas tentativas. Aguarde um instante e tente de novo.';
+  if(/unable to validate email|invalid.*email/.test(m)) return 'Informe um e-mail válido.';
+  return msg||'Não foi possível concluir. Tente novamente.';
+}
 async function authSignup(email, pass){
   const c=_sb(); if(!c.SUPABASE_URL) return {error:'Backend não configurado'};
   try{
@@ -4359,7 +4370,14 @@ function signupBack(){ signupGrab2(); _signupStep=1; renderSignup(); }
 async function signupCreate(){
   signupGrab2(); const err=$('#auErr'); if(err) err.innerHTML='<span class="faint">Criando sua conta…</span>';
   const r=await authSignup(_signup.email, _signup.pass);
-  if(r.error){ if(err) err.textContent=r.error; return; }
+  if(r.error){
+    if(err){
+      if(/already\s*registered|already\s*exists|user.*exist/i.test(r.error)){
+        err.innerHTML=`Este e-mail já tem uma conta. <a onclick="renderAuth('login')" style="color:var(--brand);font-weight:600;cursor:pointer">Fazer login</a>`;
+      } else err.textContent=translateAuthErr(r.error);
+    }
+    return;
+  }
   const prof={ name:_signup.name, phone:_signup.phone, uf:_signup.uf, city:_signup.city, risk:_signup.risk, goal:_signup.goal, exp:_signup.exp, wealth:_signup.wealth, createdAt:new Date().toISOString(), emailVerified:!r.confirm, phoneVerified:false };
   Object.keys(prof).forEach(k=>{ if(prof[k]===''||prof[k]==null) delete prof[k]; });
   saveProfile(prof);
@@ -4417,7 +4435,7 @@ async function authSubmit(mode){
   if(pass.length<6){ err.textContent='A senha precisa de ao menos 6 caracteres.'; return; }
   err.innerHTML='<span class="faint">Processando…</span>';
   const r = mode==='signup' ? await authSignup(email,pass) : await authLogin(email,pass);
-  if(r.error){ err.textContent=r.error; return; }
+  if(r.error){ err.textContent=translateAuthErr(r.error); return; }
   if(r.confirm){
     $('#authBody').innerHTML = `<div style="text-align:center;padding:14px 6px">
       <div class="pw-ic" style="margin:0 auto 14px"><i class="fa-solid fa-envelope-circle-check"></i></div>
