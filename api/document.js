@@ -69,8 +69,9 @@ export default async function handler(req, res) {
     }
 
     if (pdf) {
+      const dl = (req.query || {}).dl ? 'attachment' : 'inline';
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'inline; filename="documento.pdf"');
+      res.setHeader('Content-Disposition', `${dl}; filename="documento.pdf"`);
       res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800');
       return res.status(200).send(pdf);
     }
