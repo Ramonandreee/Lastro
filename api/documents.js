@@ -25,18 +25,21 @@ function normalize(s) {
 }
 const onlyDigits = (s) => String(s || '').replace(/\D/g, '');
 
-async function fetchCsv(year, ms = 20000) {
+// Retorna { text, status, url, err } — nunca lança.
+async function fetchCsv(year, ms = 25000) {
+  const url = `${IPE_BASE}/ipe_cia_aberta_${year}.csv`;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   try {
-    const r = await fetch(`${IPE_BASE}/ipe_cia_aberta_${year}.csv`, {
-      headers: { 'User-Agent': 'LastroBot/1.0' }, signal: ctrl.signal,
+    const r = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; LastroBot/1.0; +https://lastro-dun.vercel.app)', 'Accept': 'text/csv,*/*' },
+      signal: ctrl.signal,
     });
-    if (!r.ok) return null;
+    if (!r.ok) return { text: null, status: r.status, url };
     const buf = await r.arrayBuffer();
-    return new TextDecoder('latin1').decode(buf); // CVM usa ISO-8859-1
-  } catch {
-    return null;
+    return { text: new TextDecoder('latin1').decode(buf), status: r.status, url }; // CVM usa ISO-8859-1
+  } catch (e) {
+    return { text: null, status: 0, url, err: String((e && e.message) || e) };
   } finally {
     clearTimeout(timer);
   }
@@ -74,13 +77,21 @@ export default async function handler(req, res) {
   try {
     const year = new Date().getFullYear();
     const [cur, prev] = await Promise.all([fetchCsv(year), fetchCsv(year - 1)]);
-    if (!cur && !prev) {
+    if (!cur.text && !prev.text) {
       res.setHeader('Cache-Control', 'no-store');
-      return res.status(502).json({ error: 'CVM indisponível', docs: [] });
+      return res.status(502).json({
+        error: 'CVM indisponível',
+        diag: [
+          { year, status: cur.status, url: cur.url, err: cur.err || null },
+          { year: year - 1, status: prev.status, url: prev.url, err: prev.err || null },
+        ],
+        docs: [],
+      });
     }
 
     const docs = [];
-    for (const text of [cur, prev]) {
+    for (const csv of [cur, prev]) {
+      const text = csv && csv.text;
       if (!text) continue;
       const { header, rows } = parseCsv(text);
       const iNome = colIndex(header, 'nome_companhia');
