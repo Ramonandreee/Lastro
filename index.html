@@ -4320,7 +4320,7 @@ function renderSignup(){
       <label class="fld auth-fld"><span>Senha</span><div class="auth-input"><i class="fa-solid fa-lock"></i><input id="suPass" type="password" value="${suEsc(_signup.pass)}" placeholder="mínimo 6 caracteres" autocomplete="new-password"><button type="button" class="auth-eye" onclick="togglePassId('suPass',this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
       <div id="auErr" class="fld-err"></div>
       <button class="btn btn-primary auth-submit" onclick="signupNext()">Continuar <i class="fa-solid fa-arrow-right"></i></button>
-      <div class="auth-foot"><i class="fa-solid fa-shield-halved"></i> Enviamos um código para confirmar seu e-mail e WhatsApp.</div>`;
+      <div class="auth-foot"><i class="fa-solid fa-shield-halved"></i> Seus dados ficam protegidos e nunca são compartilhados.</div>`;
     setTimeout(()=>{ const e=$('#suName'); e&&e.focus(); }, 60);
   } else {
     body.innerHTML=`
@@ -4364,7 +4364,20 @@ async function signupCreate(){
   Object.keys(prof).forEach(k=>{ if(prof[k]===''||prof[k]==null) delete prof[k]; });
   saveProfile(prof);
   if(getSession() && typeof saveCloudState==='function') saveCloudState();
-  signupVerify(!!r.confirm);
+  // Verificação em 2 etapas (WhatsApp) temporariamente desativada — conta ativa direto.
+  // Se o Supabase exigir confirmação de e-mail, mostramos o aviso; senão, entra já.
+  if(r.confirm){ signupEmailNotice(_signup.email); return; }
+  signupFinish();
+}
+function signupEmailNotice(email){
+  $('#authTitle').textContent='Confirme seu e-mail';
+  $('#authBody').innerHTML=`
+    <div style="text-align:center;padding:14px 6px">
+      <div class="pw-ic" style="margin:0 auto 14px"><i class="fa-solid fa-envelope-circle-check"></i></div>
+      <div style="font-weight:600;font-size:15px">Falta só confirmar seu e-mail</div>
+      <div style="font-size:13px;color:var(--ink-2);margin-top:8px;line-height:1.6">Enviamos um link de confirmação para <strong>${esc(email||'')}</strong>. Abra o e-mail, confirme e faça login.</div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px" onclick="renderAuth('login')">Ir para o login <i class="fa-solid fa-arrow-right"></i></button>
+    </div>`;
 }
 function signupVerify(needEmail){
   $('#authTitle').textContent='Confirme sua conta';

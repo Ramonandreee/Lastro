@@ -24,15 +24,16 @@ const MODULES = [
 const RANGES = new Set(['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max']);
 const INTERVALS = new Set(['1d', '1wk', '1mo']);
 
+// Retorna { ok, status, data } — nunca lança, para o handler decidir o fallback.
 async function fetchJson(url, ms = 15000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   try {
     const r = await fetch(url, { headers: { 'User-Agent': 'LastroBot/1.0' }, signal: ctrl.signal });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch {
-    return null;
+    const data = await r.json().catch(() => null);
+    return { ok: r.ok, status: r.status, data };
+  } catch (e) {
+    return { ok: false, status: 0, data: null, err: String((e && e.message) || e) };
   } finally {
     clearTimeout(timer);
   }
@@ -123,17 +124,30 @@ export default async function handler(req, res) {
   if (!ticker) return res.status(400).json({ error: 'ticker obrigatório' });
 
   try {
-    const url = `${BRAPI}/quote/${encodeURIComponent(ticker)}?token=${encodeURIComponent(token)}`
-      + `&range=${range}&interval=${interval}&fundamental=true&dividends=true&modules=${MODULES}`;
-    const d = await fetchJson(url);
-    const r = d && d.results && d.results[0];
+    const base = `${BRAPI}/quote/${encodeURIComponent(ticker)}?token=${encodeURIComponent(token)}`
+      + `&range=${range}&interval=${interval}&fundamental=true&dividends=true`;
+    // 1ª tentativa: com módulos. Se o brapi rejeitar (módulo inválido derruba a
+    // requisição toda), refaz sem módulos para ainda entregar cotação/histórico/proventos.
+    let resp = await fetchJson(`${base}&modules=${MODULES}`);
+    let r = resp.data && resp.data.results && resp.data.results[0];
+    let modulesOk = !!r;
+    if (!r) {
+      resp = await fetchJson(base);
+      r = resp.data && resp.data.results && resp.data.results[0];
+    }
     if (!r) {
       res.setHeader('Cache-Control', 'no-store');
-      return res.status(404).json({ error: 'ativo não encontrado na brapi', ticker });
+      return res.status(resp.status && resp.status !== 200 ? resp.status : 404).json({
+        error: 'ativo não encontrado na brapi',
+        ticker,
+        brapiStatus: resp.status,
+        brapiError: (resp.data && (resp.data.message || resp.data.error)) || resp.err || null,
+      });
     }
 
     const payload = {
       symbol: r.symbol || ticker,
+      modulesOk,
       name: r.longName || r.shortName || null,
       currency: r.currency || 'BRL',
       price: num(r.regularMarketPrice),
