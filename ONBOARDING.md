@@ -4,6 +4,9 @@
 > **single-file** (`index.html`, sem build, sem framework): você edita, atualiza
 > a página e vê o resultado. Para o guia técnico completo, veja o **README.md**.
 
+**Site no ar:** https://lastro-dun.vercel.app/ — publica automaticamente a cada
+push na `main` (Vercel). É aí que você confere suas mudanças depois de dar push.
+
 ---
 
 ## Pré-requisitos (instalar uma vez)
@@ -41,6 +44,22 @@
 
 4. **Editar** — quase tudo está em `index.html`. Salve e dê F5 para ver a mudança.
    O **README.md** (seções 4, 6 e 8) mostra onde fica cada coisa.
+
+### Usando o Claude Code na versão web (navegador)
+
+Se você usa o Claude Code **no navegador** (claude.ai/code) em vez do terminal
+da sua máquina, o código roda num contêiner na nuvem — então **abrir
+`localhost:5173` não funciona** (o servidor sobe no contêiner remoto, não no seu
+navegador). O jeito de ver suas mudanças é pela **URL publicada**:
+
+1. Peça a alteração ao Claude e deixe ele editar o `index.html`.
+2. Valide (CSS + JS — README §8).
+3. `git pull origin main` → `git commit` → `git push origin main`.
+4. Aguarde ~1–2 min a Vercel publicar e abra **https://lastro-dun.vercel.app/**
+   para conferir a mudança no ar.
+
+> O `config.js` criado no contêiner web é temporário (o contêiner é descartável),
+> mas isso não é problema: ele é gitignored e serve só para testar na sessão.
 
 ## Fluxo de trabalho: direto na `main`
 
