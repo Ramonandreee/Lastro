@@ -2212,6 +2212,7 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .ad-badge2 { display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700; color:var(--up); background:var(--up-l); padding:2px 8px; border-radius:999px; vertical-align:middle; margin-left:4px; }
 .ad-action-foot { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:14px 16px; }
 .ad-approved-tag { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; color:var(--up); }
+.ad-approved-wrap { display:inline-flex; align-items:center; gap:12px; flex-wrap:wrap; }
 /* pasta de arquivadas */
 .ad-archive { border:1px solid var(--line); border-radius:var(--r); background:var(--surface); overflow:hidden; margin-top:18px; }
 .ad-archive-h { display:flex; align-items:center; gap:10px; width:100%; padding:14px 16px; background:none; border:none; cursor:pointer; text-align:left; font-size:13.5px; font-weight:700; color:var(--ink); }
@@ -5694,6 +5695,7 @@ function adminSuggestions(all){
 function adminActionState(){ const p=getProfile(); return (p.adminActions&&typeof p.adminActions==='object')?p.adminActions:{}; }
 function _setAdminAction(id, patch){ const p=getProfile(); const m=Object.assign({}, p.adminActions||{}); m[id]=Object.assign({}, m[id]||{}, patch); p.adminActions=m; saveProfile(p); if(typeof flushCloudState==='function') flushCloudState(); render('admin'); }
 function approveActionId(id,label){ _setAdminAction(id,{approved:true}); toast('Aprovado: '+label+' — execução agendada ✓'); }
+function unapproveActionId(id,label){ _setAdminAction(id,{approved:false}); toast('Aprovação cancelada: '+label); }
 function archiveAction(id){ _setAdminAction(id,{state:'archived'}); toast('Ação arquivada'); }
 function restoreAction(id){ _setAdminAction(id,{state:'active'}); toast('Ação restaurada'); }
 function deleteAction(id){ _setAdminAction(id,{state:'deleted'}); toast('Ação excluída'); }
@@ -5754,7 +5756,7 @@ function viewAdmin(){
           <div class="ad-action-plan"><div class="ad-plan-lbl"><i class="fa-solid fa-list-check"></i> Plano de ação · impacto ${s.impact}</div><ol>${s.plan.map(p=>`<li>${p}</li>`).join('')}</ol></div>
           <div class="ad-action-foot">
             <button class="btn btn-ghost btn-sm" onclick="archiveAction('${s.id}')"><i class="fa-solid fa-box-archive"></i> Arquivar</button>
-            ${ap?'<span class="ad-approved-tag"><i class="fa-solid fa-circle-check"></i> Execução aprovada</span>':`<button class="btn btn-primary btn-sm" onclick="approveActionId('${s.id}','${esc(s.cta)}')"><i class="fa-solid fa-check"></i> Aprovar execução</button>`}
+            ${ap?`<span class="ad-approved-wrap"><span class="ad-approved-tag"><i class="fa-solid fa-circle-check"></i> Execução aprovada</span><button class="btn btn-ghost btn-sm" onclick="unapproveActionId('${s.id}','${esc(s.cta)}')"><i class="fa-solid fa-rotate-left"></i> Cancelar aprovação</button></span>`:`<button class="btn btn-primary btn-sm" onclick="approveActionId('${s.id}','${esc(s.cta)}')"><i class="fa-solid fa-check"></i> Aprovar execução</button>`}
           </div>
         </div>
       </div>`; };
