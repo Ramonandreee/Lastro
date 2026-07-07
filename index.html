@@ -9755,11 +9755,12 @@ function docsSkeleton(){
 function docsError(msg){
   return `<div style="text-align:center;padding:26px 10px;color:var(--ink-3)"><i class="fa-solid fa-folder-open" style="font-size:22px;color:var(--ink-4)"></i><div style="margin-top:10px;font-size:13px">${esc(msg||'Nenhum documento encontrado para este ativo.')}</div></div>`;
 }
-/* o link do CSV é de download direto (baixa ZIP → tela branca no mobile);
-   convertemos para o visualizador da CVM, que abre o documento numa página. */
+/* o link do CSV baixa um ZIP; nosso proxy extrai o PDF e abre o arquivo puro
+   (sem a moldura do site da CVM), como um documento baixado. */
 function docViewUrl(link){
-  const m=String(link||'').match(/numProtocolo=(\d+)/i);
-  return m ? `https://www.rad.cvm.gov.br/ENET/frmExibirArquivoIPEExterno.aspx?NumeroProtocoloEntrega=${m[1]}` : link;
+  if(!link) return link;
+  const ep=(window.LASTRO_CONFIG && window.LASTRO_CONFIG.DOC_FILE_ENDPOINT) || '/api/document';
+  return `${ep}?u=${encodeURIComponent(link)}`;
 }
 function renderDocsList(docs){
   const el=document.getElementById('docsList'); if(!el) return;
@@ -9775,7 +9776,7 @@ function renderDocsList(docs){
       <span class="doc-meta">${dt?`<span class="doc-date">${dt}</span>`:''}${link?'<i class="fa-solid fa-arrow-up-right-from-square"></i>':''}</span>
     </a>`;
   }).join('')}</div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Fonte: Portal de Dados Abertos da CVM (IPE). Os documentos abrem no site oficial da CVM.</div>`;
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Fonte: Portal de Dados Abertos da CVM (IPE). Toque para abrir o documento (PDF).</div>`;
 }
 async function loadDocuments(tk){
   if(!tk) return;

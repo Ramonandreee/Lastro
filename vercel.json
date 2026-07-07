@@ -7,6 +7,7 @@
     "api/fundamentals.js": { "memory": 256, "maxDuration": 30 },
     "api/asset.js": { "memory": 256, "maxDuration": 30 },
     "api/documents.js": { "memory": 1024, "maxDuration": 60 },
+    "api/document.js": { "memory": 1024, "maxDuration": 30 },
     "api/universe.js": { "memory": 512, "maxDuration": 30 },
     "api/config.js": { "memory": 128, "maxDuration": 5 }
   },
