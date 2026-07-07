@@ -2250,14 +2250,15 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .rms b { font-family:var(--mono); font-size:19px; font-weight:700; letter-spacing:-.02em; line-height:1.1; white-space:nowrap; }
 .rms span { font-size:11.5px; color:var(--ink-3); font-weight:600; white-space:nowrap; }
 .ad-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-.ad-bar-row { display:flex; align-items:center; gap:12px; padding:8px 0; font-size:13px; }
-.ad-bar-l { flex:none; width:150px; display:flex; align-items:center; gap:6px; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.ad-bar { flex:1; height:8px; border-radius:999px; background:var(--surface-3); overflow:hidden; }
-.ad-bar-f { display:block; height:100%; border-radius:999px; background:var(--brand); }
+/* linha de barra: [rótulo] [% à esquerda] [======= barra larga =======] [qtd à direita] */
+.ad-bar-row { display:grid; grid-template-columns:84px 44px 1fr 26px; align-items:center; gap:12px; padding:10px 0; font-size:13px; }
+.ad-bar-l { display:flex; align-items:center; min-width:0; color:var(--ink-2); white-space:nowrap; overflow:hidden; }
+.ad-bar-l.ad-bar-uf { font-family:var(--mono); font-weight:600; color:var(--ink); letter-spacing:.02em; }
+.ad-bar-pct { font-family:var(--mono); font-weight:700; font-size:14px; color:var(--ink); text-align:right; font-variant-numeric:tabular-nums; }
+.ad-bar { height:10px; border-radius:999px; background:var(--surface-3); overflow:hidden; }
+.ad-bar-f { display:block; height:100%; border-radius:999px; background:var(--brand); transition:width .5s var(--ease-out); }
 .ad-bar-f.ad-pro { background:var(--gold); } .ad-bar-f.ad-premium { background:var(--brand); } .ad-bar-f.ad-free { background:var(--ink-3); }
-.ad-bar-row b { flex:none; width:28px; text-align:right; font-family:var(--mono); font-size:13px; }
-.ad-bar-row b.ad-bar-v { width:auto; min-width:48px; display:flex; align-items:baseline; justify-content:flex-end; gap:5px; }
-.ad-bar-v small { font-family:var(--font,inherit); font-size:10.5px; font-weight:600; color:var(--ink-3); }
+.ad-bar-n { font-family:var(--mono); font-size:12.5px; font-weight:600; color:var(--ink-3); text-align:right; font-variant-numeric:tabular-nums; }
 .ad-badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:10.5px; font-weight:700; }
 .ad-badge.ad-pro { background:var(--gold-l); color:var(--gold); } .ad-badge.ad-prem { background:var(--brand-l); color:var(--brand); } .ad-badge.ad-free { background:var(--surface-3); color:var(--ink-3); } .ad-badge.ad-trial { background:var(--accent-l); color:var(--accent); }
 .ad-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; }
@@ -5729,11 +5730,11 @@ function viewAdmin(){
       <div class="ad-grid2" style="margin-top:16px">
         <div class="card card-pad">
           <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Distribuição por plano</div></div>
-          ${[['Investidor Pro','pro',proN],['Premium','premium',premN],['Gratuito','free',leads.length]].map(([l,p,n])=>{ const pc=all.length?Math.round(n/all.length*100):0; return `<div class="ad-bar-row"><span class="ad-bar-l">${planBadge(p)} ${l}</span><div class="ad-bar"><i class="ad-bar-f ad-${p}" style="width:${pc}%"></i></div><b class="ad-bar-v">${pc}%<small>${n}</small></b></div>`; }).join('')}
+          ${[['Investidor Pro','pro',proN],['Premium','premium',premN],['Gratuito','free',leads.length]].map(([l,p,n])=>{ const pc=all.length?Math.round(n/all.length*100):0; return `<div class="ad-bar-row"><span class="ad-bar-l">${planBadge(p)}</span><span class="ad-bar-pct">${pc}%</span><div class="ad-bar"><i class="ad-bar-f ad-${p}" style="width:${pc}%"></i></div><span class="ad-bar-n">${n}</span></div>`; }).join('')}
         </div>
         <div class="card card-pad">
           <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-location-dot"></i></span> Top estados</div></div>
-          ${(()=>{ const top=ufTop.slice(0,6); const mx=top[0]?top[0][1]:1; return top.map(([uf,n])=>{ const pc=all.length?Math.round(n/all.length*100):0; return `<div class="ad-bar-row"><span class="ad-bar-l">${uf}</span><div class="ad-bar"><i class="ad-bar-f ad-premium" style="width:${Math.round(n/mx*100)}%"></i></div><b class="ad-bar-v">${pc}%<small>${n}</small></b></div>`; }).join(''); })()}
+          ${(()=>{ const top=ufTop.slice(0,6); const mx=top[0]?top[0][1]:1; return top.map(([uf,n])=>{ const pc=all.length?Math.round(n/all.length*100):0; return `<div class="ad-bar-row"><span class="ad-bar-l ad-bar-uf">${uf}</span><span class="ad-bar-pct">${pc}%</span><div class="ad-bar"><i class="ad-bar-f ad-premium" style="width:${Math.round(n/mx*100)}%"></i></div><span class="ad-bar-n">${n}</span></div>`; }).join(''); })()}
         </div>
       </div>`;
   } else if(adminTab==='acoes'){
@@ -6692,7 +6693,7 @@ function newsItemHTML(n){
 }
 
 function newsAltaHTML(){
-  const mv=topMovers('up',4);
+  const mv=topMovers('up',3);
   if(!mv.length) return '<div class="drawer-empty" style="padding:10px 0">Carregando…</div>';
   const mx=Math.max(...mv.map(a=>a.var||0),0.1);
   return mv.map((a,i)=>`<div class="rank-row" onclick="quickView('${a.tk}')"><span class="rank-n">${i+1}</span><span class="rank-tk">${a.tk}</span><span class="rank-bar"><i style="width:${Math.max(8,(a.var/mx)*100).toFixed(0)}%;background:var(--up)"></i></span><span class="rank-pct up">+${pc(a.var)}%</span></div>`).join('');
@@ -7968,7 +7969,8 @@ function fmtCur(v,cur){ return cur==='usd'? usd(v) : brl(v); }
 /* logo real do ativo (CDN brapi p/ B3, CoinCap p/ cripto, Clearbit p/ stocks US) */
 const STOCK_DOMAIN = { NVDA:'nvidia.com', AAPL:'apple.com', MSFT:'microsoft.com', GOOGL:'google.com', AMZN:'amazon.com', META:'meta.com', TSM:'tsmc.com', AVGO:'broadcom.com', TSLA:'tesla.com', JPM:'jpmorganchase.com', NFLX:'netflix.com', AMD:'amd.com', V:'visa.com', MA:'mastercard.com', KO:'coca-cola.com', DIS:'thewaltdisneycompany.com' };
 function logoSrc(tk,k){
-  if(k==='cripto') return `https://assets.coincap.io/assets/icons/${String(tk).toLowerCase()}@2x.png`;
+  // ícones de cripto: círculos coloridos com fundo TRANSPARENTE (sem o branco do coincap)
+  if(k==='cripto') return `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${String(tk).toLowerCase()}.svg`;
   if(k==='stocks'){ const d=STOCK_DOMAIN[tk]; return d?`https://logo.clearbit.com/${d}`:''; }
   if(k==='acoes'||k==='fiis'||k==='bdrs'||k==='etfs') return `https://icons.brapi.dev/icons/${tk}.svg`;
   return '';
