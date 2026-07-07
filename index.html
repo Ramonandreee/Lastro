@@ -8609,8 +8609,10 @@ function applyAssetLive(tk, d){
   const f = FUND[tk] = FUND[tk] || {};
   const setF=(key,v)=>{ if(v!=null&&v!=='') f[key]=v; };
   const setA=(key,v)=>{ if(v!=null) a[key]=v; };
-  // margem líquida: se o brapi não trouxer, calcula de lucro/receita
+  // margem líquida: se o brapi não trouxer, calcula de lucro/receita; senão, da DRE
   if(fu.mgl==null && typeof fu.receita==='number' && fu.receita>0 && typeof fu.lucro==='number') fu.mgl=Math.round(fu.lucro/fu.receita*1000)/10;
+  if(fu.mgl==null){ const inc=d.statements&&d.statements.income, r0=Array.isArray(inc)&&inc[0];
+    if(r0 && typeof r0.totalRevenue==='number' && r0.totalRevenue>0 && typeof r0.netIncome==='number') fu.mgl=Math.round(r0.netIncome/r0.totalRevenue*1000)/10; }
   if(k==='acoes'){
     setA('pl',fu.pl); setA('pvp',fu.pvp); setA('dy',fu.dy); setA('roe',fu.roe); setA('mgl',fu.mgl);
     setF('roa',fu.roa); setF('mb',fu.mgbruta); setF('mebit',fu.mgebit); setF('psr',fu.psr); setF('lc',fu.liqCorrente);
@@ -9810,7 +9812,6 @@ function ensurePdfModal(){
   </div>
   <div class="pdf-menu" id="pdfMenu">
     <button onclick="pdfShare()"><i class="fa-solid fa-share-nodes"></i> Compartilhar</button>
-    <button onclick="pdfDownload()"><i class="fa-solid fa-download"></i> Baixar</button>
     <button onclick="pdfOpenExternal()"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir no navegador</button>
   </div>
   <div class="pdf-body" id="pdfBody"><div id="pdfPages" class="pdf-pages"></div></div>`;
@@ -9879,8 +9880,12 @@ async function renderPdf(url){
 }
 function togglePdfMenu(e){ if(e){ e.stopPropagation(); } const m=document.getElementById('pdfMenu'); if(m) m.classList.toggle('open'); }
 function pdfCloseMenu(){ const m=document.getElementById('pdfMenu'); if(m) m.classList.remove('open'); }
-function pdfOpenExternal(){ pdfCloseMenu(); if(_pdfUrl) window.open(_pdfUrl,'_blank','noopener'); }
-function pdfDownload(){ pdfCloseMenu(); if(!_pdfUrl) return; const u=_pdfUrl+(_pdfUrl.includes('?')?'&':'?')+'dl=1'; const a=document.createElement('a'); a.href=u; a.download='documento.pdf'; document.body.appendChild(a); a.click(); a.remove(); }
+function pdfOpenExternal(){
+  pdfCloseMenu(); if(!_pdfUrl) return;
+  const abs=location.origin+_pdfUrl;              // URL absoluta abre no navegador externo
+  const a=document.createElement('a'); a.href=abs; a.target='_blank'; a.rel='noopener noreferrer';
+  document.body.appendChild(a); a.click(); a.remove();
+}
 async function pdfShare(){
   pdfCloseMenu(); if(!_pdfUrl) return;
   const abs=location.origin+_pdfUrl;
