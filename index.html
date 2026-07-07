@@ -1509,8 +1509,8 @@ input[type=range]::-moz-range-thumb {
 .logo-img { width:100%; height:100%; object-fit:cover; background:#fff; }
 .logo-mono { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-family:var(--sans); font-weight:700; letter-spacing:-.03em; color:#fff; background:var(--surface-3); text-transform:uppercase; }
 /* cripto: tile circular preenchido pela logo (ícone circular colorido), cor da marca ao fundo — sem branco */
-.logo.logo-cr { border-radius:50%; }
-.logo-cr .logo-img { border-radius:50%; object-fit:cover; }
+.logo.logo-cr { border-radius:50% !important; background:transparent; }
+.logo-cr .logo-img { border-radius:50% !important; object-fit:cover; }
 .logo.sm .logo-mono, .logo.xs .logo-mono { font-size:10px; }
 .logo.md .logo-mono { font-size:12px; } .logo.lg .logo-mono { font-size:14px; }
 /* placeholder por setor: ícone dimensionado ao tamanho do logo */
@@ -1630,7 +1630,8 @@ input[type=range]::-moz-range-thumb {
   border-radius: var(--r-sm);
 }
 .news-item:last-child { border-bottom: none; }
-.news-item:hover { background: var(--surface-2); padding-left: 12px; padding-right: 12px; }
+/* só no desktop (mouse) — evita a notícia "selecionada" ao tocar/arrastar no celular */
+@media (hover:hover){ .news-item:hover { background: var(--surface-2); padding-left: 12px; padding-right: 12px; } }
 .news-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
 .news-src { font-size: 12px; font-weight: 500; color: var(--ink-2); }
 .news-time { font-size: 11.5px; color: var(--ink-4); margin-left: auto; }
