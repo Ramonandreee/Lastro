@@ -5634,6 +5634,7 @@ function viewIndicar(){
    VIEW: PAINEL ADMINISTRATIVO (somente dono)
    ══════════════════════════════════════════════════════════ */
 let adminTab='overview';
+const adminOpenAct=new Set(); /* ids das ações expandidas — preserva o "aberto" entre re-renders */
 function adminGoto(t){ adminTab=t; render('admin'); animateContent(); scrollToTop(); }
 const ADMIN_DEMO=[
   { name:'Marina Alves',      email:'marina.alves@gmail.com',   phone:'(11) 98812-4471', uf:'SP', city:'São Paulo',      plan:'pro',     trial:false, mrr:49, since:'2026-01-08', risk:'Arrojado',    goal:'Crescimento do patrimônio' },
@@ -5694,12 +5695,12 @@ function adminSuggestions(all){
 /* estado das ações (aprovar/arquivar/excluir) — persistido no perfil/nuvem */
 function adminActionState(){ const p=getProfile(); return (p.adminActions&&typeof p.adminActions==='object')?p.adminActions:{}; }
 function _setAdminAction(id, patch){ const p=getProfile(); const m=Object.assign({}, p.adminActions||{}); m[id]=Object.assign({}, m[id]||{}, patch); p.adminActions=m; saveProfile(p); if(typeof flushCloudState==='function') flushCloudState(); render('admin'); }
-function approveActionId(id,label){ _setAdminAction(id,{approved:true}); toast('Aprovado: '+label+' — execução agendada ✓'); }
-function unapproveActionId(id,label){ _setAdminAction(id,{approved:false}); toast('Aprovação cancelada: '+label); }
+function approveActionId(id,label){ adminOpenAct.add(id); _setAdminAction(id,{approved:true}); toast('Aprovado: '+label+' — execução agendada ✓'); }
+function unapproveActionId(id,label){ adminOpenAct.add(id); _setAdminAction(id,{approved:false}); toast('Aprovação cancelada: '+label); }
 function archiveAction(id){ _setAdminAction(id,{state:'archived'}); toast('Ação arquivada'); }
 function restoreAction(id){ _setAdminAction(id,{state:'active'}); toast('Ação restaurada'); }
 function deleteAction(id){ _setAdminAction(id,{state:'deleted'}); toast('Ação excluída'); }
-function toggleAction(btn){ const c=btn.closest('.ad-action, .ad-archive'); if(c) c.classList.toggle('open'); }
+function toggleAction(btn){ const c=btn.closest('.ad-action, .ad-archive'); if(!c) return; const willOpen=!c.classList.contains('open'); c.classList.toggle('open'); btn.setAttribute('aria-expanded', willOpen?'true':'false'); const id=c.getAttribute('data-aid'); if(id){ if(willOpen) adminOpenAct.add(id); else adminOpenAct.delete(id); } }
 function viewAdmin(){
   const all=adminAll();
   const clientes=all.filter(x=>x.plan==='pro'||x.plan==='premium');
@@ -5745,9 +5746,9 @@ function viewAdmin(){
     const stOf=id=>stt[id]||{};
     const active=sug.filter(s=>((stOf(s.id).state)||'active')==='active');
     const archived=sug.filter(s=>stOf(s.id).state==='archived');
-    const actionCard=s=>{ const ap=!!stOf(s.id).approved; return `
-      <div class="ad-action${ap?' ad-approved':''}" data-st="${s.st}">
-        <button class="ad-action-h" onclick="toggleAction(this)" aria-expanded="false">
+    const actionCard=s=>{ const ap=!!stOf(s.id).approved; const op=adminOpenAct.has(s.id); return `
+      <div class="ad-action${ap?' ad-approved':''}${op?' open':''}" data-st="${s.st}" data-aid="${s.id}">
+        <button class="ad-action-h" onclick="toggleAction(this)" aria-expanded="${op?'true':'false'}">
           <span class="ad-action-ic"><i class="fa-solid ${s.ic}"></i></span>
           <span class="ad-action-tx"><span class="ad-action-t">${s.title}${ap?' <span class="ad-badge2"><i class="fa-solid fa-circle-check"></i> Aprovada</span>':''}</span><span class="ad-action-d">${s.detail}</span></span>
           <i class="fa-solid fa-chevron-down ad-chev"></i>
