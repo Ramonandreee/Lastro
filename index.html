@@ -9506,13 +9506,36 @@ function tabProventos(tk,a,k,f){
   </div>`;
 }
 
-/* ── Resultados (ações) ── */
+/* ── Resultados (ações) — receita/lucro por ano (DRE real quando disponível) ── */
 function receitaLucroSeries(tk){
+  const inc=(ASSET_LIVE[tk]&&ASSET_LIVE[tk].statements&&ASSET_LIVE[tk].statements.income);
+  if(Array.isArray(inc)&&inc.length){
+    const rows=inc.filter(r=>r&&r.endDate&&typeof r.totalRevenue==='number').slice().reverse().slice(-11); // ascendente
+    if(rows.length>=2){
+      const years=rows.map(r=>String(new Date(r.endDate).getFullYear()));
+      const rec=rows.map(r=>Math.round(r.totalRevenue/1e9));
+      const luc=rows.map(r=>Math.round((typeof r.netIncome==='number'?r.netIncome:0)/1e9));
+      return {years,rec,luc,real:true};
+    }
+  }
   const r=rngF(seedFrom(tk+'rl')); let v=40+(seedFrom(tk)%360);
   const years=[],rec=[],luc=[];
   for(let y=2016;y<=2025;y++){ v=Math.max(10,v*(1+(r()-0.4)*0.45)); years.push(String(y)); const rr=+v.toFixed(0); rec.push(rr); luc.push(+(rr*(0.06+r()*0.20)).toFixed(0)); }
-  years.push('ÚLT 12M'); rec.push(rec[rec.length-1]); luc.push(luc[luc.length-1]);
-  return {years,rec,luc};
+  return {years,rec,luc,real:false};
+}
+/* balanço patrimonial (último exercício) — real */
+function balancoResumo(tk){
+  const bal=(ASSET_LIVE[tk]&&ASSET_LIVE[tk].statements&&ASSET_LIVE[tk].statements.balance);
+  if(!Array.isArray(bal)||!bal.length) return null;
+  const b=bal[0]; if(!b) return null;
+  const n=v=>(typeof v==='number'&&isFinite(v))?v:null;
+  const divBruta=(n(b.loansAndFinancing)||0)+(n(b.longTermLoansAndFinancing)||0)+(n(b.debentures)||0)+(n(b.longTermDebentures)||0);
+  const caixa=(n(b.cash)||0)+(n(b.shortTermInvestments)||0);
+  return {
+    ano:b.endDate?new Date(b.endDate).getFullYear():null,
+    ativo:n(b.totalAssets), passivo:n(b.totalLiab), pl:n(b.shareholdersEquity)??n(b.totalStockholderEquity),
+    caixa, divBruta, divLiq:(divBruta||caixa)?(divBruta-caixa):null,
+  };
 }
 function donutLegend(items){ return items.map(it=>`<div class="dleg"><span class="dleg-l"><span class="dot" style="background:${it.c}"></span>${esc(it.n)}<small>${it.s||''}</small></span><span class="dleg-v">${it.p}</span></div>`).join(''); }
 function receitasPorTipo(tk){
@@ -9527,9 +9550,7 @@ function receitasPorRegiao(tk){
   return reg.map((n,i)=>({n, p:(parts[i]*100).toFixed(2)+'%', c:cols[i], v:parts[i]}));
 }
 function tabResultados(tk,a,k,f){
-  const tipo=receitasPorTipo(tk), reg=receitasPorRegiao(tk);
-  const totalRec=receitaLucroSeries(tk).rec.slice(-1)[0];
-  window._RECT=tipo; window._RECR=reg;
+  const rl=receitaLucroSeries(tk);
   const fu=(ASSET_LIVE[tk]||{}).fund||{};
   const kpi=(l,v)=> v==null?'':`<div class="metric"><div class="ml">${l}</div><div class="mv">${v}</div></div>`;
   const pctv=v=> (v==null?null:pc(v,1)+'%');
@@ -9542,25 +9563,27 @@ function tabResultados(tk,a,k,f){
     kpi('ROE', pctv(fu.roe)),
   ].filter(Boolean).join('');
   const realCard = realKpis ? `<div class="card card-pad" style="margin-bottom:16px"><div class="ds-title">Resultados reais · últimos 12 meses</div><div class="metric-grid">${realKpis}</div></div>` : '';
+  // Balanço patrimonial real (último exercício)
+  const bal=balancoResumo(tk);
+  const balCard = bal ? `<div class="card card-pad" style="margin-bottom:16px">
+    <div class="ds-head"><span class="ds-title" style="margin:0">Balanço patrimonial</span>${bal.ano?`<span class="chip chip-neu" style="font-size:10px">Exercício ${bal.ano}</span>`:''}</div>
+    <div class="metric-grid" style="margin-top:10px">
+      ${bal.ativo!=null?`<div class="metric"><div class="ml">Ativo total</div><div class="mv">R$ ${fmtBig(bal.ativo)}</div></div>`:''}
+      ${bal.passivo!=null?`<div class="metric"><div class="ml">Passivo total</div><div class="mv">R$ ${fmtBig(bal.passivo)}</div></div>`:''}
+      ${bal.pl!=null?`<div class="metric"><div class="ml">Patrimônio líquido</div><div class="mv">R$ ${fmtBig(bal.pl)}</div></div>`:''}
+      ${bal.divBruta?`<div class="metric"><div class="ml">Dívida bruta</div><div class="mv">R$ ${fmtBig(bal.divBruta)}</div></div>`:''}
+      ${bal.caixa?`<div class="metric"><div class="ml">Caixa e aplicações</div><div class="mv">R$ ${fmtBig(bal.caixa)}</div></div>`:''}
+      ${bal.divLiq!=null?`<div class="metric"><div class="ml">Dívida líquida</div><div class="mv">R$ ${fmtBig(bal.divLiq)}</div></div>`:''}
+    </div>
+  </div>` : '';
   return `
   ${realCard}
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="ds-head"><span class="ds-title" style="margin:0">Receitas e Lucros</span><div class="rl-leg"><span><span class="dot" style="background:var(--brand)"></span>Receita</span><span><span class="dot" style="background:var(--gold)"></span>Lucro</span></div></div>
     <div class="detail-chart"><canvas id="resultChart"></canvas></div>
-    ${illusNote('Série histórica de 10 anos ilustrativa · os valores dos últimos 12 meses acima são reais.')}
+    ${rl.real?'<div class="illus-note"><i class="fa-solid fa-circle-check" style="color:var(--brand)"></i> Receita e lucro líquido por exercício (DRE oficial · CVM/brapi), em R$ bilhões.</div>':illusNote('Série histórica ilustrativa · os valores dos últimos 12 meses acima são reais.')}
   </div>
-  <div class="dt-grid">
-    <div class="card card-pad">
-      <div class="ds-title">Receita por tipo de negócio</div>
-      <div class="donut-wrap"><canvas id="recTipoChart"></canvas><div class="donut-center"><span>Receita</span><b>R$ ${totalRec} bi</b></div></div>
-      <div class="donut-leg">${donutLegend(tipo)}</div>
-    </div>
-    <div class="card card-pad">
-      <div class="ds-title">Receita por região</div>
-      <div class="donut-wrap"><canvas id="recRegiaoChart"></canvas><div class="donut-center"><span>Receita</span><b>R$ ${totalRec} bi</b></div></div>
-      <div class="donut-leg">${donutLegend(reg)}</div>
-    </div>
-  </div>`;
+  ${balCard}`;
 }
 
 /* ── Checklist (qualidade do ativo) ── */
@@ -9710,7 +9733,7 @@ function initRecDonuts(){ charts.recTipo=donutChart('recTipoChart', window._RECT
 function initAssetTabCharts(){
   if(assetTab==='geral') initDetailPriceChart();
   else if(assetTab==='proventos'){ initDyHistChart(); initDetailDivChart(); }
-  else if(assetTab==='resultados'){ initResultChart(); initRecDonuts(); }
+  else if(assetTab==='resultados'){ initResultChart(); }
   else if(assetTab==='carteira'){ charts.fiiCart=donutChart('fiiCartChart', window._FIIC); }
   else if(assetTab==='documentos'){ loadDocuments(currentAssetTk); }
 }

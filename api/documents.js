@@ -30,7 +30,8 @@ async function discoverCsvUrls(years, ms = 12000) {
       const m = url.match(/ipe_cia_aberta_(\d{4})\.csv/i);
       if (m && years.includes(Number(m[1]))) map[m[1]] = url;
     }
-    return { map, status: r.status };
+    const sample = resources.slice(0, 8).map((res) => (res && res.url) || (res && res.name) || null).filter(Boolean);
+    return { map, status: r.status, count: resources.length, sample, success: !!(j && j.success) };
   } catch (e) {
     return { map: {}, err: String((e && e.message) || e) };
   } finally {
@@ -108,7 +109,7 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', 'no-store');
       return res.status(502).json({
         error: 'CVM indisponível',
-        ckan: { status: disc.status || null, found: Object.keys(disc.map), err: disc.err || null },
+        ckan: { status: disc.status || null, success: disc.success, count: disc.count, found: Object.keys(disc.map), sample: disc.sample || [], err: disc.err || null },
         diag: [
           { year, status: cur.status, url: cur.url, err: cur.err || null },
           { year: year - 1, status: prev.status, url: prev.url, err: prev.err || null },
