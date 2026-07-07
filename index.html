@@ -5263,9 +5263,9 @@ function viewCarteira(){
   </div>
 
   <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução do patrimônio <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div><span class="chip ilus" title="Reconstrução ilustrativa — ainda não é histórico real de preços"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução do patrimônio <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div><span class="chip ilus" title="Reconstrução estimada — ainda não é histórico real de preços"><i class="fa-solid fa-flask"></i> estimativa</span></div>
     <div style="position:relative;height:240px;margin-top:6px"><canvas id="patrEvolChart" role="img" aria-label="Evolução do patrimônio comparada a CDI e IBOV"></canvas></div>
-    <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Reconstrução ilustrativa do valor da carteira mês a mês a partir das datas e valores dos seus aportes, comparada a aplicar os mesmos aportes no CDI (Selic 14,5% a.a.) e no IBOV. Conecte o histórico de preços para valores exatos.</div>
+    <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Reconstrução estimada do valor da carteira mês a mês a partir das datas e valores dos seus aportes, comparada a aplicar os mesmos aportes no CDI (Selic 14,5% a.a.) e no IBOV. Conecte o histórico de preços para valores exatos.</div>
   </div>
 
   ${(()=>{ const pays=provPayments(); if(!pays.length) return ''; const total=pays.reduce((s,p)=>s+p.valor,0);
@@ -5670,7 +5670,7 @@ function viewIndicar(){
     </ul>
   </div>
 
-  <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Programa ilustrativo nesta demonstração — a apuração das indicações e os pagamentos via PIX entram em operação com a integração do backend.</div>
+  <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Programa em demonstração — a apuração das indicações e os pagamentos via PIX entram em operação com a integração do backend.</div>
   </div>`;
 }
 
@@ -5772,7 +5772,7 @@ function viewAdmin(){
         ${plCard('fa-user-plus','neu', leads.length, 'Leads', 'no gratuito', 'leads', leads.length===1?'prospect':'prospects')}
       </div>
       <div class="card card-pad" style="margin-top:16px">
-        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Crescimento</div><span class="chip ilus"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
+        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Crescimento</div><span class="chip ilus"><i class="fa-solid fa-flask"></i> demonstração</span></div>
         <div style="position:relative;height:240px;margin-top:6px"><canvas id="adminGrowth" role="img" aria-label="Crescimento de cadastros e receita"></canvas></div>
       </div>
       <div class="ad-grid2" style="margin-top:16px">
@@ -5838,7 +5838,7 @@ function viewAdmin(){
         ${adCard('conv', conv>=50?'pos':'warn', Math.round(conv)+'%', 'Cadastro → pago')}
       </div>
       <div class="card card-pad" style="margin-top:16px">
-        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Evolução da Receita Mensal</div><span class="chip ilus"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
+        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Evolução da Receita Mensal</div><span class="chip ilus"><i class="fa-solid fa-flask"></i> demonstração</span></div>
         <div style="position:relative;height:230px;margin-top:6px"><canvas id="adminMrr" role="img" aria-label="Evolução da receita mensal"></canvas></div>
       </div>
       <div class="card card-pad ad-tablewrap" style="margin-top:16px">
@@ -5856,7 +5856,7 @@ function viewAdmin(){
     ${panel}
   </div>`;
 }
-/* séries e gráficos do painel admin (ilustrativo) */
+/* séries e gráficos do painel admin (estimado) */
 function adminMonths(n){ const now=new Date(); const o=[]; for(let i=n-1;i>=0;i--){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); o.push(d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','')); } return o; }
 function adminRamp(end,n){ const o=[]; for(let i=0;i<n;i++){ const f=0.42+0.58*(i/(n-1)); o.push(Math.round(end*f)); } return o; }
 function initAdminCharts(){
@@ -5888,7 +5888,7 @@ function openAdminHist(term){
   const isMoney = term!=='conv';
   let el=document.getElementById('adminHistModal');
   if(!el){ el=document.createElement('div'); el.id='adminHistModal'; el.className='modal-scrim'; document.body.appendChild(el); el.onclick=ev=>{ if(ev.target===el) el.classList.remove('open'); }; }
-  el.innerHTML=`<div class="modal-card rsa-card"><div class="rsa-head"><div class="rsa-t"><i class="fa-solid ${d.icon}"></i> ${esc(d.nome)} · evolução</div><button class="rsa-x" onclick="document.getElementById('adminHistModal').classList.remove('open')" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div><div class="rsa-body"><div style="position:relative;height:230px"><canvas id="adminHistCanvas"></canvas></div><p class="sec-desc" style="margin:12px 2px 0">${esc(d.descricao||'')}</p><span class="chip ilus" style="margin-top:8px"><i class="fa-solid fa-flask"></i> série ilustrativa</span></div></div>`;
+  el.innerHTML=`<div class="modal-card rsa-card"><div class="rsa-head"><div class="rsa-t"><i class="fa-solid ${d.icon}"></i> ${esc(d.nome)} · evolução</div><button class="rsa-x" onclick="document.getElementById('adminHistModal').classList.remove('open')" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div><div class="rsa-body"><div style="position:relative;height:230px"><canvas id="adminHistCanvas"></canvas></div><p class="sec-desc" style="margin:12px 2px 0">${esc(d.descricao||'')}</p><span class="chip ilus" style="margin-top:8px"><i class="fa-solid fa-flask"></i> série estimada</span></div></div>`;
   el.classList.add('open');
   setTimeout(()=>{ const c=document.getElementById('adminHistCanvas'); if(!c) return; if(typeof HAS_CHART!=='undefined'&&!HAS_CHART) return; if(typeof Chart==='undefined') return; if(charts.adminHist) charts.adminHist.destroy(); const N=8, col=cssVar('--brand');
     charts.adminHist=new Chart(c,{ type:'line', data:{ labels:adminMonths(N), datasets:[{ label:d.nome, data:adminRamp(endVal,N), borderColor:col, backgroundColor:col+'1a', fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5 }] },
@@ -6665,7 +6665,7 @@ function viewCarteiraDetail(){
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Desempenho acumulado (12 meses)</div></div>
     <div style="position:relative;height:240px"><canvas id="recPerfChart"></canvas></div>
-    ${illusNote('Curva ilustrativa de desempenho · educacional, não é recomendação.')}
+    ${illusNote('Curva estimada de desempenho · educacional, não é recomendação.')}
   </div>
   <div class="dt-grid">
     <div class="card card-pad">
@@ -6692,7 +6692,7 @@ function viewCarteiraDetail(){
       <div class="rc-scen down"><div class="rc-scen-t"><i class="fa-solid fa-arrow-trend-down"></i> Cenário desfavorável</div><p>${c.bear}</p></div>
     </div>
   </div>
-  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Retornos, composição e desempenho ilustrativos, para fins educacionais. Não constitui recomendação personalizada de investimento.</div>`;
+  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Retornos, composição e desempenho estimados, para fins educacionais. Não constitui recomendação personalizada de investimento.</div>`;
 }
 function initRecCharts(){
   const c = RECOMENDADAS.find(x=>x.id===currentRecId); if(!c) return;
@@ -7130,7 +7130,7 @@ function initSalary(){
   });
 }
 
-/* ── Evolução do patrimônio vs CDI/IBOV (reconstrução ilustrativa a partir dos aportes) ── */
+/* ── Evolução do patrimônio vs CDI/IBOV (reconstrução estimada a partir dos aportes) ── */
 function patrimonioEvolution(){
   const lots=[]; portfolioByTicker().forEach(g=>{ g.lots.forEach(l=>{ let d=l.date?new Date(l.date):null; if(!d||isNaN(d)) d=new Date(); lots.push({ tk:g.tk, cotas:l.cotas, pm:l.pm, px:g.f.a.px, date:d }); }); });
   if(!lots.length) return null;
@@ -7215,14 +7215,14 @@ function viewBacktest(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Pior mês</div><div class="vl down">${pc(m.worstM,1)}%</div><div class="dl faint">no período</div></div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução simulada <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div><span class="chip ilus"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução simulada <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div><span class="chip ilus"><i class="fa-solid fa-flask"></i> estimativa</span></div>
     <div style="position:relative;height:280px;margin-top:6px"><canvas id="backtestChart" role="img" aria-label="Backtest da carteira"></canvas></div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-h" style="margin-bottom:8px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Leitura</div>
     <p style="font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0">${venceu? `No período simulado, sua carteira <strong>superou o CDI e o IBOV</strong>, com retorno de ${pc(m.ret,1)}% e maior queda de ${pc(m.mdd,1)}%.` : `No período simulado, sua carteira rendeu <strong>${pc(m.ret,1)}%</strong> — ${vs>=0?'acima':'abaixo'} do CDI (${pc(m.retCdi,1)}%). Volatilidade de ${pc(m.vol,1)}% e maior queda de ${pc(m.mdd,1)}% mostram o risco assumido.`} Resultados passados não garantem retornos futuros.</p>
   </div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Reconstrução ilustrativa a partir das datas dos seus aportes — conecte o histórico real de preços para um backtest exato.</div>`;
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Reconstrução estimada a partir das datas dos seus aportes — conecte o histórico real de preços para um backtest exato.</div>`;
 }
 function initBacktest(){
   const ctx=$('#backtestChart'); if(!ctx) return;
@@ -7534,7 +7534,7 @@ function viewStress(){
     <p style="font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0">No cenário <strong>${pior.nome}</strong>, sua carteira recuaria cerca de <strong style="color:var(--down)">${pc(pior.deltaP,1)}%</strong> (${brl0(pior.delta)}), indo de ${brl0(p.atual)} para ${brl0(pior.newVal)}.</p>
   </div>
   <div class="stress-grid" style="margin-top:16px">${cards}</div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sensibilidades ilustrativas por setor/classe sobre as posições reais da carteira. Cenários hipotéticos — não são recomendação nem previsão de mercado.</div>`;
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sensibilidades estimadas por setor/classe sobre as posições reais da carteira. Cenários hipotéticos — não são recomendação nem previsão de mercado.</div>`;
 }
 
 /* ── Radar de Barganhas (Investidor Pro) ── */
@@ -7570,7 +7570,7 @@ function viewBargain(){
   <div class="sec-desc">Ativos de qualidade (Score Lastro alto) negociando <strong>abaixo da própria média histórica de P/VP</strong> — ordenados pelo maior desconto combinado à qualidade. Referência de valuation, não recomendação de compra.</div>
   <div class="rec-filters"><div class="rec-filters-inner">${chips}</div></div>
   <div class="card card-pad bg-list">${rows}</div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Média histórica reconstruída de forma ilustrativa (10 anos). Desconto não garante retorno — verifique os fundamentos antes de decidir.</div>`;
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Média histórica reconstruída de forma estimada (10 anos). Desconto não garante retorno — verifique os fundamentos antes de decidir.</div>`;
 }
 
 /* ── Consultor IA da Carteira (Investidor Pro) ── */
@@ -7678,7 +7678,7 @@ function viewDeterioracao(){
       <span class="det-clear-ic"><i class="fa-solid fa-shield-check"></i></span>
       <div><div class="det-clear-t">Nenhum sinal de deterioração</div><div class="faint" style="font-size:13px;margin-top:3px">Os ${monit} ativos monitorados da sua carteira estão com fundamentos saudáveis. Continuaremos de olho.</div></div>
     </div>
-    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Análise sobre as posições reais da carteira, com séries históricas ilustrativas. Não é recomendação de compra ou venda.</div>`;
+    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Análise sobre as posições reais da carteira, com séries históricas estimadas. Não é recomendação de compra ou venda.</div>`;
   }
   const cards=res.map(r=>{
     const top=r.sig.some(s=>s.sev==='alta');
@@ -7701,7 +7701,7 @@ function viewDeterioracao(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Risco alto</div><div class="vl ${altas?'down':''}">${altas}</div><div class="dl faint">prioridade</div></div>
   </div>
   <div class="det-grid" style="margin-top:16px">${cards}</div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sinais calculados sobre as posições reais da carteira, com séries históricas ilustrativas. Educativo — não é recomendação de compra ou venda.</div>`;
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sinais calculados sobre as posições reais da carteira, com séries históricas estimadas. Educativo — não é recomendação de compra ou venda.</div>`;
 }
 
 /* Simulador */
@@ -8322,7 +8322,7 @@ function gerarRelatorioMensal(opts){
   const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório Lastro · ${mes}</title><style>${css}</style></head><body>
     <div class="hd"><div><div class="brand">Lastro<span> · Relatório da Carteira</span></div><div class="sub">${mes}</div></div><div class="sub">Investidor Pro 👑</div></div>
     ${resumo}${posSec}${alocSec}${provSec}
-    <div class="ft">Gerado pela Lastro em ${now.toLocaleDateString('pt-BR')} para o assinante Investidor Pro. Período dos proventos: ${perLabel}. Valores estimados/ilustrativos — este relatório não constitui recomendação de investimento.</div>
+    <div class="ft">Gerado pela Lastro em ${now.toLocaleDateString('pt-BR')} para o assinante Investidor Pro. Período dos proventos: ${perLabel}. Valores estimados/estimados — este relatório não constitui recomendação de investimento.</div>
   </body></html>`;
   // abre num overlay in-app (com Voltar) em vez de nova aba — no mobile dá pra voltar
   let ov=document.getElementById('reportOverlay');
@@ -8481,7 +8481,7 @@ function loadDemoCarteira(){
   if(currentView==='carteira') render('carteira'); else nav('carteira');
 }
 
-/* série histórica determinística (ilustrativa) ancorada no preço atual */
+/* série histórica determinística (estimada) ancorada no preço atual */
 function seedFrom(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
 function rngF(seed){ return function(){ let t=seed+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }; }
 function genSeries(key, endPx, n, vol){
@@ -8624,7 +8624,7 @@ function setDetailRange(r){
 }
 function updatePriceSrcNote(real){
   const el=document.getElementById('priceSrcNote'); if(!el) return;
-  el.textContent = real ? 'Histórico real' : 'Série ilustrativa';
+  el.textContent = real ? 'Histórico real' : 'Série estimada';
 }
 function initDetailPriceChart(){
   const ctx=document.getElementById('detailPriceChart'); if(!ctx || !currentAssetTk) return;
@@ -8808,7 +8808,7 @@ function indVal(id,a,f){ f=f||(a&&FUND[a.tk])||{}; if(!a) return null; switch(id
 function fmtMetric(id,v){ if(typeof v!=='number'||!isFinite(v)) return '—'; const u=(INDICATORS[id]||{}).u; if(u==='%')return pc(v,1)+'%'; if(u==='x')return pc(v,2)+'x'; if(u==='R$')return brl(v); if(u==='d')return Math.round(v)+' dias'; return pc(v,2); }
 function sectorAvg(id,a,k){ const arr=k==='fiis'?FIIS:ACOES; const vals=arr.filter(x=>x.seg===a.seg && x.tk!==a.tk).map(x=>indVal(id,x)).filter(v=>typeof v==='number'&&isFinite(v)); return vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:null; }
 function marketAvg(id,k){ const arr=k==='fiis'?FIIS:ACOES; const vals=arr.map(x=>indVal(id,x)).filter(v=>typeof v==='number'&&isFinite(v)); return vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:null; }
-/* histórico sintético determinístico (ilustrativo) — cacheado.
+/* histórico sintético determinístico (estimado) — cacheado.
    Retorna { labels:[anos..., 'Atual'], data:[...] }. */
 const HIST_CACHE={};
 function indHistory(id,tk,val,years){ const key=id+'|'+tk+'|'+years; if(HIST_CACHE[key])return HIST_CACHE[key];
@@ -8961,7 +8961,7 @@ function renderIndHistory(){
     <div class="hs"><div class="l">Mediana</div><div class="v">${fmtMetric(id,med)}</div></div>
     <div class="hs"><div class="l">${termLabel('vol','Volatilidade')}</div><div class="v">${cv?pc(cv,0)+'%':'—'}</div></div>`;
   const ins=indInsights(id,a,k,val,h);
-  $('#indMAnalysis').innerHTML = `<div class="hist-an-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Insights automáticos</div>${ins.length?`<ul class="hist-ins">${ins.join('')}</ul>`:`<p>${indAnalysis(id,a,k,val)}</p>`}<div class="hist-note">Série histórica ilustrativa · valor atual, média e percentil do setor com dados reais.</div>`;
+  $('#indMAnalysis').innerHTML = `<div class="hist-an-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Insights automáticos</div>${ins.length?`<ul class="hist-ins">${ins.join('')}</ul>`:`<p>${indAnalysis(id,a,k,val)}</p>`}<div class="hist-note">Série histórica estimada · valor atual, média e percentil do setor com dados reais.</div>`;
 }
 function smoothOut(data){ const m=data.reduce((s,v)=>s+v,0)/data.length, sd=Math.sqrt(data.reduce((s,v)=>s+(v-m)*(v-m),0)/data.length)||1; return data.map(v=> Math.abs(v-m)>2.2*sd?m:v); }
 function initHistChart(){
@@ -9502,7 +9502,7 @@ function tabProventos(tk,a,k,f){
       <thead><tr><th class="cell-left">Tipo</th><th class="cell-left">Data com</th><th class="cell-left">Pagamento</th><th>Valor</th></tr></thead>
       <tbody>${rows.map(p=>`<tr class="no-hover"><td class="cell-left"><span class="chip chip-neu" style="font-size:10px">${p.tipo}</span>${p.future?' <span class="chip" style="font-size:9px;background:var(--gold-l);color:var(--gold)">futuro</span>':''}</td><td class="cell-left mono muted">${p.datacom}</td><td class="cell-left mono muted">${p.pag}</td><td class="mono up">R$ ${p.valor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4})}</td></tr>`).join('')}</tbody>
     </table></div>
-    ${realProv?'':illusNote('Agenda ilustrativa · proventos reais ao conectar provedor de dados.')}
+    ${realProv?'':illusNote('Agenda estimada · proventos reais ao conectar provedor de dados.')}
   </div>`;
 }
 
@@ -9581,7 +9581,7 @@ function tabResultados(tk,a,k,f){
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="ds-head"><span class="ds-title" style="margin:0">Receitas e Lucros</span><div class="rl-leg"><span><span class="dot" style="background:var(--brand)"></span>Receita</span><span><span class="dot" style="background:var(--gold)"></span>Lucro</span></div></div>
     <div class="detail-chart"><canvas id="resultChart"></canvas></div>
-    ${rl.real?'<div class="illus-note"><i class="fa-solid fa-circle-check" style="color:var(--brand)"></i> Receita e lucro líquido por exercício (DRE oficial · CVM/brapi), em R$ bilhões.</div>':illusNote('Série histórica ilustrativa · os valores dos últimos 12 meses acima são reais.')}
+    ${rl.real?'<div class="illus-note"><i class="fa-solid fa-circle-check" style="color:var(--brand)"></i> Receita e lucro líquido por exercício (DRE oficial · CVM/brapi), em R$ bilhões.</div>':illusNote('Série histórica estimada · os valores dos últimos 12 meses acima são reais.')}
   </div>
   ${balCard}`;
 }
