@@ -47,7 +47,14 @@ lastro/
 ├── index.html              # o app inteiro (HTML + CSS + JS)
 ├── config.js               # chaves (NÃO versionado — está no .gitignore)
 ├── config.example.js       # template do config — copie para config.js
-├── api/ai.js               # proxy serverless da IA (Vercel)
+├── api/                    # proxies serverless (Vercel) — token do brapi fica no servidor
+│   ├── ai.js               # proxy da IA (Anthropic)
+│   ├── config.js           # serve /config.js a partir das env vars
+│   ├── quotes.js           # cotações reais (brapi B3 em lotes + CoinGecko p/ cripto)
+│   ├── universe.js         # universo completo de ativos (lista brapi)
+│   ├── fundamentals.js     # indicadores em lote (P/L, P/VP, DY, ROE…)
+│   ├── asset.js            # ativo completo (histórico, proventos, DRE, balanço, perfil)
+│   └── documents.js        # documentos oficiais da CVM (dataset IPE: ZIP → CSV)
 ├── backend/
 │   ├── supabase/schema.sql       # schema do Postgres (tabelas + RLS)
 │   ├── scripts/fetch-news.mjs    # coletor de notícias (RSS + CVM → Supabase)

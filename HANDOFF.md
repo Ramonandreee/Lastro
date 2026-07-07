@@ -24,6 +24,31 @@ Muito além do MVP inicial. Já implementado e no ar (`main`):
 - **Auth + sincronização na nuvem** (Supabase): sessão, perfil e carteira sincronizam entre dispositivos.
 - **UX premium:** tour guiado, onboarding, busca global (⌘K), dark mode, PWA instalável, tooltips de termos como cards clicáveis, barras de abas sticky, zoom/seleção desativados no mobile (feel de app nativo).
 
+## Dados reais (brapi Pro + CVM) — jul/2026
+
+Os ativos da B3 puxam **dados reais** via proxies serverless (o token do brapi Pro
+fica só no servidor, em `BRAPI_TOKEN` na Vercel):
+
+- **`api/quotes.js`** — cotações ao vivo (B3 em lotes via brapi Pro; cripto via CoinGecko).
+- **`api/universe.js`** — universo completo de ações/FIIs/BDRs (lista brapi).
+- **`api/fundamentals.js`** — indicadores fundamentalistas em lote (P/L, P/VP, DY, ROE…).
+- **`api/asset.js`** — página de ativo COMPLETA: cotação, histórico de preços (por
+  período), proventos (histórico longo), perfil da empresa, fundamentos e demonstrações
+  (DRE + balanço) reais. No front: `ASSET_LIVE`, `loadAssetLive`, `applyAssetLive`
+  sobrepõem os valores reais em `a`/`FUND[tk]` e nos gráficos.
+- **`api/documents.js`** — **Documentos oficiais da CVM** (Fatos Relevantes, Comunicados,
+  Assembleias, Atas) com download. Baixa o ZIP anual do dataset IPE e descompacta com
+  `zlib` nativo (Vercel roda em `gru1`/Brasil → alcança a CVM).
+
+**Página de ativo:** todas as abas + **Comparador** exibem dados reais, com fallback
+seguro para os dados curados se um proxy falhar. Cripto (CoinGecko) e notícias (coletor
+Supabase) já eram reais.
+
+**Ainda hipotético por natureza (não é bug):** simuladores/projeções (juros compostos,
+aposentadoria, FIRE, backtest, stress test) são cálculos, não dados. FIIs têm menos
+cobertura de fundamentos que ações no brapi (vacância/composição não vêm da API);
+Stocks (EUA) o brapi não cobre.
+
 ## Stack
 
 - **Front:** `index.html` — HTML + CSS + JS puro. Chart.js (CDN), Font Awesome (CDN), ícones de cripto via jsDelivr (`cryptocurrency-icons`).
