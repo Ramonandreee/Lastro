@@ -57,6 +57,7 @@ function normDividends(dd) {
   return cash
     .map((d) => ({
       date: d.paymentDate || d.lastDatePrior || d.approvedOn || null,
+      com: d.lastDatePrior || null, // data-com (último dia com direito)
       value: num(d.rate),
       label: d.label || d.relatedTo || null,
     }))
@@ -193,8 +194,8 @@ export default async function handler(req, res) {
       profile: normProfile(r.summaryProfile),
       fund,
       statements: {
-        balance: (r.balanceSheetHistory && r.balanceSheetHistory.balanceSheetStatements) || null,
-        income: (r.incomeStatementHistory && r.incomeStatementHistory.incomeStatementHistory) || null,
+        balance: r.balanceSheetHistory || null,
+        income: r.incomeStatementHistory || null,
       },
     };
 

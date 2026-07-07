@@ -9429,6 +9429,14 @@ function valuationHTML(a,k){
 
 /* ── Proventos ── */
 function proventosRows(tk,a,k){
+  const live=(ASSET_LIVE[tk]||{}).dividends;
+  if(Array.isArray(live)&&live.length){
+    const p2=x=>String(x).padStart(2,'0');
+    const fmtD=s=>{ const d=new Date(s); return isNaN(d)?'—':`${p2(d.getDate())}/${p2(d.getMonth()+1)}/${String(d.getFullYear()).slice(2)}`; };
+    const nice=l=>{ const s=String(l||'').toUpperCase(); if(/JCP|JSCP|JUROS/.test(s)) return 'JCP'; if(/REND/.test(s)) return 'Rendimento'; if(/DIVID/.test(s)) return 'Dividendo'; return l||'Provento'; };
+    const now=Date.now();
+    return live.filter(d=>d.value>0).slice(0,14).map(d=>({ tipo:nice(d.label), datacom:d.com?fmtD(d.com):'—', pag:fmtD(d.date), valor:+Number(d.value).toFixed(4), future:Date.parse(d.date)>now }));
+  }
   const r=rngF(seedFrom(tk+'prov'));
   const per = k==='fiis'?1:2;
   const base=a.div||(a.px*((a.dy||6)/100)/(k==='fiis'?12:4))||0.2;
@@ -9447,6 +9455,7 @@ function proventosRows(tk,a,k){
 function tabProventos(tk,a,k,f){
   const h=indHistory('dy',tk,a.dy,10); const m5=h.data.slice(-6,-1); const dyMed=m5.reduce((s,v)=>s+v,0)/m5.length;
   const rows=proventosRows(tk,a,k);
+  const realProv=Array.isArray((ASSET_LIVE[tk]||{}).dividends) && (ASSET_LIVE[tk].dividends.length>0);
   return `
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="ds-head"><span class="ds-title" style="margin:0">Dividend Yield por ano</span><span class="chip chip-neu" style="font-size:10px">10 anos</span></div>
@@ -9465,9 +9474,9 @@ function tabProventos(tk,a,k,f){
     <div class="ds-title">Histórico de proventos</div>
     <div class="tbl-wrap"><table class="tbl prov-tbl">
       <thead><tr><th class="cell-left">Tipo</th><th class="cell-left">Data com</th><th class="cell-left">Pagamento</th><th>Valor</th></tr></thead>
-      <tbody>${rows.map(p=>`<tr class="no-hover"><td class="cell-left"><span class="chip chip-neu" style="font-size:10px">${p.tipo}</span></td><td class="cell-left mono muted">${p.datacom}</td><td class="cell-left mono muted">${p.pag}</td><td class="mono up">R$ ${p.valor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('')}</tbody>
+      <tbody>${rows.map(p=>`<tr class="no-hover"><td class="cell-left"><span class="chip chip-neu" style="font-size:10px">${p.tipo}</span>${p.future?' <span class="chip" style="font-size:9px;background:var(--gold-l);color:var(--gold)">futuro</span>':''}</td><td class="cell-left mono muted">${p.datacom}</td><td class="cell-left mono muted">${p.pag}</td><td class="mono up">R$ ${p.valor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4})}</td></tr>`).join('')}</tbody>
     </table></div>
-    ${illusNote('Agenda ilustrativa · proventos reais ao conectar provedor de dados.')}
+    ${realProv?'':illusNote('Agenda ilustrativa · proventos reais ao conectar provedor de dados.')}
   </div>`;
 }
 
@@ -9495,11 +9504,24 @@ function tabResultados(tk,a,k,f){
   const tipo=receitasPorTipo(tk), reg=receitasPorRegiao(tk);
   const totalRec=receitaLucroSeries(tk).rec.slice(-1)[0];
   window._RECT=tipo; window._RECR=reg;
+  const fu=(ASSET_LIVE[tk]||{}).fund||{};
+  const kpi=(l,v)=> v==null?'':`<div class="metric"><div class="ml">${l}</div><div class="mv">${v}</div></div>`;
+  const pctv=v=> (v==null?null:pc(v,1)+'%');
+  const realKpis=[
+    kpi('Receita (12m)', fu.receita!=null?('R$ '+fmtBig(fu.receita)):null),
+    kpi('Lucro líquido (12m)', fu.lucro!=null?('R$ '+fmtBig(fu.lucro)):null),
+    kpi('Margem líquida', pctv(fu.mgl)),
+    kpi('Margem bruta', pctv(fu.mgbruta)),
+    kpi('Margem EBIT', pctv(fu.mgebit)),
+    kpi('ROE', pctv(fu.roe)),
+  ].filter(Boolean).join('');
+  const realCard = realKpis ? `<div class="card card-pad" style="margin-bottom:16px"><div class="ds-title">Resultados reais · últimos 12 meses</div><div class="metric-grid">${realKpis}</div></div>` : '';
   return `
+  ${realCard}
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="ds-head"><span class="ds-title" style="margin:0">Receitas e Lucros</span><div class="rl-leg"><span><span class="dot" style="background:var(--brand)"></span>Receita</span><span><span class="dot" style="background:var(--gold)"></span>Lucro</span></div></div>
     <div class="detail-chart"><canvas id="resultChart"></canvas></div>
-    ${illusNote('Série ilustrativa de 10 anos · resultados reais (DFP/ITR) ao conectar provedor.')}
+    ${illusNote('Série histórica de 10 anos ilustrativa · os valores dos últimos 12 meses acima são reais.')}
   </div>
   <div class="dt-grid">
     <div class="card card-pad">
