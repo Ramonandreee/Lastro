@@ -8488,6 +8488,109 @@ function interp(metric, v){
   return {};
 }
 
+/* ══════════════════════════════════════════════════════════
+   DADOS REAIS DO ATIVO — /api/asset (brapi Pro)
+   Busca ao abrir o ativo e sobrepõe valores reais nas estruturas
+   que a tela já usa (a + FUND[tk] + séries de preço/proventos).
+   Degrada com elegância: se falhar, mantém os dados curados.
+   ══════════════════════════════════════════════════════════ */
+const ASSET_LIVE = {};                 // tk -> payload do /api/asset (com _ts)
+const PRICE_SERIES = {};               // `${tk}:${range}` -> array de fechamentos reais
+const RANGE_MAP = { '1M':{r:'1mo',i:'1d'}, '3M':{r:'3mo',i:'1d'}, '6M':{r:'6mo',i:'1d'}, '1A':{r:'1y',i:'1d'}, '5A':{r:'5y',i:'1wk'} };
+function assetEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.ASSET_ENDPOINT) || '/api/asset'; }
+const LIVE_ASSET_KINDS = new Set(['acoes','fiis','bdrs','etfs']);
+
+function fmtBig(n){
+  if(typeof n!=='number'||!isFinite(n)) return '—';
+  const a=Math.abs(n);
+  if(a>=1e12) return (n/1e12).toLocaleString('pt-BR',{maximumFractionDigits:1})+' tri';
+  if(a>=1e9)  return (n/1e9 ).toLocaleString('pt-BR',{maximumFractionDigits:1})+' bi';
+  if(a>=1e6)  return (n/1e6 ).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi';
+  return n.toLocaleString('pt-BR',{maximumFractionDigits:0});
+}
+// soma de proventos por ano (últimos N anos, ascendente) → [[ '2024', 5.10 ], ...]
+function annualDivs(dividends, years){
+  const map={}, nowY=new Date().getFullYear();
+  (dividends||[]).forEach(d=>{ const y=new Date(d.date).getFullYear(); if(!isFinite(y)||y>nowY) return; map[y]=(map[y]||0)+(d.value||0); });
+  return Object.keys(map).map(Number).sort((x,y)=>x-y).slice(-years).map(y=>[String(y), +map[y].toFixed(2)]);
+}
+// proventos dos últimos 12 meses agrupados por mês → { labels, data } (para FIIs)
+function monthlyDivs(dividends){
+  const now=Date.now(), YEAR=365*24*3600*1000, MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const rows=(dividends||[]).filter(d=>{ const t=Date.parse(d.date); return isFinite(t)&&t<=now&&now-t<=YEAR; })
+    .sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
+  if(rows.length<3) return null;
+  return { labels:rows.map(d=>MES[new Date(d.date).getMonth()]), data:rows.map(d=>+(d.value||0).toFixed(2)) };
+}
+
+// sobrepõe os dados reais em `a` (ativo) e FUND[tk]
+function applyAssetLive(tk, d){
+  const lk=assetLookup(tk); if(!lk||!d) return;
+  const a=lk.a, k=lk.k, fu=d.fund||{}, pr=d.profile||{};
+  const f = FUND[tk] = FUND[tk] || {};
+  const setF=(key,v)=>{ if(v!=null&&v!=='') f[key]=v; };
+  const setA=(key,v)=>{ if(v!=null) a[key]=v; };
+  if(k==='acoes'){
+    setA('pl',fu.pl); setA('pvp',fu.pvp); setA('dy',fu.dy); setA('roe',fu.roe); setA('mgl',fu.mgl);
+    setF('roa',fu.roa); setF('mb',fu.mgbruta); setF('mebit',fu.mgebit); setF('psr',fu.psr); setF('lc',fu.liqCorrente);
+    if(fu.mkt!=null) setF('mkt','R$ '+fmtBig(fu.mkt));
+    if(fu.ev!=null)  setF('ev','R$ '+fmtBig(fu.ev));
+    const dv=annualDivs(d.dividends,6); if(dv.length) f.divs=dv;
+  } else if(k==='fiis'){
+    setA('pvp',fu.pvp); setA('dy',fu.dy);
+    if(Array.isArray(d.dividends)&&d.dividends.length) setA('div',d.dividends[0].value);
+    if(fu.mkt!=null) setF('mkt','R$ '+fmtBig(fu.mkt));
+  } else {
+    setA('pvp',fu.pvp); setA('dy',fu.dy);
+  }
+  // perfil real da empresa (setor, indústria, descrição, site, funcionários)
+  if(pr.desc) setF('desc',pr.desc);
+  if(pr.sector) setF('setor',pr.sector);
+  if(pr.industry) setF('sub',pr.industry);
+  if(pr.website) setF('site',pr.website);
+  if(pr.employees) setF('func',pr.employees);
+  f._live=true;
+  // semeia a série de preço de 1 ano para o gráfico
+  if(Array.isArray(d.history)&&d.history.length) PRICE_SERIES[tk+':1A']=d.history.map(p=>p.c);
+}
+
+async function loadAssetLive(tk){
+  const lk=assetLookup(tk); if(!lk||!LIVE_ASSET_KINDS.has(lk.k)) return null;
+  const cached=ASSET_LIVE[tk];
+  if(cached && cached._ts && Date.now()-cached._ts<300000){ applyAssetLive(tk,cached); return cached; }
+  try{
+    const r=await fetch(`${assetEndpoint()}?ticker=${encodeURIComponent(tk)}`);
+    if(!r.ok) return null;
+    const d=await r.json();
+    if(!d || d.error || d.note) return null;
+    d._ts=Date.now(); ASSET_LIVE[tk]=d; applyAssetLive(tk,d);
+    if(currentView==='asset' && currentAssetTk===tk) refreshAssetView();
+    return d;
+  }catch(e){ console.warn('[Lastro] asset live indisponível:', e.message); return null; }
+}
+
+// busca a série de preço de um período específico (cacheada)
+async function fetchPriceSeries(tk, range){
+  const key=tk+':'+range; if(PRICE_SERIES[key]) return PRICE_SERIES[key];
+  const m=RANGE_MAP[range]||RANGE_MAP['1A'];
+  try{
+    const r=await fetch(`${assetEndpoint()}?ticker=${encodeURIComponent(tk)}&range=${m.r}&interval=${m.i}`);
+    if(!r.ok) return null;
+    const d=await r.json();
+    if(d && Array.isArray(d.history) && d.history.length){ const s=d.history.map(p=>p.c); PRICE_SERIES[key]=s; return s; }
+  }catch(e){}
+  return null;
+}
+
+// re-renderiza a aba atual do ativo (após dados reais chegarem)
+function refreshAssetView(){
+  if(currentView!=='asset'||!currentAssetTk) return;
+  const lk=assetLookup(currentAssetTk); if(!lk) return;
+  const body=$('#assetBody'); if(!body) return;
+  body.innerHTML=assetTabContent(currentAssetTk, lk.a, lk.k, FUND[currentAssetTk]);
+  destroyCharts(); initAssetTabCharts(); animateGauges(); animateCounts(body);
+}
+
 /* ── gráfico de cotação ── */
 const ASSET_RANGES = { '1M':22, '3M':66, '6M':132, '1A':252, '5A':260 };
 let detailRange = '1A', currentAssetTk = null, prevView = 'painel', assetTab = 'geral';
@@ -8496,13 +8599,25 @@ function setDetailRange(r){
   document.querySelectorAll('#detailRanges button').forEach(b=> b.classList.toggle('on', b.textContent===r));
   initDetailPriceChart();
 }
+function updatePriceSrcNote(real){
+  const el=document.getElementById('priceSrcNote'); if(!el) return;
+  el.textContent = real ? 'Histórico real' : 'Série ilustrativa';
+}
 function initDetailPriceChart(){
   const ctx=document.getElementById('detailPriceChart'); if(!ctx || !currentAssetTk) return;
   if(typeof Chart==='undefined'){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico indisponível</div>'; return; }
   if(charts.detailPrice){ try{charts.detailPrice.destroy();}catch(e){} }
   const found=assetLookup(currentAssetTk); const a=found.a, k=found.k;
   const n=ASSET_RANGES[detailRange]||252;
-  const data=genSeries(currentAssetTk+detailRange, a.px, n, 0.014);
+  const tk=currentAssetTk, rng=detailRange, key=tk+':'+rng;
+  let data, real=false;
+  const rs=PRICE_SERIES[key];
+  if(rs && rs.length>1){ data=rs.slice(); real=true; }
+  else {
+    data=genSeries(tk+rng, a.px, n, 0.014);             // placeholder enquanto busca o real
+    fetchPriceSeries(tk,rng).then(s=>{ if(s && s.length>1 && currentView==='asset' && currentAssetTk===tk && detailRange===rng) initDetailPriceChart(); });
+  }
+  updatePriceSrcNote(real);
   const open=data[0];                                   // referência: abertura do período
   const up=data[data.length-1]>=open; const col=cssVar(up?'--up':'--down')||'#0E7C5A';
   const g=ctx.getContext('2d'); const grad=g.createLinearGradient(0,0,0,280); grad.addColorStop(0,hexToRgba(col,.20)); grad.addColorStop(1,hexToRgba(col,0));
@@ -8519,6 +8634,7 @@ function initDetailPriceChart(){
 /* ── gráfico de dividendos ── */
 function dividendSeries(tk,a,k,f){
   if(k==='acoes' && f && f.divs) return { labels:f.divs.map(d=>d[0]), data:f.divs.map(d=>d[1]) };
+  if(k==='fiis'){ const md=monthlyDivs((ASSET_LIVE[tk]||{}).dividends); if(md) return md; }
   const base=a.div||(a.px*((a.dy||6)/100)/12)||1; const r=rngF(seedFrom(tk+'div'));
   const months=['jul','ago','set','out','nov','dez','jan','fev','mar','abr','mai','jun'];
   const data=months.map(()=> +(base*(0.9+r()*0.2)).toFixed(2));
@@ -9231,7 +9347,11 @@ function illusNote(txt){ return `<div class="illus-note"><i class="fa-solid fa-c
 /* ── Visão Geral ── */
 function tabGeral(tk,a,k,f){
   const cls=ASSET_CLASS[k], hasScore=cls.score && typeof a.score==='number';
-  const ps=genSeries(tk+'1A', a.px, 252, 0.02), pmin=Math.min(...ps), pmax=Math.max(...ps), var12=(a.px-ps[0])/ps[0]*100;
+  const live=ASSET_LIVE[tk], rsY=PRICE_SERIES[tk+':1A'];
+  let pmin, pmax, var12;
+  if(live && (live.week52Low!=null || live.week52High!=null)){ pmin=live.week52Low; pmax=live.week52High; }
+  if(rsY && rsY.length>1){ if(pmin==null){ pmin=Math.min(...rsY); pmax=Math.max(...rsY); } var12=(rsY[rsY.length-1]-rsY[0])/rsY[0]*100; }
+  if(pmin==null){ const ps=genSeries(tk+'1A', a.px, 252, 0.02); pmin=Math.min(...ps); pmax=Math.max(...ps); var12=(a.px-ps[0])/ps[0]*100; }
   return `
   <div class="sumgrid">${summaryCards(a,k,f)}</div>
   ${decisionCard(a,k,f)}
@@ -9246,7 +9366,7 @@ function tabGeral(tk,a,k,f){
       <span>Mín 52s <strong class="mono" style="color:var(--ink)">${fmtPx({px:pmin},k)}</strong></span>
       <span>Máx 52s <strong class="mono" style="color:var(--ink)">${fmtPx({px:pmax},k)}</strong></span>
       <span>Variação 12m <strong class="mono" style="color:${var12>=0?'var(--up)':'var(--down)'}">${var12>=0?'+':''}${pc(var12,1)}%</strong></span>
-      <span style="margin-left:auto;color:var(--ink-4)">Série ilustrativa · histórico real ao conectar provedor</span>
+      <span id="priceSrcNote" style="margin-left:auto;color:var(--ink-4)">${(rsY&&rsY.length>1)?'Histórico real':'Carregando histórico…'}</span>
     </div>
   </div>
   ${ (k==='acoes'||k==='fiis') ? `<div class="dt-grid">${peersHTML(tk,a,k)}${ hasScore ? scoreBlockHTML(a) : newsHTML(tk) }</div>` : '' }
@@ -9589,6 +9709,7 @@ function openAsset(tk){
   animateContent();
   $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'});
   closeSidebar();
+  loadAssetLive(tk);   // busca dados reais (brapi) e re-renderiza quando chegam
 }
 function backFromAsset(){
   const v=prevView||'painel'; currentView=v;
