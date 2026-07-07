@@ -6369,24 +6369,34 @@ function initComparador(){
   const items = cmpSel.slice(0,cap).map(tk=>ALL_ASSETS_FLAT().find(a=>a.tk===tk)).filter(Boolean);
   const body = $('#cmpBody'); if(!body) return;
   if(items.length<2){ body.innerHTML=emptyState('fa-scale-balanced','Compare lado a lado','Selecione ao menos dois ativos acima para ver fundamentos, Score Lastro e o melhor valor de cada indicador destacado.'); return; }
+  // busca fundamentos reais (brapi) dos ativos que ainda não têm — re-renderiza ao chegar
+  let loading=false;
+  cmpSel.slice(0,cap).forEach(tk=>{ const lk=assetLookup(tk); if(lk && LIVE_ASSET_KINDS.has(lk.k) && !ASSET_LIVE[tk]){ loading=true; loadAssetLive(tk).then(d=>{ if(d && currentView==='comparador') initComparador(); }); } });
+  const anyFii = items.some(a=>{ const lk=assetLookup(a.tk); return lk&&lk.k==='fiis'; });
+  const dash = '<span class="muted">—</span>';
+  const numv = v => (typeof v==='number'&&isFinite(v)) ? v : null;
   const metrics = [
-    ['Score Lastro', a=>`<span style="color:${scoreColor(a.score)};font-weight:600">${a.score}</span>`, a=>a.score, true],
-    ['Cotação', a=>brl(a.px), a=>-a.px, false],
-    ['DY 12M', a=>pc(a.dy,1)+'%', a=>a.dy, true],
-    ['P/VP', a=>pc(a.pvp,2), a=>-a.pvp, true],
-    ['Dividendo/mês', a=>a.div?brl(a.div):'—', a=>a.div||0, true],
-    ['Vacância', a=>a.vac!=null?pc(a.vac,1)+'%':'—', a=>-(a.vac??99), true],
-    ['ROE', a=>a.roe!=null?pc(a.roe,1)+'%':'—', a=>a.roe??-1, true],
-    ['Variação hoje', a=>`<span class="${a.var>=0?'up':'down'}">${a.var>=0?'+':''}${pc(a.var)}%</span>`, a=>a.var, false],
+    ['Score Lastro', a=> a.score!=null?`<span style="color:${scoreColor(a.score)};font-weight:600">${a.score}</span>`:dash, a=>numv(a.score), true],
+    ['Cotação', a=>brl(a.px), a=>numv(a.px)!=null?-a.px:null, false],
+    ['DY 12M', a=> a.dy!=null?pc(a.dy,1)+'%':dash, a=>numv(a.dy), true],
+    ['P/L', a=> a.pl!=null?pc(a.pl,1)+'x':dash, a=>numv(a.pl)!=null?-a.pl:null, true],
+    ['P/VP', a=> a.pvp!=null?pc(a.pvp,2):dash, a=>numv(a.pvp)!=null?-a.pvp:null, true],
+    ['ROE', a=>a.roe!=null?pc(a.roe,1)+'%':dash, a=>numv(a.roe), true],
+    ['Margem líq.', a=>a.mgl!=null?pc(a.mgl,1)+'%':dash, a=>numv(a.mgl), true],
+    ...(anyFii?[
+      ['Dividendo/mês', a=>a.div?brl(a.div):dash, a=>numv(a.div), true],
+      ['Vacância', a=>a.vac!=null?pc(a.vac,1)+'%':dash, a=>a.vac!=null?-a.vac:null, true],
+    ]:[]),
+    ['Variação hoje', a=>`<span class="${a.var>=0?'up':'down'}">${a.var>=0?'+':''}${pc(a.var)}%</span>`, a=>numv(a.var), false],
   ];
   const head = `<tr><th class="cell-left">Indicador</th>${items.map(a=>`<th style="text-align:right">${a.tk}</th>`).join('')}</tr>`;
   const rows = metrics.map(([label,fmt,score,hl])=>{
     let best=null;
-    if(hl){ const vals=items.map(score); const mx=Math.max(...vals); best=vals.indexOf(mx); }
+    if(hl){ const vals=items.map(score); const valid=vals.filter(v=>typeof v==='number'&&isFinite(v)); if(valid.length){ const mx=Math.max(...valid); best=vals.indexOf(mx); } }
     return `<tr><td class="cell-left muted">${label}</td>${items.map((a,i)=>`<td class="mono" style="${i===best?'background:var(--brand-l);font-weight:600;border-radius:6px':''}">${fmt(a)}</td>`).join('')}</tr>`;
   }).join('');
   body.innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead>${head}</thead><tbody>${rows}</tbody></table></div>
-    <div style="font-size:12px;color:var(--ink-3);margin-top:14px"><i class="fa-solid fa-circle-info"></i> Destaque em verde indica o melhor valor de cada indicador entre os ativos comparados.</div>`;
+    ${loading?'<div style="font-size:12px;color:var(--ink-3);margin-top:14px"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando fundamentos reais…</div>':'<div style="font-size:12px;color:var(--ink-3);margin-top:14px"><i class="fa-solid fa-circle-info"></i> Destaque em verde indica o melhor valor de cada indicador entre os ativos comparados.</div>'}`;
 }
 
 /* ══════════════════════════════════════════════════════════
