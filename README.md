@@ -12,12 +12,13 @@ O app é um **SPA single-file**: quase tudo vive em `index.html` (~9.900 linhas,
 
 **Telas principais** (todas em `index.html`):
 
-- **Mercado:** Início (painel), Ações, FIIs, BDRs, ETFs, Stocks (EUA), Criptomoedas, Notícias, Agenda de Dividendos, Score Lastro™.
+- **Mercado:** Início (painel), Ações, FIIs, ETFs (B3), Criptomoedas, Notícias, Agenda de Dividendos, Score Lastro™.
+- **Internacional:** Stocks (EUA), BDRs, ETFs internacionais (listados nos EUA, em dólar).
 - **Minha carteira:** Carteira, Proventos, Aporte Inteligente, Independência (FIRE), Imposto de Renda, Acompanhar (watchlist + alertas), Comparador.
 - **Ferramentas Pro:** Raio-X da Carteira, Backtest, Stress Test, Radar de Barganhas, Consultor IA, Detector de Deterioração, Carteiras Recomendadas, Simuladores (renda, juros compostos, aposentadoria).
 - **Conta / negócio:** Perfil (cadastro completo + captação de leads), Assinatura, Indique e Ganhe, Suporte, Planos, e um **Painel administrativo** (visão geral, clientes, leads, financeiro, ações) — visível só para o e‑mail do dono.
 
-**Filtros fundamentalistas** (antigo "Rastreador") ficam embutidos em cada listagem de Ações/FIIs (botão **Filtros**, recurso Pro).
+**Filtros fundamentalistas** (antigo "Rastreador") ficam embutidos em cada listagem de Ações/FIIs (botão **Filtros**) — **gratuitos** para todos os usuários.
 
 ### Score Lastro™
 Nota proprietária de 0–100 que resume a qualidade de um ativo combinando vários indicadores (valuation, rentabilidade, endividamento, pagamento de proventos). É explicada em qualquer lugar do app tocando no rótulo (padrão de "termo clicável", ver seção 6).

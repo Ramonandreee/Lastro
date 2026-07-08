@@ -929,8 +929,8 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-gitems">
         <div class="nav-item" data-view="stocks" onclick="nav('stocks',this)"><i class="fa-solid fa-flag-usa"></i><span>Stocks (EUA)</span></div>
         <div class="nav-item" data-view="bdrs" onclick="nav('bdrs',this)"><i class="fa-solid fa-globe"></i><span>BDRs</span></div>
+        <div class="nav-item" data-view="etfsint" onclick="nav('etfsint',this)"><i class="fa-solid fa-layer-group"></i><span>ETFs internacionais</span></div>
         <div class="nav-item nav-item-soon"><i class="fa-solid fa-building-columns"></i><span>Conta global</span></div>
-        <div class="nav-item nav-item-soon"><i class="fa-solid fa-layer-group"></i><span>ETFs internacionais</span></div>
         <div class="nav-item nav-item-soon"><i class="fa-solid fa-city"></i><span>REITs</span></div>
       </div>
     </nav>
@@ -3739,7 +3739,8 @@ const PAGES = {
   acoes:        { t:'Ações',                 s:'Análise fundamentalista das principais ações da B3' },
   fiis:         { t:'Fundos Imobiliários',   s:'Indicadores e Score Lastro de FIIs' },
   bdrs:         { t:'BDRs',                   s:'Recibos de ações estrangeiras negociados na B3' },
-  etfs:         { t:'ETFs',                   s:'Fundos de índice — veja se são negociados na B3 ou no exterior' },
+  etfs:         { t:'ETFs',                   s:'Fundos de índice negociados na B3' },
+  etfsint:      { t:'ETFs internacionais',    s:'ETFs listados nos EUA (em dólar) — S&P 500, Nasdaq, setores e renda' },
   stocks:       { t:'Stocks',                s:'Ações internacionais — bolsas dos EUA' },
   cripto:       { t:'Criptomoedas',          s:'Principais criptoativos por valor de mercado' },
   carteira:     { t:'Minha Carteira',        s:'Diagnóstico, proventos e saúde da sua carteira' },
@@ -4834,7 +4835,7 @@ function syncNavGroups(){
 function render(v, soft){
   const c = $('#content');
   if(v==='painel')       c.innerHTML = viewPainel();
-  else if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)) c.innerHTML = viewAssets(v);
+  else if(['fiis','acoes','bdrs','etfs','etfsint','stocks','cripto'].includes(v)) c.innerHTML = viewAssets(v);
   else if(v==='carteira')    c.innerHTML = viewCarteira();
   else if(v==='proventos')   c.innerHTML = viewProventos();
   else if(v==='aporte')      c.innerHTML = viewAporte();
@@ -5175,21 +5176,28 @@ const ASSET_CFG = {
     ai:'Ex: vale a pena BDR de NVIDIA (NVDC34) ou comprar via stock?',
   },
   etfs: {
-    data:()=>ETFS, icon:'fa-layer-group', label:'ETFs', unit:'ETFs', score:false,
+    data:()=>ETFS.filter(a=>!a.usd), icon:'fa-layer-group', label:'ETFs', unit:'ETFs', score:false,
     segs:['Renda Variável BR','Exterior','Small Caps BR','Dividendos BR','Criptoativos','Commodities','Financeiro BR','Renda Fixa'],
-    regions:['Nacional','Internacional'],
-    regOf:a=> /11$/.test(a.tk) ? 'Nacional' : 'Internacional',
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
       {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
-      {h:'Negociação', f:a=> /11$/.test(a.tk)
-        ? `<td><span class="chip" style="font-size:10px;background:var(--brand-l);color:var(--brand)">B3</span></td>`
-        : `<td><span class="chip" style="font-size:10px;background:var(--accent-l);color:var(--accent)">Internacional</span></td>`},
-      {h:'Cotação', f:a=>`<td class="mono">${a.usd?usd(a.px):brl(a.px)}</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
       {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat}</td>`},
       {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx}</td>`},
     ],
     ai:'Ex: BOVA11 ou IVVB11 para diversificar minha carteira?',
+  },
+  etfsint: {
+    data:()=>ETFS.filter(a=>a.usd), icon:'fa-layer-group', label:'ETFs internacionais', unit:'ETFs', score:false, intl:true,
+    segs:['S&P 500','Nasdaq 100','Total Market US','Tecnologia US','Semicondutores','Crescimento US','Dividendos','Renda + Nasdaq','Renda + S&P','Renda Fixa US','Urânio'],
+    sorts:[['var','Maior alta'],['px','Maior cotação']],
+    cols:[
+      {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${usd(a.px)}</td>`},
+      {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat}</td>`},
+      {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx}</td>`},
+    ],
+    ai:'Ex: IVV ou VOO para investir no S&P 500 direto lá fora?',
   },
   stocks: {
     data:()=>STOCKS, icon:'fa-flag-usa', label:'Stocks (EUA)', unit:'stocks', score:false, intl:true,
@@ -5239,8 +5247,8 @@ function viewAssets(kind){
   const hasAdv = !!cfg.score;   // fundamentos disponíveis (FIIs e Ações)
   const st = tableState[kind];
   const nAdv = hasAdv ? assetFilterCount(kind) : 0;
-  const advBtn = hasAdv ? `<button class="btn btn-ghost filters-adv ${st.fopen?'on':''}" onclick="toggleAssetFilters('${kind}')"><i class="fa-solid fa-sliders"></i> Filtros${nAdv?` <span class="fbadge">${nAdv}</span>`:''}${isPro()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:11px"></i>'}</button>` : '';
-  const advPanel = (hasAdv && st.fopen && isPro()) ? assetFiltersPanel(kind) : '';
+  const advBtn = hasAdv ? `<button class="btn btn-ghost filters-adv ${st.fopen?'on':''}" onclick="toggleAssetFilters('${kind}')"><i class="fa-solid fa-sliders"></i> Filtros${nAdv?` <span class="fbadge">${nAdv}</span>`:''}</button>` : '';
+  const advPanel = (hasAdv && st.fopen) ? assetFiltersPanel(kind) : '';
   return `
   <div class="filters">
     <div class="search-inp"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="Buscar por nome ou código" value="${esc(st.q||'')}" oninput="tblFilter('${kind}','q',this.value)"></div>
@@ -5277,7 +5285,7 @@ function assetFiltersPanel(kind){
     </div>
   </div>`;
 }
-function toggleAssetFilters(kind){ if(!isPro()){ proGate('screener'); return; } const st=tableState[kind]; st.fopen=!st.fopen; render(kind); }
+function toggleAssetFilters(kind){ const st=tableState[kind]; st.fopen=!st.fopen; render(kind); }
 function assetFilterUpd(kind){
   const s=tableState[kind], g=id=>{ const e=document.getElementById('af_'+id+'_'+kind); return e?+e.value:0; };
   s.fdyMin=g('dy'); s.fscoreMin=g('sc'); s.fpvpMax=g('pvp'); s.fliqMin=g('liq');
@@ -7136,7 +7144,7 @@ function afterRender(v, soft){
     initIbov();
     if(!soft) askAI(true);
   } else { stopHeroTimer(); }
-  if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)){ renderAssets(v); }
+  if(['fiis','acoes','bdrs','etfs','etfsint','stocks','cripto'].includes(v)){ renderAssets(v); }
   // atualiza cotações/selo da tela atual, sob demanda (proxy /api/quotes).
   // telas sem ativos brapi só ajustam o selo p/ "Demonstração" (refreshQuotes trata).
   // soft=true vem do próprio softRefreshView pós-cotação → não rebuscar (evita loop)
@@ -10455,7 +10463,7 @@ function softRefreshView(){
   const ae = document.activeElement;
   const typing = ae && (ae.tagName==='INPUT' || ae.tagName==='TEXTAREA');
   const v = currentView;
-  if(['fiis','acoes','bdrs','etfs','stocks','cripto'].includes(v)){
+  if(['fiis','acoes','bdrs','etfs','etfsint','stocks','cripto'].includes(v)){
     if(typing) return;            // não recriar a tabela enquanto o usuário digita/filtra
     renderAssets(v);
   } else if(['painel','carteira','score','asset','watchlist','alertas','acompanhar'].includes(v) && !typing){

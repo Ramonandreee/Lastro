@@ -16,7 +16,8 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 
 Muito além do MVP inicial. Já implementado e no ar (`main`):
 
-- **Mercado:** Início, Ações, FIIs, BDRs, ETFs, Stocks, Cripto, Notícias, Agenda, Score Lastro™. Filtros fundamentalistas (o antigo Rastreador) **embutidos** em cada listagem (botão Filtros, Pro).
+- **Mercado:** Início, Ações, FIIs, ETFs (B3), Cripto, Notícias, Agenda, Score Lastro™. Filtros fundamentalistas (o antigo Rastreador) **embutidos** em cada listagem (botão Filtros) — **gratuitos**.
+- **Internacional:** Stocks (EUA), BDRs, ETFs internacionais (listados nos EUA, em US$). Os ETFs foram separados: a página de Mercado mostra só os da B3 (sem filtro de região); os internacionais têm página própria.
 - **Carteira:** Carteira, Proventos, Aporte, FIRE, Imposto de Renda, Acompanhar (watchlist+alertas), Comparador.
 - **Ferramentas Pro:** Raio-X, Backtest, Stress Test, Radar de Barganhas, Consultor IA, Detector de Deterioração, Carteiras Recomendadas, **Simuladores** (renda, juros compostos, aposentadoria).
 - **Conta/negócio:** cadastro em etapas com **captação de leads**, Perfil completo (dados cadastrais + perfil de investidor + contas conectadas + segurança/2FA), Assinatura, **Indique e Ganhe** (com simulador de comissão), Suporte (FAQ + tour), Planos.
