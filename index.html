@@ -301,6 +301,30 @@ a { color: inherit; text-decoration: none; }
 .premium-item:hover { background: color-mix(in srgb, var(--gold) 9%, transparent); color: var(--ink); }
 .nav-section-premium .nav-item.active { box-shadow: inset 2.5px 0 0 var(--gold); background: color-mix(in srgb, var(--gold) 12%, transparent); }
 .nav-section-premium .nav-item.active > i:first-child { color: var(--gold); }
+/* Menu em grupos recolhíveis (accordion) */
+.nav-group { margin-bottom: 2px; }
+.nav-ghead {
+  display: flex; align-items: center; gap: 11px; width: 100%;
+  background: none; border: 0; cursor: pointer; text-align: left;
+  padding: 10px 12px; border-radius: 10px;
+  color: var(--ink-2); font-size: 12.5px; font-weight: 600;
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+.nav-ghead:hover { background: var(--surface-3); color: var(--ink); }
+.nav-ghead-ic { width: 18px; font-size: 13.5px; text-align: center; color: var(--ink-3); }
+.nav-ghead > span { flex: 1; }
+.nav-chev { font-size: 11px; color: var(--ink-4); transition: transform .22s var(--ease); }
+.nav-group.collapsed .nav-chev { transform: rotate(-90deg); }
+.nav-gitems { padding-left: 4px; margin: 2px 0 6px; }
+.nav-group.collapsed .nav-gitems { display: none; }
+.nav-group-premium .nav-ghead-ic { color: var(--gold); }
+.nav-soon {
+  font-size: 9px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--ink-4); background: var(--surface-3); padding: 3px 8px; border-radius: 20px;
+}
+.nav-item-soon { color: var(--ink-4); cursor: default; opacity: .7; }
+.nav-item-soon:hover { background: none; color: var(--ink-4); }
+.nav-item-soon:hover i { color: var(--ink-4); transform: none; }
 .sidebar-foot {
   margin-top: auto;
   padding-top: 16px;
@@ -677,6 +701,9 @@ img, svg, canvas, video { max-width: 100%; }
 @media (max-width: 1080px) and (min-width: 901px) {
   .sidebar { width: 72px; padding: 22px 12px; }
   .brand-name, .nav-item span, .nav-label, .user-meta, .theme-toggle span, .nav-badge { display: none; }
+  .nav-ghead, .nav-soon { display: none; }                 /* rail: sem cabeçalhos de grupo */
+  .nav-group .nav-gitems, .nav-group.collapsed .nav-gitems { display: block !important; padding-left: 0; }
+  .nav-item-soon { display: none; }                          /* rail: oculta itens "em breve" */
   .brand { justify-content: center; padding: 0 0 24px; }
   .nav-item { justify-content: center; padding: 11px; }
   .theme-toggle { justify-content: center; }
@@ -808,39 +835,55 @@ img, svg, canvas, video { max-width: 100%; }
     </div>
 
     <div class="nav-scroll">
-    <nav class="nav-section" data-tour="mercado">
-      <div class="nav-label">Mercado</div>
-      <div class="nav-item active" data-view="painel" aria-current="page" onclick="nav('painel',this)"><i class="fa-solid fa-house"></i><span>Início</span></div>
-      <div class="nav-item" data-view="acoes" onclick="nav('acoes',this)"><i class="fa-solid fa-chart-column"></i><span>Ações</span></div>
-      <div class="nav-item" data-view="fiis" onclick="nav('fiis',this)"><i class="fa-solid fa-building"></i><span>Fundos Imobiliários</span></div>
-      <div class="nav-item" data-view="bdrs" onclick="nav('bdrs',this)"><i class="fa-solid fa-globe"></i><span>BDRs</span></div>
-      <div class="nav-item" data-view="etfs" onclick="nav('etfs',this)"><i class="fa-solid fa-layer-group"></i><span>ETFs</span></div>
-      <div class="nav-item" data-view="stocks" onclick="nav('stocks',this)"><i class="fa-solid fa-flag-usa"></i><span>Stocks</span></div>
-      <div class="nav-item" data-view="cripto" onclick="nav('cripto',this)"><i class="fa-brands fa-bitcoin"></i><span>Criptomoedas</span></div>
-      <div class="nav-item" data-view="noticias" onclick="nav('noticias',this)"><i class="fa-solid fa-newspaper"></i><span>Notícias</span><span class="nav-badge" style="background:var(--down-l);color:var(--down)">LIVE</span></div>
+    <div class="nav-item active" data-view="painel" aria-current="page" onclick="nav('painel',this)"><i class="fa-solid fa-house"></i><span>Início</span></div>
+
+    <nav class="nav-group" data-group="mercado" data-tour="mercado">
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><i class="fa-solid fa-chart-line nav-ghead-ic"></i><span>Mercado</span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <div class="nav-gitems">
+        <div class="nav-item" data-view="acoes" onclick="nav('acoes',this)"><i class="fa-solid fa-chart-column"></i><span>Ações</span></div>
+        <div class="nav-item" data-view="fiis" onclick="nav('fiis',this)"><i class="fa-solid fa-building"></i><span>Fundos Imobiliários</span></div>
+        <div class="nav-item" data-view="bdrs" onclick="nav('bdrs',this)"><i class="fa-solid fa-globe"></i><span>BDRs</span></div>
+        <div class="nav-item" data-view="etfs" onclick="nav('etfs',this)"><i class="fa-solid fa-layer-group"></i><span>ETFs</span></div>
+        <div class="nav-item" data-view="stocks" onclick="nav('stocks',this)"><i class="fa-solid fa-flag-usa"></i><span>Stocks</span></div>
+        <div class="nav-item" data-view="cripto" onclick="nav('cripto',this)"><i class="fa-brands fa-bitcoin"></i><span>Criptomoedas</span></div>
+        <div class="nav-item" data-view="noticias" onclick="nav('noticias',this)"><i class="fa-solid fa-newspaper"></i><span>Notícias</span><span class="nav-badge" style="background:var(--down-l);color:var(--down)">LIVE</span></div>
+        <div class="nav-item" data-view="agenda" onclick="nav('agenda',this)"><i class="fa-solid fa-calendar-day"></i><span>Agenda de Dividendos</span></div>
+        <div class="nav-item premium-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      </div>
     </nav>
 
-    <nav class="nav-section" data-tour="carteira">
-      <div class="nav-label">Minha Carteira</div>
-      <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Carteira</span></div>
-      <div class="nav-item premium-item" data-view="proventos" onclick="nav('proventos',this)"><i class="fa-solid fa-coins"></i><span>Meus Proventos</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item" data-view="agenda" onclick="nav('agenda',this)"><i class="fa-solid fa-calendar-day"></i><span>Agenda de Dividendos</span></div>
-      <div class="nav-item" data-view="acompanhar" onclick="nav('acompanhar',this)"><i class="fa-solid fa-star"></i><span>Acompanhar</span></div>
-      <div class="nav-item premium-item" data-view="aporte" onclick="nav('aporte',this)"><i class="fa-solid fa-scale-balanced"></i><span>Aporte Inteligente</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="ir" onclick="nav('ir',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>Imposto de Renda</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+    <nav class="nav-group" data-group="carteira" data-tour="carteira">
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><i class="fa-solid fa-wallet nav-ghead-ic"></i><span>Minha Carteira</span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <div class="nav-gitems">
+        <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Carteira</span></div>
+        <div class="nav-item premium-item" data-view="proventos" onclick="nav('proventos',this)"><i class="fa-solid fa-coins"></i><span>Meus Proventos</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+        <div class="nav-item" data-view="acompanhar" onclick="nav('acompanhar',this)"><i class="fa-solid fa-star"></i><span>Acompanhar</span></div>
+        <div class="nav-item premium-item" data-view="aporte" onclick="nav('aporte',this)"><i class="fa-solid fa-scale-balanced"></i><span>Aporte Inteligente</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+        <div class="nav-item premium-item" data-view="ir" onclick="nav('ir',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>Imposto de Renda</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      </div>
     </nav>
 
-    <nav class="nav-section nav-section-premium" data-tour="analise">
-      <div class="nav-label nav-label-premium"><i class="fa-solid fa-crown"></i> Análise</div>
-      <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="deterioracao" onclick="nav('deterioracao',this)"><i class="fa-solid fa-arrow-trend-down"></i><span>Detector de Risco</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="score" onclick="nav('score',this)"><i class="fa-solid fa-award"></i><span>Score Lastro</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item premium-item" data-view="barganhas" onclick="nav('barganhas',this)"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Radar de Barganhas</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-      <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
-      <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-layer-group"></i><span>Carteiras Recomendadas</span></div>
-      <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-calculator"></i><span>Simuladores</span></div>
+    <nav class="nav-group nav-group-premium" data-group="ferramentas" data-tour="analise">
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><i class="fa-solid fa-crown nav-ghead-ic"></i><span>Ferramentas Pro</span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <div class="nav-gitems">
+        <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+        <div class="nav-item premium-item" data-view="deterioracao" onclick="nav('deterioracao',this)"><i class="fa-solid fa-arrow-trend-down"></i><span>Detector de Risco</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+        <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+        <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+        <div class="nav-item premium-item" data-view="barganhas" onclick="nav('barganhas',this)"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Radar de Barganhas</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+        <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
+        <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-layer-group"></i><span>Carteiras Recomendadas</span></div>
+        <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-calculator"></i><span>Simuladores</span></div>
+      </div>
+    </nav>
+
+    <nav class="nav-group nav-group-soon collapsed" data-group="rendafixa">
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><i class="fa-solid fa-landmark nav-ghead-ic"></i><span>Renda Fixa</span><span class="nav-soon">Em breve</span></button>
+      <div class="nav-gitems">
+        <div class="nav-item nav-item-soon"><i class="fa-solid fa-piggy-bank"></i><span>Tesouro Direto</span></div>
+        <div class="nav-item nav-item-soon"><i class="fa-solid fa-file-contract"></i><span>CDBs, LCIs & LCAs</span></div>
+        <div class="nav-item nav-item-soon"><i class="fa-solid fa-building-columns"></i><span>Debêntures</span></div>
+      </div>
     </nav>
     </div>
 
@@ -4671,6 +4714,8 @@ function nav(v, el, noHist){
   currentView = v;
   document.querySelectorAll('.nav-item').forEach(n=>{ n.classList.remove('active'); n.removeAttribute('aria-current'); });
   if(el){ el.classList.add('active'); el.setAttribute('aria-current','page'); }
+  else { const it=document.querySelector(`.nav-item[data-view="${v}"]`); if(it){ it.classList.add('active'); it.setAttribute('aria-current','page'); } }
+  syncNavGroups();
   $('#pageTitle').textContent = PAGES[v].t;
   $('#pageSub').textContent = PAGES[v].s;
   render(v);
@@ -4682,6 +4727,21 @@ function nav(v, el, noHist){
 function toggleSidebar(){ document.body.classList.toggle('nav-open'); }
 function openSidebar(){ document.body.classList.add('nav-open'); }
 function closeSidebar(){ document.body.classList.remove('nav-open'); }
+/* grupos recolhíveis do menu (accordion single-open) */
+function toggleNavGroup(head){
+  const g=head.closest('.nav-group'); if(!g) return;
+  const willOpen=g.classList.contains('collapsed');
+  document.querySelectorAll('.nav-group').forEach(x=>x.classList.add('collapsed'));
+  if(willOpen) g.classList.remove('collapsed');
+}
+function syncNavGroups(){
+  const groups=[...document.querySelectorAll('.nav-group')];
+  if(!groups.length) return;
+  const active=document.querySelector('.nav-gitems .nav-item.active');
+  let opened=false;
+  groups.forEach(g=>{ const has=!!(active && g.contains(active)); g.classList.toggle('collapsed', !has); if(has) opened=true; });
+  if(!opened){ const m=document.querySelector('.nav-group[data-group="mercado"]'); if(m) m.classList.remove('collapsed'); }
+}
 
 function render(v, soft){
   const c = $('#content');
@@ -10035,6 +10095,7 @@ function backFromAsset(){
   const v=prevView||'painel'; currentView=v;
   $('#pageTitle').textContent=PAGES[v].t; $('#pageSub').textContent=PAGES[v].s;
   document.querySelectorAll('.nav-item').forEach(n=> n.classList.toggle('active', (n.getAttribute('onclick')||'').includes(`'${v}'`)));
+  syncNavGroups();
   render(v); animateContent(); scrollToTop();
 }
 function closeAsset(){ if(currentView==='asset') backFromAsset(); }
@@ -10335,6 +10396,7 @@ try{
   document.querySelectorAll('.modal-scrim,.search-modal').forEach(m=>{ m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); });
   if(isAuthed()) loadCloudState();   // retoma sessão e sincroniza
   render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
+  syncNavGroups();     // menu começa recolhido (só Mercado aberto)
   animateContent();
   loadUniverse();
 }catch(e){
