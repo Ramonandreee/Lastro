@@ -8367,11 +8367,11 @@ function saveAlert(){
   setAlerts(list);
   toast(`Alerta criado · ${_alertCtx.tk} ${_alertDir} ${alertFmt(_alertCtx.tk,px)} 🔔`);
   closeAlertModal();
-  if(currentView==='alertas') render('acompanhar', true);
+  if(currentView==='acompanhar'||currentView==='alertas') render('acompanhar', true);
 }
-function deleteAlert(id){ setAlerts(getAlerts().filter(a=>a.id!==id)); if(currentView==='alertas') render('acompanhar', true); }
-function clearFiredAlerts(){ setAlerts(getAlerts().filter(a=>a.status!=='disparado')); if(currentView==='alertas') render('acompanhar', true); }
-function reactivateAlert(id){ const list=getAlerts(); const al=list.find(a=>a.id===id); if(al){ al.status='ativo'; delete al.firedAt; delete al.firedPx; setAlerts(list); if(currentView==='alertas') render('acompanhar', true); } }
+function deleteAlert(id){ setAlerts(getAlerts().filter(a=>a.id!==id)); if(currentView==='acompanhar'||currentView==='alertas') render('acompanhar', true); }
+function clearFiredAlerts(){ setAlerts(getAlerts().filter(a=>a.status!=='disparado')); if(currentView==='acompanhar'||currentView==='alertas') render('acompanhar', true); }
+function reactivateAlert(id){ const list=getAlerts(); const al=list.find(a=>a.id===id); if(al){ al.status='ativo'; delete al.firedAt; delete al.firedPx; setAlerts(list); if(currentView==='acompanhar'||currentView==='alertas') render('acompanhar', true); } }
 /* checa alertas ativos contra as cotações recém-atualizadas */
 function checkAlerts(){
   const list=getAlerts(); if(!list.length) return; let changed=false;
@@ -8385,7 +8385,7 @@ function checkAlerts(){
       notifyAlert(al, px);
     }
   });
-  if(changed){ setAlerts(list); if(currentView==='alertas') render('acompanhar', true); }
+  if(changed){ setAlerts(list); if(currentView==='acompanhar'||currentView==='alertas') render('acompanhar', true); }
 }
 /* texto da notificação/toast — direcionado e sem repetir o mesmo valor */
 function alertCopy(al, px){
