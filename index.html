@@ -333,8 +333,16 @@ a { color: inherit; text-decoration: none; }
 /* tints por grupo */
 .nav-group[data-group="mercado"] .nav-ghead-badge { background: color-mix(in srgb, var(--brand) 15%, transparent); color: var(--brand); }
 .nav-group[data-group="carteira"] .nav-ghead-badge { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+.nav-group[data-group="ferramentas"] .nav-ghead-badge { background: color-mix(in srgb, #8b5cf6 16%, transparent); color: #8b5cf6; }
 .nav-group-premium .nav-ghead-badge { background: color-mix(in srgb, var(--gold) 17%, transparent); color: var(--gold); }
 .nav-group-soon .nav-ghead-badge { background: var(--surface-3); color: var(--ink-4); }
+/* rodapé social do menu */
+.nav-social { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:14px; }
+.nav-social a { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; color:var(--ink-3); background:var(--surface-3); font-size:14px; transition:color .15s var(--ease), background .15s var(--ease), transform .15s var(--ease); }
+.nav-social a:hover { color:var(--brand); background:var(--brand-l); transform:translateY(-2px); }
+.nav-foot-meta { margin-top:12px; text-align:center; font-size:10.5px; color:var(--ink-4); line-height:1.5; }
+.nav-foot-meta a { color:var(--ink-3); }
+.hdr-gift i { color: var(--up); }
 .nav-soon {
   flex: none; font-size: 9px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
   color: var(--ink-4); background: var(--surface-3); padding: 3px 8px; border-radius: 20px;
@@ -881,14 +889,20 @@ img, svg, canvas, video { max-width: 100%; }
       </div>
     </nav>
 
-    <nav class="nav-group nav-group-premium" data-group="ferramentas" data-tour="analise">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-crown"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Ferramentas Pro</span><span class="nav-ghead-s">Raio-X · Backtest · Comparador · +5</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+    <nav class="nav-group nav-group-premium" data-group="analises" data-tour="analise">
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-crown"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Análises Pro</span><span class="nav-ghead-s">Raio-X · Backtest · Stress · +2</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
         <div class="nav-item premium-item" data-view="deterioracao" onclick="nav('deterioracao',this)"><i class="fa-solid fa-arrow-trend-down"></i><span>Detector de Risco</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
         <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
         <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
         <div class="nav-item premium-item" data-view="barganhas" onclick="nav('barganhas',this)"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Radar de Barganhas</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
+      </div>
+    </nav>
+
+    <nav class="nav-group" data-group="ferramentas">
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-toolbox"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Ferramentas</span><span class="nav-ghead-s">Comparador · Carteiras · Simuladores</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <div class="nav-gitems">
         <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
         <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-layer-group"></i><span>Carteiras Recomendadas</span></div>
         <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-calculator"></i><span>Simuladores</span></div>
@@ -910,6 +924,14 @@ img, svg, canvas, video { max-width: 100%; }
         <div class="uc-top"><i class="fa-solid fa-crown"></i> Seja Premium</div>
         <div class="uc-sub">Análises, alertas e rastreador completos</div>
       </button>
+      <div class="nav-social">
+        <a href="https://instagram.com/lastro.app" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="https://youtube.com/@lastro" target="_blank" rel="noopener" title="YouTube" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+        <a href="https://x.com/lastro_app" target="_blank" rel="noopener" title="X" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+        <a href="https://wa.me/5547992464048" target="_blank" rel="noopener" title="WhatsApp" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        <a onclick="closeSidebar();openSupport()" style="cursor:pointer" title="Ajuda & Suporte" aria-label="Suporte"><i class="fa-solid fa-headset"></i></a>
+      </div>
+      <div class="nav-foot-meta">Lastro · Inteligência de Investimentos<br>© 2026 · <a onclick="closeSidebar();openSupport()" style="cursor:pointer">Termos & Privacidade</a></div>
     </div>
   </aside>
 
@@ -3826,6 +3848,8 @@ function updateHeaderAction(){
   const el = document.getElementById('hdrActions'); if(!el) return;
   const authed=isAuthed(), pro=isPremium();
   let html='';
+  html += `<button class="icon-btn hdr-eye" title="Ocultar/mostrar valores" aria-label="Ocultar valores" onclick="togglePriv()"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}" aria-hidden="true"></i></button>`;
+  html += `<button class="icon-btn hdr-gift" title="Indique e Ganhe" aria-label="Indique e Ganhe" onclick="nav('indicar')"><i class="fa-solid fa-gift" aria-hidden="true"></i></button>`;
   if(!pro){ html += `<button class="icon-btn hdr-crown" title="Premium — desbloqueie recursos" aria-label="Assinar Premium" onclick="goPricing()"><i class="fa-solid fa-crown" aria-hidden="true"></i></button>`; }
   html += `<div class="acct-wrap"><button class="icon-btn hdr-profile" title="Conta" aria-label="Menu da conta" aria-haspopup="menu" onclick="toggleAcctMenu(event)"><i class="fa-${authed?'solid':'regular'} fa-circle-user" aria-hidden="true"></i></button><div class="acct-menu" id="acctMenu" role="menu"></div></div>`;
   el.innerHTML = html;
@@ -3947,7 +3971,7 @@ function closeConfirm(){ const el=document.getElementById('confirmModal'); if(el
 function confirmLogout(){ showConfirm('Sair da sua conta?','Tem certeza que deseja sair? Você precisará entrar novamente para sincronizar seus dados.','Sair', authLogout, true); }
 /* privacidade: oculta valores monetários (inicia oculto ao logar) */
 function privOn(){ const v=localStorage.getItem('lastro_priv'); return v===null ? isAuthed() : v==='1'; }
-function applyPriv(){ document.body.classList.toggle('priv', privOn()); document.querySelectorAll('.priv-eye i').forEach(i=>{ i.className='fa-solid '+(privOn()?'fa-eye-slash':'fa-eye'); }); }
+function applyPriv(){ document.body.classList.toggle('priv', privOn()); document.querySelectorAll('.priv-eye i, .hdr-eye i').forEach(i=>{ i.className='fa-solid '+(privOn()?'fa-eye-slash':'fa-eye'); }); }
 function togglePriv(){ localStorage.setItem('lastro_priv', privOn()?'0':'1'); applyPriv(); if(typeof saveCloudState==='function') saveCloudState(); }
 /* área de perfil (gerenciamento da conta) */
 /* perfil local (nome de exibição + foto), sincronizado na nuvem */
