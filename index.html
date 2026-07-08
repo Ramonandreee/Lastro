@@ -3035,6 +3035,10 @@ body.pdf-lock { overflow:hidden; }
 .qa-ic-gold { background:var(--gold-l); color:var(--gold); }
 .qa-ic-gift { background:color-mix(in srgb,var(--up) 15%,transparent); color:var(--up); }
 .qa-t { font-size:11.5px; font-weight:600; color:var(--ink-2); white-space:nowrap; }
+/* ── seção aberta (sem caixa) — visual clean, foge do "tudo em card" ── */
+.osec { margin-bottom:24px; }
+.osec-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:13px; padding:0 2px; flex-wrap:wrap; }
+.osec + .osec { margin-top:0; }
 @media (max-width:760px){
   .opp-grid { grid-template-columns:1fr 1fr; }
   .pat-card { padding:16px; }
@@ -5050,8 +5054,8 @@ function viewPainel(){
 
   ${patCard}
 
-  <div class="card card-pad" style="margin-bottom:16px">
-    <div class="card-head">
+  <div class="osec">
+    <div class="osec-head">
       <div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></span> Destaques Lastro</div>
       <button class="btn btn-ghost btn-sm" onclick="goView('score')">Ver ranking <i class="fa-solid fa-arrow-right"></i></button>
     </div>
@@ -5076,8 +5080,8 @@ function viewPainel(){
       <div class="home-chart"><canvas id="ibovChart" role="img" aria-label="Histórico do Nasdaq"></canvas></div>
     </div>
 
-    <div class="card card-pad">
-      <div class="card-head">
+    <div class="osec" style="margin-bottom:0">
+      <div class="osec-head">
         <div class="card-h"><span class="ico"><i class="fa-regular fa-calendar"></i></span> Próximos proventos</div>
         ${upc.length?`<span class="chip chip-up priv-blur">${brl(totalUpc)}</span>`:''}
       </div>
@@ -5085,13 +5089,13 @@ function viewPainel(){
     </div>
   </div>
 
-  <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top:16px;">
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-arrow-trend-up"></i></span> Maiores altas</div><span class="card-sub">ações · dia</span></div>
+  <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top:4px;">
+    <div class="osec">
+      <div class="osec-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-arrow-trend-up"></i></span> Maiores altas</div><span class="card-sub">ações · dia</span></div>
       <div class="mv-list">${altasRows}</div>
     </div>
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-arrow-trend-down"></i></span> Maiores baixas</div><span class="card-sub">ações · dia</span></div>
+    <div class="osec">
+      <div class="osec-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-arrow-trend-down"></i></span> Maiores baixas</div><span class="card-sub">ações · dia</span></div>
       <div class="mv-list">${baixasRows}</div>
     </div>
   </div>`;
