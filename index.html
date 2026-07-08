@@ -208,7 +208,7 @@ a { color: inherit; text-decoration: none; }
   position: sticky;
   top: 0;
   height: 100vh;
-  padding: calc(22px + env(safe-area-inset-top,0px)) 16px calc(22px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px));
+  padding: calc(22px + env(safe-area-inset-top,0px)) 16px calc(10px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px));
   z-index: 50;
   transition: background .4s var(--ease), border-color .4s var(--ease);
 }
@@ -244,6 +244,21 @@ a { color: inherit; text-decoration: none; }
   color: var(--ink);
 }
 .brand-name b { color: var(--brand); font-weight: 600; }
+.brand-mark { cursor: pointer; }
+.brand .brand-home {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 11px;
+  border-radius: var(--r-sm);
+  font-size: 13px; font-weight: 500;
+  color: var(--ink-2);
+  background: var(--surface-3);
+  cursor: pointer;
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+.brand .brand-home i { color: var(--ink-3); font-size: 13px; transition: color .15s var(--ease); }
+.brand .brand-home:hover, .brand .brand-home.active { color: var(--brand); background: var(--brand-l); }
+.brand .brand-home:hover i, .brand .brand-home.active i { color: var(--brand); }
 
 .nav-section { margin-bottom: 4px; }
 .nav-scroll { flex: 1; overflow-y: auto; margin: 0 -6px; padding: 0 6px; }
@@ -358,7 +373,7 @@ a { color: inherit; text-decoration: none; }
 .nav-item-soon:hover i { color: var(--ink-4); transform: none; }
 .sidebar-foot {
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 14px;
   border-top: 1px solid var(--line);
 }
 .theme-toggle {
@@ -736,6 +751,7 @@ img, svg, canvas, video { max-width: 100%; }
   .nav-group, .nav-group:not(.collapsed) { background: none; padding-bottom: 0; }
   .nav-group .nav-gitems, .nav-group.collapsed .nav-gitems { display: block !important; margin: 0 !important; padding-left: 0 !important; border-left: 0 !important; }
   .nav-item-soon { display: none; }                          /* rail: oculta itens "em breve" */
+  .brand .brand-home { display: none; }                      /* rail: Início pela logo (clicável) */
   .brand { justify-content: center; padding: 0 0 24px; }
   .nav-item { justify-content: center; padding: 11px; }
   .theme-toggle { justify-content: center; }
@@ -856,7 +872,7 @@ img, svg, canvas, video { max-width: 100%; }
   <!-- ════════ SIDEBAR ════════ -->
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-mark">
+      <div class="brand-mark" onclick="nav('painel')" title="Ir para o Início">
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           <circle cx="19" cy="6" r="2.4" fill="white"/>
@@ -864,11 +880,10 @@ img, svg, canvas, video { max-width: 100%; }
         </svg>
       </div>
       <div class="brand-name">Lastro</div>
+      <div class="brand-home nav-item active" data-view="painel" aria-current="page" onclick="nav('painel',this)" title="Início"><i class="fa-solid fa-house"></i><span>Início</span></div>
     </div>
 
     <div class="nav-scroll">
-    <div class="nav-item active" data-view="painel" aria-current="page" onclick="nav('painel',this)"><i class="fa-solid fa-house"></i><span>Início</span></div>
-
     <div class="nav-sep"></div>
 
     <nav class="nav-group" data-group="mercado" data-tour="mercado">
