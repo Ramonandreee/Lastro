@@ -2995,9 +2995,29 @@ body.pdf-lock { overflow:hidden; }
 .pat-kpi b { font-family:var(--mono); font-size:14px; font-weight:600; color:var(--ink); }
 .pat-kpi b.up { color:var(--up); } .pat-kpi b.down { color:var(--down); }
 .pat-kpi span { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.03em; }
+.pat-day { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:13px; font-weight:600; margin-top:8px; }
+.pat-day.up { color:var(--up); } .pat-day.down { color:var(--down); }
+/* ── carrossel horizontal reutilizável ── */
+.hscroll { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; }
+.hscroll::-webkit-scrollbar { display:none; }
+.hscroll > * { scroll-snap-align:start; flex:0 0 auto; }
+/* ── atalhos (quick actions) estilo carrossel ── */
+.qa-row { margin-bottom:18px; }
+.qa-card { display:flex; flex-direction:column; align-items:center; gap:9px; width:86px; padding:14px 8px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); cursor:pointer; transition:transform .18s var(--ease-out), border-color .18s var(--ease), box-shadow .18s var(--ease); }
+.qa-card:hover { transform:translateY(-3px); border-color:var(--line-2); box-shadow:var(--sh-md); }
+.qa-ic { width:44px; height:44px; border-radius:13px; display:grid; place-items:center; font-size:17px; }
+.qa-ic-brand { background:var(--brand-l); color:var(--brand); }
+.qa-ic-accent { background:var(--accent-l); color:var(--accent); }
+.qa-ic-gold { background:var(--gold-l); color:var(--gold); }
+.qa-ic-gift { background:color-mix(in srgb,var(--up) 15%,transparent); color:var(--up); }
+.qa-t { font-size:11.5px; font-weight:600; color:var(--ink-2); white-space:nowrap; }
 @media (max-width:760px){
   .opp-grid { grid-template-columns:1fr 1fr; }
   .pat-card { padding:16px; }
+  /* Destaques viram carrossel deslizável no mobile (foge da grade) */
+  .opp-grid.opp-scroll { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:4px; }
+  .opp-grid.opp-scroll::-webkit-scrollbar { display:none; }
+  .opp-grid.opp-scroll > .opp-card { flex:0 0 76%; scroll-snap-align:start; }
 }
 @media (max-width:460px){
   .opp-grid { grid-template-columns:1fr; }
@@ -4900,6 +4920,9 @@ function cycleHero(){ heroIdx++; renderHeroIdx(true); startHeroTimer(); }
 
 function viewPainel(){
   const p = portfolioStats();
+  // variação real do dia da carteira (ponderada pelas posições, com cotação ao vivo)
+  let _patDayVal=0; (p._byT||[]).forEach(g=>{ const v=(g.f&&g.f.a&&typeof g.f.a.var==='number')?g.f.a.var:0; _patDayVal += g.val*v/100; });
+  const patDayP = p.atual ? _patDayVal/p.atual*100 : 0;
   // Ibovespa já é o destaque do hero — a faixa abaixo mostra os demais índices (sem repetir)
   const mstrip = MARKET.slice(1).map((m,i)=>{
     // cor pelo sinal da variação do dia (não pela flag 'up', que é invertida p/ o dólar)
@@ -4934,8 +4957,9 @@ function viewPainel(){
   const patCard = CARTEIRA.length ? `
     <div class="pat-card">
       <div class="pat-l">
-        <div class="pat-eyebrow"><i class="fa-solid fa-wallet"></i> Sua carteira <button class="priv-eye" style="width:26px;height:26px;font-size:11px;margin-left:6px" onclick="event.stopPropagation();togglePriv()" title="Mostrar/ocultar"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
+        <div class="pat-eyebrow"><i class="fa-solid fa-wallet"></i> Seu patrimônio <button class="priv-eye" style="width:26px;height:26px;font-size:11px;margin-left:6px" onclick="event.stopPropagation();togglePriv()" title="Mostrar/ocultar"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
         <div class="pat-val priv-blur">R$ <span id="patVal">0</span></div>
+        <div class="pat-day priv-blur ${patDayP>=0?'up':'down'}"><i class="fa-solid fa-caret-${patDayP>=0?'up':'down'}"></i> ${patDayP>=0?'+':'−'}${brl(Math.abs(_patDayVal))} · ${pc(Math.abs(patDayP),2)}% hoje</div>
         <div class="pat-kpis priv-blur">
           <div class="pat-kpi"><b class="${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':''}${brl(p.lucro)}</b><span>resultado · ${p.lucroP.toFixed(1).replace('.',',')}%</span></div>
           <div class="pat-kpi"><b>${p.nAtivos}</b><span>ativo${p.nAtivos!==1?'s':''}</span></div>
@@ -4989,15 +5013,24 @@ function viewPainel(){
 
   <div class="mstrip">${mstrip}</div>
 
+  <div class="qa-row hscroll" aria-label="Atalhos">
+    <button class="qa-card" onclick="goView('carteira')"><span class="qa-ic qa-ic-brand"><i class="fa-solid fa-wallet"></i></span><span class="qa-t">Carteira</span></button>
+    <button class="qa-card" onclick="goView('aporte')"><span class="qa-ic qa-ic-accent"><i class="fa-solid fa-scale-balanced"></i></span><span class="qa-t">Aporte</span></button>
+    <button class="qa-card" onclick="goView('acompanhar')"><span class="qa-ic qa-ic-gold"><i class="fa-solid fa-bell"></i></span><span class="qa-t">Alertas</span></button>
+    <button class="qa-card" onclick="goView('comparador')"><span class="qa-ic qa-ic-brand"><i class="fa-solid fa-code-compare"></i></span><span class="qa-t">Comparar</span></button>
+    <button class="qa-card" onclick="goView('simulador')"><span class="qa-ic qa-ic-accent"><i class="fa-solid fa-calculator"></i></span><span class="qa-t">Simular</span></button>
+    <button class="qa-card" onclick="nav('indicar')"><span class="qa-ic qa-ic-gift"><i class="fa-solid fa-gift"></i></span><span class="qa-t">Indique</span></button>
+  </div>
+
+  ${patCard}
+
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="card-head">
       <div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></span> Destaques Lastro</div>
       <button class="btn btn-ghost btn-sm" onclick="goView('score')">Ver ranking <i class="fa-solid fa-arrow-right"></i></button>
     </div>
-    <div class="opp-grid">${opps}</div>
+    <div class="opp-grid opp-scroll">${opps}</div>
   </div>
-
-  ${patCard}
 
   <div class="grid" style="grid-template-columns: 1.4fr 1fr;">
     <div class="card card-pad">
