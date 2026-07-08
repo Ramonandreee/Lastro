@@ -2304,7 +2304,8 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .ad-banner i { color:var(--gold); margin-top:2px; }
 /* abas do painel admin: sticky no topo (mesmo esquema da barra de abas do ativo) */
 .ad-tabs { margin:0 0 16px; position:relative; z-index:1; padding:4px 0 14px; border-bottom:1px solid var(--line); }
-.ad-tabs-inner { display:flex !important; flex-wrap:wrap; gap:8px; overflow:visible; min-height:40px; }
+.ad-tabs-inner { display:flex !important; flex-wrap:nowrap; gap:8px; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:none; scroll-snap-type:x proximity; padding-bottom:2px; }
+.ad-tabs-inner > .ad-tab { scroll-snap-align:start; }
 .ad-tabs-inner::-webkit-scrollbar { display:none; height:0; }
 .ad-sug { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; }
 .ad-sug-i { display:flex; gap:11px; align-items:flex-start; font-size:13px; line-height:1.55; color:var(--ink-2); }
@@ -2312,9 +2313,9 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .ad-sug-i[data-st="pos"]{ --st:var(--up); } .ad-sug-i[data-st="warn"]{ --st:var(--gold); } .ad-sug-i[data-st="neu"]{ --st:var(--accent); }
 .ad-sug-i strong { color:var(--ink); font-weight:700; }
 /* Ações — sugestão + plano de ação colapsável, aprovar/arquivar */
-.ad-actions-head { display:flex; gap:10px 14px; align-items:center; font-size:12.5px; color:var(--ink-3); line-height:1.55; margin-bottom:14px; padding:0 2px; flex-wrap:wrap; }
-.ad-ah-tx { flex:1 1 260px; display:flex; gap:9px; align-items:flex-start; }
-.ad-gen-btn { flex:0 0 auto; margin-left:auto; white-space:nowrap; }
+.ad-actions-head { display:flex; flex-direction:column; gap:13px; align-items:flex-start; font-size:12.5px; color:var(--ink-3); line-height:1.55; margin-bottom:14px; padding:0 2px; }
+.ad-ah-tx { display:flex; gap:9px; align-items:flex-start; width:100%; }
+.ad-gen-btn { align-self:flex-start; white-space:nowrap; }
 .ad-actions-head i { color:var(--brand); margin-top:2px; }
 .ad-actions-head strong { color:var(--ink-2); }
 .ad-action { border:1px solid var(--line); border-left:3px solid var(--st,var(--accent)); border-radius:var(--r); background:var(--surface); margin-bottom:12px; overflow:hidden; transition:box-shadow .2s var(--ease), border-color .2s var(--ease); }
@@ -3164,7 +3165,18 @@ body.pdf-lock { overflow:hidden; }
 }
 /* ── Touch (sem mouse): nunca deixar o estado de hover "grudado" ao tocar ou rolar a tela ── */
 @media (hover: none) {
-  *:hover { box-shadow: none !important; transform: none !important; filter: none !important; }
+  /* sombra/brilho de hover: seguro zerar em tudo (não afeta layout) */
+  *:hover { box-shadow: none !important; filter: none !important; }
+  /* elevação/deslocamento de hover: só nos elementos que a usam como microinteração
+     (NÃO usar seletor universal — quebraria transform de centralização, ex.: logo da topbar) */
+  .nav-item:hover i, .nav-ghead:hover .nav-ghead-badge,
+  .mkt-cell:hover, .mcell:hover, .rec-card:hover, .ind-card:hover, .hstat:hover, .opp-card:hover, .qa-card:hover, .ckl-item:hover,
+  .grid > .card:hover, .dt-grid > .card:hover, .about-grid > .card:hover,
+  .share-btn:hover, .sup-c:hover, .btn-primary:hover, .btn-premium:hover, .rx-aporte-cta:hover,
+  .icon-btn:hover, .search-trigger:hover, .hdr-crown:hover, .insight-send:hover,
+  .nav-social a:hover, .brand .brand-home:hover,
+  table.tbl tbody tr:hover .logo, .sr:hover .logo,
+  .mv-row:hover, .sr:hover, .rank-row:hover { transform: none !important; }
   .nav-item:hover { background: transparent !important; color: var(--ink-2) !important; }
   .nav-item:hover i { color: var(--ink-2) !important; }
   .nav-ghead:hover { background: transparent !important; }
@@ -4828,6 +4840,7 @@ try{ if('scrollRestoration' in history) history.scrollRestoration='manual'; }cat
   document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
 })();
 function nav(v, el, noHist){
+  closeSidebar();                                                              // fecha o menu já ao tocar (mesmo se algo abaixo falhar)
   if(v==='admin' && !isOwner()) v='painel';
   if(v==='screener'){ v='acoes'; if(isPro()) tableState.acoes.fopen=true; }   // Rastreador incorporado às listagens
   if(!noHist && currentView && currentView!==v) navStack.push(currentView);
@@ -6160,9 +6173,6 @@ function viewAdmin(){
   }
 
   return `<div class="ad-page">
-    <div class="ad-banner"><i class="fa-solid fa-shield-halved"></i> <div>${devModeOn()
-      ? 'Área restrita ao administrador. Exibindo <strong>as contas reais dos donos</strong> + dados de demonstração (modo desenvolvedor). Desligue o modo dev para ver só os dados reais.'
-      : 'Área restrita ao administrador. Exibindo <strong>dados reais</strong> das contas cadastradas. A base completa de clientes é servida pelo backend administrativo (credencial de serviço).'}</div></div>
     <div class="ad-tabs"><div class="ad-tabs-inner">${tab('overview','fa-gauge-high','Visão geral')}${tab('clientes','fa-user-tie','Clientes')}${tab('leads','fa-user-plus','Leads')}${tab('financeiro','fa-money-bill-trend-up','Financeiro')}${tab('acoes','fa-wand-magic-sparkles','Ações')}</div></div>
     ${panel}
   </div>`;
