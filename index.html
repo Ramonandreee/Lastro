@@ -301,25 +301,42 @@ a { color: inherit; text-decoration: none; }
 .premium-item:hover { background: color-mix(in srgb, var(--gold) 9%, transparent); color: var(--ink); }
 .nav-section-premium .nav-item.active { box-shadow: inset 2.5px 0 0 var(--gold); background: color-mix(in srgb, var(--gold) 12%, transparent); }
 .nav-section-premium .nav-item.active > i:first-child { color: var(--gold); }
-/* Menu em grupos recolhíveis (accordion) */
-.nav-group { margin-bottom: 2px; }
+/* Menu em grupos recolhíveis (accordion) — premium */
+.nav-group { margin-bottom: 6px; border-radius: 14px; transition: background .18s var(--ease); }
+.nav-group:not(.collapsed) { background: color-mix(in srgb, var(--surface-3) 55%, transparent); padding-bottom: 6px; }
 .nav-ghead {
-  display: flex; align-items: center; gap: 11px; width: 100%;
+  display: flex; align-items: center; gap: 12px; width: 100%;
   background: none; border: 0; cursor: pointer; text-align: left;
-  padding: 10px 12px; border-radius: 10px;
-  color: var(--ink-2); font-size: 12.5px; font-weight: 600;
-  transition: background .15s var(--ease), color .15s var(--ease);
+  padding: 11px 12px; border-radius: 14px;
+  transition: background .15s var(--ease);
 }
-.nav-ghead:hover { background: var(--surface-3); color: var(--ink); }
-.nav-ghead-ic { width: 18px; font-size: 13.5px; text-align: center; color: var(--ink-3); }
-.nav-ghead > span { flex: 1; }
-.nav-chev { font-size: 11px; color: var(--ink-4); transition: transform .22s var(--ease); }
+.nav-ghead:hover { background: var(--surface-3); }
+.nav-group:not(.collapsed) .nav-ghead:hover { background: transparent; }
+.nav-ghead-badge {
+  flex: none; width: 36px; height: 36px; border-radius: 11px;
+  display: grid; place-items: center; font-size: 15px;
+  background: var(--surface-3); color: var(--ink-2);
+  transition: transform .18s var(--ease);
+}
+.nav-ghead:hover .nav-ghead-badge { transform: translateY(-1px); }
+.nav-ghead-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.nav-ghead-t { font-size: 13.5px; font-weight: 650; color: var(--ink); line-height: 1.2; }
+.nav-ghead-s { font-size: 10.5px; color: var(--ink-4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-group:not(.collapsed) .nav-ghead-s { display: none; }        /* abre → some a prévia, entram os itens */
+.nav-chev { flex: none; font-size: 12px; color: var(--ink-4); transition: transform .22s var(--ease); }
 .nav-group.collapsed .nav-chev { transform: rotate(-90deg); }
-.nav-gitems { padding-left: 4px; margin: 2px 0 6px; }
+/* itens filhos: recuados, com linha-guia (hierarquia clara) */
+.nav-gitems { position: relative; margin: 0 10px 2px 30px; padding-left: 14px; border-left: 1.5px solid var(--line); }
 .nav-group.collapsed .nav-gitems { display: none; }
-.nav-group-premium .nav-ghead-ic { color: var(--gold); }
+.nav-gitems .nav-item { padding: 9px 11px; font-size: 12.5px; border-radius: 9px; }
+.nav-gitems .nav-item i:first-child { font-size: 13px; }
+/* tints por grupo */
+.nav-group[data-group="mercado"] .nav-ghead-badge { background: color-mix(in srgb, var(--brand) 15%, transparent); color: var(--brand); }
+.nav-group[data-group="carteira"] .nav-ghead-badge { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+.nav-group-premium .nav-ghead-badge { background: color-mix(in srgb, var(--gold) 17%, transparent); color: var(--gold); }
+.nav-group-soon .nav-ghead-badge { background: var(--surface-3); color: var(--ink-4); }
 .nav-soon {
-  font-size: 9px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  flex: none; font-size: 9px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
   color: var(--ink-4); background: var(--surface-3); padding: 3px 8px; border-radius: 20px;
 }
 .nav-item-soon { color: var(--ink-4); cursor: default; opacity: .7; }
@@ -702,7 +719,8 @@ img, svg, canvas, video { max-width: 100%; }
   .sidebar { width: 72px; padding: 22px 12px; }
   .brand-name, .nav-item span, .nav-label, .user-meta, .theme-toggle span, .nav-badge { display: none; }
   .nav-ghead, .nav-soon { display: none; }                 /* rail: sem cabeçalhos de grupo */
-  .nav-group .nav-gitems, .nav-group.collapsed .nav-gitems { display: block !important; padding-left: 0; }
+  .nav-group, .nav-group:not(.collapsed) { background: none; padding-bottom: 0; }
+  .nav-group .nav-gitems, .nav-group.collapsed .nav-gitems { display: block !important; margin: 0 !important; padding-left: 0 !important; border-left: 0 !important; }
   .nav-item-soon { display: none; }                          /* rail: oculta itens "em breve" */
   .brand { justify-content: center; padding: 0 0 24px; }
   .nav-item { justify-content: center; padding: 11px; }
@@ -838,7 +856,7 @@ img, svg, canvas, video { max-width: 100%; }
     <div class="nav-item active" data-view="painel" aria-current="page" onclick="nav('painel',this)"><i class="fa-solid fa-house"></i><span>Início</span></div>
 
     <nav class="nav-group" data-group="mercado" data-tour="mercado">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><i class="fa-solid fa-chart-line nav-ghead-ic"></i><span>Mercado</span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-chart-line"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Mercado</span><span class="nav-ghead-s">Ações · FIIs · Cripto · +6</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item" data-view="acoes" onclick="nav('acoes',this)"><i class="fa-solid fa-chart-column"></i><span>Ações</span></div>
         <div class="nav-item" data-view="fiis" onclick="nav('fiis',this)"><i class="fa-solid fa-building"></i><span>Fundos Imobiliários</span></div>
@@ -853,7 +871,7 @@ img, svg, canvas, video { max-width: 100%; }
     </nav>
 
     <nav class="nav-group" data-group="carteira" data-tour="carteira">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><i class="fa-solid fa-wallet nav-ghead-ic"></i><span>Minha Carteira</span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-wallet"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Minha Carteira</span><span class="nav-ghead-s">Carteira · Proventos · IR</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item" data-view="carteira" onclick="nav('carteira',this)"><i class="fa-solid fa-wallet"></i><span>Carteira</span></div>
         <div class="nav-item premium-item" data-view="proventos" onclick="nav('proventos',this)"><i class="fa-solid fa-coins"></i><span>Meus Proventos</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
@@ -864,7 +882,7 @@ img, svg, canvas, video { max-width: 100%; }
     </nav>
 
     <nav class="nav-group nav-group-premium" data-group="ferramentas" data-tour="analise">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><i class="fa-solid fa-crown nav-ghead-ic"></i><span>Ferramentas Pro</span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-crown"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Ferramentas Pro</span><span class="nav-ghead-s">Raio-X · Backtest · Comparador · +5</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
         <div class="nav-item premium-item" data-view="deterioracao" onclick="nav('deterioracao',this)"><i class="fa-solid fa-arrow-trend-down"></i><span>Detector de Risco</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
@@ -878,7 +896,7 @@ img, svg, canvas, video { max-width: 100%; }
     </nav>
 
     <nav class="nav-group nav-group-soon collapsed" data-group="rendafixa">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><i class="fa-solid fa-landmark nav-ghead-ic"></i><span>Renda Fixa</span><span class="nav-soon">Em breve</span></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-landmark"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Renda Fixa</span><span class="nav-ghead-s">Tesouro · CDBs · Debêntures</span></span><span class="nav-soon">Em breve</span></button>
       <div class="nav-gitems">
         <div class="nav-item nav-item-soon"><i class="fa-solid fa-piggy-bank"></i><span>Tesouro Direto</span></div>
         <div class="nav-item nav-item-soon"><i class="fa-solid fa-file-contract"></i><span>CDBs, LCIs & LCAs</span></div>
