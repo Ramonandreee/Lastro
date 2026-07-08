@@ -755,11 +755,14 @@ img, svg, canvas, video { max-width: 100%; }
 /* telas estreitas: empilhar grids, tabelas roláveis, topbar compacto */
 @media (max-width: 760px) {
   .content { padding: 18px calc(18px + env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) calc(18px + env(safe-area-inset-left,0px)); }
-  .topbar { --topbar-h: 64px; padding: env(safe-area-inset-top,0px) calc(18px + env(safe-area-inset-right,0px)) 0 calc(18px + env(safe-area-inset-left,0px)); gap: 10px; }
+  .topbar { --topbar-h: 64px; padding: env(safe-area-inset-top,0px) calc(18px + env(safe-area-inset-right,0px)) 0 calc(18px + env(safe-area-inset-left,0px)); gap: 12px; justify-content: flex-start; }
   .topbar-left { gap: 12px; min-width: 0; flex: 0 0 auto; }
   .topbar-left > div { display: none; }                 /* esconde o título: a logo é a identidade no mobile */
-  .topbar-brand { display: flex !important; }            /* logo sempre centralizada no mobile */
-  .topbar-right { gap: 8px; flex: 0 0 auto; }
+  /* logo à esquerda (ao lado do menu); ícones à direita — sem centro absoluto que colide */
+  .topbar-brand { position: static !important; transform: none !important; display: flex !important; }
+  .topbar-brand:active { transform: scale(.96) !important; }
+  .topbar-brand .tb-name { font-size: 18px; }
+  .topbar-right { gap: 8px; flex: 0 0 auto; margin-left: auto; }
   /* qualquer grid de layout vira coluna única */
   .grid, .dt-grid, .about-grid, .sim-grid { grid-template-columns: 1fr !important; }
   .grid[style], .dt-grid[style] { grid-template-columns: 1fr !important; }
@@ -3852,11 +3855,10 @@ function refreshPlanUI(){
 /* cabeçalho: Menu | Logo | Coroa | Perfil — só ícones, logo sempre centralizada (mobile) */
 function updateHeaderAction(){
   const el = document.getElementById('hdrActions'); if(!el) return;
-  const authed=isAuthed(), pro=isPremium();
+  const authed=isAuthed();
   let html='';
   html += `<button class="icon-btn hdr-eye" title="Ocultar/mostrar valores" aria-label="Ocultar valores" onclick="togglePriv()"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}" aria-hidden="true"></i></button>`;
   html += `<button class="icon-btn hdr-gift" title="Indique e Ganhe" aria-label="Indique e Ganhe" onclick="nav('indicar')"><i class="fa-solid fa-gift" aria-hidden="true"></i></button>`;
-  if(!pro){ html += `<button class="icon-btn hdr-crown" title="Premium — desbloqueie recursos" aria-label="Assinar Premium" onclick="goPricing()"><i class="fa-solid fa-crown" aria-hidden="true"></i></button>`; }
   html += `<div class="acct-wrap"><button class="icon-btn hdr-profile" title="Conta" aria-label="Menu da conta" aria-haspopup="menu" onclick="toggleAcctMenu(event)"><i class="fa-${authed?'solid':'regular'} fa-circle-user" aria-hidden="true"></i></button><div class="acct-menu" id="acctMenu" role="menu"></div></div>`;
   el.innerHTML = html;
 }
@@ -5054,8 +5056,8 @@ function viewPainel(){
 
   ${patCard}
 
-  <div class="osec">
-    <div class="osec-head">
+  <div class="card card-pad" style="margin-bottom:16px">
+    <div class="card-head">
       <div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></span> Destaques Lastro</div>
       <button class="btn btn-ghost btn-sm" onclick="goView('score')">Ver ranking <i class="fa-solid fa-arrow-right"></i></button>
     </div>
@@ -5080,8 +5082,8 @@ function viewPainel(){
       <div class="home-chart"><canvas id="ibovChart" role="img" aria-label="Histórico do Nasdaq"></canvas></div>
     </div>
 
-    <div class="osec" style="margin-bottom:0">
-      <div class="osec-head">
+    <div class="card card-pad">
+      <div class="card-head">
         <div class="card-h"><span class="ico"><i class="fa-regular fa-calendar"></i></span> Próximos proventos</div>
         ${upc.length?`<span class="chip chip-up priv-blur">${brl(totalUpc)}</span>`:''}
       </div>
@@ -5089,13 +5091,13 @@ function viewPainel(){
     </div>
   </div>
 
-  <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top:4px;">
-    <div class="osec">
-      <div class="osec-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-arrow-trend-up"></i></span> Maiores altas</div><span class="card-sub">ações · dia</span></div>
+  <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top:16px;">
+    <div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-arrow-trend-up"></i></span> Maiores altas</div><span class="card-sub">ações · dia</span></div>
       <div class="mv-list">${altasRows}</div>
     </div>
-    <div class="osec">
-      <div class="osec-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-arrow-trend-down"></i></span> Maiores baixas</div><span class="card-sub">ações · dia</span></div>
+    <div class="card card-pad">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-arrow-trend-down"></i></span> Maiores baixas</div><span class="card-sub">ações · dia</span></div>
       <div class="mv-list">${baixasRows}</div>
     </div>
   </div>`;
