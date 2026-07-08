@@ -767,7 +767,7 @@ img, svg, canvas, video { max-width: 100%; }
     position:fixed; left:0; top:0; width:min(80vw, 296px); height:100dvh; z-index:70;
     transform:translateX(-100%); transition:transform .3s var(--ease-out);
     box-shadow:var(--sh-xl);
-    padding:calc(18px + env(safe-area-inset-top,0px)) 14px calc(18px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px));
+    padding:calc(18px + env(safe-area-inset-top,0px)) 14px calc(6px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px));
   }
   body.nav-open .sidebar { transform:none; }
   body.nav-open .sidebar-scrim { display:block; opacity:1; }
@@ -797,7 +797,7 @@ img, svg, canvas, video { max-width: 100%; }
   table.tbl .td-asset .tk { font-size: 14px; }
   table.tbl .td-asset .ds { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .market-status, .data-status { display:none; }
-  .atabs, .ad-tabs, .stabs, .rec-filters { top:calc(64px + env(safe-area-inset-top,0px)); }
+  .atabs, .stabs, .rec-filters { top:calc(64px + env(safe-area-inset-top,0px)); }
   /* badge "Com Score Lastro" é redundante no mobile (já há o bloco Score Lastro acima) */
   .card-head .chip { display:none; }
   .card-pad { padding: 16px 16px; }
@@ -964,7 +964,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-social">
         <a href="https://instagram.com/lastro.app" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
         <a href="https://threads.net/@lastro.app" target="_blank" rel="noopener" title="Threads" aria-label="Threads"><i class="fa-brands fa-threads"></i></a>
-        <a href="https://wa.me/5547992464048" target="_blank" rel="noopener" title="WhatsApp" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="https://open.spotify.com/" target="_blank" rel="noopener" title="Spotify" aria-label="Spotify"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M7 9.9c3.2-1 7.1-.6 9.7 1.1"/><path d="M7.6 12.8c2.6-.8 5.7-.4 7.9 1"/><path d="M8.2 15.4c2-.6 4.2-.3 5.9.8"/></svg></a>
         <a onclick="closeSidebar();openSupport()" style="cursor:pointer" title="Ajuda & Suporte" aria-label="Suporte"><i class="fa-solid fa-headset"></i></a>
       </div>
     </div>
@@ -2091,6 +2091,12 @@ canvas { touch-action:none; }
 .rsa-x { width:32px; height:32px; flex:none; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); cursor:pointer; }
 .rsa-x:hover { color:var(--ink); border-color:var(--line-2); }
 .rsa-body { padding:18px; display:flex; flex-direction:column; gap:16px; }
+.ad-hist-top { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:-4px; }
+.ad-hist-val { font-family:var(--mono); font-size:30px; font-weight:700; color:var(--ink); letter-spacing:-.02em; line-height:1; }
+.ad-hist-delta { display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:600; font-family:var(--mono); padding:4px 9px; border-radius:20px; }
+.ad-hist-delta.up { color:var(--up); background:var(--up-l); }
+.ad-hist-delta.down { color:var(--down); background:var(--down-l); }
+.ad-hist-delta span { font-family:var(--sans,inherit); font-weight:500; color:var(--ink-3); font-size:11px; }
 .rsa-field { display:flex; flex-direction:column; gap:8px; }
 .rsa-lbl { font-size:12px; font-weight:500; color:var(--ink-2); }
 .rsa-seg { display:flex; gap:6px; padding:4px; background:var(--surface-3); border-radius:var(--r-sm); }
@@ -3009,7 +3015,7 @@ body.pdf-lock { overflow:hidden; }
 .ckl-q { font-size:13.5px; font-weight:600; color:var(--ink); line-height:1.3; }
 .ckl-d { font-size:12px; color:var(--ink-3); margin-top:3px; font-family:var(--mono); }
 @media (max-width:640px){
-  .atabs, .ad-tabs, .stabs, .rec-filters { top:calc(64px + env(safe-area-inset-top,0px)); }
+  .atabs, .stabs, .rec-filters { top:calc(64px + env(safe-area-inset-top,0px)); }
   .prov-stats { grid-template-columns:1fr; }
   .donut-wrap { height:200px; }
   .ckl-list { grid-template-columns:1fr; }
@@ -3155,6 +3161,17 @@ body.pdf-lock { overflow:hidden; }
 @media (max-width:640px){
   .lot-line { gap:10px; font-size:12px; flex-wrap:wrap; }
   .lot-line .lot-dt { flex:1 1 100%; }
+}
+/* ── Touch (sem mouse): nunca deixar o estado de hover "grudado" ao tocar ou rolar a tela ── */
+@media (hover: none) {
+  *:hover { box-shadow: none !important; transform: none !important; filter: none !important; }
+  .nav-item:hover { background: transparent !important; color: var(--ink-2) !important; }
+  .nav-item:hover i { color: var(--ink-2) !important; }
+  .nav-ghead:hover { background: transparent !important; }
+  table.tbl tbody tr:hover, table.tbl tbody tr:hover td:first-child,
+  .sr:hover, .mv-row:hover, .rank-row:hover { background: transparent !important; }
+  .nav-social a:hover, .brand .brand-home:hover { background: var(--surface-3) !important; color: var(--ink-3) !important; }
+  .brand .brand-home.active { background: var(--brand-l) !important; color: var(--brand) !important; }
 }
 </style>
 
@@ -6160,18 +6177,19 @@ function initAdminCharts(){
   const cadColor=cssVar('--accent')||'#3B6FD4', recColor=cssVar('--gold')||'#B8860B', up=cssVar('--up');
   const g=document.getElementById('adminGrowth');
   if(g){ if(charts.adminGrowth) charts.adminGrowth.destroy();
+    const gctx=g.getContext('2d'); const cadGrad=gctx.createLinearGradient(0,0,0,g.height||260); cadGrad.addColorStop(0,cadColor+'33'); cadGrad.addColorStop(1,cadColor+'00');
     charts.adminGrowth=new Chart(g,{ type:'line', data:{ labels, datasets:[
-      { label:'Cadastros', data:adminRamp(all.length,N), borderColor:cadColor, backgroundColor:cadColor+'1f', fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5, yAxisID:'y' },
-      { label:'Receita Mensal', data:adminRamp(mrr,N), borderColor:recColor, backgroundColor:'transparent', fill:false, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5, yAxisID:'y1' } ] },
-      options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
-        plugins:{ legend:{display:true,position:'top',align:'end',labels:{color:cssVar('--ink-2'),font:{size:11},usePointStyle:true,pointStyleWidth:9,boxHeight:7}}, tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.dataset.yAxisID==='y1'?brl0(c.parsed.y):c.parsed.y)}} },
-        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
-          y:{position:'left',grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}},
-          y1:{position:'right',grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v},border:{display:false}} } } }); }
+      { label:'Cadastros', data:adminRamp(all.length,N), borderColor:cadColor, backgroundColor:cadGrad, fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.75, yAxisID:'y' },
+      { label:'Receita Mensal', data:adminRamp(mrr,N), borderColor:recColor, backgroundColor:'transparent', fill:false, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.75, borderDash:[5,4], yAxisID:'y1' } ] },
+      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:6}}, interaction:{mode:'index',intersect:false},
+        plugins:{ legend:{display:true,position:'top',align:'end',labels:{color:cssVar('--ink-2'),font:{size:11},usePointStyle:true,pointStyleWidth:9,boxHeight:7}}, tooltip:{padding:10,cornerRadius:8,displayColors:true,usePointStyle:true,callbacks:{label:c=>c.dataset.label+': '+(c.dataset.yAxisID==='y1'?brl0(c.parsed.y):c.parsed.y)}} },
+        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxRotation:0,autoSkipPadding:14},border:{display:false}},
+          y:{position:'left',grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:5,padding:8},border:{display:false}},
+          y1:{position:'right',grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:5,padding:8,callback:v=>'R$'+v},border:{display:false}} } } }); }
   const m=document.getElementById('adminMrr');
   if(m){ if(charts.adminMrr) charts.adminMrr.destroy();
     charts.adminMrr=new Chart(m,{ type:'bar', data:{ labels, datasets:[{ label:'Receita Mensal', data:adminRamp(mrr,N), backgroundColor:up, borderRadius:6, maxBarThickness:26 }] },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>brl0(c.parsed.y)}} },
+      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:6}}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,displayColors:false,callbacks:{label:c=>brl0(c.parsed.y)}} },
         scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}}, y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v},border:{display:false}} } } }); }
 }
 function openAdminHist(term){
@@ -6182,12 +6200,16 @@ function openAdminHist(term){
   const isMoney = term!=='conv';
   let el=document.getElementById('adminHistModal');
   if(!el){ el=document.createElement('div'); el.id='adminHistModal'; el.className='modal-scrim'; document.body.appendChild(el); el.onclick=ev=>{ if(ev.target===el) el.classList.remove('open'); }; }
-  el.innerHTML=`<div class="modal-card rsa-card"><div class="rsa-head"><div class="rsa-t"><i class="fa-solid ${d.icon}"></i> ${esc(d.nome)} · evolução</div><button class="rsa-x" onclick="document.getElementById('adminHistModal').classList.remove('open')" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div><div class="rsa-body"><div style="position:relative;height:230px"><canvas id="adminHistCanvas"></canvas></div><p class="sec-desc" style="margin:12px 2px 0">${esc(d.descricao||'')}</p><span class="chip ilus" style="margin-top:8px"><i class="fa-solid fa-flask"></i> série estimada</span></div></div>`;
+  const N=8, series=adminRamp(endVal,N), startVal=series[0];
+  const growth = startVal ? ((endVal-startVal)/startVal*100) : 0;
+  const fmtV = v => isMoney ? brl0(v) : (Math.round(v)+'%');
+  el.innerHTML=`<div class="modal-card rsa-card"><div class="rsa-head"><div class="rsa-t"><i class="fa-solid ${d.icon}"></i> ${esc(d.nome)} · evolução</div><button class="rsa-x" onclick="document.getElementById('adminHistModal').classList.remove('open')" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div><div class="rsa-body"><div class="ad-hist-top"><div class="ad-hist-val">${fmtV(endVal)}</div><div class="ad-hist-delta ${growth>=0?'up':'down'}"><i class="fa-solid fa-arrow-trend-${growth>=0?'up':'down'}"></i> ${growth>=0?'+':''}${Math.round(growth)}% <span>últimos ${N} meses</span></div></div><div style="position:relative;height:224px"><canvas id="adminHistCanvas"></canvas></div><p class="sec-desc" style="margin:14px 2px 0">${esc(d.descricao||'')}</p><span class="chip ilus" style="margin-top:8px"><i class="fa-solid fa-flask"></i> série estimada</span></div></div>`;
   el.classList.add('open');
-  setTimeout(()=>{ const c=document.getElementById('adminHistCanvas'); if(!c) return; if(typeof HAS_CHART!=='undefined'&&!HAS_CHART) return; if(typeof Chart==='undefined') return; if(charts.adminHist) charts.adminHist.destroy(); const N=8, col=cssVar('--brand');
-    charts.adminHist=new Chart(c,{ type:'line', data:{ labels:adminMonths(N), datasets:[{ label:d.nome, data:adminRamp(endVal,N), borderColor:col, backgroundColor:col+'1a', fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5 }] },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:x=>isMoney?brl0(x.parsed.y):x.parsed.y+'%'}} },
-        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}}, y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>isMoney?'R$'+v:v+'%'},border:{display:false}} } } }); }, 60);
+  setTimeout(()=>{ const c=document.getElementById('adminHistCanvas'); if(!c) return; if(typeof HAS_CHART!=='undefined'&&!HAS_CHART) return; if(typeof Chart==='undefined') return; if(charts.adminHist) charts.adminHist.destroy(); const col=cssVar('--brand');
+    const ctx=c.getContext('2d'); const grad=ctx.createLinearGradient(0,0,0,224); grad.addColorStop(0,col+'38'); grad.addColorStop(1,col+'00');
+    charts.adminHist=new Chart(c,{ type:'line', data:{ labels:adminMonths(N), datasets:[{ label:d.nome, data:series, borderColor:col, backgroundColor:grad, fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:series.map((_,i)=>i===N-1?4.5:0), pointBackgroundColor:col, pointBorderColor:'#fff', pointBorderWidth:2, pointHoverRadius:5, borderWidth:2.75 }] },
+      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:8}}, interaction:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,titleColor:'#fff',bodyColor:'#fff',displayColors:false,callbacks:{label:x=>isMoney?brl0(x.parsed.y):x.parsed.y+'%'}} },
+        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxRotation:0,autoSkipPadding:14},border:{display:false}}, y:{grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:5,padding:8,callback:v=>isMoney?'R$'+v:v+'%'},border:{display:false}} } } }); }, 60);
 }
 
 /* ══════════════════════════════════════════════════════════
