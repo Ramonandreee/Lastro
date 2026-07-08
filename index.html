@@ -2271,7 +2271,9 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .ad-sug-i[data-st="pos"]{ --st:var(--up); } .ad-sug-i[data-st="warn"]{ --st:var(--gold); } .ad-sug-i[data-st="neu"]{ --st:var(--accent); }
 .ad-sug-i strong { color:var(--ink); font-weight:700; }
 /* Ações — sugestão + plano de ação colapsável, aprovar/arquivar */
-.ad-actions-head { display:flex; gap:9px; align-items:flex-start; font-size:12.5px; color:var(--ink-3); line-height:1.5; margin-bottom:14px; padding:0 2px; }
+.ad-actions-head { display:flex; gap:12px; align-items:center; justify-content:space-between; font-size:12.5px; color:var(--ink-3); line-height:1.5; margin-bottom:14px; padding:0 2px; flex-wrap:wrap; }
+.ad-ah-tx { flex:1; min-width:200px; display:flex; gap:9px; align-items:flex-start; }
+.ad-gen-btn { flex:none; white-space:nowrap; }
 .ad-actions-head i { color:var(--brand); margin-top:2px; }
 .ad-actions-head strong { color:var(--ink-2); }
 .ad-action { border:1px solid var(--line); border-left:3px solid var(--st,var(--accent)); border-radius:var(--r); background:var(--surface); margin-bottom:12px; overflow:hidden; transition:box-shadow .2s var(--ease), border-color .2s var(--ease); }
@@ -5891,7 +5893,9 @@ const ADMIN_DEMO=[
 function adminAll(){
   const u=currentUser(), gp=getProfile();
   const me={ name:profileName()||'Você', email:(u&&u.email)||'—', phone:gp.phone||'—', uf:gp.uf||'—', city:gp.city||'—', plan:planTier(), trial:trialActive(), mrr:(planTier()==='pro'?49:planTier()==='premium'?29:0), since:(gp.createdAt||'').slice(0,10)||'—', risk:gp.risk||'—', goal:gp.goal||'—', real:true };
-  return [me, ...ADMIN_DEMO];
+  // Modo desenvolvedor: mostra a base de demonstração (ilustrativa) para visualizar o painel cheio.
+  // Sem o modo dev: só as contas reais que temos acesso (números reais, sem inventar).
+  return devModeOn() ? [me, ...ADMIN_DEMO] : [me];
 }
 /* sugestões com plano de ação pronto (para aprovação) */
 function adminSuggestions(all){
@@ -5931,6 +5935,36 @@ function adminSuggestions(all){
     plan:['Monitorar o churn mensal','Pesquisa rápida de satisfação (NPS)','Manter o programa de indicações ativo'],
     cta:'Plano de retenção' });
   return out;
+}
+/* métricas reais da base para gerar novas análises */
+function adminMetrics(all){
+  all=all||adminAll();
+  const total=all.length;
+  const clientes=all.filter(x=>x.plan!=='free');
+  const mrr=all.reduce((s,x)=>s+(x.mrr||0),0);
+  const conv=total?clientes.length/total*100:0;
+  const arpu=clientes.length?mrr/clientes.length:0;
+  const cnt=(k)=>{ const m={}; all.forEach(x=>{ const v=x[k]; if(v&&v!=='—') m[v]=(m[v]||0)+1; }); return Object.entries(m).sort((a,b)=>b[1]-a[1]); };
+  return { total, clientes:clientes.length, mrr, arr:mrr*12, conv, arpu, topGoal:cnt('goal')[0], topRisk:cnt('risk')[0] };
+}
+/* pool de análises adicionais — cada uma calculada a partir dos dados reais */
+const ADMIN_EXTRA=[
+  {id:'arpu', gen:m=>({id:'arpu',ic:'fa-receipt',st:'neu',impact:'médio',title:`Elevar o ticket médio (ARPU ${brl0(m.arpu)})`,detail:`Cada cliente paga em média ${brl0(m.arpu)}/mês. Aumentar o ARPU eleva o MRR sem novos cadastros.`,plan:['Empacotar recursos Pro num plano anual com desconto','Add-ons (relatórios, alertas ilimitados)','Revisar preço de entrada vs valor entregue','Medir impacto no churn'],cta:'Plano de aumento de ARPU'})},
+  {id:'arr', gen:m=>({id:'arr',ic:'fa-sack-dollar',st:'pos',impact:'alto',title:`ARR projetado de ${brl0(m.arr)} — plano de crescimento`,detail:`Com o MRR atual (${brl0(m.mrr)}), o ARR projetado é ${brl0(m.arr)}. Defina metas para dobrar em 12 meses.`,plan:['Meta de novos clientes/mês para dobrar o ARR','Reduzir churn em 1–2 p.p.','Campanha de indicação com recompensa','Acompanhar MRR novo vs perdido'],cta:'Plano de crescimento de ARR'})},
+  {id:'churn', gen:m=>({id:'churn',ic:'fa-user-minus',st:'warn',impact:'alto',title:'Monitorar e reduzir o churn mensal',detail:'Sem acompanhar o churn, o crescimento vaza. Estabeleça a medição e uma meta.',plan:['Instrumentar cancelamentos e motivos','Meta de churn < 5% ao mês','Pesquisa de saída em 1 pergunta','Oferta de retenção (pausa/desconto)'],cta:'Programa de retenção'})},
+  {id:'nps', gen:m=>({id:'nps',ic:'fa-face-smile',st:'neu',impact:'médio',title:'Implantar NPS trimestral',detail:'Medir satisfação orienta o roadmap e antecipa churn. Comece com um NPS simples.',plan:['Disparar NPS a cada 90 dias','Segmentar detratores/promotores','Agir sobre os 3 principais motivos','Fechar o loop com quem respondeu'],cta:'Programa de NPS'})},
+  {id:'indicacoes', gen:m=>({id:'indicacoes',ic:'fa-share-nodes',st:'pos',impact:'médio',title:`Ativar indicações (${m.clientes} elegíveis)`,detail:`${m.clientes} cliente(s) pagante(s) podem indicar amigos e reduzir o CAC.`,plan:['Convidar clientes satisfeitos a indicar','Recompensa recorrente por indicação (PIX)','Kit de compartilhamento pronto','Acompanhar indicados → convertidos'],cta:'Campanha de indicações'})},
+  {id:'anual', gen:m=>({id:'anual',ic:'fa-calendar-check',st:'pos',impact:'alto',title:'Migrar mensais para o plano anual',detail:'Planos anuais reduzem churn e melhoram o caixa. Incentive a migração.',plan:['Oferecer 2 meses grátis no anual','Destacar a economia vs mensal','Focar em quem tem 3+ meses de casa','Medir % de adesão ao anual'],cta:'Campanha de plano anual'})},
+  {id:'conteudo', gen:m=>({id:'conteudo',ic:'fa-bullhorn',st:'neu',impact:'médio',title:`Conteúdo focado em "${m.topGoal?m.topGoal[0]:'renda passiva'}"`,detail:`O objetivo mais comum da base é "${m.topGoal?m.topGoal[0]:'—'}". Produza conteúdo que fale com ele.`,plan:['Série de posts/vídeos sobre o objetivo dominante','Newsletter segmentada por objetivo','CTA para recursos Premium relacionados','Medir engajamento → conversão'],cta:'Calendário de conteúdo'})},
+  {id:'risco', gen:m=>({id:'risco',ic:'fa-gauge',st:'neu',impact:'baixo',title:`Personalizar por perfil "${m.topRisk?m.topRisk[0]:'Moderado'}"`,detail:`Perfil de risco predominante: ${m.topRisk?m.topRisk[0]:'—'}. Adapte recomendações e comunicação.`,plan:['Onboarding por perfil de risco','Carteiras recomendadas por perfil','Alertas e conteúdo alinhados ao perfil','Testar mensagens por segmento'],cta:'Personalização por perfil'})},
+];
+function adminExtraIds(){ const p=getProfile(); return Array.isArray(p.adminExtra)?p.adminExtra:[]; }
+function adminExtraActions(all){ const ids=adminExtraIds(), m=adminMetrics(all); return ids.map(id=>{ const t=ADMIN_EXTRA.find(x=>x.id===id); return t?t.gen(m):null; }).filter(Boolean); }
+function generateAdminAction(){
+  const ids=adminExtraIds(), next=ADMIN_EXTRA.find(x=>!ids.includes(x.id));
+  if(!next){ toast('Todas as análises já foram geradas ✓'); return; }
+  const p=getProfile(); p.adminExtra=[...ids, next.id]; saveProfile(p); if(typeof flushCloudState==='function') flushCloudState();
+  render('admin'); toast('Nova análise gerada e somada à lista ✓');
 }
 /* estado das ações (aprovar/arquivar/excluir) — persistido no perfil/nuvem */
 function adminActionState(){ const p=getProfile(); return (p.adminActions&&typeof p.adminActions==='object')?p.adminActions:{}; }
@@ -5982,7 +6016,7 @@ function viewAdmin(){
         </div>
       </div>`;
   } else if(adminTab==='acoes'){
-    const sug=adminSuggestions(all), stt=adminActionState();
+    const sug=[...adminSuggestions(all), ...adminExtraActions(all)], stt=adminActionState();
     const stOf=id=>stt[id]||{};
     const active=sug.filter(s=>((stOf(s.id).state)||'active')==='active');
     const archived=sug.filter(s=>stOf(s.id).state==='archived');
@@ -6010,7 +6044,7 @@ function viewAdmin(){
           ${archived.length? archived.map(s=>`<div class="ad-arch-item"><span class="ad-arch-ic2" data-st="${s.st}"><i class="fa-solid ${s.ic}"></i></span><div class="ad-arch-tx"><div class="ad-arch-t">${s.title}</div><div class="ad-arch-d">${s.detail}</div></div><div class="ad-arch-btns"><button class="btn btn-ghost btn-sm" onclick="restoreAction('${s.id}')"><i class="fa-solid fa-rotate-left"></i> Restaurar</button><button class="btn btn-ghost btn-sm ad-del" onclick="deleteAction('${s.id}')"><i class="fa-solid fa-trash-can"></i></button></div></div>`).join('') : '<div class="ad-arch-empty">Nada arquivado ainda. As ações que você arquivar aparecem aqui.</div>'}
         </div>
       </div>`;
-    panel = `<div class="ad-actions-head"><i class="fa-solid fa-wand-magic-sparkles"></i> Recomendações geradas a partir dos seus dados. Expanda para ver o plano e <strong>aprovar a execução</strong>.</div>${activeHTML}${archiveHTML}`;
+    panel = `<div class="ad-actions-head"><div class="ad-ah-tx"><i class="fa-solid fa-wand-magic-sparkles"></i> Recomendações geradas a partir dos seus dados. Expanda para ver o plano e <strong>aprovar a execução</strong>.</div><button class="btn btn-primary btn-sm ad-gen-btn" onclick="generateAdminAction()"><i class="fa-solid fa-plus"></i> Gerar nova ação</button></div>${activeHTML}${archiveHTML}`;
   } else if(adminTab==='clientes'){
     panel=`<div class="card card-pad ad-tablewrap">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-user-tie"></i></span> Clientes pagantes</div><span class="card-sub">${clientes.length} ativos</span></div>
