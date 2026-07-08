@@ -2272,9 +2272,9 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .ad-sug-i[data-st="pos"]{ --st:var(--up); } .ad-sug-i[data-st="warn"]{ --st:var(--gold); } .ad-sug-i[data-st="neu"]{ --st:var(--accent); }
 .ad-sug-i strong { color:var(--ink); font-weight:700; }
 /* Ações — sugestão + plano de ação colapsável, aprovar/arquivar */
-.ad-actions-head { display:flex; gap:12px; align-items:center; justify-content:space-between; font-size:12.5px; color:var(--ink-3); line-height:1.5; margin-bottom:14px; padding:0 2px; flex-wrap:wrap; }
-.ad-ah-tx { flex:1; min-width:200px; display:flex; gap:9px; align-items:flex-start; }
-.ad-gen-btn { flex:none; white-space:nowrap; }
+.ad-actions-head { display:flex; gap:10px 14px; align-items:center; font-size:12.5px; color:var(--ink-3); line-height:1.55; margin-bottom:14px; padding:0 2px; flex-wrap:wrap; }
+.ad-ah-tx { flex:1 1 260px; display:flex; gap:9px; align-items:flex-start; }
+.ad-gen-btn { flex:0 0 auto; margin-left:auto; white-space:nowrap; }
 .ad-actions-head i { color:var(--brand); margin-top:2px; }
 .ad-actions-head strong { color:var(--ink-2); }
 .ad-action { border:1px solid var(--line); border-left:3px solid var(--st,var(--accent)); border-radius:var(--r); background:var(--surface); margin-bottom:12px; overflow:hidden; transition:box-shadow .2s var(--ease), border-color .2s var(--ease); }
@@ -5895,12 +5895,23 @@ const ADMIN_DEMO=[
   { name:'Fernanda Dias',     email:'fer.dias@gmail.com',       phone:'(71) 99988-3312', uf:'BA', city:'Salvador',       plan:'free',    trial:false, mrr:0,  since:'2026-06-11', risk:'Moderado',    goal:'Aposentadoria' },
   { name:'Lucas Martins',     email:'lucas.mrt@gmail.com',      phone:'(11) 97654-8890', uf:'SP', city:'Campinas',       plan:'free',    trial:true,  mrr:0,  since:'2026-06-29', risk:'Iniciante',   goal:'Renda passiva / dividendos' },
 ];
+const OWNER_NAMES={ 'ramonandreee@gmail.com':'Ramon Andree', 'mikaelsouza2506@gmail.com':'Mikael Souza' };
+/* contas reais dos donos (você + co-administradores). Para a conta logada usamos
+   os dados reais do perfil; a do outro dono aparece como Admin (dados completos
+   viriam do backend administrativo). */
+function ownerAccounts(){
+  const gp=getProfile(), u=currentUser(), myEmail=String((u&&u.email)||'').toLowerCase();
+  const emails=(typeof OWNER_EMAILS!=='undefined'&&OWNER_EMAILS.length)?OWNER_EMAILS:(myEmail?[myEmail]:[]);
+  return emails.map(em=>{
+    if(em===myEmail) return { name:profileName()||OWNER_NAMES[em]||'Você', email:em, phone:gp.phone||'—', uf:gp.uf||'—', city:gp.city||'—', plan:planTier(), trial:trialActive(), mrr:(planTier()==='pro'?49:planTier()==='premium'?29:0), since:(gp.createdAt||'').slice(0,10)||'—', risk:gp.risk||'—', goal:gp.goal||'—', real:true, me:true };
+    return { name:OWNER_NAMES[em]||em.split('@')[0], email:em, phone:'—', uf:'—', city:'—', plan:'admin', trial:false, mrr:0, since:'—', risk:'—', goal:'—', real:true, owner:true };
+  });
+}
 function adminAll(){
-  const u=currentUser(), gp=getProfile();
-  const me={ name:profileName()||'Você', email:(u&&u.email)||'—', phone:gp.phone||'—', uf:gp.uf||'—', city:gp.city||'—', plan:planTier(), trial:trialActive(), mrr:(planTier()==='pro'?49:planTier()==='premium'?29:0), since:(gp.createdAt||'').slice(0,10)||'—', risk:gp.risk||'—', goal:gp.goal||'—', real:true };
-  // Modo desenvolvedor: mostra a base de demonstração (ilustrativa) para visualizar o painel cheio.
-  // Sem o modo dev: só as contas reais que temos acesso (números reais, sem inventar).
-  return devModeOn() ? [me, ...ADMIN_DEMO] : [me];
+  const owners=ownerAccounts();
+  // Modo dev: soma a base de demonstração para visualizar o painel cheio.
+  // Sem o modo dev: só as contas reais (donos) — números reais, sem inventar.
+  return devModeOn() ? [...owners, ...ADMIN_DEMO] : owners;
 }
 /* sugestões com plano de ação pronto (para aprovação) */
 function adminSuggestions(all){
@@ -5983,13 +5994,14 @@ function toggleAction(btn){ const c=btn.closest('.ad-action, .ad-archive'); if(!
 function viewAdmin(){
   const all=adminAll();
   const clientes=all.filter(x=>x.plan==='pro'||x.plan==='premium');
-  const leads=all.filter(x=>x.plan==='free');
+  const leads=all.filter(x=>x.plan==='free'||x.plan==='admin');   // inclui os administradores (contas reais)
+  const payN=clientes.length;
   const mrr=all.reduce((s,x)=>s+(x.mrr||0),0);
   const arr=mrr*12;
-  const ticket= clientes.length? mrr/clientes.length : 0;
-  const conv= all.length? clientes.length/all.length*100 : 0;
+  const ticket= payN? mrr/payN : 0;
+  const conv= all.length? payN/all.length*100 : 0;
   const trials=all.filter(x=>x.trial).length;
-  const planBadge=p=>p==='pro'?'<span class="ad-badge ad-pro">Pro</span>':p==='premium'?'<span class="ad-badge ad-prem">Premium</span>':'<span class="ad-badge ad-free">Gratuito</span>';
+  const planBadge=p=>p==='pro'?'<span class="ad-badge ad-pro">Pro</span>':p==='premium'?'<span class="ad-badge ad-prem">Premium</span>':p==='admin'?'<span class="ad-badge" style="background:var(--ink);color:var(--canvas)">Admin</span>':'<span class="ad-badge ad-free">Gratuito</span>';
   const tab=(k,ic,l)=>`<button class="ad-tab ${adminTab===k?'on':''}" onclick="adminGoto('${k}')"><i class="fa-solid ${ic}"></i> ${l}</button>`;
   /* cards no modelo dos indicadores (toque abre a definição) */
   const adCard=(term,st,val,tag)=>{ const d=TERM_CARDS[term]; return `<div class="ind-card ind-tappable ind-metric" data-st="${st}" data-term="${term}"><div class="ind-top"><span class="ind-ico"><i class="fa-solid ${d.icon}"></i></span><span class="ind-l">${d.nome}</span><span class="ind-ics"><button class="ind-ic" onclick="event.stopPropagation();openAdminHist('${term}')" aria-label="Evolução"><i class="fa-solid fa-chart-column"></i></button></span></div><div class="ind-v">${val}</div><span class="ind-tag">${tag}</span></div>`; };
@@ -6061,7 +6073,7 @@ function viewAdmin(){
     panel=`<div class="card card-pad ad-tablewrap">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-user-plus"></i></span> Leads e testes Premium</div><span class="card-sub">${leads.length} contatos</span></div>
       <div class="ad-scroll"><table class="ad-table"><thead><tr><th>Nome</th><th>E-mail</th><th>WhatsApp</th><th>UF</th><th>Perfil</th><th>Objetivo</th><th>Status</th></tr></thead><tbody>
-        ${leads.map(c=>`<tr><td>${esc(c.name)}</td><td class="muted">${esc(c.email)}</td><td class="muted mono">${esc(c.phone)}</td><td class="muted">${esc(c.uf)}</td><td class="muted">${esc(c.risk)}</td><td class="muted">${esc(c.goal)}</td><td>${c.trial?'<span class="ad-badge ad-trial">Em teste</span>':'<span class="ad-badge ad-free">Gratuito</span>'}</td></tr>`).join('')}
+        ${leads.map(c=>`<tr><td>${esc(c.name)}${c.me?' <span class="ad-you">você</span>':''}</td><td class="muted">${esc(c.email)}</td><td class="muted mono">${esc(c.phone)}</td><td class="muted">${esc(c.uf)}</td><td class="muted">${esc(c.risk)}</td><td class="muted">${esc(c.goal)}</td><td>${c.owner?planBadge('admin'):c.trial?'<span class="ad-badge ad-trial">Em teste</span>':'<span class="ad-badge ad-free">Gratuito</span>'}</td></tr>`).join('')}
       </tbody></table></div>
     </div>`;
   } else {
@@ -6086,7 +6098,9 @@ function viewAdmin(){
   }
 
   return `<div class="ad-page">
-    <div class="ad-banner"><i class="fa-solid fa-shield-halved"></i> <div>Área restrita ao administrador. Exibindo <strong>sua conta real</strong> + dados de demonstração — a base completa de todos os clientes é conectada ao backend administrativo (acesso com credencial de serviço).</div></div>
+    <div class="ad-banner"><i class="fa-solid fa-shield-halved"></i> <div>${devModeOn()
+      ? 'Área restrita ao administrador. Exibindo <strong>as contas reais dos donos</strong> + dados de demonstração (modo desenvolvedor). Desligue o modo dev para ver só os dados reais.'
+      : 'Área restrita ao administrador. Exibindo <strong>dados reais</strong> das contas cadastradas. A base completa de clientes é servida pelo backend administrativo (credencial de serviço).'}</div></div>
     <div class="ad-tabs"><div class="ad-tabs-inner">${tab('overview','fa-gauge-high','Visão geral')}${tab('clientes','fa-user-tie','Clientes')}${tab('leads','fa-user-plus','Leads')}${tab('financeiro','fa-money-bill-trend-up','Financeiro')}${tab('acoes','fa-wand-magic-sparkles','Ações')}</div></div>
     ${panel}
   </div>`;
