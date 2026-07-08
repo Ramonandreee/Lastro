@@ -352,6 +352,7 @@ a { color: inherit; text-decoration: none; }
   color: var(--ink-4); background: var(--surface-3); padding: 3px 8px; border-radius: 20px;
 }
 .nav-item .nav-soon { margin-left: auto; }
+.nav-soon-inline { margin-left: 6px; font-size: 8px; padding: 2px 6px; vertical-align: middle; position: relative; top: -1px; }
 .nav-item-soon { color: var(--ink-4); cursor: default; opacity: .7; }
 .nav-item-soon:hover { background: none; color: var(--ink-4); }
 .nav-item-soon:hover i { color: var(--ink-4); transform: none; }
@@ -924,13 +925,13 @@ img, svg, canvas, video { max-width: 100%; }
     </nav>
 
     <nav class="nav-group collapsed" data-group="internacional">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-earth-americas"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Internacional</span><span class="nav-ghead-s">Stocks · BDRs · ETFs globais</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-earth-americas"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Internacional <span class="nav-soon nav-soon-inline">Em breve</span></span><span class="nav-ghead-s">Stocks · BDRs · ETFs globais</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item" data-view="stocks" onclick="nav('stocks',this)"><i class="fa-solid fa-flag-usa"></i><span>Stocks (EUA)</span></div>
         <div class="nav-item" data-view="bdrs" onclick="nav('bdrs',this)"><i class="fa-solid fa-globe"></i><span>BDRs</span></div>
-        <div class="nav-item nav-item-soon"><i class="fa-solid fa-building-columns"></i><span>Conta global</span><span class="nav-soon">Em breve</span></div>
-        <div class="nav-item nav-item-soon"><i class="fa-solid fa-layer-group"></i><span>ETFs internacionais</span><span class="nav-soon">Em breve</span></div>
-        <div class="nav-item nav-item-soon"><i class="fa-solid fa-city"></i><span>REITs</span><span class="nav-soon">Em breve</span></div>
+        <div class="nav-item nav-item-soon"><i class="fa-solid fa-building-columns"></i><span>Conta global</span></div>
+        <div class="nav-item nav-item-soon"><i class="fa-solid fa-layer-group"></i><span>ETFs internacionais</span></div>
+        <div class="nav-item nav-item-soon"><i class="fa-solid fa-city"></i><span>REITs</span></div>
       </div>
     </nav>
 
