@@ -2846,6 +2846,11 @@ body.report-open { overflow:hidden; }
 .pdf-page { display:block; width:100%; height:auto; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.3); }
 .pdf-loading { color:#e7e9ec; font-size:13.5px; text-align:center; padding:40px 20px; display:flex; flex-direction:column; align-items:center; gap:10px; }
 .pdf-loading i { font-size:20px; }
+.pdf-summary { padding:0 12px 30px; }
+.pdf-sum-card { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:15px 16px; }
+.pdf-sum-h { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:var(--brand); margin-bottom:8px; }
+.pdf-sum-b { font-size:14px; line-height:1.65; color:var(--ink); }
+.pdf-sum-b .faint { color:var(--ink-3); }
 body.pdf-lock { overflow:hidden; }
 .rl-leg, .donut-leg { display:flex; }
 .rl-leg { gap:16px; font-size:12px; color:var(--ink-2); }
@@ -8170,14 +8175,13 @@ function assetNews(tk){
 /* watchlist (persistida no navegador) */
 function watchlist(){ try{ return JSON.parse(localStorage.getItem('lastro_watch')||'[]'); }catch(e){ return []; } }
 function isWatched(tk){ return watchlist().includes(tk); }
-function watchBtnInner(tk){ const on=isWatched(tk); return `<i class="fa-${on?'solid':'regular'} fa-star" style="${on?'color:var(--gold)':''}"></i> ${on?'Na watchlist':'Watchlist'}`; }
+function watchBtnInner(tk){ const on=isWatched(tk); return `<i class="fa-${on?'solid':'regular'} fa-star" style="${on?'color:var(--gold)':''}"></i> Watchlist`; }
 function toggleWatch(tk){
   const w=watchlist(); const i=w.indexOf(tk);
   if(i<0 && !isPro() && w.length >= PLAN_LIMITS.watchlist){ proGate('watchlist'); return; }
   if(i>=0) w.splice(i,1); else w.push(tk);
   localStorage.setItem('lastro_watch', JSON.stringify(w));
   if(typeof saveCloudState==='function') saveCloudState();
-  toast(i>=0?`${tk} removido da watchlist`:`${tk} adicionado à watchlist ★`);
   const b=document.getElementById('watchBtn'); if(b) b.innerHTML = watchBtnInner(tk);
 }
 
@@ -9350,7 +9354,6 @@ function decisionCard(a,k,f){
       <span class="chip ${scoreChip(a.score)}" style="white-space:nowrap"><i class="fa-solid fa-award" style="font-size:10px"></i> Score ${a.score}</span>
     </div>
     <div class="dims">${dimHtml}</div>
-    ${fairValueHTML(a,k)}
     <div class="proscons">
       <div class="pc-col"><div class="pc-t pos"><i class="fa-solid fa-thumbs-up"></i> Pontos fortes</div><ul>${pros||'<li class="muted">—</li>'}</ul></div>
       <div class="pc-col"><div class="pc-t neg"><i class="fa-solid fa-circle-exclamation"></i> Pontos de atenção</div><ul>${cons||'<li class="muted">Sem alertas relevantes nos indicadores disponíveis.</li>'}</ul></div>
@@ -9814,15 +9817,17 @@ function ensurePdfModal(){
     <button onclick="pdfShare()"><i class="fa-solid fa-share-nodes"></i> Compartilhar</button>
     <button onclick="pdfOpenExternal()"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir no navegador</button>
   </div>
-  <div class="pdf-body" id="pdfBody"><div id="pdfPages" class="pdf-pages"></div></div>`;
+  <div class="pdf-body" id="pdfBody"><div id="pdfPages" class="pdf-pages"></div><div id="pdfSummary" class="pdf-summary"></div></div>`;
   document.body.appendChild(m);
   return m;
 }
-function openPdf(url, title){
+let _pdfSub='';
+function openPdf(url, title, sub){
   if(!url) return;
-  _pdfUrl=url;
+  _pdfUrl=url; _pdfSub=sub||'';
   const m=ensurePdfModal();
   const t=document.getElementById('pdfTitle'); if(t) t.textContent=title||'Documento';
+  const s=document.getElementById('pdfSummary'); if(s) s.innerHTML='';
   pdfCloseMenu();
   m.classList.add('open'); document.body.classList.add('pdf-lock');
   try{ history.pushState({pdf:1},''); }catch(e){}
@@ -9833,6 +9838,7 @@ function closePdf(){
   pdfCloseMenu();
   m.classList.remove('open'); document.body.classList.remove('pdf-lock');
   const c=document.getElementById('pdfPages'); if(c) c.innerHTML='';
+  const s=document.getElementById('pdfSummary'); if(s) s.innerHTML='';
 }
 /* carrega o PDF.js (cdnjs) sob demanda */
 let _pdfjsPromise=null;
@@ -9860,6 +9866,7 @@ async function renderPdf(url){
     cont.innerHTML='';
     const cw=Math.max(1, cont.clientWidth || document.documentElement.clientWidth);
     const dpr=Math.min(window.devicePixelRatio||1, 2);
+    let fullText='';
     for(let n=1;n<=doc.numPages;n++){
       const page=await doc.getPage(n);
       if(_pdfUrl!==url) return;
@@ -9872,11 +9879,34 @@ async function renderPdf(url){
       canvas.style.width='100%'; canvas.style.height='auto';
       cont.appendChild(canvas);
       await page.render({canvasContext:canvas.getContext('2d'), viewport:vp}).promise;
+      if(n<=6){ try{ const tc=await page.getTextContent(); fullText += tc.items.map(it=>it.str).join(' ')+'\n'; }catch(_){} }
     }
+    summarizePdf(fullText, url);                        // resumo em linguagem simples (IA)
   }catch(e){
     if(_pdfUrl!==url) return;
     cont.innerHTML='<div class="pdf-loading">Não foi possível exibir aqui. Use o menu ⋮ → “Abrir no navegador”.</div>';
   }
+}
+/* resumo do documento em linguagem simples (IA), abaixo do PDF */
+const PDF_SUMMARY_CACHE={};
+function summaryCardHTML(inner){ return `<div class="pdf-sum-card"><div class="pdf-sum-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Resumo — para entender fácil</div><div class="pdf-sum-b">${inner}</div></div>`; }
+async function summarizePdf(text, url){
+  const box=document.getElementById('pdfSummary'); if(!box) return;
+  const clean=(text||'').replace(/\s+/g,' ').trim();
+  if(clean.length<50 && !_pdfSub){ box.innerHTML=''; return; }
+  if(PDF_SUMMARY_CACHE[url]){ if(_pdfUrl===url) box.innerHTML=summaryCardHTML(esc(PDF_SUMMARY_CACHE[url]).replace(/\n/g,'<br>')); return; }
+  box.innerHTML=summaryCardHTML('<span class="faint"><i class="fa-solid fa-circle-notch fa-spin"></i> Gerando resumo…</span>');
+  const endpoint=(window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || '';
+  const base = clean.length>=50 ? clean.slice(0,6000) : ('Assunto do documento: '+_pdfSub);
+  const prompt=`Explique o documento abaixo (comunicado ou fato relevante enviado à CVM por uma empresa listada) em português simples e claro, para que qualquer pessoa leiga entenda. Em 2 a 4 frases: diga o que a empresa comunicou e por que isso importa para o investidor. Não use jargão nem se apresente. Documento:\n\n${base}`;
+  try{
+    const r=await fetch(endpoint,{ method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:400, messages:[{role:'user',content:prompt}] }) });
+    const d=await r.json(); const txt=(d.content && d.content[0] && d.content[0].text) || '';
+    if(_pdfUrl!==url) return;
+    if(txt){ PDF_SUMMARY_CACHE[url]=txt; box.innerHTML=summaryCardHTML(esc(txt).replace(/\n/g,'<br>')); }
+    else box.innerHTML=summaryCardHTML('<span class="faint">Resumo indisponível no momento.</span>');
+  }catch(e){ if(_pdfUrl===url) box.innerHTML=summaryCardHTML('<span class="faint">Resumo indisponível (requer a IA conectada).</span>'); }
 }
 function togglePdfMenu(e){ if(e){ e.stopPropagation(); } const m=document.getElementById('pdfMenu'); if(m) m.classList.toggle('open'); }
 function pdfCloseMenu(){ const m=document.getElementById('pdfMenu'); if(m) m.classList.remove('open'); }
@@ -9901,21 +9931,43 @@ async function pdfShare(){
 }
 window.addEventListener('popstate', ()=>{ const m=document.getElementById('pdfModal'); if(m&&m.classList.contains('open')) closePdf(); });
 document.addEventListener('click', (e)=>{ const menu=document.getElementById('pdfMenu'); if(menu&&menu.classList.contains('open') && !menu.contains(e.target) && !e.target.closest('.pdf-menu-btn')) pdfCloseMenu(); });
-function renderDocsList(docs){
-  const el=document.getElementById('docsList'); if(!el) return;
-  if(!docs || !docs.length){ el.innerHTML=docsError('Sem documentos recentes na CVM para este ativo.'); return; }
-  el.innerHTML=`<div class="doc-list">${docs.map(d=>{
-    const dt=fmtDocDate(d.dataEntrega||d.dataRef);
-    const cat=esc(d.categoria||'Documento');
-    const assunto=esc(d.assunto||d.tipo||'');
-    const url=d.link?docViewUrl(d.link):'';
-    return `<div class="doc-item${url?' doc-open':''}" ${url?`data-url="${esc(url)}" data-title="${cat}" onclick="openPdf(this.dataset.url,this.dataset.title)"`:''}>
+const DOCS_PP=10;
+let _docsState={ docs:[], page:1 };
+function docItemHTML(d){
+  const dt=fmtDocDate(d.dataEntrega||d.dataRef);
+  const cat=esc(d.categoria||'Documento');
+  const assunto=esc(d.assunto||d.tipo||'');
+  const url=d.link?docViewUrl(d.link):'';
+  return `<div class="doc-item${url?' doc-open':''}" ${url?`data-url="${esc(url)}" data-title="${cat}" data-sub="${assunto}" onclick="openPdf(this.dataset.url,this.dataset.title,this.dataset.sub)"`:''}>
       <span class="doc-ic"><i class="fa-solid ${docIcon(d.categoria)}"></i></span>
       <span class="doc-tx"><b>${cat}</b>${assunto?`<small>${assunto}</small>`:''}</span>
       <span class="doc-meta">${dt?`<span class="doc-date">${dt}</span>`:''}${url?'<i class="fa-solid fa-arrow-up-right-from-square"></i>':''}</span>
     </div>`;
-  }).join('')}</div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Fonte: Portal de Dados Abertos da CVM (IPE). Toque para abrir o documento (PDF).</div>`;
+}
+function docsPager(page,pages){
+  const btn=(p,lbl,extra,al)=>`<button class="pg-btn ${extra||''}" ${al?`aria-label="${al}"`:''} ${p?`onclick="docsGoto(${p})"`:'disabled'}>${lbl}</button>`;
+  const nums=pageWindow(page,pages).map(p=>btn(p,p,p===page?'on':'','Página '+p)).join('');
+  return `<div class="pager" style="margin-top:16px"><div class="pg-nav" role="navigation" aria-label="Paginação">${btn(page>1?page-1:0,'<i class="fa-solid fa-chevron-left" aria-hidden="true"></i>','pg-arrow','Página anterior')}${nums}${btn(page<pages?page+1:0,'<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>','pg-arrow','Próxima página')}</div></div>`;
+}
+function renderDocsList(docs){
+  const el=document.getElementById('docsList'); if(!el) return;
+  if(!docs || !docs.length){ el.innerHTML=docsError('Sem documentos recentes na CVM para este ativo.'); return; }
+  _docsState={ docs, page:1 };
+  renderDocsPage();
+}
+function renderDocsPage(){
+  const el=document.getElementById('docsList'); if(!el) return;
+  const docs=_docsState.docs, total=docs.length, pages=Math.max(1,Math.ceil(total/DOCS_PP));
+  if(_docsState.page>pages) _docsState.page=pages; if(_docsState.page<1) _docsState.page=1;
+  const start=(_docsState.page-1)*DOCS_PP;
+  const pageDocs=docs.slice(start, start+DOCS_PP);
+  el.innerHTML=`<div class="doc-list">${pageDocs.map(docItemHTML).join('')}</div>
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Fonte: Portal de Dados Abertos da CVM (IPE). Toque para abrir o documento (PDF).</div>
+  ${pages>1?docsPager(_docsState.page,pages):''}`;
+}
+function docsGoto(p){
+  _docsState.page=+p; renderDocsPage();
+  const el=document.getElementById('docsList'); if(el){ const y=el.getBoundingClientRect().top+window.scrollY-90; window.scrollTo({top:Math.max(0,y),behavior:'smooth'}); }
 }
 async function loadDocuments(tk){
   if(!tk) return;
