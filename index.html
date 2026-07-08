@@ -336,11 +336,12 @@ a { color: inherit; text-decoration: none; }
 .nav-group[data-group="ferramentas"] .nav-ghead-badge { background: color-mix(in srgb, #8b5cf6 16%, transparent); color: #8b5cf6; }
 .nav-group-premium .nav-ghead-badge { background: color-mix(in srgb, var(--gold) 17%, transparent); color: var(--gold); }
 .nav-group-soon .nav-ghead-badge { background: var(--surface-3); color: var(--ink-4); }
-/* rodapé social do menu */
-.nav-social { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:14px; }
-.nav-social a { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; color:var(--ink-3); background:var(--surface-3); font-size:14px; transition:color .15s var(--ease), background .15s var(--ease), transform .15s var(--ease); }
+/* rodapé social do menu — compacto */
+.sidebar-foot { padding-top: 12px; }
+.nav-social { display:flex; align-items:center; justify-content:center; gap:7px; margin-top:10px; }
+.nav-social a { width:30px; height:30px; border-radius:9px; display:grid; place-items:center; color:var(--ink-3); background:var(--surface-3); font-size:13px; transition:color .15s var(--ease), background .15s var(--ease), transform .15s var(--ease); }
 .nav-social a:hover { color:var(--brand); background:var(--brand-l); transform:translateY(-2px); }
-.nav-foot-meta { margin-top:12px; text-align:center; font-size:10.5px; color:var(--ink-4); line-height:1.5; }
+.nav-foot-meta { margin-top:9px; text-align:center; font-size:10px; color:var(--ink-4); }
 .nav-foot-meta a { color:var(--ink-3); }
 .hdr-gift i { color: var(--up); }
 .nav-soon {
@@ -755,14 +756,11 @@ img, svg, canvas, video { max-width: 100%; }
 /* telas estreitas: empilhar grids, tabelas roláveis, topbar compacto */
 @media (max-width: 760px) {
   .content { padding: 18px calc(18px + env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) calc(18px + env(safe-area-inset-left,0px)); }
-  .topbar { --topbar-h: 64px; padding: env(safe-area-inset-top,0px) calc(18px + env(safe-area-inset-right,0px)) 0 calc(18px + env(safe-area-inset-left,0px)); gap: 12px; justify-content: flex-start; }
+  .topbar { --topbar-h: 64px; padding: env(safe-area-inset-top,0px) calc(18px + env(safe-area-inset-right,0px)) 0 calc(18px + env(safe-area-inset-left,0px)); gap: 10px; }
   .topbar-left { gap: 12px; min-width: 0; flex: 0 0 auto; }
   .topbar-left > div { display: none; }                 /* esconde o título: a logo é a identidade no mobile */
-  /* logo à esquerda (ao lado do menu); ícones à direita — sem centro absoluto que colide */
-  .topbar-brand { position: static !important; transform: none !important; display: flex !important; }
-  .topbar-brand:active { transform: scale(.96) !important; }
-  .topbar-brand .tb-name { font-size: 18px; }
-  .topbar-right { gap: 8px; flex: 0 0 auto; margin-left: auto; }
+  .topbar-brand { display: flex !important; }            /* logo centralizada no mobile */
+  .topbar-right { gap: 8px; flex: 0 0 auto; }
   /* qualquer grid de layout vira coluna única */
   .grid, .dt-grid, .about-grid, .sim-grid { grid-template-columns: 1fr !important; }
   .grid[style], .dt-grid[style] { grid-template-columns: 1fr !important; }
@@ -934,7 +932,7 @@ img, svg, canvas, video { max-width: 100%; }
         <a href="https://wa.me/5547992464048" target="_blank" rel="noopener" title="WhatsApp" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
         <a onclick="closeSidebar();openSupport()" style="cursor:pointer" title="Ajuda & Suporte" aria-label="Suporte"><i class="fa-solid fa-headset"></i></a>
       </div>
-      <div class="nav-foot-meta">Lastro · Inteligência de Investimentos<br>© 2026 · <a onclick="closeSidebar();openSupport()" style="cursor:pointer">Termos & Privacidade</a></div>
+      <div class="nav-foot-meta">© 2026 Lastro · <a onclick="closeSidebar();openSupport()" style="cursor:pointer">Termos</a></div>
     </div>
   </aside>
 
@@ -3855,10 +3853,11 @@ function refreshPlanUI(){
 /* cabeçalho: Menu | Logo | Coroa | Perfil — só ícones, logo sempre centralizada (mobile) */
 function updateHeaderAction(){
   const el = document.getElementById('hdrActions'); if(!el) return;
-  const authed=isAuthed();
+  const authed=isAuthed(), pro=isPremium();
   let html='';
-  html += `<button class="icon-btn hdr-eye" title="Ocultar/mostrar valores" aria-label="Ocultar valores" onclick="togglePriv()"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}" aria-hidden="true"></i></button>`;
-  html += `<button class="icon-btn hdr-gift" title="Indique e Ganhe" aria-label="Indique e Ganhe" onclick="nav('indicar')"><i class="fa-solid fa-gift" aria-hidden="true"></i></button>`;
+  // Free → coroa (assinar); plano pago → presente (Indique e Ganhe)
+  if(pro){ html += `<button class="icon-btn hdr-gift" title="Indique e Ganhe" aria-label="Indique e Ganhe" onclick="nav('indicar')"><i class="fa-solid fa-gift" aria-hidden="true"></i></button>`; }
+  else { html += `<button class="icon-btn hdr-crown" title="Seja Premium" aria-label="Assinar Premium" onclick="goPricing()"><i class="fa-solid fa-crown" aria-hidden="true"></i></button>`; }
   html += `<div class="acct-wrap"><button class="icon-btn hdr-profile" title="Conta" aria-label="Menu da conta" aria-haspopup="menu" onclick="toggleAcctMenu(event)"><i class="fa-${authed?'solid':'regular'} fa-circle-user" aria-hidden="true"></i></button><div class="acct-menu" id="acctMenu" role="menu"></div></div>`;
   el.innerHTML = html;
 }
