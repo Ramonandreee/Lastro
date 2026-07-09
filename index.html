@@ -2222,27 +2222,46 @@ html.gate .sidebar, html.gate .main, html.gate .sidebar-scrim { visibility:hidde
 .intro-shot.sh-rect { border-radius:22px; }
 .intro-shot.sh-oval { border-radius:46% 46% 46% 46% / 40% 40% 40% 40%; height:min(50vh,420px); width:88%; }
 .intro-shot.sh-arch { border-radius:180px 180px 30px 30px; height:min(50vh,420px); width:84%; }
-/* mockup de funcionalidade interna (telas 1 e 3) — parece uma captura do app */
-.intro-shot.sh-screen { background:#FBFAF7; border:1px solid #E6E3DA; box-shadow:0 22px 54px rgba(20,16,12,.14); padding:18px 16px; display:flex; align-items:stretch; }
-.ift { width:100%; display:flex; flex-direction:column; gap:11px; text-align:left; }
-.ift-h { display:flex; align-items:center; justify-content:space-between; }
-.ift-h > span:first-child { font-size:14px; font-weight:700; color:#1B1712; }
-.ift-tag { font-size:9.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#0E7C5A; background:rgba(14,124,90,.1); padding:4px 8px; border-radius:20px; }
-.ift-row { display:flex; align-items:center; gap:10px; }
-.ift-lg { width:32px; height:32px; flex:none; border-radius:9px; background:#EDEAE2; color:#6b6558; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; }
-.ift-nm { flex:1; min-width:0; display:flex; flex-direction:column; }
-.ift-nm b { font-size:13px; color:#1B1712; } .ift-nm small { font-size:11px; color:#8a8478; }
-.ift-score { font-family:var(--mono); font-size:12.5px; font-weight:800; color:#0E7C5A; background:rgba(14,124,90,.1); padding:3px 8px; border-radius:8px; }
-.ift-v { font-family:var(--mono); font-size:12.5px; font-weight:700; min-width:58px; text-align:right; }
-.ift-v.up { color:#0E9F6E; } .ift-v.down { color:#E02424; }
-.ift-cart { gap:9px; }
-.ift-updot { font-family:var(--mono); font-size:12px; font-weight:800; color:#0E9F6E; background:rgba(14,159,110,.12); padding:3px 9px; border-radius:20px; }
-.ift-pat { font-family:var(--mono); font-size:26px; font-weight:800; color:#1B1712; letter-spacing:-.01em; }
-.ift-bars { display:flex; align-items:flex-end; gap:7px; height:78px; margin-top:2px; }
-.ift-bars i { flex:1; border-radius:5px 5px 0 0; background:linear-gradient(180deg,#38D08A,#0E7C5A); }
-.ift-alloc { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
-.ift-al { display:flex; align-items:baseline; justify-content:space-between; background:#F1EFE8; border-radius:10px; padding:8px 11px; }
-.ift-al small { font-size:11.5px; color:#6b6558; } .ift-al b { font-family:var(--mono); font-size:13px; color:#1B1712; }
+/* telas 1 e 3 — composição VIVA de funcionalidades (cards flutuantes, animação de entrada) */
+.intro-shot.sh-feature { background:linear-gradient(158deg,#1AA571 0%,#0E7C5A 40%,#08402F 100%); box-shadow:0 24px 58px rgba(9,83,60,.32); }
+.intro-shot.sh-feature::before { content:''; position:absolute; top:-18%; left:-12%; width:64%; height:64%; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.22), transparent 66%); filter:blur(6px); animation:ifGlow 5s ease-in-out infinite; }
+@keyframes ifGlow { 0%,100%{opacity:.5; transform:scale(1)} 50%{opacity:.9; transform:scale(1.12)} }
+.ifx { position:absolute; inset:0; z-index:1; }
+.ifc { position:absolute; display:flex; align-items:center; gap:11px; padding:12px 14px; border-radius:16px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); box-shadow:0 14px 32px rgba(0,0,0,.22); width:74%; }
+.ifc-l { display:flex; flex-direction:column; min-width:0; } .ifc-l b { font-size:14px; font-weight:700; color:#fff; letter-spacing:-.01em; } .ifc-l small { font-size:11px; color:rgba(255,255,255,.6); margin-top:1px; }
+.ifc-spark { width:48px; height:22px; flex:none; }
+.ifc-r { margin-left:auto; text-align:right; } .ifc-r b { font-family:var(--mono); font-size:13px; font-weight:700; color:#fff; display:block; } .ifc-r span { font-family:var(--mono); font-size:11px; font-weight:700; } .ifc-r .up { color:#5FE3A6; } .ifc-r .down { color:#FF8A8A; }
+.ifc-a { top:5%; left:2%; } .ifc-b { top:39%; right:1%; } .ifc-c { bottom:6%; left:5%; }
+.ifx-badge { position:absolute; top:29%; left:30%; display:flex; align-items:center; gap:7px; padding:9px 14px; border-radius:13px; background:linear-gradient(135deg,#EBC15A,#B8860B); color:#3a2a05; font-weight:800; font-size:13px; box-shadow:0 12px 28px rgba(184,134,11,.44); z-index:2; }
+.ifx-chip { position:absolute; display:inline-flex; align-items:center; gap:6px; padding:7px 11px; border-radius:11px; background:rgba(255,255,255,.16); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); color:#fff; font-size:11px; font-weight:600; box-shadow:0 8px 20px rgba(0,0,0,.18); }
+.ifx-chip i { font-size:10px; opacity:.9; }
+.ifx-chip-1 { top:23%; right:4%; } .ifx-chip-2 { bottom:26%; right:6%; }
+.ifx-chip-3 { top:16%; left:6%; } .ifx-chip-4 { top:15%; right:5%; }
+/* carteira */
+.ifp { position:absolute; top:20%; left:8%; right:8%; padding:16px 17px; border-radius:18px; background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.2); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); box-shadow:0 18px 40px rgba(0,0,0,.26); }
+.ifp-top { display:flex; align-items:baseline; justify-content:space-between; }
+.ifp-top span { font-size:12px; color:rgba(255,255,255,.72); } .ifp-g { font-family:var(--mono); font-size:13px; font-weight:800; color:#5FE3A6; }
+.ifp-v { font-family:var(--mono); font-size:27px; font-weight:800; color:#fff; margin-top:3px; letter-spacing:-.01em; }
+.ifp-bars { display:flex; align-items:flex-end; gap:7px; height:62px; margin-top:14px; }
+.ifp-bars i { flex:1; border-radius:5px 5px 0 0; background:linear-gradient(180deg,#5FE3A6,#0E7C5A); transform-origin:bottom; }
+.ifp-pill { position:absolute; left:2%; right:14%; top:56%; display:flex; align-items:center; gap:9px; padding:12px 15px; border-radius:15px 15px 15px 5px; background:#fff; color:#0C6B4E; font-size:12.5px; font-weight:700; box-shadow:0 16px 36px rgba(0,0,0,.28); }
+.ifp-ia { width:24px; height:24px; flex:none; border-radius:8px; background:var(--brand-l,#e6f4ee); color:#0E7C5A; display:flex; align-items:center; justify-content:center; font-size:11px; }
+/* animação de entrada (staggered) + flutuação contínua */
+@keyframes ifIn { from{opacity:0; transform:translateY(20px) scale(.96)} to{opacity:1; transform:none} }
+@keyframes ifFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+@keyframes ifBar { from{transform:scaleY(0)} to{transform:scaleY(1)} }
+.intro-in .ifc-a { animation:ifIn .55s var(--ease-out) .06s both, ifFloat 5s ease-in-out .7s infinite; }
+.intro-in .ifx-badge { animation:ifIn .55s var(--ease-out) .16s both, ifFloat 4.4s ease-in-out .8s infinite; }
+.intro-in .ifc-b { animation:ifIn .55s var(--ease-out) .24s both, ifFloat 5.6s ease-in-out .5s infinite; }
+.intro-in .ifc-c { animation:ifIn .55s var(--ease-out) .32s both, ifFloat 5.2s ease-in-out .9s infinite; }
+.intro-in .ifx-chip-1 { animation:ifIn .5s var(--ease-out) .38s both, ifFloat 4.8s ease-in-out 1s infinite; }
+.intro-in .ifx-chip-2 { animation:ifIn .5s var(--ease-out) .44s both, ifFloat 5.4s ease-in-out .6s infinite; }
+.intro-in .ifx-chip-3 { animation:ifIn .5s var(--ease-out) .30s both, ifFloat 4.6s ease-in-out .9s infinite; }
+.intro-in .ifx-chip-4 { animation:ifIn .5s var(--ease-out) .36s both, ifFloat 5s ease-in-out .5s infinite; }
+.intro-in .ifp { animation:ifIn .6s var(--ease-out) .08s both; }
+.intro-in .ifp-bars i { animation:ifBar .7s var(--ease-out) both; animation-delay:var(--d,0s); }
+.intro-in .ifp-pill { animation:ifIn .6s var(--ease-out) .34s both, ifFloat 4.6s ease-in-out .9s infinite; }
+@media (prefers-reduced-motion:reduce){ .sh-feature *, .sh-feature::before { animation:none !important; } }
 .intro-shot .is-ph { position:absolute; inset:0; z-index:0; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.92); font-size:60px; }
 .intro-shot .is-ph::after { content:''; position:absolute; inset:0; background:radial-gradient(120% 92% at 28% 16%, rgba(255,255,255,.2), transparent 58%); }
 .intro-photo { position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:cover; }
@@ -4664,12 +4683,13 @@ function updateAuthUI(){
   if(typeof applyPriv==='function') applyPriv();
 }
 function togglePass(btn){ const inp=$('#auPass'); if(!inp) return; const show=inp.type==='password'; inp.type=show?'text':'password'; btn.innerHTML=`<i class="fa-regular fa-eye${show?'-slash':''}"></i>`; inp.focus(); }
-function openAuth(mode){ renderAuth(mode||'login'); $('#authModal').classList.add('open'); }
-function closeAuth(){ _profileOpen=false; $('#authModal').classList.remove('open'); }
+let _authForce=false;   // força mostrar Entrar/Cadastro mesmo com sessão (usado pelo portão de apresentação)
+function openAuth(mode, force){ _authForce=!!force; renderAuth(mode||'login'); $('#authModal').classList.add('open'); }
+function closeAuth(){ _profileOpen=false; _authForce=false; $('#authModal').classList.remove('open'); }
 function accountClick(){ openAuth(); }
 function renderAuth(mode){
   const body=$('#authBody'), u=currentUser(), modal=$('#authModal');
-  if(u){
+  if(u && !_authForce){
     if(modal) modal.classList.remove('auth-full');
     $('#authTitle').textContent='Sua conta';
     body.innerHTML = `<div style="text-align:center;padding:4px 0 6px">
@@ -4905,18 +4925,30 @@ const INTRO_SLIDES=[
     c1:'#a5683a', c2:'#6e4526', icon:'fa-user-group',
     eyebrow:'Tranquilidade', h:'Veja seu patrimônio<br>crescer com segurança.' },
 ];
+function introSpark(pts, cls){ const w=48,h=22, mx=Math.max(...pts), mn=Math.min(...pts), rg=(mx-mn)||1; const d=pts.map((v,i)=>`${(i/(pts.length-1)*w).toFixed(1)},${(h-2-((v-mn)/rg)*(h-4)).toFixed(1)}`).join(' '); return `<svg class="ifc-spark" viewBox="0 0 ${w} ${h}" fill="none"><polyline points="${d}" stroke="${cls==='down'?'#FF8A8A':'#5FE3A6'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
 function introFeature(k){
   if(k==='mercado'){
-    const rows=[['PE','PETR4','Petrobras',87,'+1,84%','up'],['IT','ITUB4','Itaú',79,'−0,72%','down'],['BO','BOVA11','ETF Ibovespa',83,'+0,61%','up'],['MX','MXRF11','Maxi Renda',72,'+0,34%','up']];
-    return `<div class="ift"><div class="ift-h"><span>Ações & FIIs</span><span class="ift-tag">Score Lastro™</span></div>${rows.map(([in2,tk,nm,sc,v,d])=>`<div class="ift-row"><span class="ift-lg">${in2}</span><span class="ift-nm"><b>${tk}</b><small>${nm}</small></span><span class="ift-score">${sc}</span><span class="ift-v ${d}">${v}</span></div>`).join('')}</div>`;
+    return `<div class="ifx ifx-mkt">
+      <div class="ifc ifc-a"><div class="ifc-l"><b>PETR4</b><small>Petrobras</small></div>${introSpark([3,4,3.6,5,4.8,6,6.5],'up')}<div class="ifc-r"><b>38,42</b><span class="up">+1,84%</span></div></div>
+      <div class="ifx-badge"><i class="fa-solid fa-award"></i> Score 87</div>
+      <div class="ifc ifc-b"><div class="ifc-l"><b>ITUB4</b><small>Itaú</small></div>${introSpark([5,4.6,4.8,4.1,4.3,3.9,3.7],'down')}<div class="ifc-r"><b>33,10</b><span class="down">−0,72%</span></div></div>
+      <div class="ifc ifc-c"><div class="ifc-l"><b>BOVA11</b><small>ETF Ibovespa</small></div>${introSpark([4,4.3,4.2,4.9,5.1,5.4,5.8],'up')}<div class="ifc-r"><b>131,20</b><span class="up">+0,61%</span></div></div>
+      <div class="ifx-chip ifx-chip-1"><i class="fa-solid fa-magnifying-glass-dollar"></i> Fundamentos</div>
+      <div class="ifx-chip ifx-chip-2"><i class="fa-solid fa-file-lines"></i> Docs CVM</div>
+    </div>`;
   }
   if(k==='carteira'){
-    return `<div class="ift ift-cart"><div class="ift-h"><span>Minha carteira</span><span class="ift-up ift-updot">+18,4%</span></div><div class="ift-pat">R$ 128.940</div><div class="ift-bars">${[40,58,50,70,64,82,76,92].map(v=>`<i style="height:${v}%"></i>`).join('')}</div><div class="ift-alloc">${[['Ações','42%'],['FIIs','31%'],['Exterior','18%'],['Cripto','9%']].map(([l,p])=>`<span class="ift-al"><small>${l}</small><b>${p}</b></span>`).join('')}</div></div>`;
+    return `<div class="ifx ifx-cart">
+      <div class="ifp"><div class="ifp-top"><span>Meu patrimônio</span><b class="ifp-g">+18,4%</b></div><div class="ifp-v">R$ 128.940</div><div class="ifp-bars">${[38,54,48,66,60,78,72,90].map((v,i)=>`<i style="height:${v}%;--d:${(i*0.06).toFixed(2)}s"></i>`).join('')}</div></div>
+      <div class="ifp-pill"><span class="ifp-ia"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Sua carteira vai bem — veja o Raio-X</div>
+      <div class="ifx-chip ifx-chip-3"><i class="fa-solid fa-coins"></i> Proventos</div>
+      <div class="ifx-chip ifx-chip-4"><i class="fa-solid fa-cloud"></i> Sincronizado</div>
+    </div>`;
   }
   return '';
 }
 function introVisualHTML(s){
-  if(s.feature) return `<div class="intro-shot sh-screen">${introFeature(s.feature)}</div>`;
+  if(s.feature) return `<div class="intro-shot sh-feature">${introFeature(s.feature)}</div>`;
   return `<div class="intro-shot sh-${s.shape||'rect'}" style="--c1:${s.c1};--c2:${s.c2}"><div class="is-ph"><i class="fa-solid ${s.icon}"></i></div>${s.photo?`<img class="intro-photo" src="${s.photo}" alt="" style="object-position:${s.pos||'50% 50%'}" onerror="this.remove()" referrerpolicy="no-referrer">`:''}</div>`;
 }
 let introIdx=0, _introTX=0, _introTY=0, _introMD=false;
@@ -4939,8 +4971,8 @@ function introTE(e){ const dx=e.changedTouches[0].clientX-_introTX, dy=e.changed
 function introMD(e){ _introMD=true; _introTX=e.clientX; _introTY=e.clientY; }
 function introMU(e){ if(!_introMD) return; _introMD=false; if(e.target.closest('.intro-foot, .intro-dot')) return; const dx=e.clientX-_introTX, dy=e.clientY-_introTY; if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)){ if(dx<0) introNext(); else introPrev(); } }
 function introVisible(){ const el=$('#intro'); return !!(el && el.classList.contains('show')); }
-/* abre o cadastro/login SEM sair da apresentação — o acesso só é liberado após autenticar */
-function introFinish(mode){ openAuth(mode||'signup'); }
+/* abre o cadastro/login (sempre as páginas de Entrar/Cadastro, nunca 'Sua conta') — só libera após autenticar */
+function introFinish(mode){ openAuth(mode||'signup', true); }
 /* chamado só quando o usuário se autentica de verdade — aí sim revela o app */
 function introDone(){ document.documentElement.classList.remove('gate'); document.removeEventListener('keydown', introKey); const el=$('#intro'); if(el){ el.removeEventListener('touchstart',introTS); el.removeEventListener('touchend',introTE); el.removeEventListener('mousedown',introMD); el.removeEventListener('mouseup',introMU); el.classList.add('closing'); setTimeout(()=>{ el.classList.remove('show','closing'); el.setAttribute('aria-hidden','true'); if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }, 400); } try{ localStorage.setItem('lastro_onboarded','1'); }catch(e){} }
 /* portão de acesso: sem cadastro/login, ninguém entra (captação de leads) */
