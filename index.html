@@ -868,8 +868,6 @@ img, svg, canvas, video { max-width: 100%; }
 </div>
 <div id="intro" aria-hidden="true">
   <div class="intro-top"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="it-word">Lastro</span></div>
-  <div class="intro-nav prev" onclick="introPrev()" aria-label="Anterior"></div>
-  <div class="intro-nav next" onclick="introNext()" aria-label="Próximo"></div>
   <div class="intro-stage" id="introStage"></div>
   <div class="intro-dots" id="introDots"></div>
   <div class="intro-foot">
@@ -2263,6 +2261,18 @@ canvas { touch-action:none; }
 .blk-logo .it-mark { width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.16); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; }
 .blk-logo .it-mark svg { width:19px; height:19px; }
 .blk-word { font-family:var(--serif); font-size:20px; font-weight:700; letter-spacing:-.02em; color:#fff; }
+.blk-x { position:absolute; top:calc(24px + env(safe-area-inset-top,0px)); right:calc(22px + env(safe-area-inset-right,0px)); width:38px; height:38px; border-radius:11px; background:rgba(255,255,255,.16); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); border:none; color:#fff; font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:2; }
+.blk-x:hover { background:rgba(255,255,255,.26); }
+.blk-passform { display:flex; flex-direction:column; gap:0; }
+.blk-passlbl { font-size:13.5px; font-weight:600; color:var(--ink-2); margin-bottom:10px; }
+.blk-passin { position:relative; display:flex; align-items:center; margin-bottom:8px; }
+.blk-passin > i { position:absolute; left:14px; color:var(--ink-4); font-size:13px; pointer-events:none; }
+.blk-passin input { width:100%; padding:15px 44px 15px 40px; border:1px solid var(--line); border-radius:14px; background:var(--surface-2); font-size:15px; }
+.blk-passin input:focus { border-color:var(--brand); background:var(--surface); box-shadow:0 0 0 3px var(--brand-l); }
+.blk-eye { position:absolute; right:8px; width:32px; height:32px; border-radius:8px; color:var(--ink-4); cursor:pointer; display:flex; align-items:center; justify-content:center; background:none; border:none; }
+.blk-passmail { font-size:12px; color:var(--ink-3); margin:0 0 6px 2px; }
+.blk-passerr { font-size:12.5px; color:var(--down); min-height:16px; margin-bottom:6px; }
+.blk-passform .blk-bio { margin-top:2px; }
 .blk-greet { position:relative; z-index:1; color:#fff; line-height:1.12; }
 .blk-greet span { display:block; font-family:var(--serif); font-size:30px; font-weight:400; opacity:.92; }
 .blk-greet b { display:block; font-family:var(--serif); font-size:34px; font-weight:700; letter-spacing:-.01em; margin-top:2px; }
@@ -4878,8 +4888,12 @@ const INTRO_SLIDES=[
 function introVisualHTML(s){
   return `<div class="intro-shot sh-${s.shape||'rect'}" style="--c1:${s.c1};--c2:${s.c2}"><div class="is-ph"><i class="fa-solid ${s.icon}"></i></div>${s.photo?`<img class="intro-photo" src="${s.photo}" alt="" style="object-position:${s.pos||'50% 50%'}" onerror="this.remove()" referrerpolicy="no-referrer">`:''}</div>`;
 }
-let introIdx=0, _introTX=0;
-function startIntro(){ const el=$('#intro'); if(!el){ maybeOnboard(); return; } introIdx=0; el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; renderIntro(); document.addEventListener('keydown', introKey); const st=$('#introStage'); if(st){ st.addEventListener('touchstart',introTS,{passive:true}); st.addEventListener('touchend',introTE,{passive:true}); } }
+let introIdx=0, _introTX=0, _introTY=0, _introMD=false;
+function startIntro(){ const el=$('#intro'); if(!el){ maybeOnboard(); return; } introIdx=0; el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; renderIntro(); document.addEventListener('keydown', introKey);
+  // arrastar em QUALQUER lugar da tela (inclusive na foto) troca o slide — não por toque
+  el.addEventListener('touchstart',introTS,{passive:true}); el.addEventListener('touchend',introTE,{passive:true});
+  el.addEventListener('mousedown',introMD); el.addEventListener('mouseup',introMU);
+}
 function renderIntro(){
   const s=INTRO_SLIDES[introIdx];
   const stage=$('#introStage'); if(stage){ stage.innerHTML=`${introVisualHTML(s)}<div class="intro-eyebrow">${s.eyebrow}</div><div class="intro-h">${s.h}</div>`; stage.classList.remove('intro-in'); void stage.offsetWidth; stage.classList.add('intro-in'); }
@@ -4889,13 +4903,15 @@ function introGoto(i){ if(i<0||i>=INTRO_SLIDES.length||i===introIdx){ return; } 
 function introNext(){ if(introIdx<INTRO_SLIDES.length-1) introGoto(introIdx+1); }
 function introPrev(){ if(introIdx>0) introGoto(introIdx-1); }
 function introKey(e){ if(e.key==='ArrowRight') introNext(); else if(e.key==='ArrowLeft') introPrev(); }
-function introTS(e){ _introTX=e.changedTouches[0].clientX; }
-function introTE(e){ const dx=e.changedTouches[0].clientX-_introTX; if(Math.abs(dx)>45){ if(dx<0) introNext(); else introPrev(); } }
+function introTS(e){ _introTX=e.changedTouches[0].clientX; _introTY=e.changedTouches[0].clientY; }
+function introTE(e){ const dx=e.changedTouches[0].clientX-_introTX, dy=e.changedTouches[0].clientY-_introTY; if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)){ if(dx<0) introNext(); else introPrev(); } }
+function introMD(e){ _introMD=true; _introTX=e.clientX; _introTY=e.clientY; }
+function introMU(e){ if(!_introMD) return; _introMD=false; if(e.target.closest('.intro-foot, .intro-dot')) return; const dx=e.clientX-_introTX, dy=e.clientY-_introTY; if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)){ if(dx<0) introNext(); else introPrev(); } }
 function introVisible(){ const el=$('#intro'); return !!(el && el.classList.contains('show')); }
 /* abre o cadastro/login SEM sair da apresentação — o acesso só é liberado após autenticar */
 function introFinish(mode){ openAuth(mode||'signup'); }
 /* chamado só quando o usuário se autentica de verdade — aí sim revela o app */
-function introDone(){ document.removeEventListener('keydown', introKey); const st=$('#introStage'); if(st){ st.removeEventListener('touchstart',introTS); st.removeEventListener('touchend',introTE); } const el=$('#intro'); if(el){ el.classList.add('closing'); setTimeout(()=>{ el.classList.remove('show','closing'); el.setAttribute('aria-hidden','true'); if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }, 400); } try{ localStorage.setItem('lastro_onboarded','1'); }catch(e){} }
+function introDone(){ document.removeEventListener('keydown', introKey); const el=$('#intro'); if(el){ el.removeEventListener('touchstart',introTS); el.removeEventListener('touchend',introTE); el.removeEventListener('mousedown',introMD); el.removeEventListener('mouseup',introMU); el.classList.add('closing'); setTimeout(()=>{ el.classList.remove('show','closing'); el.setAttribute('aria-hidden','true'); if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }, 400); } try{ localStorage.setItem('lastro_onboarded','1'); }catch(e){} }
 /* portão de acesso: sem cadastro/login, ninguém entra (captação de leads) */
 function afterSplash(){ try{ if(isAuthed()){ if(bioEnabled()){ openBioLock(); return; } maybeOnboard(); return; } startIntro(); return; }catch(e){} maybeOnboard(); }
 
@@ -4938,12 +4954,31 @@ function bioGreeting(){ const hRaw=new Date().getHours(); const h=(typeof hRaw==
 function bioFirstName(){ try{ const p=(typeof getProfile==='function')?getProfile():null; let n=(p&&p.name)||''; if(!n){ const u=currentUser(); n=u&&u.email?u.email.split('@')[0]:''; } n=String(n||'').trim(); if(!n) return 'de volta'; const parts=n.split(/\s+/); return parts.length>1?parts[0]+' '+parts[1]:parts[0]; }catch(e){ return 'de volta'; } }
 function openBioLock(){
   const el=document.getElementById('bioLock'); if(!el){ maybeOnboard(); return; }
-  el.innerHTML=`<div class="blk-hero"><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
-    <div class="blk-foot"><button class="btn btn-primary blk-bio" onclick="bioUnlock()"><i class="fa-solid fa-face-smile"></i> Entrar com biometria</button><button class="blk-pass" onclick="bioLockPassword()">Entrar com senha</button></div>`;
+  el.innerHTML=`<div class="blk-hero"><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><button class="blk-x" onclick="bioExitToIntro()" aria-label="Voltar à apresentação"><i class="fa-solid fa-xmark"></i></button><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
+    <div class="blk-foot" id="bioFoot"><button class="btn btn-primary blk-bio" onclick="bioUnlock()"><i class="fa-solid fa-face-smile"></i> Entrar com biometria</button><button class="blk-pass" onclick="bioLockPassword()">Entrar com senha</button></div>`;
   el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; setTimeout(bioUnlock, 500);
 }
 function _bioLockDone(){ const el=document.getElementById('bioLock'); if(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); } if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }
-function bioLockPassword(){ openAuth('login'); }
+/* X: sair do "pré-login" e voltar para a tela de apresentação */
+function bioExitToIntro(){ _bioLockDone(); if(typeof startIntro==='function') startIntro(); }
+/* "Entrar com senha": confirmar identidade digitando a senha (o cliente já tem sessão, mas precisa provar que é ele) */
+function bioLockPassword(){
+  const foot=document.getElementById('bioFoot'); if(!foot) return;
+  const email=(currentUser()&&currentUser().email)||'';
+  foot.innerHTML=`<div class="blk-passform"><div class="blk-passlbl">Digite sua senha para confirmar que é você</div><div class="blk-passin"><i class="fa-solid fa-lock"></i><input id="bioPass" type="password" placeholder="sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')bioDoPassword()"><button type="button" class="blk-eye" onclick="togglePassId('bioPass',this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div>${email?`<div class="blk-passmail">${esc(email)}</div>`:''}<div id="bioPassErr" class="blk-passerr"></div><button class="btn btn-primary blk-bio" onclick="bioDoPassword()">Entrar</button><button class="blk-pass" onclick="openBioLock()"><i class="fa-solid fa-face-smile" style="font-size:12px"></i> Usar biometria</button></div>`;
+  setTimeout(()=>{ const i=document.getElementById('bioPass'); i&&i.focus(); }, 90);
+}
+async function bioDoPassword(){
+  const email=(currentUser()&&currentUser().email)||''; const pass=(document.getElementById('bioPass')||{}).value||''; const err=document.getElementById('bioPassErr');
+  if(!email){ _bioLockDone(); return; }
+  if((pass||'').length<6){ if(err) err.textContent='Digite sua senha.'; return; }
+  if(err) err.innerHTML='<span class="faint">Verificando…</span>';
+  try{
+    const r=await authLogin(email, pass);
+    if(r && r.error){ if(err) err.textContent='Senha incorreta. Tente novamente.'; return; }
+    _bioLockDone(); toast('Bem-vindo de volta!');
+  }catch(e){ if(err) err.textContent='Não foi possível confirmar. Tente novamente.'; }
+}
 async function bioUnlock(){
   try{
     if(!(navigator.credentials && navigator.credentials.get)){ _bioLockDone(); return; }
