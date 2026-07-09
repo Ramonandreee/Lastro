@@ -2216,7 +2216,11 @@ canvas { touch-action:none; }
 .intro-nav { position:absolute; top:78px; bottom:170px; width:32%; z-index:4; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .intro-nav.prev { left:0; } .intro-nav.next { right:0; }
 .intro-stage { position:relative; z-index:2; flex:1; display:flex; flex-direction:column; justify-content:center; min-height:0; }
-.intro-shot { position:relative; width:100%; height:min(47vh,400px); border-radius:28px; overflow:hidden; background:linear-gradient(150deg,var(--c1,#0E7C5A),var(--c2,#09533C)); box-shadow:0 22px 54px rgba(20,16,12,.18); }
+.intro-shot { position:relative; width:100%; height:min(47vh,400px); border-radius:28px; overflow:hidden; background:linear-gradient(150deg,var(--c1,#0E7C5A),var(--c2,#09533C)); box-shadow:0 22px 54px rgba(20,16,12,.18); margin:0 auto; }
+.intro-shot.sh-soft { border-radius:36px; }
+.intro-shot.sh-rect { border-radius:22px; }
+.intro-shot.sh-oval { border-radius:46% 46% 46% 46% / 40% 40% 40% 40%; height:min(50vh,420px); width:88%; }
+.intro-shot.sh-arch { border-radius:180px 180px 30px 30px; height:min(50vh,420px); width:84%; }
 .intro-shot .is-ph { position:absolute; inset:0; z-index:0; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.92); font-size:60px; }
 .intro-shot .is-ph::after { content:''; position:absolute; inset:0; background:radial-gradient(120% 92% at 28% 16%, rgba(255,255,255,.2), transparent 58%); }
 .intro-photo { position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:cover; }
@@ -2902,6 +2906,23 @@ body.report-open { overflow:hidden; }
 .auth-tabs { display:flex; gap:4px; background:var(--surface-3); padding:4px; border-radius:var(--r-sm); margin-bottom:14px; }
 .auth-tabs button { flex:1; padding:8px; border-radius:7px; font-size:13px; font-weight:500; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
 .auth-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
+/* login/cadastro em PÁGINA de tela cheia (não card) */
+#authModal.auth-full { align-items:stretch; justify-content:stretch; padding:0; background:var(--canvas) !important; -webkit-backdrop-filter:none; backdrop-filter:none; }
+#authModal.auth-full .modal-card { width:100%; max-width:none; height:100dvh; max-height:100dvh; border:0; border-radius:0; box-shadow:none; display:flex; flex-direction:column; animation:none; background:var(--canvas); }
+#authModal.auth-full .modal-head { border:0; padding:calc(14px + env(safe-area-inset-top,0px)) 20px 6px; }
+#authModal.auth-full .modal-head #authTitle { font-size:15px; font-weight:600; color:var(--ink-2); }
+#authModal.auth-full .modal-body { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px 22px calc(24px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; }
+#authModal.auth-full .auth-hero { text-align:left; margin:18px 0 26px; }
+#authModal.auth-full .auth-logo { margin:0 0 20px; width:52px; height:52px; }
+#authModal.auth-full .auth-h { font-family:var(--serif); font-size:30px; font-weight:600; line-height:1.12; letter-spacing:-.02em; }
+#authModal.auth-full .auth-sub { margin-left:0; max-width:none; font-size:14px; }
+#authModal.auth-full .auth-submit { height:52px; border-radius:14px; font-size:15px; margin-top:10px; }
+#authModal.auth-full .auth-foot { margin-top:auto; padding-top:18px; }
+.auth-switch { margin-top:16px; padding-top:16px; border-top:1px solid var(--line); font-size:14px; font-weight:600; color:var(--ink-2); display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.auth-switch button { background:none; border:none; color:var(--brand); font-size:14px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+.auth-switch button:hover { text-decoration:underline; }
+.auth-forgot { align-self:center; background:none; border:none; color:var(--accent); font-size:13.5px; font-weight:700; cursor:pointer; padding:14px; }
+.auth-forgot:hover { text-decoration:underline; }
 
 /* ── cards de indicador — componentes premium ── */
 .ind-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
@@ -4613,8 +4634,9 @@ function openAuth(mode){ renderAuth(mode||'login'); $('#authModal').classList.ad
 function closeAuth(){ _profileOpen=false; $('#authModal').classList.remove('open'); }
 function accountClick(){ openAuth(); }
 function renderAuth(mode){
-  const body=$('#authBody'), u=currentUser();
+  const body=$('#authBody'), u=currentUser(), modal=$('#authModal');
   if(u){
+    if(modal) modal.classList.remove('auth-full');
     $('#authTitle').textContent='Sua conta';
     body.innerHTML = `<div style="text-align:center;padding:4px 0 6px">
         <div class="avatar" style="width:56px;height:56px;font-size:21px;margin:0 auto 12px">${(u.email[0]||'?').toUpperCase()}</div>
@@ -4625,21 +4647,31 @@ function renderAuth(mode){
       <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="authLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>`;
     return;
   }
+  if(modal) modal.classList.add('auth-full');
   if(mode==='signup'){ _signupStep=1; renderSignup(); return; }
-  $('#authTitle').textContent = '';
+  $('#authTitle').textContent = 'Entrar';
   body.innerHTML = `
     <div class="auth-hero">
       <div class="auth-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
-      <div class="auth-h">Bem-vindo de volta</div>
-      <div class="auth-sub">Acesse sua carteira, watchlist e preferências, sincronizadas onde você estiver.</div>
+      <div class="auth-h">Olá.<br>Boas-vindas!</div>
+      <div class="auth-sub">Acesse sua carteira, watchlist e preferências — sincronizadas onde você estiver.</div>
     </div>
-    <div class="auth-tabs"><button class="on" onclick="renderAuth('login')">Entrar</button><button onclick="renderAuth('signup')">Criar conta</button></div>
     <label class="fld auth-fld"><span>E-mail</span><div class="auth-input"><i class="fa-regular fa-envelope"></i><input id="auEmail" type="email" inputmode="email" placeholder="voce@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('#auPass').focus()"></div></label>
-    <label class="fld auth-fld"><span>Senha</span><div class="auth-input"><i class="fa-solid fa-lock"></i><input id="auPass" type="password" placeholder="mínimo 6 caracteres" autocomplete="current-password" onkeydown="if(event.key==='Enter')authSubmit('login')"><button type="button" class="auth-eye" onclick="togglePass(this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
+    <label class="fld auth-fld"><span>Senha</span><div class="auth-input"><i class="fa-solid fa-lock"></i><input id="auPass" type="password" placeholder="sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')authSubmit('login')"><button type="button" class="auth-eye" onclick="togglePass(this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
     <div id="auErr" class="fld-err"></div>
     <button class="btn btn-primary auth-submit" onclick="authSubmit('login')">Entrar <i class="fa-solid fa-arrow-right"></i></button>
-    <div class="auth-foot"><i class="fa-solid fa-shield-halved"></i> Conexão segura · seus dados ficam protegidos e sincronizados</div>`;
+    <button class="auth-forgot" onclick="authForgot()">Esqueci minha senha</button>
+    <div class="auth-switch"><span>Ainda não tem cadastro?</span><button onclick="renderAuth('signup')">Criar cadastro <i class="fa-solid fa-arrow-right" style="font-size:11px"></i></button></div>`;
   setTimeout(()=>{ const e=$('#auEmail'); e&&e.focus(); }, 60);
+}
+async function authForgot(){
+  const email=(($('#auEmail')&&$('#auEmail').value)||'').trim();
+  if(!/.+@.+\..+/.test(email)){ const err=$('#auErr'); if(err) err.textContent='Informe seu e-mail acima para recuperar a senha.'; return; }
+  try{
+    const c=_sb();
+    if(c&&c.SUPABASE_URL){ await fetch(`${c.SUPABASE_URL}/auth/v1/recover`, {method:'POST', headers:{...authHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({email})}).catch(()=>{}); }
+  }catch(e){}
+  toast('Se houver conta com esse e-mail, enviamos um link de recuperação ✓');
 }
 /* ── Cadastro em etapas (captação completa de leads) ── */
 let _signup={}, _signupStep=1;
@@ -4654,24 +4686,24 @@ function signupGrab2(){
   const on=document.querySelector('#authBody .prof-chip.on'); _signup.risk=on?on.getAttribute('data-risk'):(_signup.risk||'');
 }
 function renderSignup(){
-  const body=$('#authBody'); $('#authTitle').textContent='';
-  const tabs=`<div class="auth-tabs"><button onclick="renderAuth('login')">Entrar</button><button class="on" onclick="renderAuth('signup')">Criar conta</button></div>`;
+  const body=$('#authBody'); const modal=$('#authModal'); if(modal) modal.classList.add('auth-full'); $('#authTitle').textContent='Criar cadastro';
   const steps=`<div class="su-steps"><span class="${_signupStep>=1?'on':''}"></span><span class="${_signupStep>=2?'on':''}"></span></div>`;
   if(_signupStep===1){
     body.innerHTML=`
       <div class="auth-hero">
         <div class="auth-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
-        <div class="auth-h">Crie sua conta grátis</div>
+        <div class="auth-h">Comece<br>seu cadastro</div>
         <div class="auth-sub">Teste <strong>todos os recursos Premium por 7 dias</strong>, sem cartão. Leva menos de 1 minuto.</div>
       </div>
-      ${tabs}${steps}
+      ${steps}
       <label class="fld auth-fld"><span>Nome completo</span><div class="auth-input"><i class="fa-regular fa-user"></i><input id="suName" value="${suEsc(_signup.name)}" maxlength="60" placeholder="Seu nome" autocomplete="name"></div></label>
       <label class="fld auth-fld"><span>E-mail</span><div class="auth-input"><i class="fa-regular fa-envelope"></i><input id="suEmail" type="email" inputmode="email" value="${suEsc(_signup.email)}" placeholder="voce@email.com" autocomplete="email"></div></label>
       <label class="fld auth-fld"><span>Celular / WhatsApp</span><div class="auth-input"><i class="fa-brands fa-whatsapp"></i><input id="suPhone" type="tel" inputmode="tel" value="${suEsc(maskPhoneBR(_signup.phone))}" placeholder="(47) 99246-4048" autocomplete="tel" oninput="maskPhone(this)"></div></label>
       <label class="fld auth-fld"><span>Senha</span><div class="auth-input"><i class="fa-solid fa-lock"></i><input id="suPass" type="password" value="${suEsc(_signup.pass)}" placeholder="mínimo 6 caracteres" autocomplete="new-password"><button type="button" class="auth-eye" onclick="togglePassId('suPass',this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
       <div id="auErr" class="fld-err"></div>
       <button class="btn btn-primary auth-submit" onclick="signupNext()">Continuar <i class="fa-solid fa-arrow-right"></i></button>
-      <div class="auth-foot"><i class="fa-solid fa-shield-halved"></i> Seus dados ficam protegidos e nunca são compartilhados.</div>`;
+      <div class="auth-foot"><i class="fa-solid fa-shield-halved"></i> Seus dados ficam protegidos e nunca são compartilhados.</div>
+      <div class="auth-switch"><span>Já tem cadastro?</span><button onclick="renderAuth('login')">Entrar <i class="fa-solid fa-arrow-right" style="font-size:11px"></i></button></div>`;
     setTimeout(()=>{ const e=$('#suName'); e&&e.focus(); }, 60);
   } else {
     body.innerHTML=`
@@ -4830,20 +4862,21 @@ function closeOnboarding(){ const m=$('#obModal'); if(m){ m.classList.remove('op
 
 /* ══ Intro premium (apresentação animada antes do cadastro) ══ */
 const INTRO_SLIDES=[
-  { photo:'', c1:'#0E7C5A', c2:'#08402F', icon:'fa-arrow-trend-up',
+  { photo:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1000&q=80', shape:'soft', pos:'50% 50%',
+    c1:'#0E7C5A', c2:'#08402F', icon:'fa-arrow-trend-up',
     eyebrow:'Inteligência de investimentos', h:'Invista com convicção,<br>não no escuro.' },
-  { photo:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=900&q=70',
+  { photo:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1000&q=80', shape:'rect', pos:'50% 45%',
     c1:'#7c5a2e', c2:'#4a3418', icon:'fa-chart-column',
     eyebrow:'Mercado completo', h:'Ações, FIIs, ETFs e mais —<br>com dados de verdade.' },
-  { photo:'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=70',
+  { photo:'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1000&q=80', shape:'oval', pos:'50% 40%',
     c1:'#2f5f8a', c2:'#1e3d5c', icon:'fa-award',
     eyebrow:'Score Lastro™', h:'A qualidade de cada ativo<br>em um número.' },
-  { photo:'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=70',
+  { photo:'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=1000&q=80', shape:'arch', pos:'50% 35%',
     c1:'#a5683a', c2:'#6e4526', icon:'fa-wallet',
     eyebrow:'Sua carteira', h:'Faça seu patrimônio<br>render com clareza.' },
 ];
 function introVisualHTML(s){
-  return `<div class="intro-shot" style="--c1:${s.c1};--c2:${s.c2}"><div class="is-ph"><i class="fa-solid ${s.icon}"></i></div>${s.photo?`<img class="intro-photo" src="${s.photo}" alt="" onerror="this.remove()" referrerpolicy="no-referrer">`:''}</div>`;
+  return `<div class="intro-shot sh-${s.shape||'rect'}" style="--c1:${s.c1};--c2:${s.c2}"><div class="is-ph"><i class="fa-solid ${s.icon}"></i></div>${s.photo?`<img class="intro-photo" src="${s.photo}" alt="" style="object-position:${s.pos||'50% 50%'}" onerror="this.remove()" referrerpolicy="no-referrer">`:''}</div>`;
 }
 let introIdx=0, _introTX=0;
 function startIntro(){ const el=$('#intro'); if(!el){ maybeOnboard(); return; } introIdx=0; el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; renderIntro(); document.addEventListener('keydown', introKey); const st=$('#introStage'); if(st){ st.addEventListener('touchstart',introTS,{passive:true}); st.addEventListener('touchend',introTE,{passive:true}); } }
@@ -11042,12 +11075,18 @@ setInterval(()=>{
 }, 60000);
 /* abertura do app (splash) — exibe por um tempo mínimo e some revelando a Home */
 (function(){
-  const sp=document.getElementById('splash'); if(!sp){ afterSplash(); return; }
+  const sp=document.getElementById('splash');
+  // Monta o portão de entrada JÁ por baixo do splash — assim, quando o splash some,
+  // aparece a apresentação/desbloqueio, nunca a Home (corrige o "flash" da tela inicial).
+  let gated=false;
+  try{ if(!isAuthed()){ startIntro(); gated=true; } else if(bioEnabled()){ openBioLock(); gated=true; } }catch(e){}
+  const finish=()=>{ if(!gated){ try{ maybeOnboard(); }catch(e){} } };
+  if(!sp){ finish(); return; }
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
   // primeiro acesso ganha o momento de marca completo; retornos são instantâneos
   let seen=false; try{ seen=!!localStorage.getItem('lastro_splash_seen'); localStorage.setItem('lastro_splash_seen','1'); }catch(e){}
   const hold=reduce?600:(seen?700:2400);
-  setTimeout(()=>{ sp.classList.add('hide'); setTimeout(()=>{ sp.remove(); afterSplash(); }, 600); }, hold);
+  setTimeout(()=>{ sp.classList.add('hide'); setTimeout(()=>{ sp.remove(); finish(); }, 600); }, hold);
 })();
 </script>
 </body>
