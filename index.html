@@ -2112,6 +2112,25 @@ canvas { touch-action:none; }
 .ad-table.adh-table td, .ad-table.adh-table th { padding:9px 12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .adh-tablewrap .adh-table th { position:sticky; top:0; background:var(--surface); z-index:1; }
 @media (max-width:440px){ .adh-stats { grid-template-columns:repeat(2,1fr); } }
+/* ── Construtor de relatórios (aba Relatórios) ── */
+.arp-sec-t { font-size:11px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px; }
+.arp-types { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.arp-type { display:flex; align-items:flex-start; gap:10px; text-align:left; padding:11px 12px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface); cursor:pointer; transition:all .14s var(--ease); }
+.arp-type:hover { border-color:var(--line-2); }
+.arp-type.on { border-color:var(--brand); background:var(--brand-l); }
+.arp-type-ic { width:30px; height:30px; flex:none; border-radius:9px; display:grid; place-items:center; background:var(--surface-3); color:var(--ink-2); font-size:13px; }
+.arp-type.on .arp-type-ic { background:var(--brand); color:#fff; }
+.arp-type-tx { min-width:0; } .arp-type-tx b { font-size:13px; color:var(--ink); display:block; } .arp-type-tx small { font-size:11px; color:var(--ink-3); line-height:1.35; display:block; margin-top:2px; }
+.arp-ranges { flex-wrap:wrap; }
+.arp-custom { display:flex; gap:10px; margin-top:12px; }
+.arp-field { flex:1; display:flex; flex-direction:column; gap:6px; font-size:11px; font-weight:600; color:var(--ink-3); text-transform:uppercase; letter-spacing:.03em; }
+.arp-filters { display:flex; gap:10px; flex-wrap:wrap; }
+.arp-filters .sel-wrap { flex:1 1 160px; }
+.arp-rep-head { display:flex; align-items:center; gap:12px; }
+.arp-rep-ic { width:40px; height:40px; flex:none; border-radius:11px; display:grid; place-items:center; background:var(--brand-l); color:var(--brand); font-size:16px; }
+.arp-rep-tx { flex:1; min-width:0; } .arp-rep-t { font-size:16px; font-weight:700; color:var(--ink); } .arp-rep-s { font-size:12px; color:var(--ink-3); margin-top:2px; }
+.arp-act-row { display:flex; gap:10px; flex-wrap:wrap; } .arp-act-row .btn { flex:1 1 140px; justify-content:center; }
+@media (max-width:560px){ .arp-types { grid-template-columns:1fr; } }
 .rsa-field { display:flex; flex-direction:column; gap:8px; }
 .rsa-lbl { font-size:12px; font-weight:500; color:var(--ink-2); }
 .rsa-seg { display:flex; gap:6px; padding:4px; background:var(--surface-3); border-radius:var(--r-sm); }
@@ -5972,8 +5991,21 @@ function viewIndicar(){
    VIEW: PAINEL ADMINISTRATIVO (somente dono)
    ══════════════════════════════════════════════════════════ */
 let adminTab='overview';
-let adminReportRange=24; /* horizonte do relatório geral (meses) — acima de 1 ano */
-function setAdminReportRange(n){ adminReportRange=n; render('admin'); animateContent(); }
+/* ── Construtor de relatórios (aba Relatórios) ───────────────────────────── */
+const ADMIN_REPORT_TYPES = [
+  { id:'geral',       ic:'fa-layer-group',           nm:'Geral consolidado',   desc:'Base, receita, conversão e distribuição num só relatório.' },
+  { id:'receita',     ic:'fa-money-bill-trend-up',   nm:'Receita & Assinaturas', desc:'MRR, ARR, receita por plano e evolução da recorrência.' },
+  { id:'crescimento', ic:'fa-chart-line',            nm:'Crescimento da base', desc:'Cadastros, novos por mês e ritmo de aquisição.' },
+  { id:'clientes',    ic:'fa-users',                 nm:'Clientes & Leads',    desc:'Pagantes, leads e distribuição por plano e estado.' },
+  { id:'conversao',   ic:'fa-filter',                nm:'Conversão & Funil',   desc:'Cadastro → pagante, ticket médio e taxa de conversão.' },
+];
+let adminRep = { type:'geral', range:12, custom:false, from:11, to:0, plano:'', uf:'' };
+let adminRepDraw = null; /* dados prontos p/ os gráficos (preenchido no render) */
+function setAdminRepType(t){ adminRep.type=t; render('admin'); animateContent(); scrollToTop(); }
+function setAdminRepRange(n){ adminRep.custom=false; adminRep.range=n; render('admin'); animateContent(); }
+function setAdminRepCustom(on){ adminRep.custom=on; if(on){ adminRep.to=0; adminRep.from=Math.min(11, Math.max(1,adminRep.range-1)); } render('admin'); animateContent(); }
+function setAdminRepField(k,v){ adminRep[k]= (k==='from'||k==='to')? +v : v; if((k==='from'||k==='to')&&adminRep.from<adminRep.to){ const t=adminRep.from; adminRep.from=adminRep.to; adminRep.to=t; } render('admin'); animateContent(); }
+function adminRepMonthsCount(){ return adminRep.custom ? Math.max(1, Math.abs(adminRep.from-adminRep.to)+1) : adminRep.range; }
 const adminOpenAct=new Set(); /* ids das ações expandidas — preserva o "aberto" entre re-renders */
 function adminGoto(t){ adminTab=t; render('admin'); animateContent(); scrollToTop(); }
 const ADMIN_DEMO=[
@@ -6176,39 +6208,99 @@ function viewAdmin(){
       </tbody></table></div>
     </div>`;
   } else if(adminTab==='relatorios'){
-    const R=adminReportRange;
+    const T = ADMIN_REPORT_TYPES.find(t=>t.id===adminRep.type) || ADMIN_REPORT_TYPES[0];
+    const N = adminRepMonthsCount();
+    // filtros aplicados
+    let fset = all.slice();
+    if(adminRep.plano) fset = fset.filter(x=> adminRep.plano==='free' ? (x.plan==='free'||x.plan==='admin') : x.plan===adminRep.plano);
+    if(adminRep.uf) fset = fset.filter(x=> x.uf===adminRep.uf);
+    const fPay=fset.filter(x=>x.plan==='pro'||x.plan==='premium'), fLeads=fset.filter(x=>x.plan==='free'||x.plan==='admin');
+    const fProN=fset.filter(x=>x.plan==='pro').length, fPremN=fset.filter(x=>x.plan==='premium').length;
+    const fMrr=fset.reduce((s,x)=>s+(x.mrr||0),0), fArr=fMrr*12, fTicket=fPay.length?fMrr/fPay.length:0, fConv=fset.length?fPay.length/fset.length*100:0;
+    const labels=adminRepLabels(N);
     const growthOf=s=> s[0]? Math.round((s[s.length-1]-s[0])/s[0]*100) : 0;
-    const cadS=adminRamp(all.length,R), mrrS=adminRamp(mrr,R), arrS=adminRamp(arr,R), tkS=adminRamp(Math.round(ticket),R), cvS=adminRamp(Math.round(conv),R);
+    const stepOf=s=> s.length>1?(s[s.length-1]-s[0])/(s.length-1):0;
+    const deltasOf=s=>{ const st=Math.round(stepOf(s)); return s.map((v,i)=> i? v-s[i-1] : st); };
+    const cadS=adminRamp(fset.length,N), mrrS=adminRamp(Math.round(fMrr),N), arrS=adminRamp(Math.round(fArr),N), tkS=adminRamp(Math.round(fTicket),N), cvS=adminRamp(Math.round(fConv),N), payS=adminRamp(fPay.length,N);
+    const brand=cssVar('--brand'), acc=cssVar('--accent'), gold=cssVar('--gold');
     const gtag=g=>`<span class="mono ${g>=0?'up':'down'}">${g>=0?'+':''}${g}%</span>`;
-    const rrow=(lbl,val,g)=>`<tr><td>${lbl}</td><td class="ar mono">${val}</td><td class="ar">${gtag(g)}</td></tr>`;
+    const rrow=(lbl,val,g)=>`<tr><td>${lbl}</td><td class="ar mono">${val}</td><td class="ar">${g==null?'—':gtag(g)}</td></tr>`;
+    // KPIs, gráficos e tabela por tipo
+    let kpis='', tableHtml='', barLabel='', barMoney=false;
+    if(adminRep.type==='receita'){
+      kpis=`${plCard('fa-money-bill-trend-up','pos',brl0(fMrr),'Receita/mês','MRR','')}${plCard('fa-calendar-check','warn',brl0(fArr),'Receita/ano','ARR','')}${plCard('fa-receipt','neu',brl0(fTicket),'Ticket médio','por pagante','')}${plCard('fa-crown','pos',fPay.length,'Pagantes','ativos','')}`;
+      adminRepDraw={ labels, dual:false, line:[{label:'Receita/mês', data:mrrS, color:brand, axis:'y', fill:true, money:true}], bar:{label:'Receita/mês', data:mrrS, money:true} }; barLabel='Receita por mês'; barMoney=true;
+      tableHtml=`<table class="ad-table adh-table"><thead><tr><th>Plano</th><th class="ar">Assin.</th><th class="ar">Receita/mês</th></tr></thead><tbody>${[['Investidor Pro','pro',49,fProN],['Premium','premium',29,fPremN]].map(([l,p,pr,n])=>`<tr><td>${planBadge(p)}</td><td class="ar mono">${n}</td><td class="ar mono up">${brl0(n*pr)}</td></tr>`).join('')}<tr class="ad-total"><td>Total</td><td class="ar mono">${fPay.length}</td><td class="ar mono up">${brl0(fMrr)}</td></tr></tbody></table>`;
+    } else if(adminRep.type==='crescimento'){
+      const novos=Math.round(stepOf(cadS));
+      kpis=`${plCard('fa-users','neu',fset.length,'Cadastros','na base','')}${plCard('fa-user-plus','pos',cadS[cadS.length-1]-cadS[0],'Novos','no período','')}${plCard('fa-gauge-high','neu',novos,'Ritmo','por mês','')}${plCard('fa-crown','warn',fPay.length,'Pagantes',Math.round(fConv)+'% conv.','')}`;
+      adminRepDraw={ labels, dual:false, line:[{label:'Cadastros', data:cadS, color:acc, axis:'y', fill:true}], bar:{label:'Novos por mês', data:deltasOf(cadS), money:false} }; barLabel='Novos cadastros por mês';
+      tableHtml=`<table class="ad-table adh-table"><thead><tr><th>Mês</th><th class="ar">Cadastros</th><th class="ar">Novos</th></tr></thead><tbody>${cadS.map((v,i)=>({v,d:deltasOf(cadS)[i],l:labels[i]})).reverse().map(r=>`<tr><td>${r.l}</td><td class="ar mono">${r.v}</td><td class="ar mono up">${r.d?'+'+r.d:'—'}</td></tr>`).join('')}</tbody></table>`;
+    } else if(adminRep.type==='clientes'){
+      kpis=`${plCard('fa-users','neu',fset.length,'Cadastros','total','')}${plCard('fa-crown','pos',fPay.length,'Pagantes','ativos','')}${plCard('fa-user-plus','neu',fLeads.length,'Leads','no gratuito','')}${plCard('fa-receipt','warn',brl0(fTicket),'Ticket','por pagante','')}`;
+      adminRepDraw={ labels, dual:false, line:[{label:'Pagantes', data:payS, color:brand, axis:'y', fill:true}], bar:{label:'Pagantes', data:payS, money:false} }; barLabel='Pagantes por mês';
+      tableHtml=`<table class="ad-table adh-table"><thead><tr><th>Plano</th><th class="ar">Contas</th><th class="ar">Share</th></tr></thead><tbody>${[['Investidor Pro','pro',fProN],['Premium','premium',fPremN],['Gratuito','free',fLeads.length]].map(([l,p,n])=>`<tr><td>${planBadge(p)}</td><td class="ar mono">${n}</td><td class="ar mono">${fset.length?Math.round(n/fset.length*100):0}%</td></tr>`).join('')}</tbody></table>`;
+    } else if(adminRep.type==='conversao'){
+      kpis=`${plCard('fa-users','neu',fset.length,'Cadastros','topo do funil','')}${plCard('fa-crown','pos',fPay.length,'Pagantes','fundo do funil','')}${plCard('fa-filter',fConv>=50?'pos':'warn',Math.round(fConv)+'%','Conversão','cadastro → pago','')}${plCard('fa-receipt','neu',brl0(fTicket),'Ticket','por pagante','')}`;
+      adminRepDraw={ labels, dual:false, line:[{label:'Conversão', data:cvS, color:brand, axis:'y', fill:true, pct:true}], bar:{label:'Pagantes', data:payS, money:false} }; barLabel='Pagantes por mês';
+      tableHtml=`<table class="ad-table adh-table"><thead><tr><th>Etapa do funil</th><th class="ar">Valor</th></tr></thead><tbody><tr><td>Cadastros</td><td class="ar mono">${fset.length}</td></tr><tr><td>Leads (gratuito)</td><td class="ar mono">${fLeads.length}</td></tr><tr><td>Pagantes</td><td class="ar mono up">${fPay.length}</td></tr><tr><td>Conversão</td><td class="ar mono">${Math.round(fConv)}%</td></tr><tr class="ad-total"><td>Ticket médio</td><td class="ar mono">${brl0(fTicket)}</td></tr></tbody></table>`;
+    } else { // geral
+      kpis=`${plCard('fa-users','neu',fset.length,'Cadastros',fPay.length?'':'','')}${plCard('fa-crown','warn',fPay.length,'Pagantes',Math.round(fConv)+'% conv.','')}${plCard('fa-money-bill-trend-up','pos',brl0(fMrr),'Receita/mês','MRR','')}${plCard('fa-calendar-check','pos',brl0(fArr),'Receita/ano','ARR','')}`;
+      adminRepDraw={ labels, dual:true, line:[{label:'Cadastros', data:cadS, color:acc, axis:'y', fill:true},{label:'Receita', data:mrrS, color:gold, axis:'y1', dash:true, money:true}], bar:{label:'Receita/mês', data:mrrS, money:true} }; barLabel='Receita por mês'; barMoney=true;
+      tableHtml=`<table class="ad-table adh-table"><thead><tr><th>Indicador</th><th class="ar">Atual</th><th class="ar">Cresc.</th></tr></thead><tbody>${rrow('Cadastros', fset.length, growthOf(cadS))}${rrow('Receita/mês', brl0(fMrr), growthOf(mrrS))}${rrow('Receita/ano', brl0(fArr), growthOf(arrS))}${rrow('Ticket médio', brl0(fTicket), growthOf(tkS))}${rrow('Conversão', Math.round(fConv)+'%', growthOf(cvS))}</tbody></table>`;
+    }
+    // opções de período personalizado + filtros
+    const ufs=[...new Set(all.map(x=>x.uf).filter(u=>u&&u!=='—'))].sort();
+    const periodLabel = adminRep.custom ? `${labels[labels.length-1]} – ${labels[0]}` : `Últimos ${N} ${N===1?'mês':'meses'}`;
+    const typeChips = ADMIN_REPORT_TYPES.map(t=>`<button class="arp-type ${t.id===adminRep.type?'on':''}" onclick="setAdminRepType('${t.id}')"><span class="arp-type-ic"><i class="fa-solid ${t.ic}"></i></span><span class="arp-type-tx"><b>${t.nm}</b><small>${t.desc}</small></span></button>`).join('');
+    const rangeChips = [[3,'3M'],[6,'6M'],[12,'12M'],[24,'24M'],[36,'36M']].map(([n,l])=>`<button class="adh-chip ${(!adminRep.custom&&adminRep.range===n)?'on':''}" onclick="setAdminRepRange(${n})">${l}</button>`).join('') + `<button class="adh-chip ${adminRep.custom?'on':''}" onclick="setAdminRepCustom(${adminRep.custom?'false':'true'})"><i class="fa-solid fa-sliders" style="font-size:11px"></i> Personalizado</button>`;
+    const customUI = adminRep.custom ? `<div class="arp-custom"><label class="arp-field"><span>De</span><div class="sel-wrap"><select class="sel" onchange="setAdminRepField('from',this.value)">${adminMonthOptions(adminRep.from)}</select><i class="fa-solid fa-chevron-down chev"></i></div></label><label class="arp-field"><span>Até</span><div class="sel-wrap"><select class="sel" onchange="setAdminRepField('to',this.value)">${adminMonthOptions(adminRep.to)}</select><i class="fa-solid fa-chevron-down chev"></i></div></label></div>` : '';
+    const planOpts=[['','Todos os planos'],['pro','Investidor Pro'],['premium','Premium'],['free','Gratuito']].map(([v,l])=>`<option value="${v}" ${adminRep.plano===v?'selected':''}>${l}</option>`).join('');
+    const ufOpts=`<option value="">Todos os estados</option>`+ufs.map(u=>`<option value="${u}" ${adminRep.uf===u?'selected':''}>${u}</option>`).join('');
+    const activeFilters=[adminRep.plano?planOpts.match(new RegExp(`value="${adminRep.plano}"[^>]*>([^<]+)`))?.[1]:'', adminRep.uf].filter(Boolean);
     panel=`
-      <div class="ad-actions-head">
-        <div class="ad-ah-tx"><i class="fa-solid fa-file-lines"></i> <span>Relatório geral do negócio — visão consolidada de longo prazo (acima de 1 ano). Escolha o horizonte.</span></div>
-        <div class="adh-filters">${[[12,'12M'],[24,'24M'],[36,'36M']].map(([n,l])=>`<button class="adh-chip ${R===n?'on':''}" onclick="setAdminReportRange(${n})">${l}</button>`).join('')}</div>
+      <div class="card card-pad arp-builder">
+        <div class="arp-sec-t">Tipo de relatório</div>
+        <div class="arp-types">${typeChips}</div>
+        <div class="arp-sec-t" style="margin-top:16px">Período</div>
+        <div class="adh-filters arp-ranges">${rangeChips}</div>
+        ${customUI}
+        <div class="arp-sec-t" style="margin-top:16px">Filtros</div>
+        <div class="arp-filters">
+          <div class="sel-wrap grow"><select class="sel" onchange="setAdminRepField('plano',this.value)">${planOpts}</select><i class="fa-solid fa-chevron-down chev"></i></div>
+          <div class="sel-wrap grow"><select class="sel" onchange="setAdminRepField('uf',this.value)">${ufOpts}</select><i class="fa-solid fa-chevron-down chev"></i></div>
+        </div>
       </div>
-      <div class="ind-grid">
-        ${plCard('fa-users','neu', all.length, 'Cadastros', trials+' em teste', '', all.length===1?'usuário':'usuários')}
-        ${plCard('fa-crown','warn', clientes.length, 'Pagantes', Math.round(conv)+'% conversão', '', clientes.length===1?'assinante':'assinantes')}
-        ${plCard('fa-money-bill-trend-up','pos', brl0(mrr), 'Receita/mês', 'MRR', '')}
-        ${plCard('fa-calendar-check','warn', brl0(arr), 'Receita/ano', 'ARR projetado', '')}
-      </div>
-      <div class="card card-pad" style="margin-top:16px">
-        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Crescimento · ${R} meses</div><span class="chip ilus"><i class="fa-solid fa-flask"></i> estimado</span></div>
-        <div style="position:relative;height:250px;margin-top:6px"><canvas id="adminReportGrowth" role="img" aria-label="Crescimento no período"></canvas></div>
-      </div>
-      <div class="card card-pad" style="margin-top:16px">
-        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-chart-column"></i></span> Receita mensal · barras</div></div>
-        <div style="position:relative;height:220px;margin-top:6px"><canvas id="adminReportMrr" role="img" aria-label="Receita mensal por período"></canvas></div>
-      </div>
-      <div class="card card-pad" style="margin-top:16px">
-        <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-list-check"></i></span> Resumo dos indicadores</div><span class="card-sub">no período</span></div>
-        <table class="ad-table adh-table" style="margin-top:4px"><thead><tr><th>Indicador</th><th class="ar">Atual</th><th class="ar">Cresc.</th></tr></thead><tbody>
-          ${rrow('Cadastros', all.length, growthOf(cadS))}
-          ${rrow('Receita/mês', brl0(mrr), growthOf(mrrS))}
-          ${rrow('Receita/ano', brl0(arr), growthOf(arrS))}
-          ${rrow('Ticket médio', brl0(ticket), growthOf(tkS))}
-          ${rrow('Conversão', Math.round(conv)+'%', growthOf(cvS))}
-        </tbody></table>
+
+      <div class="arp-report" id="adminRepReport">
+        <div class="card card-pad">
+          <div class="arp-rep-head">
+            <div class="arp-rep-ic"><i class="fa-solid ${T.ic}"></i></div>
+            <div class="arp-rep-tx"><div class="arp-rep-t">${T.nm}</div><div class="arp-rep-s">${periodLabel}${activeFilters.length?' · '+activeFilters.join(' · '):''}</div></div>
+            <span class="chip ilus"><i class="fa-solid fa-flask"></i> estimado</span>
+          </div>
+          <div class="ind-grid" style="margin-top:14px">${kpis}</div>
+        </div>
+        <div class="card card-pad" style="margin-top:16px">
+          <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução · ${periodLabel}</div></div>
+          <div style="position:relative;height:250px;margin-top:6px"><canvas id="adminRepLine" role="img" aria-label="Evolução"></canvas></div>
+        </div>
+        <div class="card card-pad" style="margin-top:16px">
+          <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-chart-column"></i></span> ${barLabel}</div></div>
+          <div style="position:relative;height:210px;margin-top:6px"><canvas id="adminRepBar" role="img" aria-label="${barLabel}"></canvas></div>
+        </div>
+        <div class="card card-pad ad-tablewrap" style="margin-top:16px">
+          <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-table-list"></i></span> Detalhamento</div></div>
+          <div style="margin-top:4px">${tableHtml}</div>
+        </div>
+        <div class="card card-pad arp-actions">
+          <div class="arp-act-row">
+            <button class="btn btn-primary" onclick="adminRepDownloadPDF()"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
+            <button class="btn btn-ghost" onclick="adminRepDownloadCSV()"><i class="fa-solid fa-file-csv"></i> Baixar CSV</button>
+            <button class="btn btn-ghost" onclick="adminRepShare()"><i class="fa-solid fa-share-nodes"></i> Compartilhar</button>
+          </div>
+          <span class="chip ilus" style="margin-top:12px"><i class="fa-solid fa-flask"></i> série estimada — histórico real quando o backend registrar snapshots mensais</span>
+        </div>
       </div>`;
   } else {
     panel=`
@@ -6238,6 +6330,40 @@ function viewAdmin(){
 }
 /* séries e gráficos do painel admin (estimado) */
 function adminMonths(n){ const now=new Date(); const o=[]; for(let i=n-1;i>=0;i--){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); o.push(d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','')); } return o; }
+/* rótulo do mês "back" meses atrás (0 = mês atual) */
+function adminMonthLabel(back){ const now=new Date(); const d=new Date(now.getFullYear(), now.getMonth()-back, 1); return d.toLocaleDateString('pt-BR',{month:'short'}).replace('.',''); }
+/* rótulos do período do relatório (preset ou personalizado de→até) */
+function adminRepLabels(n){ if(adminRep.custom){ const a=Math.max(adminRep.from,adminRep.to), b=Math.min(adminRep.from,adminRep.to), o=[]; for(let i=a;i>=b;i--) o.push(adminMonthLabel(i)); return o; } return adminMonths(n); }
+/* opções (<option>) de meses para os seletores De/Até (últimos 36 meses) */
+function adminMonthOptions(sel){ const now=new Date(); let o=''; for(let i=0;i<36;i++){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); const lbl=d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.',''); o+=`<option value="${i}" ${i===sel?'selected':''}>${lbl}</option>`; } return o; }
+/* ── Exportar / compartilhar o relatório admin ── */
+function adminRepCurrent(){ const T=ADMIN_REPORT_TYPES.find(t=>t.id===adminRep.type)||ADMIN_REPORT_TYPES[0]; const d=adminRepDraw||{labels:[],line:[],bar:{data:[]}}; return {T,d}; }
+function adminRepDownloadCSV(){
+  const {T,d}=adminRepCurrent(); const rows=[['Relatório', T.nm],['Período', d.labels[0]?`${d.labels[d.labels.length-1]} a ${d.labels[0]}`:''],['Filtro plano', adminRep.plano||'todos'],['Filtro estado', adminRep.uf||'todos'],[]];
+  rows.push(['Mês', ...d.line.map(s=>s.label), d.bar?d.bar.label:'']);
+  d.labels.forEach((lb,i)=>{ rows.push([lb, ...d.line.map(s=>s.data[i]), d.bar?d.bar.data[i]:'']); });
+  const csv='﻿'+rows.map(r=>r.map(csvCell).join(';')).join('\n');
+  downloadFile(`relatorio-${adminRep.type}.csv`, csv, 'text/csv;charset=utf-8');
+  toast('CSV exportado ✓');
+}
+function adminRepDownloadPDF(){
+  const rep=document.getElementById('adminRepReport'); if(!rep){ toast('Abra o relatório primeiro'); return; }
+  const {T,d}=adminRepCurrent(); const per=d.labels[0]?`${d.labels[d.labels.length-1]} a ${d.labels[0]}`:'';
+  const imgs=[...rep.querySelectorAll('canvas')].map(c=>{ try{ return c.toDataURL('image/png'); }catch(e){ return ''; } });
+  const cards=[...rep.querySelectorAll('.card')].map(card=>{
+    const clone=card.cloneNode(true); clone.querySelectorAll('canvas').forEach((c,i)=>{ const im=document.createElement('img'); im.src=imgs.shift()||''; im.style.width='100%'; c.replaceWith(im); }); return clone.innerHTML;
+  }).join('<div style="height:14px"></div>');
+  const w=window.open('','_blank'); if(!w){ toast('Permita pop-ups para baixar o PDF'); return; }
+  w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Lastro · ${T.nm}</title><style>*{box-sizing:border-box;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0}body{padding:32px;color:#16202B;max-width:820px;margin:auto}h1{font-size:20px;color:#0E7C5A}.sub{color:#64707C;font-size:13px;margin:4px 0 20px}.card{border:1px solid #E5E8EC;border-radius:12px;padding:16px;margin-bottom:14px}.ind-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.ind-card{border:1px solid #EEF0F2;border-radius:10px;padding:12px}.ind-l{font-size:11px;color:#64707C}.ind-v{font-size:18px;font-weight:700;margin-top:4px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 10px;border-bottom:1px solid #EEF0F2;text-align:left}.ar{text-align:right}.up{color:#0E9F6E}.down{color:#E02424}img{max-width:100%}.chip,.ind-tag,.ind-ics,.card-sub,button{display:none!important}.ft{margin-top:20px;font-size:11px;color:#9AA3AD;border-top:1px solid #EEF0F2;padding-top:12px}</style></head><body><h1>Lastro · ${T.nm}</h1><div class="sub">${per}${adminRep.plano?' · plano: '+adminRep.plano:''}${adminRep.uf?' · '+adminRep.uf:''} — série estimada</div>${cards}<div class="ft">Relatório gerado pelo painel administrativo do Lastro · série estimada a partir dos dados atuais.</div><script>setTimeout(()=>{window.print()},350)<\/script></body></html>`);
+  w.document.close(); toast('Gerando PDF…');
+}
+async function adminRepShare(){
+  const {T,d}=adminRepCurrent(); const per=d.labels[0]?`${d.labels[d.labels.length-1]} a ${d.labels[0]}`:'';
+  const last=d.line[0]?d.line[0].data[d.line[0].data.length-1]:'';
+  const txt=`Relatório Lastro · ${T.nm}\nPeríodo: ${per}\n${d.line.map(s=>`${s.label}: ${s.money?brl0(s.data[s.data.length-1]):s.data[s.data.length-1]}${s.pct?'%':''}`).join('\n')}\n(série estimada)`;
+  try{ if(navigator.share){ await navigator.share({title:`Lastro · ${T.nm}`, text:txt}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  try{ await navigator.clipboard.writeText(txt); toast('Resumo copiado ✓'); }catch(e){ toast('Não foi possível compartilhar'); }
+}
 function adminRamp(end,n){ if(n<=1) return [Math.round(end)]; const o=[]; for(let i=0;i<n;i++){ const f=0.42+0.58*(i/(n-1)); o.push(Math.round(end*f)); } return o; }
 function initAdminCharts(){
   if(typeof HAS_CHART!=='undefined' && !HAS_CHART) return;
@@ -6260,24 +6386,24 @@ function initAdminCharts(){
     charts.adminMrr=new Chart(m,{ type:'bar', data:{ labels, datasets:[{ label:'Receita Mensal', data:adminRamp(mrr,N), backgroundColor:up, borderRadius:6, maxBarThickness:26 }] },
       options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:6}}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,displayColors:false,callbacks:{label:c=>brl0(c.parsed.y)}} },
         scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}}, y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v},border:{display:false}} } } }); }
-  /* ── Relatório geral (aba Relatórios) — horizonte longo ── */
-  const R=adminReportRange, rlabels=adminMonths(R);
-  const rg=document.getElementById('adminReportGrowth');
-  if(rg){ if(charts.adminReportGrowth) charts.adminReportGrowth.destroy();
-    const rc=rg.getContext('2d'); const rGrad=rc.createLinearGradient(0,0,0,rg.height||260); rGrad.addColorStop(0,cadColor+'33'); rGrad.addColorStop(1,cadColor+'00');
-    charts.adminReportGrowth=new Chart(rg,{ type:'line', data:{ labels:rlabels, datasets:[
-      { label:'Cadastros', data:adminRamp(all.length,R), borderColor:cadColor, backgroundColor:rGrad, fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.75, yAxisID:'y' },
-      { label:'Receita Mensal', data:adminRamp(mrr,R), borderColor:recColor, backgroundColor:'transparent', fill:false, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.75, borderDash:[5,4], yAxisID:'y1' } ] },
+  /* ── Construtor de relatórios (aba Relatórios) ── */
+  const rl=document.getElementById('adminRepLine'), D=adminRepDraw;
+  if(rl && D){ if(charts.adminRepLine) charts.adminRepLine.destroy();
+    const rc=rl.getContext('2d');
+    const ds=D.line.map(s=>{ let bg='transparent'; if(s.fill){ const gr=rc.createLinearGradient(0,0,0,rl.height||260); gr.addColorStop(0,s.color+'38'); gr.addColorStop(1,s.color+'00'); bg=gr; } return { label:s.label, data:s.data, borderColor:s.color, backgroundColor:bg, fill:!!s.fill, tension:.35, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.75, borderDash:s.dash?[5,4]:[], yAxisID:s.axis||'y', _money:!!s.money, _pct:!!s.pct }; });
+    const fmtDs=s=> s._money?(v=>'R$'+v):s._pct?(v=>v+'%'):(v=>v);
+    const scales={ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxRotation:0,autoSkipPadding:16},border:{display:false}},
+      y:{position:'left',grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:5,padding:8,callback:fmtDs(ds[0]||{})},border:{display:false}} };
+    if(D.dual) scales.y1={position:'right',grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:5,padding:8,callback:v=>'R$'+v},border:{display:false}};
+    charts.adminRepLine=new Chart(rl,{ type:'line', data:{ labels:D.labels, datasets:ds },
       options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:6}}, interaction:{mode:'index',intersect:false},
-        plugins:{ legend:{display:true,position:'top',align:'end',labels:{color:cssVar('--ink-2'),font:{size:11},usePointStyle:true,pointStyleWidth:9,boxHeight:7}}, tooltip:{padding:10,cornerRadius:8,displayColors:true,usePointStyle:true,callbacks:{label:c=>c.dataset.label+': '+(c.dataset.yAxisID==='y1'?brl0(c.parsed.y):c.parsed.y)}} },
-        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxRotation:0,autoSkipPadding:16},border:{display:false}},
-          y:{position:'left',grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:5,padding:8},border:{display:false}},
-          y1:{position:'right',grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:5,padding:8,callback:v=>'R$'+v},border:{display:false}} } } }); }
-  const rm=document.getElementById('adminReportMrr');
-  if(rm){ if(charts.adminReportMrr) charts.adminReportMrr.destroy();
-    charts.adminReportMrr=new Chart(rm,{ type:'bar', data:{ labels:rlabels, datasets:[{ label:'Receita Mensal', data:adminRamp(mrr,R), backgroundColor:up, borderRadius:5, maxBarThickness:20 }] },
-      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:6}}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,displayColors:false,callbacks:{label:c=>brl0(c.parsed.y)}} },
-        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10},maxRotation:0,autoSkipPadding:16},border:{display:false}}, y:{grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10},maxTicksLimit:5,padding:8,callback:v=>'R$'+v},border:{display:false}} } } }); }
+        plugins:{ legend:{display:D.line.length>1,position:'top',align:'end',labels:{color:cssVar('--ink-2'),font:{size:11},usePointStyle:true,pointStyleWidth:9,boxHeight:7}}, tooltip:{padding:10,cornerRadius:8,displayColors:D.line.length>1,usePointStyle:true,callbacks:{label:c=>{ const s=ds[c.datasetIndex]; return (D.line.length>1?c.dataset.label+': ':'')+(s._money?brl0(c.parsed.y):s._pct?c.parsed.y+'%':c.parsed.y); }}} },
+        scales } }); }
+  const rb=document.getElementById('adminRepBar');
+  if(rb && D && D.bar){ if(charts.adminRepBar) charts.adminRepBar.destroy(); const bm=!!D.bar.money;
+    charts.adminRepBar=new Chart(rb,{ type:'bar', data:{ labels:D.labels, datasets:[{ label:D.bar.label, data:D.bar.data, backgroundColor:D.bar.data.map(v=> v>=0?up:cssVar('--down')), borderRadius:5, maxBarThickness:22 }] },
+      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:6}}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,displayColors:false,callbacks:{label:c=>bm?brl0(c.parsed.y):(c.parsed.y>=0?'+':'')+c.parsed.y}} },
+        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10},maxRotation:0,autoSkipPadding:16},border:{display:false}}, y:{grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10},maxTicksLimit:5,padding:8,callback:v=>bm?'R$'+v:v},border:{display:false}} } } }); }
 }
 let adminHistTerm='mrr', adminHistRange=12;
 function openAdminHist(term){ adminHistTerm=term; if(!adminHistRange) adminHistRange=12; renderAdminHist(); }
