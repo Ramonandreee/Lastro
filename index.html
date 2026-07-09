@@ -4639,6 +4639,7 @@ async function authLogout(){
 let _lastSync=0;
 function syncOnReturn(){ if(!isAuthed()) return; const now=Date.now(); if(now-_lastSync<4000) return; _lastSync=now; try{ loadCloudState(); }catch(e){} }
 async function loadCloudState(){
+  if(typeof testModeOn==='function' && testModeOn()) return;   // modo dev: não puxa a nuvem por cima dos dados de teste
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return;
   try{
     const r=await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?select=data&user_id=eq.${s.user.id}`, {headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`}});
@@ -4673,6 +4674,7 @@ function _postCloud(s,c,keepalive){
   return fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data:cloudPayload(), updated_at:new Date().toISOString()}), keepalive:!!keepalive});
 }
 function saveCloudState(){
+  if(typeof testModeOn==='function' && testModeOn()) return Promise.resolve();   // modo dev: nunca grava dados de teste na nuvem
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
   clearTimeout(_cloudT);
   return new Promise(res=>{ _cloudT=setTimeout(async()=>{ try{ await _postCloud(s,c); }catch(e){} res(); }, 700); });
@@ -4680,6 +4682,7 @@ function saveCloudState(){
 /* envia imediatamente o que estiver pendente (evita perder dados ao sair/fechar).
    Resolve para true/false conforme o servidor confirmou a gravação. */
 function flushCloudState(keepalive){
+  if(typeof testModeOn==='function' && testModeOn()) return Promise.resolve(true);   // modo dev: não sincroniza
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve(true);
   clearTimeout(_cloudT);
   return _postCloud(s,c,keepalive).then(r=>!!(r&&r.ok)).catch(()=>false);
@@ -4954,7 +4957,8 @@ function introFeature(k){
     return `<div class="ifx ifx-cart">
       <div class="ifp"><div class="ifp-top"><span>Meu patrimônio</span><b class="ifp-g">+18,4%</b></div><div class="ifp-v">R$ 128.940</div><div class="ifp-bars">${[38,54,48,66,60,78,72,90].map((v,i)=>`<i style="height:${v}%;--d:${(i*0.06).toFixed(2)}s"></i>`).join('')}</div></div>
       <div class="ifp-pill"><div class="ifp-head"><span class="ifp-ia"><i class="fa-solid fa-wand-magic-sparkles"></i></span>Lastro IA</div><div class="ift-body"><span class="ift-type" data-full="Sua carteira está muito concentrada: 62% do seu patrimônio está em bancos hoje.
-Para equilibrar, vale olhar HGLG11 (galpões), KNCR11 (crédito no CDI) e IVVB11 (S&P 500) para reduzir esse risco."></span><i class="ift-caret"></i></div></div>
+
+Vale diversificar com HGLG11 (galpões), KNCR11 (crédito no CDI) e IVVB11 (S&P 500), que trazem renda estável e diluem a concentração em bancos."></span><i class="ift-caret"></i></div></div>
       <div class="ifx-chip ifx-chip-3"><i class="fa-solid fa-coins"></i> Proventos</div>
       <div class="ifx-chip ifx-chip-4"><i class="fa-solid fa-file-lines"></i> Relatórios</div>
     </div>`;
@@ -9358,19 +9362,40 @@ function genTestAlerts(){
 function toggleTestMode(){
   closeAcctMenu();
   if(!testModeOn()){
+    // Guarda seus dados REAIS antes de entrar no modo dev (para não perder nada)
+    try{ localStorage.setItem('lastro_dev_bkp', JSON.stringify({
+      carteira: JSON.parse(localStorage.getItem('lastro_carteira')||'[]'),
+      watch: localStorage.getItem('lastro_watch'),
+      alerts: localStorage.getItem('lastro_alerts'),
+      sub: localStorage.getItem('lastro_sub'),
+      plan: localStorage.getItem('lastro_plan')
+    })); }catch(e){}
     localStorage.setItem('lastro_testmode','1'); demoMode=false;
     setPlan('premium');
     localStorage.setItem('lastro_sub', JSON.stringify({ tier:'pro', plano:'Investidor Pro', cycle:'anual', amount:588, brand:'Visa', card:'4242', canceled:false }));
-    CARTEIRA=genTestCarteira(); savePortfolio();
+    CARTEIRA=genTestCarteira(); savePortfolio();   // dados de teste ficam só localmente (a nuvem está protegida)
     localStorage.setItem('lastro_watch', JSON.stringify(genTestWatch()));
     setAlerts(genTestAlerts());
-    toast('Modo desenvolvedor ON — Investidor Pro + dados de teste em todas as telas ✓');
+    toast('Modo desenvolvedor ON — dados de teste; sua carteira real fica guardada ✓');
   } else {
     localStorage.removeItem('lastro_testmode');
-    CARTEIRA=[]; savePortfolio();
-    localStorage.removeItem('lastro_watch'); setAlerts([]);
-    localStorage.removeItem('lastro_sub'); setPlan('free');
-    toast('Modo desenvolvedor OFF — tudo zerado ✓');
+    let bkp=null; try{ bkp=JSON.parse(localStorage.getItem('lastro_dev_bkp')||'null'); }catch(e){}
+    if(bkp){
+      // Restaura seus dados REAIS exatamente como estavam
+      CARTEIRA = Array.isArray(bkp.carteira)?bkp.carteira:[]; savePortfolio();
+      if(bkp.watch!=null) localStorage.setItem('lastro_watch', bkp.watch); else localStorage.removeItem('lastro_watch');
+      if(bkp.alerts!=null) localStorage.setItem('lastro_alerts', bkp.alerts); else localStorage.removeItem('lastro_alerts');
+      if(bkp.sub!=null) localStorage.setItem('lastro_sub', bkp.sub); else localStorage.removeItem('lastro_sub');
+      if(bkp.plan!=null) localStorage.setItem('lastro_plan', bkp.plan); else { localStorage.removeItem('lastro_plan'); setPlan('free'); }
+      localStorage.removeItem('lastro_dev_bkp');
+      if(typeof flushCloudState==='function') flushCloudState();   // fora do modo dev: re-sincroniza a carteira real
+      toast('Modo desenvolvedor OFF — sua carteira real foi restaurada ✓');
+    } else {
+      CARTEIRA=[]; savePortfolio();
+      localStorage.removeItem('lastro_watch'); setAlerts([]);
+      localStorage.removeItem('lastro_sub'); setPlan('free');
+      toast('Modo desenvolvedor OFF ✓');
+    }
   }
   refreshPlanUI(); applyPriv(); nav('painel');
 }
