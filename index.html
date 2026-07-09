@@ -2235,15 +2235,15 @@ html.gate .sidebar, html.gate .main, html.gate .sidebar-scrim { visibility:hidde
 .ifx-chip { position:absolute; display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:12px; background:#fff; border:1px solid rgba(20,16,12,.05); color:#3a352c; font-size:11px; font-weight:700; box-shadow:0 10px 24px rgba(20,16,12,.12); }
 .ifx-chip i { font-size:10px; color:#0E7C5A; }
 .ifx-chip-1 { top:22%; right:2%; } .ifx-chip-2 { bottom:24%; right:4%; }
-.ifx-chip-3 { top:1%; left:4%; } .ifx-chip-4 { top:8%; right:3%; }
+.ifx-chip-3 { top:0; left:4%; } .ifx-chip-4 { top:6%; right:3%; }
 /* carteira — cartão de saldo esmeralda flutuando + pílula da IA */
-.ifp { position:absolute; top:13%; left:5%; right:5%; padding:15px 17px; border-radius:20px; background:linear-gradient(155deg,#1AA571,#0E7C5A 55%,#0A5C43); box-shadow:0 24px 54px rgba(9,83,60,.34); }
+.ifp { position:absolute; top:13%; left:5%; right:5%; padding:17px 18px; border-radius:20px; background:linear-gradient(155deg,#1AA571,#0E7C5A 55%,#0A5C43); box-shadow:0 24px 54px rgba(9,83,60,.34); }
 .ifp-top { display:flex; align-items:baseline; justify-content:space-between; }
 .ifp-top span { font-size:12px; color:rgba(255,255,255,.78); } .ifp-g { font-family:var(--mono); font-size:13px; font-weight:800; color:#B7F5D8; transition:color .3s; }
-.ifp-v { font-family:var(--mono); font-size:23px; font-weight:800; color:#fff; margin-top:2px; letter-spacing:-.01em; }
-.ifp-bars { display:flex; align-items:flex-end; gap:7px; height:38px; margin-top:11px; }
+.ifp-v { font-family:var(--mono); font-size:28px; font-weight:800; color:#fff; margin-top:3px; letter-spacing:-.01em; }
+.ifp-bars { display:flex; align-items:flex-end; gap:7px; height:66px; margin-top:16px; }
 .ifp-bars i { flex:1; border-radius:5px 5px 0 0; background:linear-gradient(180deg,#8CF0C2,#1AA571); transform-origin:bottom; transition:height .8s var(--ease); }
-.ifp-pill { position:absolute; left:0; right:3%; top:46%; display:flex; align-items:flex-start; gap:11px; padding:14px 16px; border-radius:16px 16px 16px 5px; background:#fff; box-shadow:0 18px 42px rgba(20,16,12,.24); }
+.ifp-pill { position:absolute; left:0; right:3%; top:53%; display:flex; align-items:flex-start; gap:11px; padding:14px 16px; border-radius:16px 16px 16px 5px; background:#fff; box-shadow:0 18px 42px rgba(20,16,12,.24); }
 .ifp-ia { width:28px; height:28px; flex:none; border-radius:9px; background:#e6f4ee; color:#0E7C5A; display:flex; align-items:center; justify-content:center; font-size:12px; }
 .ifp-tx { min-width:0; display:block; }
 .ifp-tx > b { display:block; font-size:10.5px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; color:#0E7C5A; margin-bottom:3px; }
@@ -4950,8 +4950,8 @@ function introFeature(k){
   if(k==='carteira'){
     return `<div class="ifx ifx-cart">
       <div class="ifp"><div class="ifp-top"><span>Meu patrimônio</span><b class="ifp-g">+18,4%</b></div><div class="ifp-v">R$ 128.940</div><div class="ifp-bars">${[38,54,48,66,60,78,72,90].map((v,i)=>`<i style="height:${v}%;--d:${(i*0.06).toFixed(2)}s"></i>`).join('')}</div></div>
-      <div class="ifp-pill"><span class="ifp-ia"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span class="ifp-tx"><b>Lastro IA</b><span class="ift-type" data-full="Sua carteira está muito concentrada: 62% está em bancos, o que aumenta o seu risco.
-Para equilibrar, vale olhar HGLG11 (galpões logísticos), KNCR11 (crédito atrelado ao CDI) e IVVB11 (S&P 500). Assim você ganha renda mais estável e reduz a dependência de um só setor."></span><i class="ift-caret"></i></span></div>
+      <div class="ifp-pill"><span class="ifp-ia"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span class="ifp-tx"><b>Lastro IA</b><span class="ift-type" data-full="Sua carteira está muito concentrada: 62% em bancos.
+Diversifique com HGLG11 (galpões), KNCR11 (crédito no CDI) e IVVB11 (S&P 500) para equilibrar o risco."></span><i class="ift-caret"></i></span></div>
       <div class="ifx-chip ifx-chip-3"><i class="fa-solid fa-coins"></i> Proventos</div>
       <div class="ifx-chip ifx-chip-4"><i class="fa-solid fa-file-lines"></i> Relatórios</div>
     </div>`;
@@ -4978,9 +4978,10 @@ function renderIntro(){
 }
 function introTypewriter(){
   const el=document.querySelector('#introStage .ift-type'); if(!el) return;
+  const caret=document.querySelector('#introStage .ift-caret'); if(caret) caret.style.display='';
   const full=el.getAttribute('data-full')||''; el.textContent=''; let i=0;
   clearInterval(_introTypeT);
-  _introTypeT=setInterval(()=>{ el.textContent=full.slice(0,++i); if(i>=full.length) clearInterval(_introTypeT); }, 24);
+  _introTypeT=setInterval(()=>{ el.textContent=full.slice(0,++i); if(i>=full.length){ clearInterval(_introTypeT); if(caret) caret.style.display='none'; } }, 24);
 }
 let _introCartT=null, _cartVal=128940, _cartPct=18.4, _cartLvl=0.5;
 function introCartAnim(){
@@ -5054,16 +5055,18 @@ function openBioLock(){
   const el=document.getElementById('bioLock'); if(!el){ maybeOnboard(); return; }
   document.documentElement.classList.add('gate');
   el.innerHTML=`<div class="blk-hero"><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><button class="blk-x" onclick="bioExitToIntro()" aria-label="Voltar à apresentação"><i class="fa-solid fa-xmark"></i></button><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
-    <div class="blk-foot" id="bioFoot"><button class="btn btn-primary blk-bio" onclick="bioUnlock()"><i class="fa-solid fa-face-smile"></i> Entrar com biometria</button><button class="blk-pass" onclick="bioLockPassword()">Entrar com senha</button></div>`;
+    <div class="blk-foot" id="bioFoot"><button class="btn btn-primary blk-bio" onclick="bioUnlock()">Entrar com biometria</button><button class="blk-pass" onclick="bioLockPassword()">Entrar com senha</button></div>`;
   el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; setTimeout(bioUnlock, 500);
 }
 function _bioLockDone(){ document.documentElement.classList.remove('gate'); const el=document.getElementById('bioLock'); if(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); } if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }
 /* X: sair do "pré-login" e voltar para a tela de apresentação */
-function bioExitToIntro(){ _bioLockDone(); if(typeof startIntro==='function') startIntro(); }
+/* X do pré-login: finaliza o pré-login (encerra a sessão) e volta à apresentação.
+   Assim, no próximo acesso o app abre direto na apresentação, não no pré-login. */
+function bioExitToIntro(){ _bioLockDone(); if(typeof authLogout==='function'){ authLogout(); } else { try{ localStorage.removeItem('lastro_session'); localStorage.removeItem('lastro_bio'); localStorage.removeItem('lastro_bio_cred'); }catch(e){} startIntro(); } }
 /* "Entrar com senha": confirmar identidade digitando a senha (o cliente já tem sessão, mas precisa provar que é ele) */
 function bioLockPassword(){
   const foot=document.getElementById('bioFoot'); if(!foot) return;
-  foot.innerHTML=`<div class="blk-passform"><div class="blk-passlbl">Digite sua senha para acessar a Lastro</div><div class="blk-passin"><i class="fa-solid fa-lock"></i><input id="bioPass" type="password" placeholder="sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')bioDoPassword()"><button type="button" class="blk-eye" onclick="togglePassId('bioPass',this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div><div id="bioPassErr" class="blk-passerr"></div><button class="btn btn-primary blk-bio" onclick="bioDoPassword()">Entrar</button><button class="blk-pass" onclick="openBioLock()"><i class="fa-solid fa-face-smile" style="font-size:12px"></i> Usar biometria</button></div>`;
+  foot.innerHTML=`<div class="blk-passform"><div class="blk-passlbl">Digite sua senha para acessar a Lastro</div><div class="blk-passin"><i class="fa-solid fa-lock"></i><input id="bioPass" type="password" placeholder="sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')bioDoPassword()"><button type="button" class="blk-eye" onclick="togglePassId('bioPass',this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div><div id="bioPassErr" class="blk-passerr"></div><button class="btn btn-primary blk-bio" onclick="bioDoPassword()">Entrar</button><button class="blk-pass" onclick="openBioLock()">Usar biometria</button></div>`;
   setTimeout(()=>{ const i=document.getElementById('bioPass'); i&&i.focus(); }, 90);
 }
 async function bioDoPassword(){
