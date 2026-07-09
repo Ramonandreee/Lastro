@@ -2108,9 +2108,9 @@ canvas { touch-action:none; }
 .adh-stat-l { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.03em; }
 .adh-stat-v { font-family:var(--mono); font-size:14px; font-weight:700; color:var(--ink); margin-top:4px; line-height:1.1; }
 .adh-tablewrap { max-height:230px; overflow-y:auto; overflow-x:hidden; border:1px solid var(--line); border-radius:var(--r-sm); }
-.adh-table { font-size:12.5px; min-width:0; width:100%; table-layout:fixed; }
-.adh-table th { position:sticky; top:0; background:var(--surface); z-index:1; }
-.adh-table td, .adh-table th { padding:9px 12px; }
+.ad-table.adh-table { font-size:12.5px; min-width:0; width:100%; table-layout:fixed; }
+.ad-table.adh-table td, .ad-table.adh-table th { padding:9px 12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.adh-tablewrap .adh-table th { position:sticky; top:0; background:var(--surface); z-index:1; }
 @media (max-width:440px){ .adh-stats { grid-template-columns:repeat(2,1fr); } }
 .rsa-field { display:flex; flex-direction:column; gap:8px; }
 .rsa-lbl { font-size:12px; font-weight:500; color:var(--ink-2); }
@@ -6293,13 +6293,14 @@ function renderAdminHist(){
   const series=adminRamp(endVal,N), labels=adminMonths(N), startVal=series[0];
   const growth = startVal ? ((endVal-startVal)/startVal*100) : 0;
   const peak=Math.max(...series), low=Math.min(...series), avg=series.reduce((a,b)=>a+b,0)/series.length;
-  const deltas=series.map((v,i)=> i? v-series[i-1] : 0);
-  const avgMo = series.length>1 ? (endVal-startVal)/(series.length-1) : 0;
+  const step = series.length>1 ? (endVal-startVal)/(series.length-1) : 0;
+  const deltas=series.map((v,i)=> i? v-series[i-1] : Math.round(step)); // 1º mês também ganha barra (mesmo passo do ramp)
+  const avgMo = step;
   let el=document.getElementById('adminHistModal');
   if(!el){ el=document.createElement('div'); el.id='adminHistModal'; el.className='modal-scrim'; document.body.appendChild(el); el.onclick=ev=>{ if(ev.target===el) el.classList.remove('open'); }; }
   const chips=[[1,'1M'],[3,'3M'],[6,'6M'],[12,'12M']].map(([n,l])=>`<button class="adh-chip ${N===n?'on':''}" onclick="setAdminHistRange(${n})">${l}</button>`).join('');
   const stat=(l,v)=>`<div class="adh-stat"><div class="adh-stat-l">${l}</div><div class="adh-stat-v">${v}</div></div>`;
-  const rows=series.map((v,i)=>{ const dl=deltas[i]; const cls=dl>0?'up':dl<0?'down':'muted'; const dv= i? (dl>0?'+':dl<0?'−':'')+fmtV(Math.abs(dl)) : '—'; return `<tr><td>${labels[i]}</td><td class="ar mono">${fmtV(v)}</td><td class="ar mono ${cls}">${dv}</td></tr>`; }).reverse().join('');
+  const rows=series.map((v,i)=>{ const dl=deltas[i]; const cls=dl>0?'up':dl<0?'down':'muted'; const dv= dl? (dl>0?'+':'−')+fmtV(Math.abs(dl)) : '—'; return `<tr><td>${labels[i]}</td><td class="ar mono">${fmtV(v)}</td><td class="ar mono ${cls}">${dv}</td></tr>`; }).reverse().join('');
   el.innerHTML=`<div class="modal-card rsa-card adh-card">
     <div class="rsa-head"><div class="rsa-t"><i class="fa-solid ${d.icon}"></i> ${esc(d.nome)} · relatório</div><button class="rsa-x" onclick="document.getElementById('adminHistModal').classList.remove('open')" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="rsa-body">
@@ -6321,8 +6322,8 @@ function renderAdminHist(){
         options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:8}}, interaction:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,displayColors:false,callbacks:{title:c=>c[0].label, label:x=>fmtV(x.parsed.y)}} },
           scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxRotation:0,autoSkipPadding:14},border:{display:false}}, y:{grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:5,padding:8,callback:v=>isMoney?'R$'+v:v+'%'},border:{display:false}} } } }); }
     const bc=document.getElementById('adminHistBar');
-    if(bc){ if(charts.adminHistBar) charts.adminHistBar.destroy(); const barLabels=labels.slice(1), barData=deltas.slice(1), barColors=barData.map(v=> v>=0?up:down);
-      charts.adminHistBar=new Chart(bc,{ type:'bar', data:{ labels:barLabels, datasets:[{ data:barData, backgroundColor:barColors, borderRadius:5, maxBarThickness:22 }] },
+    if(bc){ if(charts.adminHistBar) charts.adminHistBar.destroy(); const barColors=deltas.map(v=> v>=0?up:down);
+      charts.adminHistBar=new Chart(bc,{ type:'bar', data:{ labels, datasets:[{ data:deltas, backgroundColor:barColors, borderRadius:5, maxBarThickness:22 }] },
         options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:6}}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,displayColors:false,callbacks:{title:c=>c[0].label, label:x=>(x.parsed.y>=0?'+':'')+fmtV(x.parsed.y)}} },
           scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxRotation:0,autoSkipPadding:14},border:{display:false}}, y:{grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:4,padding:8,callback:v=>isMoney?'R$'+v:v+'%'},border:{display:false}} } } }); }
   }, 60);
