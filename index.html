@@ -858,6 +858,7 @@ img, svg, canvas, video { max-width: 100%; }
 </style>
 </head>
 <body>
+<script>/* portão: esconde o app já no 1º paint quando não há acesso (evita o flash da Home ao abrir) */try{var _s=localStorage.getItem('lastro_session');var _b=localStorage.getItem('lastro_bio')==='1';if(!_s||_b)document.documentElement.classList.add('gate');}catch(e){}</script>
 <div id="splash" role="img" aria-label="Lastro">
   <div class="splash-inner">
     <div class="splash-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
@@ -2200,6 +2201,8 @@ canvas { touch-action:none; }
 .ob-in { animation:obFade .3s var(--ease-out); }
 .ob-count { font-size:12px; font-weight:500; color:var(--ink-3); }
 @media (prefers-reduced-motion:reduce){ .ob-in { animation:none; } }
+/* portão de acesso: esconde o app enquanto a apresentação/desbloqueio estiver ativa (sem flash da Home) */
+html.gate .sidebar, html.gate .main, html.gate .sidebar-scrim { visibility:hidden !important; }
 /* ══ Intro (apresentação de entrada — carrossel editorial, arraste manual) ══ */
 #intro { position:fixed; inset:0; z-index:9998; display:none; flex-direction:column; overflow:hidden; background:#F4F3EE; color:#1B1712;
   padding:calc(20px + env(safe-area-inset-top,0px)) 22px calc(20px + env(safe-area-inset-bottom,0px)); }
@@ -2219,6 +2222,27 @@ canvas { touch-action:none; }
 .intro-shot.sh-rect { border-radius:22px; }
 .intro-shot.sh-oval { border-radius:46% 46% 46% 46% / 40% 40% 40% 40%; height:min(50vh,420px); width:88%; }
 .intro-shot.sh-arch { border-radius:180px 180px 30px 30px; height:min(50vh,420px); width:84%; }
+/* mockup de funcionalidade interna (telas 1 e 3) — parece uma captura do app */
+.intro-shot.sh-screen { background:#FBFAF7; border:1px solid #E6E3DA; box-shadow:0 22px 54px rgba(20,16,12,.14); padding:18px 16px; display:flex; align-items:stretch; }
+.ift { width:100%; display:flex; flex-direction:column; gap:11px; text-align:left; }
+.ift-h { display:flex; align-items:center; justify-content:space-between; }
+.ift-h > span:first-child { font-size:14px; font-weight:700; color:#1B1712; }
+.ift-tag { font-size:9.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#0E7C5A; background:rgba(14,124,90,.1); padding:4px 8px; border-radius:20px; }
+.ift-row { display:flex; align-items:center; gap:10px; }
+.ift-lg { width:32px; height:32px; flex:none; border-radius:9px; background:#EDEAE2; color:#6b6558; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+.ift-nm { flex:1; min-width:0; display:flex; flex-direction:column; }
+.ift-nm b { font-size:13px; color:#1B1712; } .ift-nm small { font-size:11px; color:#8a8478; }
+.ift-score { font-family:var(--mono); font-size:12.5px; font-weight:800; color:#0E7C5A; background:rgba(14,124,90,.1); padding:3px 8px; border-radius:8px; }
+.ift-v { font-family:var(--mono); font-size:12.5px; font-weight:700; min-width:58px; text-align:right; }
+.ift-v.up { color:#0E9F6E; } .ift-v.down { color:#E02424; }
+.ift-cart { gap:9px; }
+.ift-updot { font-family:var(--mono); font-size:12px; font-weight:800; color:#0E9F6E; background:rgba(14,159,110,.12); padding:3px 9px; border-radius:20px; }
+.ift-pat { font-family:var(--mono); font-size:26px; font-weight:800; color:#1B1712; letter-spacing:-.01em; }
+.ift-bars { display:flex; align-items:flex-end; gap:7px; height:78px; margin-top:2px; }
+.ift-bars i { flex:1; border-radius:5px 5px 0 0; background:linear-gradient(180deg,#38D08A,#0E7C5A); }
+.ift-alloc { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
+.ift-al { display:flex; align-items:baseline; justify-content:space-between; background:#F1EFE8; border-radius:10px; padding:8px 11px; }
+.ift-al small { font-size:11.5px; color:#6b6558; } .ift-al b { font-family:var(--mono); font-size:13px; color:#1B1712; }
 .intro-shot .is-ph { position:absolute; inset:0; z-index:0; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.92); font-size:60px; }
 .intro-shot .is-ph::after { content:''; position:absolute; inset:0; background:radial-gradient(120% 92% at 28% 16%, rgba(255,255,255,.2), transparent 58%); }
 .intro-photo { position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:cover; }
@@ -2263,16 +2287,16 @@ canvas { touch-action:none; }
 .blk-word { font-family:var(--serif); font-size:20px; font-weight:700; letter-spacing:-.02em; color:#fff; }
 .blk-x { position:absolute; top:calc(24px + env(safe-area-inset-top,0px)); right:calc(22px + env(safe-area-inset-right,0px)); width:38px; height:38px; border-radius:11px; background:rgba(255,255,255,.16); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); border:none; color:#fff; font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:2; }
 .blk-x:hover { background:rgba(255,255,255,.26); }
-.blk-passform { display:flex; flex-direction:column; gap:0; }
-.blk-passlbl { font-size:13.5px; font-weight:600; color:var(--ink-2); margin-bottom:10px; }
-.blk-passin { position:relative; display:flex; align-items:center; margin-bottom:8px; }
-.blk-passin > i { position:absolute; left:14px; color:var(--ink-4); font-size:13px; pointer-events:none; }
-.blk-passin input { width:100%; padding:15px 44px 15px 40px; border:1px solid var(--line); border-radius:14px; background:var(--surface-2); font-size:15px; }
-.blk-passin input:focus { border-color:var(--brand); background:var(--surface); box-shadow:0 0 0 3px var(--brand-l); }
-.blk-eye { position:absolute; right:8px; width:32px; height:32px; border-radius:8px; color:var(--ink-4); cursor:pointer; display:flex; align-items:center; justify-content:center; background:none; border:none; }
-.blk-passmail { font-size:12px; color:var(--ink-3); margin:0 0 6px 2px; }
-.blk-passerr { font-size:12.5px; color:var(--down); min-height:16px; margin-bottom:6px; }
-.blk-passform .blk-bio { margin-top:2px; }
+.blk-passform { display:flex; flex-direction:column; gap:6px; }
+.blk-passlbl { font-size:14px; font-weight:600; color:#3a352c; margin-bottom:4px; }
+.blk-passin { position:relative; display:flex; align-items:center; }
+.blk-passin > i { position:absolute; left:15px; color:#9a948a; font-size:13px; pointer-events:none; }
+.blk-passin input { width:100%; padding:16px 46px 16px 42px; border:1px solid #DBD8CF; border-radius:14px; background:#fff; color:#1B1712; font-size:15px; }
+.blk-passin input::placeholder { color:#a8a294; }
+.blk-passin input:focus { border-color:#0E7C5A; background:#fff; box-shadow:0 0 0 3px rgba(14,124,90,.16); }
+.blk-eye { position:absolute; right:9px; width:34px; height:34px; border-radius:9px; color:#9a948a; cursor:pointer; display:flex; align-items:center; justify-content:center; background:none; border:none; }
+.blk-passerr { font-size:12.5px; color:var(--down); min-height:14px; }
+.blk-passform .blk-bio { margin-top:12px; }
 .blk-greet { position:relative; z-index:1; color:#fff; line-height:1.12; }
 .blk-greet span { display:block; font-family:var(--serif); font-size:30px; font-weight:400; opacity:.92; }
 .blk-greet b { display:block; font-family:var(--serif); font-size:34px; font-weight:700; letter-spacing:-.01em; margin-top:2px; }
@@ -4872,24 +4896,31 @@ function closeOnboarding(){ const m=$('#obModal'); if(m){ m.classList.remove('op
 
 /* ══ Intro premium (apresentação animada antes do cadastro) ══ */
 const INTRO_SLIDES=[
-  { photo:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1000&q=80', shape:'soft', pos:'50% 50%',
-    c1:'#0E7C5A', c2:'#08402F', icon:'fa-arrow-trend-up',
-    eyebrow:'Inteligência de investimentos', h:'Invista com convicção,<br>não no escuro.' },
-  { photo:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1000&q=80', shape:'rect', pos:'50% 45%',
-    c1:'#7c5a2e', c2:'#4a3418', icon:'fa-chart-column',
-    eyebrow:'Mercado completo', h:'Ações, FIIs, ETFs e mais —<br>com dados de verdade.' },
-  { photo:'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1000&q=80', shape:'oval', pos:'50% 40%',
-    c1:'#2f5f8a', c2:'#1e3d5c', icon:'fa-award',
-    eyebrow:'Score Lastro™', h:'A qualidade de cada ativo<br>em um número.' },
-  { photo:'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=1000&q=80', shape:'arch', pos:'50% 35%',
-    c1:'#a5683a', c2:'#6e4526', icon:'fa-wallet',
-    eyebrow:'Sua carteira', h:'Faça seu patrimônio<br>render com clareza.' },
+  { feature:'mercado', eyebrow:'Decisão com dados', h:'Pare de investir<br>no escuro.' },
+  { photo:'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1000&q=80', shape:'arch', pos:'50% 30%',
+    c1:'#2f5f8a', c2:'#1e3d5c', icon:'fa-user',
+    eyebrow:'Liberdade financeira', h:'Invista para a vida<br>que você quer.' },
+  { feature:'carteira', eyebrow:'Carteira sob controle', h:'Sua carteira clara,<br>sem planilha.' },
+  { photo:'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1000&q=80', shape:'oval', pos:'50% 40%',
+    c1:'#a5683a', c2:'#6e4526', icon:'fa-user-group',
+    eyebrow:'Tranquilidade', h:'Veja seu patrimônio<br>crescer com segurança.' },
 ];
+function introFeature(k){
+  if(k==='mercado'){
+    const rows=[['PE','PETR4','Petrobras',87,'+1,84%','up'],['IT','ITUB4','Itaú',79,'−0,72%','down'],['BO','BOVA11','ETF Ibovespa',83,'+0,61%','up'],['MX','MXRF11','Maxi Renda',72,'+0,34%','up']];
+    return `<div class="ift"><div class="ift-h"><span>Ações & FIIs</span><span class="ift-tag">Score Lastro™</span></div>${rows.map(([in2,tk,nm,sc,v,d])=>`<div class="ift-row"><span class="ift-lg">${in2}</span><span class="ift-nm"><b>${tk}</b><small>${nm}</small></span><span class="ift-score">${sc}</span><span class="ift-v ${d}">${v}</span></div>`).join('')}</div>`;
+  }
+  if(k==='carteira'){
+    return `<div class="ift ift-cart"><div class="ift-h"><span>Minha carteira</span><span class="ift-up ift-updot">+18,4%</span></div><div class="ift-pat">R$ 128.940</div><div class="ift-bars">${[40,58,50,70,64,82,76,92].map(v=>`<i style="height:${v}%"></i>`).join('')}</div><div class="ift-alloc">${[['Ações','42%'],['FIIs','31%'],['Exterior','18%'],['Cripto','9%']].map(([l,p])=>`<span class="ift-al"><small>${l}</small><b>${p}</b></span>`).join('')}</div></div>`;
+  }
+  return '';
+}
 function introVisualHTML(s){
+  if(s.feature) return `<div class="intro-shot sh-screen">${introFeature(s.feature)}</div>`;
   return `<div class="intro-shot sh-${s.shape||'rect'}" style="--c1:${s.c1};--c2:${s.c2}"><div class="is-ph"><i class="fa-solid ${s.icon}"></i></div>${s.photo?`<img class="intro-photo" src="${s.photo}" alt="" style="object-position:${s.pos||'50% 50%'}" onerror="this.remove()" referrerpolicy="no-referrer">`:''}</div>`;
 }
 let introIdx=0, _introTX=0, _introTY=0, _introMD=false;
-function startIntro(){ const el=$('#intro'); if(!el){ maybeOnboard(); return; } introIdx=0; el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; renderIntro(); document.addEventListener('keydown', introKey);
+function startIntro(){ const el=$('#intro'); if(!el){ maybeOnboard(); return; } document.documentElement.classList.add('gate'); introIdx=0; el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; renderIntro(); document.addEventListener('keydown', introKey);
   // arrastar em QUALQUER lugar da tela (inclusive na foto) troca o slide — não por toque
   el.addEventListener('touchstart',introTS,{passive:true}); el.addEventListener('touchend',introTE,{passive:true});
   el.addEventListener('mousedown',introMD); el.addEventListener('mouseup',introMU);
@@ -4911,7 +4942,7 @@ function introVisible(){ const el=$('#intro'); return !!(el && el.classList.cont
 /* abre o cadastro/login SEM sair da apresentação — o acesso só é liberado após autenticar */
 function introFinish(mode){ openAuth(mode||'signup'); }
 /* chamado só quando o usuário se autentica de verdade — aí sim revela o app */
-function introDone(){ document.removeEventListener('keydown', introKey); const el=$('#intro'); if(el){ el.removeEventListener('touchstart',introTS); el.removeEventListener('touchend',introTE); el.removeEventListener('mousedown',introMD); el.removeEventListener('mouseup',introMU); el.classList.add('closing'); setTimeout(()=>{ el.classList.remove('show','closing'); el.setAttribute('aria-hidden','true'); if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }, 400); } try{ localStorage.setItem('lastro_onboarded','1'); }catch(e){} }
+function introDone(){ document.documentElement.classList.remove('gate'); document.removeEventListener('keydown', introKey); const el=$('#intro'); if(el){ el.removeEventListener('touchstart',introTS); el.removeEventListener('touchend',introTE); el.removeEventListener('mousedown',introMD); el.removeEventListener('mouseup',introMU); el.classList.add('closing'); setTimeout(()=>{ el.classList.remove('show','closing'); el.setAttribute('aria-hidden','true'); if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }, 400); } try{ localStorage.setItem('lastro_onboarded','1'); }catch(e){} }
 /* portão de acesso: sem cadastro/login, ninguém entra (captação de leads) */
 function afterSplash(){ try{ if(isAuthed()){ if(bioEnabled()){ openBioLock(); return; } maybeOnboard(); return; } startIntro(); return; }catch(e){} maybeOnboard(); }
 
@@ -4954,18 +4985,18 @@ function bioGreeting(){ const hRaw=new Date().getHours(); const h=(typeof hRaw==
 function bioFirstName(){ try{ const p=(typeof getProfile==='function')?getProfile():null; let n=(p&&p.name)||''; if(!n){ const u=currentUser(); n=u&&u.email?u.email.split('@')[0]:''; } n=String(n||'').trim(); if(!n) return 'de volta'; const parts=n.split(/\s+/); return parts.length>1?parts[0]+' '+parts[1]:parts[0]; }catch(e){ return 'de volta'; } }
 function openBioLock(){
   const el=document.getElementById('bioLock'); if(!el){ maybeOnboard(); return; }
+  document.documentElement.classList.add('gate');
   el.innerHTML=`<div class="blk-hero"><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><button class="blk-x" onclick="bioExitToIntro()" aria-label="Voltar à apresentação"><i class="fa-solid fa-xmark"></i></button><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
     <div class="blk-foot" id="bioFoot"><button class="btn btn-primary blk-bio" onclick="bioUnlock()"><i class="fa-solid fa-face-smile"></i> Entrar com biometria</button><button class="blk-pass" onclick="bioLockPassword()">Entrar com senha</button></div>`;
   el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; setTimeout(bioUnlock, 500);
 }
-function _bioLockDone(){ const el=document.getElementById('bioLock'); if(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); } if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }
+function _bioLockDone(){ document.documentElement.classList.remove('gate'); const el=document.getElementById('bioLock'); if(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); } if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }
 /* X: sair do "pré-login" e voltar para a tela de apresentação */
 function bioExitToIntro(){ _bioLockDone(); if(typeof startIntro==='function') startIntro(); }
 /* "Entrar com senha": confirmar identidade digitando a senha (o cliente já tem sessão, mas precisa provar que é ele) */
 function bioLockPassword(){
   const foot=document.getElementById('bioFoot'); if(!foot) return;
-  const email=(currentUser()&&currentUser().email)||'';
-  foot.innerHTML=`<div class="blk-passform"><div class="blk-passlbl">Digite sua senha para confirmar que é você</div><div class="blk-passin"><i class="fa-solid fa-lock"></i><input id="bioPass" type="password" placeholder="sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')bioDoPassword()"><button type="button" class="blk-eye" onclick="togglePassId('bioPass',this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div>${email?`<div class="blk-passmail">${esc(email)}</div>`:''}<div id="bioPassErr" class="blk-passerr"></div><button class="btn btn-primary blk-bio" onclick="bioDoPassword()">Entrar</button><button class="blk-pass" onclick="openBioLock()"><i class="fa-solid fa-face-smile" style="font-size:12px"></i> Usar biometria</button></div>`;
+  foot.innerHTML=`<div class="blk-passform"><div class="blk-passlbl">Digite sua senha para acessar a Lastro</div><div class="blk-passin"><i class="fa-solid fa-lock"></i><input id="bioPass" type="password" placeholder="sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')bioDoPassword()"><button type="button" class="blk-eye" onclick="togglePassId('bioPass',this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div><div id="bioPassErr" class="blk-passerr"></div><button class="btn btn-primary blk-bio" onclick="bioDoPassword()">Entrar</button><button class="blk-pass" onclick="openBioLock()"><i class="fa-solid fa-face-smile" style="font-size:12px"></i> Usar biometria</button></div>`;
   setTimeout(()=>{ const i=document.getElementById('bioPass'); i&&i.focus(); }, 90);
 }
 async function bioDoPassword(){
