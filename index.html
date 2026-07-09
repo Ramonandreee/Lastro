@@ -964,7 +964,7 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="nav-social">
         <a href="https://instagram.com/lastro.app" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
         <a href="https://threads.net/@lastro.app" target="_blank" rel="noopener" title="Threads" aria-label="Threads"><i class="fa-brands fa-threads"></i></a>
-        <a href="https://open.spotify.com/" target="_blank" rel="noopener" title="Spotify" aria-label="Spotify"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M7 9.9c3.2-1 7.1-.6 9.7 1.1"/><path d="M7.6 12.8c2.6-.8 5.7-.4 7.9 1"/><path d="M8.2 15.4c2-.6 4.2-.3 5.9.8"/></svg></a>
+        <a href="https://open.spotify.com/playlist/0DD1ZDwEl18IigMy3hdRCc" target="_blank" rel="noopener" title="Spotify" aria-label="Spotify"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M7 9.9c3.2-1 7.1-.6 9.7 1.1"/><path d="M7.6 12.8c2.6-.8 5.7-.4 7.9 1"/><path d="M8.2 15.4c2-.6 4.2-.3 5.9.8"/></svg></a>
         <a onclick="closeSidebar();openSupport()" style="cursor:pointer" title="Ajuda & Suporte" aria-label="Suporte"><i class="fa-solid fa-headset"></i></a>
       </div>
     </div>
@@ -2097,6 +2097,20 @@ canvas { touch-action:none; }
 .ad-hist-delta.up { color:var(--up); background:var(--up-l); }
 .ad-hist-delta.down { color:var(--down); background:var(--down-l); }
 .ad-hist-delta span { font-family:var(--sans,inherit); font-weight:500; color:var(--ink-3); font-size:11px; }
+.adh-card { width:480px; }
+.adh-filters { display:flex; gap:8px; }
+.adh-chip { flex:none; padding:6px 15px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink-2); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .14s var(--ease); }
+.adh-chip:hover { border-color:var(--line-2); color:var(--ink); }
+.adh-chip.on { background:var(--brand); border-color:var(--brand); color:#fff; }
+.adh-block-t { font-size:11px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:.05em; margin-bottom:9px; }
+.adh-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.adh-stat { background:var(--surface-3); border-radius:var(--r-sm); padding:11px 8px; text-align:center; }
+.adh-stat-l { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.03em; }
+.adh-stat-v { font-family:var(--mono); font-size:14px; font-weight:700; color:var(--ink); margin-top:4px; line-height:1.1; }
+.adh-tablewrap { max-height:230px; overflow-y:auto; border:1px solid var(--line); border-radius:var(--r-sm); }
+.adh-table { font-size:12.5px; } .adh-table th { position:sticky; top:0; background:var(--surface); z-index:1; }
+.adh-table td, .adh-table th { padding:8px 12px; }
+@media (max-width:440px){ .adh-stats { grid-template-columns:repeat(2,1fr); } }
 .rsa-field { display:flex; flex-direction:column; gap:8px; }
 .rsa-lbl { font-size:12px; font-weight:500; color:var(--ink-2); }
 .rsa-seg { display:flex; gap:6px; padding:4px; background:var(--surface-3); border-radius:var(--r-sm); }
@@ -2313,11 +2327,12 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .ad-sug-i[data-st="pos"]{ --st:var(--up); } .ad-sug-i[data-st="warn"]{ --st:var(--gold); } .ad-sug-i[data-st="neu"]{ --st:var(--accent); }
 .ad-sug-i strong { color:var(--ink); font-weight:700; }
 /* Ações — sugestão + plano de ação colapsável, aprovar/arquivar */
-.ad-actions-head { display:flex; flex-direction:column; gap:13px; align-items:flex-start; font-size:12.5px; color:var(--ink-3); line-height:1.55; margin-bottom:14px; padding:0 2px; }
+.ad-actions-head { display:flex; flex-direction:column; gap:13px; align-items:stretch; font-size:12.5px; color:var(--ink-3); line-height:1.55; margin-bottom:14px; padding:0 2px; }
 .ad-ah-tx { display:flex; gap:9px; align-items:flex-start; width:100%; }
-.ad-gen-btn { align-self:flex-start; white-space:nowrap; }
-.ad-actions-head i { color:var(--brand); margin-top:2px; }
+.ad-ah-tx > i { color:var(--brand); margin-top:2px; flex:none; }
 .ad-actions-head strong { color:var(--ink-2); }
+.ad-gen-row { display:flex; gap:10px; width:100%; }
+.ad-gen-row .btn { flex:1 1 0; justify-content:center; min-width:0; white-space:nowrap; }
 .ad-action { border:1px solid var(--line); border-left:3px solid var(--st,var(--accent)); border-radius:var(--r); background:var(--surface); margin-bottom:12px; overflow:hidden; transition:box-shadow .2s var(--ease), border-color .2s var(--ease); }
 .ad-action[data-st="pos"]{ --st:var(--up); } .ad-action[data-st="warn"]{ --st:var(--gold); } .ad-action[data-st="neu"]{ --st:var(--accent); }
 .ad-action:hover { box-shadow:var(--sh-sm); }
@@ -6057,6 +6072,12 @@ function generateAdminAction(){
   const p=getProfile(); p.adminExtra=[...ids, next.id]; saveProfile(p); if(typeof flushCloudState==='function') flushCloudState();
   render('admin'); toast('Nova análise gerada e somada à lista ✓');
 }
+/* atualiza os dados/recomendações do painel (recalcula a partir da base atual) */
+function refreshAdminData(){
+  if(typeof loadCloudState==='function'){ try{ loadCloudState(); }catch(e){} }
+  render('admin'); animateContent();
+  toast('Dados do painel atualizados ✓');
+}
 /* estado das ações (aprovar/arquivar/excluir) — persistido no perfil/nuvem */
 function adminActionState(){ const p=getProfile(); return (p.adminActions&&typeof p.adminActions==='object')?p.adminActions:{}; }
 function _setAdminAction(id, patch){ const p=getProfile(); const m=Object.assign({}, p.adminActions||{}); m[id]=Object.assign({}, m[id]||{}, patch); p.adminActions=m; saveProfile(p); if(typeof flushCloudState==='function') flushCloudState(); render('admin'); }
@@ -6136,7 +6157,7 @@ function viewAdmin(){
           ${archived.length? archived.map(s=>`<div class="ad-arch-item"><span class="ad-arch-ic2" data-st="${s.st}"><i class="fa-solid ${s.ic}"></i></span><div class="ad-arch-tx"><div class="ad-arch-t">${s.title}</div><div class="ad-arch-d">${s.detail}</div></div><div class="ad-arch-btns"><button class="btn btn-ghost btn-sm" onclick="restoreAction('${s.id}')"><i class="fa-solid fa-rotate-left"></i> Restaurar</button><button class="btn btn-ghost btn-sm ad-del" onclick="deleteAction('${s.id}')"><i class="fa-solid fa-trash-can"></i></button></div></div>`).join('') : '<div class="ad-arch-empty">Nada arquivado ainda. As ações que você arquivar aparecem aqui.</div>'}
         </div>
       </div>`;
-    panel = `<div class="ad-actions-head"><div class="ad-ah-tx"><i class="fa-solid fa-wand-magic-sparkles"></i> Recomendações geradas a partir dos seus dados. Expanda para ver o plano e <strong>aprovar a execução</strong>.</div><button class="btn btn-primary btn-sm ad-gen-btn" onclick="generateAdminAction()"><i class="fa-solid fa-plus"></i> Gerar nova ação</button></div>${activeHTML}${archiveHTML}`;
+    panel = `<div class="ad-actions-head"><div class="ad-ah-tx"><i class="fa-solid fa-wand-magic-sparkles"></i> <span>Recomendações geradas a partir dos seus dados. Toque em uma ação para ver o plano completo.</span></div><div class="ad-gen-row"><button class="btn btn-primary ad-gen-btn" onclick="generateAdminAction()"><i class="fa-solid fa-plus"></i> Gerar nova ação</button><button class="btn btn-ghost" onclick="refreshAdminData()"><i class="fa-solid fa-rotate"></i> Atualizar dados</button></div></div>${activeHTML}${archiveHTML}`;
   } else if(adminTab==='clientes'){
     panel=`<div class="card card-pad ad-tablewrap">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-user-tie"></i></span> Clientes pagantes</div><span class="card-sub">${clientes.length} ativos</span></div>
@@ -6202,24 +6223,53 @@ function initAdminCharts(){
       options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:6}}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,displayColors:false,callbacks:{label:c=>brl0(c.parsed.y)}} },
         scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}}, y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v},border:{display:false}} } } }); }
 }
-function openAdminHist(term){
+let adminHistTerm='mrr', adminHistRange=12;
+function openAdminHist(term){ adminHistTerm=term; if(!adminHistRange) adminHistRange=12; renderAdminHist(); }
+function setAdminHistRange(n){ adminHistRange=n; renderAdminHist(); }
+function renderAdminHist(){
+  const term=adminHistTerm, N=adminHistRange;
   const d=TERM_CARDS[term]||{nome:term,icon:'fa-chart-column',descricao:''};
   const all=adminAll(); const mrr=all.reduce((s,x)=>s+(x.mrr||0),0); const clientes=all.filter(x=>x.plan!=='free').length;
   const conv=all.length?clientes/all.length*100:0;
   const endVal = term==='mrr'?mrr : term==='arr'?mrr*12 : term==='ticket'?(clientes?mrr/clientes:0) : Math.round(conv);
   const isMoney = term!=='conv';
+  const fmtV = v => isMoney ? brl0(v) : (Math.round(v)+'%');
+  const series=adminRamp(endVal,N), labels=adminMonths(N), startVal=series[0];
+  const growth = startVal ? ((endVal-startVal)/startVal*100) : 0;
+  const peak=Math.max(...series), low=Math.min(...series), avg=series.reduce((a,b)=>a+b,0)/series.length;
+  const deltas=series.map((v,i)=> i? v-series[i-1] : 0);
+  const avgMo = series.length>1 ? (endVal-startVal)/(series.length-1) : 0;
   let el=document.getElementById('adminHistModal');
   if(!el){ el=document.createElement('div'); el.id='adminHistModal'; el.className='modal-scrim'; document.body.appendChild(el); el.onclick=ev=>{ if(ev.target===el) el.classList.remove('open'); }; }
-  const N=8, series=adminRamp(endVal,N), startVal=series[0];
-  const growth = startVal ? ((endVal-startVal)/startVal*100) : 0;
-  const fmtV = v => isMoney ? brl0(v) : (Math.round(v)+'%');
-  el.innerHTML=`<div class="modal-card rsa-card"><div class="rsa-head"><div class="rsa-t"><i class="fa-solid ${d.icon}"></i> ${esc(d.nome)} · evolução</div><button class="rsa-x" onclick="document.getElementById('adminHistModal').classList.remove('open')" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div><div class="rsa-body"><div class="ad-hist-top"><div class="ad-hist-val">${fmtV(endVal)}</div><div class="ad-hist-delta ${growth>=0?'up':'down'}"><i class="fa-solid fa-arrow-trend-${growth>=0?'up':'down'}"></i> ${growth>=0?'+':''}${Math.round(growth)}% <span>últimos ${N} meses</span></div></div><div style="position:relative;height:224px"><canvas id="adminHistCanvas"></canvas></div><p class="sec-desc" style="margin:14px 2px 0">${esc(d.descricao||'')}</p><span class="chip ilus" style="margin-top:8px"><i class="fa-solid fa-flask"></i> série estimada</span></div></div>`;
+  const chips=[[6,'6M'],[12,'12M'],[24,'24M']].map(([n,l])=>`<button class="adh-chip ${N===n?'on':''}" onclick="setAdminHistRange(${n})">${l}</button>`).join('');
+  const stat=(l,v)=>`<div class="adh-stat"><div class="adh-stat-l">${l}</div><div class="adh-stat-v">${v}</div></div>`;
+  const rows=series.map((v,i)=>{ const dl=deltas[i]; const cls=dl>0?'up':dl<0?'down':'muted'; const dv= i? (dl>0?'+':dl<0?'−':'')+fmtV(Math.abs(dl)) : '—'; return `<tr><td>${labels[i]}</td><td class="ar mono">${fmtV(v)}</td><td class="ar mono ${cls}">${dv}</td></tr>`; }).reverse().join('');
+  el.innerHTML=`<div class="modal-card rsa-card adh-card">
+    <div class="rsa-head"><div class="rsa-t"><i class="fa-solid ${d.icon}"></i> ${esc(d.nome)} · relatório</div><button class="rsa-x" onclick="document.getElementById('adminHistModal').classList.remove('open')" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="rsa-body">
+      <div class="ad-hist-top"><div class="ad-hist-val">${fmtV(endVal)}</div><div class="ad-hist-delta ${growth>=0?'up':'down'}"><i class="fa-solid fa-arrow-trend-${growth>=0?'up':'down'}"></i> ${growth>=0?'+':''}${Math.round(growth)}% <span>últimos ${N} meses</span></div></div>
+      <div class="adh-filters">${chips}</div>
+      <div class="adh-block"><div class="adh-block-t">Evolução</div><div style="position:relative;height:210px"><canvas id="adminHistLine"></canvas></div></div>
+      <div class="adh-stats">${stat('Média',fmtV(Math.round(avg)))}${stat('Pico',fmtV(peak))}${stat('Menor',fmtV(low))}${stat('Ganho/mês',(avgMo>=0?'+':'−')+fmtV(Math.round(Math.abs(avgMo)))) }</div>
+      <div class="adh-block"><div class="adh-block-t">Ganho por mês</div><div style="position:relative;height:172px"><canvas id="adminHistBar"></canvas></div></div>
+      <div class="adh-block"><div class="adh-block-t">Histórico mês a mês</div><div class="ad-scroll adh-tablewrap"><table class="ad-table adh-table"><thead><tr><th>Mês</th><th class="ar">Valor</th><th class="ar">Variação</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+      <p class="sec-desc" style="margin:2px 2px 0">${esc(d.descricao||'')}</p>
+      <span class="chip ilus"><i class="fa-solid fa-flask"></i> série estimada</span>
+    </div></div>`;
   el.classList.add('open');
-  setTimeout(()=>{ const c=document.getElementById('adminHistCanvas'); if(!c) return; if(typeof HAS_CHART!=='undefined'&&!HAS_CHART) return; if(typeof Chart==='undefined') return; if(charts.adminHist) charts.adminHist.destroy(); const col=cssVar('--brand');
-    const ctx=c.getContext('2d'); const grad=ctx.createLinearGradient(0,0,0,224); grad.addColorStop(0,col+'38'); grad.addColorStop(1,col+'00');
-    charts.adminHist=new Chart(c,{ type:'line', data:{ labels:adminMonths(N), datasets:[{ label:d.nome, data:series, borderColor:col, backgroundColor:grad, fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:series.map((_,i)=>i===N-1?4.5:0), pointBackgroundColor:col, pointBorderColor:'#fff', pointBorderWidth:2, pointHoverRadius:5, borderWidth:2.75 }] },
-      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:8}}, interaction:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,titleColor:'#fff',bodyColor:'#fff',displayColors:false,callbacks:{label:x=>isMoney?brl0(x.parsed.y):x.parsed.y+'%'}} },
-        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxRotation:0,autoSkipPadding:14},border:{display:false}}, y:{grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:5,padding:8,callback:v=>isMoney?'R$'+v:v+'%'},border:{display:false}} } } }); }, 60);
+  setTimeout(()=>{ if(typeof HAS_CHART!=='undefined'&&!HAS_CHART) return; if(typeof Chart==='undefined') return;
+    const col=cssVar('--brand'), up=cssVar('--up'), down=cssVar('--down');
+    const lc=document.getElementById('adminHistLine');
+    if(lc){ if(charts.adminHistLine) charts.adminHistLine.destroy(); const ctx=lc.getContext('2d'); const grad=ctx.createLinearGradient(0,0,0,210); grad.addColorStop(0,col+'38'); grad.addColorStop(1,col+'00');
+      charts.adminHistLine=new Chart(lc,{ type:'line', data:{ labels, datasets:[{ data:series, borderColor:col, backgroundColor:grad, fill:true, tension:.35, cubicInterpolationMode:'monotone', pointRadius:series.map((_,i)=>i===series.length-1?4.5:0), pointBackgroundColor:col, pointBorderColor:'#fff', pointBorderWidth:2, pointHoverRadius:5, borderWidth:2.75 }] },
+        options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:8}}, interaction:{mode:'index',intersect:false}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,displayColors:false,callbacks:{title:c=>c[0].label, label:x=>fmtV(x.parsed.y)}} },
+          scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxRotation:0,autoSkipPadding:14},border:{display:false}}, y:{grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:5,padding:8,callback:v=>isMoney?'R$'+v:v+'%'},border:{display:false}} } } }); }
+    const bc=document.getElementById('adminHistBar');
+    if(bc){ if(charts.adminHistBar) charts.adminHistBar.destroy(); const barData=deltas.map((v,i)=> i?v:0), barColors=barData.map(v=> v>=0?up:down);
+      charts.adminHistBar=new Chart(bc,{ type:'bar', data:{ labels, datasets:[{ data:barData, backgroundColor:barColors, borderRadius:5, maxBarThickness:22 }] },
+        options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:6}}, plugins:{ legend:{display:false}, tooltip:{padding:10,cornerRadius:8,displayColors:false,callbacks:{title:c=>c[0].label, label:x=>(x.parsed.y>=0?'+':'')+fmtV(x.parsed.y)}} },
+          scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxRotation:0,autoSkipPadding:14},border:{display:false}}, y:{grid:{color:cssVar('--line'),drawTicks:false},ticks:{color:cssVar('--ink-3'),font:{size:10.5},maxTicksLimit:4,padding:8,callback:v=>isMoney?'R$'+v:v+'%'},border:{display:false}} } } }); }
+  }, 60);
 }
 
 /* ══════════════════════════════════════════════════════════
