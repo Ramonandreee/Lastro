@@ -2235,15 +2235,15 @@ html.gate .sidebar, html.gate .main, html.gate .sidebar-scrim { visibility:hidde
 .ifx-chip { position:absolute; display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:12px; background:#fff; border:1px solid rgba(20,16,12,.05); color:#3a352c; font-size:11px; font-weight:700; box-shadow:0 10px 24px rgba(20,16,12,.12); }
 .ifx-chip i { font-size:10px; color:#0E7C5A; }
 .ifx-chip-1 { top:22%; right:2%; } .ifx-chip-2 { bottom:24%; right:4%; }
-.ifx-chip-3 { top:12%; left:2%; } .ifx-chip-4 { top:11%; right:2%; }
+.ifx-chip-3 { top:1%; left:4%; } .ifx-chip-4 { top:8%; right:3%; }
 /* carteira — cartão de saldo esmeralda flutuando + pílula da IA */
-.ifp { position:absolute; top:14%; left:5%; right:5%; padding:17px 18px; border-radius:20px; background:linear-gradient(155deg,#1AA571,#0E7C5A 55%,#0A5C43); box-shadow:0 24px 54px rgba(9,83,60,.34); }
+.ifp { position:absolute; top:13%; left:5%; right:5%; padding:15px 17px; border-radius:20px; background:linear-gradient(155deg,#1AA571,#0E7C5A 55%,#0A5C43); box-shadow:0 24px 54px rgba(9,83,60,.34); }
 .ifp-top { display:flex; align-items:baseline; justify-content:space-between; }
 .ifp-top span { font-size:12px; color:rgba(255,255,255,.78); } .ifp-g { font-family:var(--mono); font-size:13px; font-weight:800; color:#B7F5D8; transition:color .3s; }
-.ifp-v { font-family:var(--mono); font-size:27px; font-weight:800; color:#fff; margin-top:3px; letter-spacing:-.01em; }
-.ifp-bars { display:flex; align-items:flex-end; gap:7px; height:58px; margin-top:14px; }
+.ifp-v { font-family:var(--mono); font-size:23px; font-weight:800; color:#fff; margin-top:2px; letter-spacing:-.01em; }
+.ifp-bars { display:flex; align-items:flex-end; gap:7px; height:38px; margin-top:11px; }
 .ifp-bars i { flex:1; border-radius:5px 5px 0 0; background:linear-gradient(180deg,#8CF0C2,#1AA571); transform-origin:bottom; transition:height .8s var(--ease); }
-.ifp-pill { position:absolute; left:0; right:4%; top:52%; display:flex; align-items:flex-start; gap:11px; padding:14px 16px; border-radius:16px 16px 16px 5px; background:#fff; box-shadow:0 18px 42px rgba(20,16,12,.24); }
+.ifp-pill { position:absolute; left:0; right:3%; top:46%; display:flex; align-items:flex-start; gap:11px; padding:14px 16px; border-radius:16px 16px 16px 5px; background:#fff; box-shadow:0 18px 42px rgba(20,16,12,.24); }
 .ifp-ia { width:28px; height:28px; flex:none; border-radius:9px; background:#e6f4ee; color:#0E7C5A; display:flex; align-items:center; justify-content:center; font-size:12px; }
 .ifp-tx { min-width:0; display:block; }
 .ifp-tx > b { display:block; font-size:10.5px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; color:#0E7C5A; margin-bottom:3px; }
@@ -4950,8 +4950,8 @@ function introFeature(k){
   if(k==='carteira'){
     return `<div class="ifx ifx-cart">
       <div class="ifp"><div class="ifp-top"><span>Meu patrimônio</span><b class="ifp-g">+18,4%</b></div><div class="ifp-v">R$ 128.940</div><div class="ifp-bars">${[38,54,48,66,60,78,72,90].map((v,i)=>`<i style="height:${v}%;--d:${(i*0.06).toFixed(2)}s"></i>`).join('')}</div></div>
-      <div class="ifp-pill"><span class="ifp-ia"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span class="ifp-tx"><b>Lastro IA</b><span class="ift-type" data-full="Você está 62% em bancos — concentração alta.
-Para diversificar, considere: HGLG11 (galpões logísticos), KNCR11 (crédito/CDI) e IVVB11 (S&P 500). Reduzem o risco e trazem renda mais estável."></span><i class="ift-caret"></i></span></div>
+      <div class="ifp-pill"><span class="ifp-ia"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span class="ifp-tx"><b>Lastro IA</b><span class="ift-type" data-full="Sua carteira está muito concentrada: 62% está em bancos, o que aumenta o seu risco.
+Para equilibrar, vale olhar HGLG11 (galpões logísticos), KNCR11 (crédito atrelado ao CDI) e IVVB11 (S&P 500). Assim você ganha renda mais estável e reduz a dependência de um só setor."></span><i class="ift-caret"></i></span></div>
       <div class="ifx-chip ifx-chip-3"><i class="fa-solid fa-coins"></i> Proventos</div>
       <div class="ifx-chip ifx-chip-4"><i class="fa-solid fa-file-lines"></i> Relatórios</div>
     </div>`;
