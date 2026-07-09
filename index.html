@@ -2244,8 +2244,13 @@ html.gate .sidebar, html.gate .main, html.gate .sidebar-scrim { visibility:hidde
 .ifp-v { font-family:var(--mono); font-size:27px; font-weight:800; color:#fff; margin-top:3px; letter-spacing:-.01em; }
 .ifp-bars { display:flex; align-items:flex-end; gap:7px; height:62px; margin-top:14px; }
 .ifp-bars i { flex:1; border-radius:5px 5px 0 0; background:linear-gradient(180deg,#5FE3A6,#0E7C5A); transform-origin:bottom; }
-.ifp-pill { position:absolute; left:2%; right:14%; top:56%; display:flex; align-items:center; gap:9px; padding:12px 15px; border-radius:15px 15px 15px 5px; background:#fff; color:#0C6B4E; font-size:12.5px; font-weight:700; box-shadow:0 16px 36px rgba(0,0,0,.28); }
-.ifp-ia { width:24px; height:24px; flex:none; border-radius:8px; background:var(--brand-l,#e6f4ee); color:#0E7C5A; display:flex; align-items:center; justify-content:center; font-size:11px; }
+.ifp-pill { position:absolute; left:2%; right:8%; top:54%; display:flex; align-items:flex-start; gap:10px; padding:13px 15px; border-radius:16px 16px 16px 5px; background:#fff; box-shadow:0 16px 38px rgba(0,0,0,.3); }
+.ifp-ia { width:26px; height:26px; flex:none; border-radius:8px; background:#e6f4ee; color:#0E7C5A; display:flex; align-items:center; justify-content:center; font-size:12px; }
+.ifp-tx { min-width:0; display:flex; flex-direction:column; }
+.ifp-tx > b { font-size:10.5px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; color:#0E7C5A; margin-bottom:2px; }
+.ift-type { font-size:12.5px; font-weight:600; color:#1B1712; line-height:1.4; }
+.ift-caret { display:inline-block; width:2px; height:13px; background:#0E7C5A; margin-left:1px; vertical-align:-2px; animation:ifCaret 1s steps(1) infinite; }
+@keyframes ifCaret { 0%,50%{opacity:1} 51%,100%{opacity:0} }
 /* animação de entrada (staggered) + flutuação contínua */
 @keyframes ifIn { from{opacity:0; transform:translateY(20px) scale(.96)} to{opacity:1; transform:none} }
 @keyframes ifFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
@@ -2959,8 +2964,14 @@ body.report-open { overflow:hidden; }
 .auth-tabs { display:flex; gap:4px; background:var(--surface-3); padding:4px; border-radius:var(--r-sm); margin-bottom:14px; }
 .auth-tabs button { flex:1; padding:8px; border-radius:7px; font-size:13px; font-weight:500; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
 .auth-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
-/* login/cadastro em PÁGINA de tela cheia (não card) */
-#authModal.auth-full { align-items:stretch; justify-content:stretch; padding:0; background:var(--canvas) !important; -webkit-backdrop-filter:none; backdrop-filter:none; }
+/* login/cadastro em PÁGINA de tela cheia (não card) — sempre TEMA CLARO, igual à apresentação */
+#authModal.auth-full {
+  --canvas:#F4F3EE; --surface:#FFFFFF; --surface-2:#FAFAF7; --surface-3:#F0EFE9;
+  --ink:#1B1712; --ink-2:#586273; --ink-3:#6b6558; --ink-4:#a8a294;
+  --line:rgba(20,16,12,.1); --line-2:rgba(20,16,12,.2);
+  --brand:#0E7C5A; --brand-d:#0A5C43; --brand-l:#E6F3EE; --down:#D14343; --down-l:#FBEBEB; --accent:#2f5f8a;
+  color:#1B1712;
+  align-items:stretch; justify-content:stretch; padding:0; background:#F4F3EE !important; -webkit-backdrop-filter:none; backdrop-filter:none; }
 #authModal.auth-full .modal-card { width:100%; max-width:none; height:100dvh; max-height:100dvh; border:0; border-radius:0; box-shadow:none; display:flex; flex-direction:column; animation:none; background:var(--canvas); }
 #authModal.auth-full .modal-head { border:0; padding:calc(14px + env(safe-area-inset-top,0px)) 20px 6px; }
 #authModal.auth-full .modal-head #authTitle { font-size:15px; font-weight:600; color:var(--ink-2); }
@@ -4916,14 +4927,14 @@ function closeOnboarding(){ const m=$('#obModal'); if(m){ m.classList.remove('op
 
 /* ══ Intro premium (apresentação animada antes do cadastro) ══ */
 const INTRO_SLIDES=[
-  { feature:'mercado', eyebrow:'Decisão com dados', h:'Pare de investir<br>no escuro.' },
+  { feature:'mercado', eyebrow:'Análise de ativos', h:'Ações, FIIs e ETFs<br>com Score Lastro™.' },
   { photo:'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1000&q=80', shape:'arch', pos:'50% 30%',
-    c1:'#2f5f8a', c2:'#1e3d5c', icon:'fa-user',
-    eyebrow:'Liberdade financeira', h:'Invista para a vida<br>que você quer.' },
-  { feature:'carteira', eyebrow:'Carteira sob controle', h:'Sua carteira clara,<br>sem planilha.' },
+    c1:'#2f5f8a', c2:'#1e3d5c', icon:'fa-coins',
+    eyebrow:'Proventos & renda', h:'Acompanhe seus<br>dividendos mês a mês.' },
+  { feature:'carteira', eyebrow:'Inteligência artificial', h:'Sua carteira<br>analisada por IA.' },
   { photo:'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1000&q=80', shape:'oval', pos:'50% 40%',
-    c1:'#a5683a', c2:'#6e4526', icon:'fa-user-group',
-    eyebrow:'Tranquilidade', h:'Veja seu patrimônio<br>crescer com segurança.' },
+    c1:'#a5683a', c2:'#6e4526', icon:'fa-bullseye',
+    eyebrow:'Metas & projeções', h:'Planeje sua<br>independência financeira.' },
 ];
 function introSpark(pts, cls){ const w=48,h=22, mx=Math.max(...pts), mn=Math.min(...pts), rg=(mx-mn)||1; const d=pts.map((v,i)=>`${(i/(pts.length-1)*w).toFixed(1)},${(h-2-((v-mn)/rg)*(h-4)).toFixed(1)}`).join(' '); return `<svg class="ifc-spark" viewBox="0 0 ${w} ${h}" fill="none"><polyline points="${d}" stroke="${cls==='down'?'#FF8A8A':'#5FE3A6'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
 function introFeature(k){
@@ -4940,9 +4951,9 @@ function introFeature(k){
   if(k==='carteira'){
     return `<div class="ifx ifx-cart">
       <div class="ifp"><div class="ifp-top"><span>Meu patrimônio</span><b class="ifp-g">+18,4%</b></div><div class="ifp-v">R$ 128.940</div><div class="ifp-bars">${[38,54,48,66,60,78,72,90].map((v,i)=>`<i style="height:${v}%;--d:${(i*0.06).toFixed(2)}s"></i>`).join('')}</div></div>
-      <div class="ifp-pill"><span class="ifp-ia"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Sua carteira vai bem — veja o Raio-X</div>
+      <div class="ifp-pill"><span class="ifp-ia"><i class="fa-solid fa-wand-magic-sparkles"></i></span><span class="ifp-tx"><b>Lastro IA</b><span class="ift-type" data-full="Você está 62% em bancos. Diversifique com FIIs e exterior pra equilibrar o risco."></span><i class="ift-caret"></i></span></div>
       <div class="ifx-chip ifx-chip-3"><i class="fa-solid fa-coins"></i> Proventos</div>
-      <div class="ifx-chip ifx-chip-4"><i class="fa-solid fa-cloud"></i> Sincronizado</div>
+      <div class="ifx-chip ifx-chip-4"><i class="fa-solid fa-file-lines"></i> Relatórios</div>
     </div>`;
   }
   return '';
@@ -4957,10 +4968,19 @@ function startIntro(){ const el=$('#intro'); if(!el){ maybeOnboard(); return; } 
   el.addEventListener('touchstart',introTS,{passive:true}); el.addEventListener('touchend',introTE,{passive:true});
   el.addEventListener('mousedown',introMD); el.addEventListener('mouseup',introMU);
 }
+let _introTypeT=null;
 function renderIntro(){
   const s=INTRO_SLIDES[introIdx];
   const stage=$('#introStage'); if(stage){ stage.innerHTML=`${introVisualHTML(s)}<div class="intro-eyebrow">${s.eyebrow}</div><div class="intro-h">${s.h}</div>`; stage.classList.remove('intro-in'); void stage.offsetWidth; stage.classList.add('intro-in'); }
   const dots=$('#introDots'); if(dots){ dots.innerHTML=INTRO_SLIDES.map((_,i)=>`<span class="intro-dot ${i===introIdx?'on':''}" role="button" aria-label="Slide ${i+1}" onclick="introGoto(${i})"></span>`).join(''); }
+  clearInterval(_introTypeT);
+  if(s.feature==='carteira') setTimeout(introTypewriter, 620);   // a IA "digita" a análise da carteira
+}
+function introTypewriter(){
+  const el=document.querySelector('#introStage .ift-type'); if(!el) return;
+  const full=el.getAttribute('data-full')||''; el.textContent=''; let i=0;
+  clearInterval(_introTypeT);
+  _introTypeT=setInterval(()=>{ el.textContent=full.slice(0,++i); if(i>=full.length) clearInterval(_introTypeT); }, 30);
 }
 function introGoto(i){ if(i<0||i>=INTRO_SLIDES.length||i===introIdx){ return; } introIdx=i; renderIntro(); }
 function introNext(){ if(introIdx<INTRO_SLIDES.length-1) introGoto(introIdx+1); }
@@ -4974,7 +4994,7 @@ function introVisible(){ const el=$('#intro'); return !!(el && el.classList.cont
 /* abre o cadastro/login (sempre as páginas de Entrar/Cadastro, nunca 'Sua conta') — só libera após autenticar */
 function introFinish(mode){ openAuth(mode||'signup', true); }
 /* chamado só quando o usuário se autentica de verdade — aí sim revela o app */
-function introDone(){ document.documentElement.classList.remove('gate'); document.removeEventListener('keydown', introKey); const el=$('#intro'); if(el){ el.removeEventListener('touchstart',introTS); el.removeEventListener('touchend',introTE); el.removeEventListener('mousedown',introMD); el.removeEventListener('mouseup',introMU); el.classList.add('closing'); setTimeout(()=>{ el.classList.remove('show','closing'); el.setAttribute('aria-hidden','true'); if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }, 400); } try{ localStorage.setItem('lastro_onboarded','1'); }catch(e){} }
+function introDone(){ document.documentElement.classList.remove('gate'); clearInterval(_introTypeT); document.removeEventListener('keydown', introKey); const el=$('#intro'); if(el){ el.removeEventListener('touchstart',introTS); el.removeEventListener('touchend',introTE); el.removeEventListener('mousedown',introMD); el.removeEventListener('mouseup',introMU); el.classList.add('closing'); setTimeout(()=>{ el.classList.remove('show','closing'); el.setAttribute('aria-hidden','true'); if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }, 400); } try{ localStorage.setItem('lastro_onboarded','1'); }catch(e){} }
 /* portão de acesso: sem cadastro/login, ninguém entra (captação de leads) */
 function afterSplash(){ try{ if(isAuthed()){ if(bioEnabled()){ openBioLock(); return; } maybeOnboard(); return; } startIntro(); return; }catch(e){} maybeOnboard(); }
 
