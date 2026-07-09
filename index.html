@@ -867,24 +867,17 @@ img, svg, canvas, video { max-width: 100%; }
   <div class="splash-load"><i></i></div>
 </div>
 <div id="intro" aria-hidden="true">
-  <div class="intro-bg"></div><div class="intro-bg-grain"></div>
-  <div class="intro-progress" id="introBars"></div>
-  <button class="intro-skip" onclick="introSkip()">Pular</button>
+  <div class="intro-top"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="it-word">Lastro</span></div>
   <div class="intro-nav prev" onclick="introPrev()" aria-label="Anterior"></div>
   <div class="intro-nav next" onclick="introNext()" aria-label="Próximo"></div>
   <div class="intro-stage" id="introStage"></div>
+  <div class="intro-dots" id="introDots"></div>
   <div class="intro-foot">
-    <button class="intro-cta" onclick="introFinish('signup')"><i class="fa-solid fa-user-plus"></i> Fazer cadastro</button>
-    <button class="intro-cta2" onclick="introFinish('login')"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>
+    <button class="intro-cta2" onclick="introFinish('login')">Entrar</button>
+    <button class="intro-cta" onclick="introFinish('signup')">Fazer cadastro</button>
   </div>
 </div>
-<div id="bioLock" aria-hidden="true">
-  <div class="bio-tile"><svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17v-5a3 3 0 0 1 3-3h5"/><path d="M39 17v-5a3 3 0 0 0-3-3h-5"/><path d="M9 31v5a3 3 0 0 0 3 3h5"/><path d="M39 31v5a3 3 0 0 1-3 3h-5"/><path d="M18 20v3.5"/><path d="M30 20v3.5"/><path d="M24 19v6.5l-2.4 1"/><path d="M18.5 30.5c1.6 1.5 3.4 2.2 5.5 2.2s3.9-.7 5.5-2.2"/></svg></div>
-  <div class="bio-t">Desbloquear o Lastro</div>
-  <div class="bio-s">Use o Face ID para entrar com segurança.</div>
-  <button class="btn btn-primary" onclick="bioUnlock()"><i class="fa-solid fa-face-smile"></i> Desbloquear com Face ID</button>
-  <button class="bio-skip" onclick="bioSkipLock()">Entrar sem biometria</button>
-</div>
+<div id="bioLock" aria-hidden="true"></div>
 <div class="sidebar-scrim" id="sidebarScrim" onclick="closeSidebar()"></div>
 <div class="app">
 
@@ -2209,86 +2202,40 @@ canvas { touch-action:none; }
 .ob-in { animation:obFade .3s var(--ease-out); }
 .ob-count { font-size:12px; font-weight:500; color:var(--ink-3); }
 @media (prefers-reduced-motion:reduce){ .ob-in { animation:none; } }
-/* ══ Intro premium (apresentação animada antes do cadastro) ══ */
-#intro { position:fixed; inset:0; z-index:9998; display:none; flex-direction:column; overflow:hidden; color:#fff; background:#04120D;
-  padding:calc(16px + env(safe-area-inset-top,0px)) 20px calc(22px + env(safe-area-inset-bottom,0px)); }
-#intro.show { display:flex; animation:introFade .5s var(--ease-out); }
+/* ══ Intro (apresentação de entrada — carrossel editorial, arraste manual) ══ */
+#intro { position:fixed; inset:0; z-index:9998; display:none; flex-direction:column; overflow:hidden; background:#F4F3EE; color:#1B1712;
+  padding:calc(20px + env(safe-area-inset-top,0px)) 22px calc(20px + env(safe-area-inset-bottom,0px)); }
+#intro.show { display:flex; animation:introFade .45s var(--ease-out); }
 #intro.closing { animation:introOut .4s var(--ease-out) forwards; }
 @keyframes introFade { from{opacity:0} to{opacity:1} }
-@keyframes introOut { to{opacity:0; transform:scale(1.02)} }
-.intro-bg { position:absolute; inset:0; z-index:0; background:radial-gradient(135% 90% at 50% 6%, #1AA571 0%, #0E7C5A 32%, #08432F 60%, #04120D 100%); }
-.intro-bg::before, .intro-bg::after { content:''; position:absolute; border-radius:50%; filter:blur(64px); opacity:.5; pointer-events:none; }
-.intro-bg::before { width:70vw; height:70vw; left:-14vw; top:-10vh; background:radial-gradient(circle,#23B07E,transparent 66%); animation:introBlobA 10s ease-in-out infinite; }
-.intro-bg::after { width:64vw; height:64vw; right:-16vw; top:26vh; background:radial-gradient(circle,#0BA79E,transparent 66%); animation:introBlobB 13s ease-in-out infinite; }
-@keyframes introBlobA { 0%,100%{transform:translate(0,0)} 50%{transform:translate(6vw,4vh)} }
-@keyframes introBlobB { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-5vw,-4vh)} }
-.intro-bg-grain { position:absolute; inset:0; z-index:0; background:radial-gradient(130% 100% at 50% 40%, transparent 50%, rgba(0,0,0,.42) 100%); pointer-events:none; }
-.intro-progress { position:relative; z-index:3; display:flex; gap:5px; }
-.intro-bar { flex:1; height:3px; border-radius:3px; background:rgba(255,255,255,.24); overflow:hidden; }
-.intro-bar i { display:block; height:100%; width:0; background:#fff; border-radius:3px; }
-.intro-bar.done i { width:100%; }
-.intro-bar.active i { animation:introFill var(--introdur,5000ms) linear forwards; }
-@keyframes introFill { from{width:0} to{width:100%} }
-.intro-skip { position:absolute; top:calc(30px + env(safe-area-inset-top,0px)); right:20px; z-index:6; background:rgba(255,255,255,.14); color:#fff; border:none; border-radius:20px; padding:7px 15px; font-size:12.5px; font-weight:600; cursor:pointer; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
-.intro-nav { position:absolute; top:0; bottom:0; width:34%; z-index:4; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+@keyframes introOut { to{opacity:0} }
+.intro-top { display:flex; align-items:center; gap:9px; z-index:3; }
+.intro-top .it-mark { width:32px; height:32px; border-radius:9px; background:linear-gradient(150deg,#23B07E,#0E7C5A 60%,#09533C); display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(9,83,60,.28); }
+.intro-top .it-mark svg { width:18px; height:18px; }
+.intro-top .it-word { font-family:var(--serif); font-size:20px; font-weight:700; letter-spacing:-.02em; color:#1B1712; }
+.intro-nav { position:absolute; top:78px; bottom:170px; width:32%; z-index:4; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .intro-nav.prev { left:0; } .intro-nav.next { right:0; }
-.intro-stage { position:relative; z-index:2; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:0; }
-.intro-visual { position:relative; width:100%; max-width:440px; height:min(46vh,380px); display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
-.intro-h { font-family:var(--serif); font-size:clamp(26px,7.4vw,34px); font-weight:600; letter-spacing:-.02em; line-height:1.14; max-width:540px; }
-.intro-s { font-size:14.5px; color:rgba(255,255,255,.82); line-height:1.62; margin-top:13px; max-width:430px; }
-@keyframes introUp { from{opacity:0; transform:translateY(18px)} to{opacity:1; transform:none} }
-.intro-in .intro-visual { animation:introUp .6s var(--ease-out) both; }
-.intro-in .intro-h { animation:introUp .6s var(--ease-out) .08s both; }
-.intro-in .intro-s { animation:introUp .6s var(--ease-out) .16s both; }
-.intro-foot { position:relative; z-index:5; display:flex; flex-direction:column; gap:11px; padding-top:8px; }
-.intro-cta { width:100%; justify-content:center; background:#fff; color:#0C6B4E; border:none; border-radius:15px; padding:16px; font-size:15.5px; font-weight:700; cursor:pointer; box-shadow:0 12px 34px rgba(0,0,0,.34); display:flex; align-items:center; gap:9px; transition:transform .15s var(--ease); }
-.intro-cta:active { transform:scale(.98); }
-.intro-cta2 { width:100%; justify-content:center; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.34); border-radius:15px; padding:15px; font-size:15px; font-weight:600; cursor:pointer; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); display:flex; align-items:center; gap:8px; transition:transform .15s var(--ease), background .15s var(--ease); }
-.intro-cta2:active { transform:scale(.98); } .intro-cta2:hover { background:rgba(255,255,255,.16); }
-/* — visual: marca — */
-.intro-brand { display:flex; flex-direction:column; align-items:center; gap:22px; }
-.intro-brand .ib-mark { width:104px; height:104px; border-radius:30px; background:rgba(255,255,255,.14); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); box-shadow:inset 0 1px 1px rgba(255,255,255,.35), 0 22px 54px rgba(0,0,0,.34); display:flex; align-items:center; justify-content:center; position:relative; animation:introFloat 4.5s ease-in-out infinite; }
-.intro-brand .ib-mark svg { width:56px; height:56px; }
-.intro-brand .ib-mark::after { content:''; position:absolute; inset:-22px; border-radius:44px; z-index:-1; background:radial-gradient(circle, rgba(255,255,255,.26), transparent 70%); animation:introGlow 3.4s ease-in-out infinite; }
-.intro-brand .ib-word { font-family:var(--serif); font-size:40px; font-weight:700; letter-spacing:-.02em; }
-@keyframes introFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-@keyframes introGlow { 0%,100%{opacity:.55; transform:scale(1)} 50%{opacity:.9; transform:scale(1.08)} }
-/* — visual: tickers flutuantes — */
-.intro-tickers { position:relative; width:100%; height:100%; }
-.itk { position:absolute; display:flex; align-items:center; gap:11px; padding:12px 15px; border-radius:16px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); box-shadow:0 14px 34px rgba(0,0,0,.26); min-width:186px; }
-.itk .itk-tk { font-weight:700; font-size:14px; letter-spacing:-.01em; }
-.itk .itk-nm { font-size:11px; color:rgba(255,255,255,.6); margin-top:1px; }
-.itk .itk-r { margin-left:auto; text-align:right; }
-.itk .itk-px { font-family:var(--mono); font-size:13px; font-weight:600; }
-.itk .itk-v { font-family:var(--mono); font-size:11px; font-weight:700; }
-.itk .up { color:#4ADE9E; } .itk .down { color:#FF7A7A; }
-.itk-spark { width:44px; height:22px; }
-.itk-a { top:6%; left:2%; animation:introFloat 5s ease-in-out infinite; }
-.itk-b { top:39%; right:0%; animation:introFloat 6s ease-in-out .4s infinite; }
-.itk-c { bottom:6%; left:8%; animation:introFloat 5.6s ease-in-out .8s infinite; }
-.itk-badge { position:absolute; top:30%; left:32%; display:flex; align-items:center; gap:7px; padding:9px 13px; border-radius:14px; background:linear-gradient(135deg,#E7B84B,#B8860B); color:#3a2a05; font-weight:800; font-size:13px; box-shadow:0 12px 30px rgba(184,134,11,.4); animation:introFloat 4.4s ease-in-out .2s infinite; }
-/* — visual: gauge do Score — */
-.intro-gauge { position:relative; width:210px; height:210px; }
-.intro-gauge svg { width:100%; height:100%; transform:rotate(-90deg); }
-.intro-gauge .ig-track { fill:none; stroke:rgba(255,255,255,.16); stroke-width:14; }
-.intro-gauge .ig-arc { fill:none; stroke:url(#igGrad); stroke-width:14; stroke-linecap:round; stroke-dasharray:534; stroke-dashoffset:534; }
-.intro-in .intro-gauge .ig-arc { animation:introArc 1.5s var(--ease-out) .25s forwards; }
-@keyframes introArc { to{ stroke-dashoffset:80; } }
-.intro-gauge .ig-c { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.intro-gauge .ig-num { font-family:var(--mono); font-size:56px; font-weight:800; line-height:1; }
-.intro-gauge .ig-lbl { font-size:12px; color:rgba(255,255,255,.7); margin-top:6px; letter-spacing:.04em; text-transform:uppercase; }
-/* — visual: carteira + IA — */
-.intro-pcard { width:min(84%,340px); border-radius:20px; padding:18px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); box-shadow:0 18px 44px rgba(0,0,0,.3); position:relative; }
-.intro-pcard .ipc-top { display:flex; align-items:baseline; justify-content:space-between; }
-.intro-pcard .ipc-l { font-size:12px; color:rgba(255,255,255,.7); }
-.intro-pcard .ipc-v { font-family:var(--mono); font-size:26px; font-weight:800; margin-top:2px; }
-.intro-pcard .ipc-g { font-family:var(--mono); font-size:13px; font-weight:700; color:#4ADE9E; }
-.intro-pcard .ipc-bars { display:flex; align-items:flex-end; gap:7px; height:74px; margin-top:16px; }
-.intro-pcard .ipc-bars i { flex:1; border-radius:5px 5px 0 0; background:linear-gradient(180deg,#38D08A,#0E7C5A); transform-origin:bottom; animation:introBar .8s var(--ease-out) both; }
-@keyframes introBar { from{transform:scaleY(0)} to{transform:scaleY(1)} }
-.intro-ia { position:absolute; right:-8px; bottom:-16px; display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:14px 14px 14px 4px; background:#fff; color:#0C6B4E; font-size:12.5px; font-weight:600; box-shadow:0 14px 34px rgba(0,0,0,.3); animation:introFloat 4.6s ease-in-out infinite; }
-.intro-ia i { color:#0E7C5A; }
-@media (prefers-reduced-motion:reduce){ #intro *, #intro *::before, #intro *::after { animation:none !important; } .intro-bar.active i, .intro-gauge .ig-arc { width:100% !important; stroke-dashoffset:80 !important; } }
+.intro-stage { position:relative; z-index:2; flex:1; display:flex; flex-direction:column; justify-content:center; min-height:0; }
+.intro-shot { position:relative; width:100%; height:min(47vh,400px); border-radius:28px; overflow:hidden; background:linear-gradient(150deg,var(--c1,#0E7C5A),var(--c2,#09533C)); box-shadow:0 22px 54px rgba(20,16,12,.18); }
+.intro-shot .is-ph { position:absolute; inset:0; z-index:0; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.92); font-size:60px; }
+.intro-shot .is-ph::after { content:''; position:absolute; inset:0; background:radial-gradient(120% 92% at 28% 16%, rgba(255,255,255,.2), transparent 58%); }
+.intro-photo { position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:cover; }
+.intro-eyebrow { font-size:11.5px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; color:#0E7C5A; margin:24px 2px 9px; }
+.intro-h { font-family:var(--serif); font-size:clamp(25px,7vw,33px); font-weight:600; letter-spacing:-.02em; line-height:1.16; color:#1B1712; padding:0 2px; }
+.intro-in .intro-shot { animation:introUp .55s var(--ease-out) both; }
+.intro-in .intro-eyebrow { animation:introUp .55s var(--ease-out) .06s both; }
+.intro-in .intro-h { animation:introUp .55s var(--ease-out) .12s both; }
+@keyframes introUp { from{opacity:0; transform:translateY(16px)} to{opacity:1; transform:none} }
+.intro-dots { display:flex; gap:8px; justify-content:center; padding:18px 0 8px; z-index:3; }
+.intro-dot { width:7px; height:7px; border-radius:50%; background:#CDC9BE; cursor:pointer; transition:all .2s var(--ease); }
+.intro-dot.on { width:22px; border-radius:4px; background:#1B1712; }
+.intro-foot { position:relative; z-index:5; display:flex; gap:11px; }
+.intro-cta, .intro-cta2 { flex:1; justify-content:center; border-radius:16px; padding:16px 14px; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; transition:transform .15s var(--ease); white-space:nowrap; }
+.intro-cta:active, .intro-cta2:active { transform:scale(.98); }
+.intro-cta2 { background:transparent; color:#1B1712; border:1.5px solid rgba(27,23,18,.26); }
+.intro-cta2:hover { border-color:rgba(27,23,18,.5); }
+.intro-cta { background:#211C16; color:#fff; border:none; box-shadow:0 12px 28px rgba(20,16,12,.26); }
+@media (prefers-reduced-motion:reduce){ #intro * { animation:none !important; } }
 /* ── Face ID / biometria ── */
 .bio-card { width:400px; text-align:center; }
 .bio-body { padding:32px 26px 6px; }
@@ -2301,14 +2248,25 @@ canvas { touch-action:none; }
 .bio-check input { width:18px; height:18px; accent-color:var(--brand); }
 .bio-foot { padding:14px 26px 26px; display:flex; flex-direction:column; gap:10px; }
 .bio-foot .btn { width:100%; justify-content:center; padding:14px; }
-#bioLock { position:fixed; inset:0; z-index:9997; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; background:var(--canvas); padding:28px calc(24px + env(safe-area-inset-left,0px)); }
+/* o modal de cadastro/login precisa ficar ACIMA do portão de entrada (#intro/#bioLock) */
+#authModal { z-index:10000; }
+/* tela "boas-vindas de volta" (desbloqueio) — estilo editorial */
+#bioLock { position:fixed; inset:0; z-index:9997; display:none; flex-direction:column; background:#F4F3EE; }
 #bioLock.show { display:flex; animation:introFade .4s var(--ease-out); }
-#bioLock .bio-tile { animation:bioPulse 2.4s ease-in-out infinite; }
-@keyframes bioPulse { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-#bioLock .bio-t { margin-top:4px; } #bioLock .bio-s { margin-bottom:26px; }
-#bioLock .btn { min-width:230px; justify-content:center; padding:14px 22px; }
-.bio-skip { margin-top:14px; background:none; border:none; color:var(--ink-3); font-size:13px; font-weight:600; cursor:pointer; padding:8px; }
-.bio-skip:hover { color:var(--ink); }
+.blk-hero { flex:1; position:relative; background:linear-gradient(160deg,#1AA571 0%,#0E7C5A 42%,#08402F 100%); display:flex; flex-direction:column; justify-content:flex-end; padding:calc(26px + env(safe-area-inset-top,0px)) 26px 34px calc(26px + env(safe-area-inset-left,0px)); overflow:hidden; }
+.blk-hero::after { content:''; position:absolute; top:-20%; right:-20%; width:70%; height:70%; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.16), transparent 66%); pointer-events:none; }
+.blk-logo { position:absolute; top:calc(26px + env(safe-area-inset-top,0px)); left:calc(26px + env(safe-area-inset-left,0px)); display:flex; align-items:center; gap:9px; }
+.blk-logo .it-mark { width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.16); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; }
+.blk-logo .it-mark svg { width:19px; height:19px; }
+.blk-word { font-family:var(--serif); font-size:20px; font-weight:700; letter-spacing:-.02em; color:#fff; }
+.blk-greet { position:relative; z-index:1; color:#fff; line-height:1.12; }
+.blk-greet span { display:block; font-family:var(--serif); font-size:30px; font-weight:400; opacity:.92; }
+.blk-greet b { display:block; font-family:var(--serif); font-size:34px; font-weight:700; letter-spacing:-.01em; margin-top:2px; }
+.blk-foot { background:#F4F3EE; padding:26px 26px calc(28px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:6px; }
+.blk-bio { width:100%; justify-content:center; padding:16px; border-radius:16px; font-size:15px; background:#211C16; color:#fff; border:none; box-shadow:0 12px 28px rgba(20,16,12,.26); }
+.blk-bio:hover { background:#2c251d; }
+.blk-pass { background:none; border:none; color:#0E7C5A; font-size:14.5px; font-weight:700; cursor:pointer; padding:14px; }
+.blk-pass:hover { text-decoration:underline; }
 /* tour guiado (coach marks) */
 .tour-ov { position:fixed; inset:0; z-index:400; display:none; }
 .tour-ov.open { display:block; }
@@ -4580,13 +4538,14 @@ async function authLogout(){
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
-  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start'].forEach(k=>localStorage.removeItem(k));
+  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
   CARTEIRA = []; localStorage.setItem('lastro_sub',''); localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
   refreshPlanUI(); updateAuthUI(); applyPriv();
   closeAuth(); closeAcctMenu();
   toast('Você saiu da conta');
   render(currentView==='asset'?'painel':currentView);
+  if(typeof startIntro==='function') startIntro();   // sem sessão → volta ao portão de acesso (cadastro/login)
 }
 /* sync nuvem: tabela user_state (user_id pk, data jsonb). Falha graciosa p/ localStorage. */
 /* re-sincroniza o estado da nuvem ao voltar o foco/aba (PC ↔ celular), com debounce */
@@ -4826,6 +4785,8 @@ async function authSubmit(mode){
     return;
   }
   closeAuth();
+  if(typeof introVisible==='function' && introVisible()) introDone();   // autenticou → libera o app (portão de acesso)
+  if(typeof _bioLockDone==='function') _bioLockDone();                  // desbloqueia se veio da tela de biometria (Entrar com senha)
   toast(mode==='signup'? (trialActive()?`Conta criada 🎉 Teste Premium liberado por ${trialDaysLeft()} dias!`:'Conta criada 🎉') : 'Bem-vindo de volta!');
   refreshPlanUI();
   render(currentView);   // re-renderiza a tela atual para destravar recursos Premium liberados pelo teste
@@ -4868,43 +4829,42 @@ function openOnboarding(){ obStep=0; renderOb(); const m=$('#obModal'); if(m){ m
 function closeOnboarding(){ const m=$('#obModal'); if(m){ m.classList.remove('open'); const c=m.querySelector('.ob-card'); if(c){ c.removeEventListener('touchstart',obTouchStart); c.removeEventListener('touchend',obTouchEnd); } } document.removeEventListener('keydown',obKey); localStorage.setItem('lastro_onboarded','1'); }
 
 /* ══ Intro premium (apresentação animada antes do cadastro) ══ */
-const INTRO_LOGO='<svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg>';
-function introSpark(pts, cls){ const w=44,h=22, max=Math.max(...pts), min=Math.min(...pts), rng=(max-min)||1; const d=pts.map((v,i)=>`${(i/(pts.length-1)*w).toFixed(1)},${(h-2-((v-min)/rng)*(h-4)).toFixed(1)}`).join(' '); return `<svg class="itk-spark" viewBox="0 0 ${w} ${h}" fill="none"><polyline points="${d}" stroke="${cls==='down'?'#FF7A7A':'#4ADE9E'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
 const INTRO_SLIDES=[
-  { visual:()=>`<div class="intro-brand"><div class="ib-mark">${INTRO_LOGO}</div></div>`,
-    h:'Bem-vindo à Lastro', s:'Inteligência para o investidor brasileiro. Dados ao vivo, Score proprietário e IA — tudo em um app feito para decidir com convicção.' },
-  { visual:()=>`<div class="intro-tickers">
-      <div class="itk itk-a"><div><div class="itk-tk">PETR4</div><div class="itk-nm">Petrobras</div></div>${introSpark([3,4,3.6,5,4.8,6,6.4],'up')}<div class="itk-r"><div class="itk-px">38,42</div><div class="itk-v up">+1,84%</div></div></div>
-      <div class="itk itk-b"><div><div class="itk-tk">ITUB4</div><div class="itk-nm">Itaú</div></div>${introSpark([5,4.6,4.8,4.2,4.4,4,3.8],'down')}<div class="itk-r"><div class="itk-px">33,10</div><div class="itk-v down">−0,72%</div></div></div>
-      <div class="itk itk-c"><div><div class="itk-tk">BOVA11</div><div class="itk-nm">ETF Ibovespa</div></div>${introSpark([4,4.3,4.2,4.8,5,5.2,5.6],'up')}<div class="itk-r"><div class="itk-px">131,20</div><div class="itk-v up">+0,61%</div></div></div>
-      <div class="itk-badge"><i class="fa-solid fa-award"></i> Score 87</div>
-    </div>`,
-    h:'O mercado inteiro, com profundidade', s:'Ações, FIIs, ETFs, BDRs, Stocks e cripto — com fundamentos completos, cotações ao vivo e documentos oficiais da CVM.' },
-  { visual:()=>`<div class="intro-gauge"><svg viewBox="0 0 200 200"><defs><linearGradient id="igGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E7B84B"/><stop offset="1" stop-color="#38D08A"/></linearGradient></defs><circle class="ig-track" cx="100" cy="100" r="85"/><circle class="ig-arc" cx="100" cy="100" r="85"/></svg><div class="ig-c"><div class="ig-num">87</div><div class="ig-lbl">Score Lastro™</div></div></div>`,
-    h:'Qualidade em um número', s:'O Score Lastro™ resume valuation, rentabilidade, endividamento e proventos numa nota de 0 a 100 — transparente e explicada.' },
-  { visual:()=>`<div class="intro-pcard"><div class="ipc-top"><div><div class="ipc-l">Meu patrimônio</div><div class="ipc-v">R$ 128.940</div></div><div class="ipc-g">+18,4%</div></div><div class="ipc-bars">${[38,52,46,64,58,76,70,88].map((v,i)=>`<i style="height:${v}%;animation-delay:${(i*0.07).toFixed(2)}s"></i>`).join('')}</div><div class="intro-ia"><i class="fa-solid fa-wand-magic-sparkles"></i> Sua carteira vai bem — veja o Raio-X</div></div>`,
-    h:'Sua carteira, analisada por IA', s:'Patrimônio, proventos e rentabilidade sincronizados na nuvem — com Raio-X, diagnóstico e recomendações inteligentes.' },
+  { photo:'', c1:'#0E7C5A', c2:'#08402F', icon:'fa-arrow-trend-up',
+    eyebrow:'Inteligência de investimentos', h:'Invista com convicção,<br>não no escuro.' },
+  { photo:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=900&q=70',
+    c1:'#7c5a2e', c2:'#4a3418', icon:'fa-chart-column',
+    eyebrow:'Mercado completo', h:'Ações, FIIs, ETFs e mais —<br>com dados de verdade.' },
+  { photo:'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=70',
+    c1:'#2f5f8a', c2:'#1e3d5c', icon:'fa-award',
+    eyebrow:'Score Lastro™', h:'A qualidade de cada ativo<br>em um número.' },
+  { photo:'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=70',
+    c1:'#a5683a', c2:'#6e4526', icon:'fa-wallet',
+    eyebrow:'Sua carteira', h:'Faça seu patrimônio<br>render com clareza.' },
 ];
-let introIdx=0, introTimer=null, _introTX=0;
-const INTRO_DUR=5200;
-function startIntro(){ const el=$('#intro'); if(!el) { maybeOnboard(); return; } introIdx=0; el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; renderIntro(); document.addEventListener('keydown', introKey); const st=$('#introStage'); if(st){ st.addEventListener('touchstart',introTS,{passive:true}); st.addEventListener('touchend',introTE,{passive:true}); } }
-function renderIntro(){
-  const s=INTRO_SLIDES[introIdx], last=introIdx===INTRO_SLIDES.length-1;
-  const stage=$('#introStage'); if(stage){ stage.innerHTML=`<div class="intro-visual">${s.visual()}</div><div class="intro-h">${s.h}</div><div class="intro-s">${s.s}</div>`; stage.classList.remove('intro-in'); void stage.offsetWidth; stage.classList.add('intro-in'); }
-  const bars=$('#introBars'); if(bars){ bars.innerHTML=INTRO_SLIDES.map((_,i)=>`<div class="intro-bar ${i<introIdx?'done':''} ${i===introIdx&&!last?'active':''}" style="--introdur:${INTRO_DUR}ms"><i></i></div>`).join(''); }
-  clearTimeout(introTimer);
-  if(!last) introTimer=setTimeout(introNext, INTRO_DUR);
+function introVisualHTML(s){
+  return `<div class="intro-shot" style="--c1:${s.c1};--c2:${s.c2}"><div class="is-ph"><i class="fa-solid ${s.icon}"></i></div>${s.photo?`<img class="intro-photo" src="${s.photo}" alt="" onerror="this.remove()" referrerpolicy="no-referrer">`:''}</div>`;
 }
-function introGoto(i){ if(i<0){ return; } if(i>=INTRO_SLIDES.length){ return; } introIdx=i; renderIntro(); }
-function introNext(){ if(introIdx<INTRO_SLIDES.length-1) introGoto(introIdx+1); else clearTimeout(introTimer); }
+let introIdx=0, _introTX=0;
+function startIntro(){ const el=$('#intro'); if(!el){ maybeOnboard(); return; } introIdx=0; el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; renderIntro(); document.addEventListener('keydown', introKey); const st=$('#introStage'); if(st){ st.addEventListener('touchstart',introTS,{passive:true}); st.addEventListener('touchend',introTE,{passive:true}); } }
+function renderIntro(){
+  const s=INTRO_SLIDES[introIdx];
+  const stage=$('#introStage'); if(stage){ stage.innerHTML=`${introVisualHTML(s)}<div class="intro-eyebrow">${s.eyebrow}</div><div class="intro-h">${s.h}</div>`; stage.classList.remove('intro-in'); void stage.offsetWidth; stage.classList.add('intro-in'); }
+  const dots=$('#introDots'); if(dots){ dots.innerHTML=INTRO_SLIDES.map((_,i)=>`<span class="intro-dot ${i===introIdx?'on':''}" role="button" aria-label="Slide ${i+1}" onclick="introGoto(${i})"></span>`).join(''); }
+}
+function introGoto(i){ if(i<0||i>=INTRO_SLIDES.length||i===introIdx){ return; } introIdx=i; renderIntro(); }
+function introNext(){ if(introIdx<INTRO_SLIDES.length-1) introGoto(introIdx+1); }
 function introPrev(){ if(introIdx>0) introGoto(introIdx-1); }
-function introKey(e){ if(e.key==='ArrowRight') introNext(); else if(e.key==='ArrowLeft') introPrev(); else if(e.key==='Escape') introSkip(); }
+function introKey(e){ if(e.key==='ArrowRight') introNext(); else if(e.key==='ArrowLeft') introPrev(); }
 function introTS(e){ _introTX=e.changedTouches[0].clientX; }
 function introTE(e){ const dx=e.changedTouches[0].clientX-_introTX; if(Math.abs(dx)>45){ if(dx<0) introNext(); else introPrev(); } }
-function _introClose(){ clearTimeout(introTimer); document.removeEventListener('keydown', introKey); const st=$('#introStage'); if(st){ st.removeEventListener('touchstart',introTS); st.removeEventListener('touchend',introTE); } const el=$('#intro'); if(el){ el.classList.add('closing'); setTimeout(()=>{ el.classList.remove('show','closing'); el.setAttribute('aria-hidden','true'); document.documentElement.style.overflow=''; }, 400); } try{ localStorage.setItem('lastro_intro_seen','1'); localStorage.setItem('lastro_onboarded','1'); }catch(e){} }
-function introFinish(mode){ _introClose(); setTimeout(()=>openAuth(mode||'signup'), 260); }
-function introSkip(){ _introClose(); }
-function afterSplash(){ try{ if(isAuthed() && bioEnabled()){ openBioLock(); return; } if(!isAuthed() && !localStorage.getItem('lastro_intro_seen')){ startIntro(); return; } }catch(e){} maybeOnboard(); }
+function introVisible(){ const el=$('#intro'); return !!(el && el.classList.contains('show')); }
+/* abre o cadastro/login SEM sair da apresentação — o acesso só é liberado após autenticar */
+function introFinish(mode){ openAuth(mode||'signup'); }
+/* chamado só quando o usuário se autentica de verdade — aí sim revela o app */
+function introDone(){ document.removeEventListener('keydown', introKey); const st=$('#introStage'); if(st){ st.removeEventListener('touchstart',introTS); st.removeEventListener('touchend',introTE); } const el=$('#intro'); if(el){ el.classList.add('closing'); setTimeout(()=>{ el.classList.remove('show','closing'); el.setAttribute('aria-hidden','true'); if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }, 400); } try{ localStorage.setItem('lastro_onboarded','1'); }catch(e){} }
+/* portão de acesso: sem cadastro/login, ninguém entra (captação de leads) */
+function afterSplash(){ try{ if(isAuthed()){ if(bioEnabled()){ openBioLock(); return; } maybeOnboard(); return; } startIntro(); return; }catch(e){} maybeOnboard(); }
 
 /* ══ Biometria facial (Face ID / WebAuthn) ══ */
 const BIO_FACE='<svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17v-5a3 3 0 0 1 3-3h5"/><path d="M39 17v-5a3 3 0 0 0-3-3h-5"/><path d="M9 31v5a3 3 0 0 0 3 3h5"/><path d="M39 31v5a3 3 0 0 1-3 3h-5"/><path d="M18 20v3.5"/><path d="M30 20v3.5"/><path d="M24 19v6.5l-2.4 1"/><path d="M18.5 30.5c1.6 1.5 3.4 2.2 5.5 2.2s3.9-.7 5.5-2.2"/></svg>';
@@ -4940,9 +4900,17 @@ async function bioActivate(){
     if(cred){ try{ localStorage.setItem('lastro_bio','1'); localStorage.setItem('lastro_bio_cred', bioB64(cred.rawId)); }catch(e){} closeBio(); toast('Face ID ativado ✓'); }
   }catch(e){ toast(e&&e.name==='NotAllowedError'?'Ativação cancelada':'Não foi possível ativar a biometria'); }
 }
-/* desbloqueio ao abrir o app quando a biometria está ativa */
-function openBioLock(){ const el=document.getElementById('bioLock'); if(!el){ maybeOnboard(); return; } el.classList.add('show'); document.documentElement.style.overflow='hidden'; setTimeout(bioUnlock, 400); }
-function _bioLockDone(){ const el=document.getElementById('bioLock'); if(el) el.classList.remove('show'); document.documentElement.style.overflow=''; }
+/* desbloqueio ao abrir o app quando a biometria está ativa — tela "boas-vindas de volta" */
+function bioGreeting(){ const hRaw=new Date().getHours(); const h=(typeof hRaw==='number'&&hRaw>=0)?hRaw:12; return h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'; }
+function bioFirstName(){ try{ const p=(typeof getProfile==='function')?getProfile():null; let n=(p&&p.name)||''; if(!n){ const u=currentUser(); n=u&&u.email?u.email.split('@')[0]:''; } n=String(n||'').trim(); if(!n) return 'de volta'; const parts=n.split(/\s+/); return parts.length>1?parts[0]+' '+parts[1]:parts[0]; }catch(e){ return 'de volta'; } }
+function openBioLock(){
+  const el=document.getElementById('bioLock'); if(!el){ maybeOnboard(); return; }
+  el.innerHTML=`<div class="blk-hero"><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
+    <div class="blk-foot"><button class="btn btn-primary blk-bio" onclick="bioUnlock()"><i class="fa-solid fa-face-smile"></i> Entrar com biometria</button><button class="blk-pass" onclick="bioLockPassword()">Entrar com senha</button></div>`;
+  el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; setTimeout(bioUnlock, 500);
+}
+function _bioLockDone(){ const el=document.getElementById('bioLock'); if(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); } if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }
+function bioLockPassword(){ openAuth('login'); }
 async function bioUnlock(){
   try{
     if(!(navigator.credentials && navigator.credentials.get)){ _bioLockDone(); return; }
