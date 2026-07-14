@@ -2628,10 +2628,16 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .sup-status { display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--up); }
 .sup-dot { width:8px; height:8px; border-radius:50%; background:var(--up); box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 60%,transparent); animation:supPulse 2s infinite; }
 @keyframes supPulse { 0%{ box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 55%,transparent); } 70%{ box-shadow:0 0 0 6px transparent; } 100%{ box-shadow:0 0 0 0 transparent; } }
-/* privacidade: oculta valores com uma tarja limpa (sem blur) */
-body.priv .priv-blur { position:relative; color:transparent !important; user-select:none; pointer-events:none; border-radius:6px; }
-body.priv .priv-blur * { visibility:hidden; }
-body.priv .priv-blur::after { content:"••••••"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--ink-3); background:var(--surface-3); border-radius:6px; letter-spacing:.14em; font-size:.82em; visibility:visible; }
+/* privacidade: máscara suave — cada caractere vira um símbolo no lugar, mantendo
+   cor e tamanho do valor, sem tarja/caixa de fundo (feel nativo de senha) */
+body.priv .priv-blur { -webkit-text-security:disc; text-security:disc; }
+/* fallback p/ navegadores sem text-security (ex.: Firefox): asteriscos sem caixa */
+@supports not ((-webkit-text-security:disc) or (text-security:disc)){
+  body.priv .priv-blur { position:relative; color:transparent !important; user-select:none; }
+  body.priv .priv-blur > * { visibility:hidden; }
+  body.priv .priv-blur::after { content:"* * * *"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--ink-3); font-weight:700; letter-spacing:.06em; visibility:visible; }
+  body.priv .whero .priv-blur::after { color:rgba(255,255,255,.85); }
+}
 .priv-blur { transition:filter .2s var(--ease); }
 .priv-eye { width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; transition:all .14s var(--ease); flex:none; }
 .priv-eye:hover { color:var(--ink); border-color:var(--line-2); }
@@ -3314,7 +3320,7 @@ body.pdf-lock { overflow:hidden; }
 /* ══ Home da carteira — visual premium (hero + stats + alocação) ══ */
 .wdash { margin-bottom:18px; }
 .whero { position:relative; overflow:hidden; border-radius:var(--r-xl); padding:22px 24px 20px; color:#fff;
-  background:linear-gradient(150deg,#1AA571 0%,#0E7C5A 46%,#083f2e 100%); box-shadow:0 20px 48px rgba(9,83,60,.34);
+  background:linear-gradient(150deg,#1A4F94 0%,#0B2E5E 46%,#061F42 100%); box-shadow:0 20px 48px rgba(11,46,94,.36);
   display:flex; flex-direction:column; }
 .whero-orb { position:absolute; top:-45%; right:-12%; width:340px; height:340px; border-radius:50%; z-index:0; pointer-events:none;
   background:radial-gradient(circle, rgba(255,255,255,.18), transparent 66%); }
@@ -3328,8 +3334,8 @@ body.pdf-lock { overflow:hidden; }
 .whero-val { font-family:var(--mono); font-size:clamp(30px,8vw,40px); font-weight:800; letter-spacing:-.02em; line-height:1.02; margin-top:8px; }
 .whero-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:11px; }
 .whero-chip, .whero-chip2 { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12.5px; font-weight:800; padding:5px 11px; border-radius:20px; }
-.whero-chip { background:rgba(255,255,255,.16); color:#eafff5; } .whero-chip.down { color:#ffd9d9; }
-.whero-chip2 { background:rgba(0,0,0,.14); color:#c9f7e2; } .whero-chip2.down { color:#ffd9d9; }
+.whero-chip { background:rgba(255,255,255,.16); color:#eaf1ff; } .whero-chip.down { color:#ffd9d9; }
+.whero-chip2 { background:rgba(0,0,0,.16); color:#cfe0ff; } .whero-chip2.down { color:#ffd9d9; }
 .whero-spark { position:relative; height:104px; margin:16px -24px -4px; overflow:hidden; }
 .whero-spark canvas { display:block; width:100% !important; height:100% !important; }
 .whero-foot { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; padding-top:15px; border-top:1px solid rgba(255,255,255,.16); }
@@ -3350,7 +3356,31 @@ body.pdf-lock { overflow:hidden; }
 .wlg { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; color:var(--ink-2); }
 .wlg i { width:9px; height:9px; border-radius:50%; flex:none; }
 .wlg b { font-family:var(--mono); color:var(--ink); }
-@media (max-width:640px){ .wstats { grid-template-columns:1fr; gap:10px; } .whero-foot > div b { font-size:13.5px; } }
+/* seletor de moeda base no hero */
+.whero-cur { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11.5px; font-weight:800; letter-spacing:.02em; padding:6px 11px; border-radius:20px; background:rgba(255,255,255,.16); color:#fff; border:none; cursor:pointer; transition:background .16s var(--ease); }
+.whero-cur:hover { background:rgba(255,255,255,.28); }
+.whero-cur .flag { font-size:12px; line-height:1; }
+.whero-cur i { font-size:9.5px; opacity:.85; }
+.whero-actions { display:flex; align-items:center; gap:8px; }
+/* comparativo do dia — carteira vs. índices (barras divergentes) */
+.wcompare { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:16px 18px; margin-top:14px; }
+.wcmp-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:13px; }
+.wcmp-t { font-size:15px; font-weight:700; letter-spacing:-.01em; color:var(--ink); display:inline-flex; align-items:center; gap:8px; }
+.wcmp-t i { color:var(--brand); font-size:13px; }
+.wcmp-sub { font-size:11px; color:var(--ink-4); font-weight:600; white-space:nowrap; }
+.wcmp-row { display:grid; grid-template-columns:88px 1fr 74px; align-items:center; gap:11px; margin:10px 0; }
+.wcmp-lbl { font-size:12.5px; font-weight:600; color:var(--ink-2); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wcmp-lbl.me { color:var(--ink); font-weight:800; }
+.wcmp-track { position:relative; height:20px; }
+.wcmp-track::before { content:''; position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:var(--line-2); }
+.wcmp-fill { position:absolute; top:2px; bottom:2px; border-radius:5px; min-width:3px; transition:width .6s var(--ease-out); }
+.wcmp-fill.pos { left:50%; background:var(--up); }
+.wcmp-fill.neg { right:50%; background:var(--down); }
+.wcmp-fill.me.pos { background:linear-gradient(90deg,#1A4F94,#3F79D6); }
+.wcmp-fill.me.neg { background:linear-gradient(90deg,#e0655c,#D14343); }
+.wcmp-val { font-family:var(--mono); font-size:12.5px; font-weight:800; text-align:right; }
+.wcmp-val.pos { color:var(--up); } .wcmp-val.neg { color:var(--down); } .wcmp-val.flat { color:var(--ink-3); }
+@media (max-width:640px){ .wstats { grid-template-columns:repeat(3,1fr); gap:8px; } .wstat { flex-direction:column; align-items:flex-start; gap:8px; padding:12px 11px; } .ws-ic { width:32px; height:32px; font-size:13px; } .ws-v { font-size:14.5px; } .whero-foot > div b { font-size:13.5px; } .wcmp-row { grid-template-columns:76px 1fr 62px; gap:8px; } }
 
 /* ════ CARTEIRA — autocomplete, prévia no modal e histórico de aportes ════ */
 .fld-rel { position:relative; }
@@ -4201,7 +4231,6 @@ function acctMenuHTML(){
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();openAssinatura()")}
       ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
-      ${item(privOn()?'fa-eye':'fa-eye-slash', privOn()?'Mostrar meus valores':'Ocultar meus valores', "closeAcctMenu();togglePriv()")}
       ${themeRow}
       ${isOwner()? `<div class="acct-sep"></div>
       ${item('fa-gauge-high','Painel administrativo',"closeAcctMenu();nav('admin')",'acct-admin')}
@@ -8049,41 +8078,78 @@ function initAlloc(){
   });
 }
 
-/* ── Home Dashboard: visão de carteira estilo painel (KPIs + evolução + alocação) ── */
+/* ── Moeda base da visão inicial (BRL ⇄ USD) ── */
+let _homeCur='BRL';
+function fmtHomeCur(v){
+  if(_homeCur==='USD'){ const r=(typeof usdBrlRate==='function'?usdBrlRate():0)||5.18; return 'US$ '+((v||0)/r).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  return brl(v);
+}
+function toggleHomeCur(){
+  _homeCur = _homeCur==='BRL'?'USD':'BRL';
+  const host=document.querySelector('#content .wdash');
+  if(host){ host.outerHTML=renderHomeDashboard(portfolioStats()); if(CARTEIRA.length) initWealthSpark(); }
+}
+/* variação do dia de um índice de mercado (parse do rótulo diário) */
+function _mktDayPct(nm){ const m=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm===nm); if(!m) return null; const s=(m.dl||'').replace('%','').replace('−','-').replace(',','.').trim(); const v=parseFloat(s); return isNaN(v)?null:v; }
+
+/* ── Home Dashboard: visão de carteira estilo painel (patrimônio + comparativo + alocação) ── */
 function renderHomeDashboard(p){
   // variação do dia (ponderada pelas posições)
   let dayVal=0; (p._byT||[]).forEach(g=>{ const v=(g.f&&g.f.a&&typeof g.f.a.var==='number')?g.f.a.var:0; dayVal+=g.val*v/100; });
   const dayP=p.atual?dayVal/p.atual*100:0;
   // alocação por classe
-  const CLS={acoes:['Ações','#0E7C5A'],fiis:['FIIs','#3F79D6'],etfs:['ETFs','#B8860B'],etfsint:['ETFs int.','#2f6f9e'],bdrs:['BDRs','#8b5cf6'],stocks:['Stocks','#0ea5e9'],cripto:['Cripto','#f59e0b']};
+  const CLS={acoes:['Ações','#0B2E5E'],fiis:['FIIs','#3F79D6'],etfs:['ETFs','#B8860B'],etfsint:['ETFs int.','#2f6f9e'],bdrs:['BDRs','#8b5cf6'],stocks:['Stocks','#0ea5e9'],cripto:['Cripto','#f59e0b']};
   const alloc={}; (p._byT||[]).forEach(g=>{ const lk=assetLookup(g.tk); const k=(lk&&lk.k)||'acoes'; alloc[k]=(alloc[k]||0)+g.val; });
   const allocEnt=Object.entries(alloc).sort((a,b)=>b[1]-a[1]);
   const allocBar=allocEnt.map(([k,v])=>{ const w=p.atual?v/p.atual*100:0; const c=(CLS[k]||['','#94a3b8'])[1]; return `<i style="width:${w}%;background:${c}"></i>`; }).join('');
   const allocLeg=allocEnt.map(([k,v])=>{ const w=p.atual?Math.round(v/p.atual*100):0; const cl=CLS[k]||[k,'#94a3b8']; return `<span class="wlg"><i style="background:${cl[1]}"></i>${cl[0]}<b>${w}%</b></span>`; }).join('');
+  // comparativo do dia: sua carteira vs. Ibovespa vs. CDI
+  const ibovDay=_mktDayPct('Ibovespa');
+  const selM=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm==='SELIC'); const selic=selM?parseFloat((selM.vl||'').replace('%','').replace(',','.')):null;
+  const cdiDay = (selic&&selic>0)? (Math.pow(1+(selic-0.1)/100,1/252)-1)*100 : null;
+  const cmpRows=[ {lbl:'Sua carteira', v:dayP, me:true}, {lbl:'Ibovespa', v:ibovDay}, {lbl:'CDI', v:cdiDay} ].filter(r=>r.v!=null);
+  const maxAbs=Math.max(0.05, ...cmpRows.map(r=>Math.abs(r.v)));
+  const cmpHTML=cmpRows.map(r=>{ const dir=r.v>0.005?'pos':(r.v<-0.005?'neg':'flat'); const w=Math.max(3, Math.abs(r.v)/maxAbs*50);
+    const fillCls=dir==='flat'?'':`wcmp-fill ${r.me?'me ':''}${dir}`;
+    return `<div class="wcmp-row">
+      <div class="wcmp-lbl ${r.me?'me':''}">${r.lbl}</div>
+      <div class="wcmp-track">${dir==='flat'?'':`<i class="${fillCls}" style="width:${w}%"></i>`}</div>
+      <div class="wcmp-val ${dir}">${r.v>=0?'+':'−'}${Math.abs(r.v).toFixed(2).replace('.',',')}%</div>
+    </div>`; }).join('');
+  // moeda: bandeira + código
+  const curFlag=_homeCur==='USD'?'🇺🇸':'🇧🇷';
   return `
   <div class="wdash">
     <div class="whero">
       <div class="whero-orb"></div>
       <div class="whero-top">
         <span class="whero-lbl">Patrimônio total${demoMode?' <span class="whero-demo"><i class="fa-solid fa-flask"></i> demonstração</span>':''}</span>
-        <button class="whero-eye" onclick="togglePriv()" aria-label="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button>
+        <div class="whero-actions">
+          <button class="whero-cur" onclick="toggleHomeCur()" aria-label="Trocar moeda base"><span class="flag">${curFlag}</span> ${_homeCur} <i class="fa-solid fa-right-left"></i></button>
+          <button class="whero-eye" onclick="togglePriv()" aria-label="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button>
+        </div>
       </div>
-      <div class="whero-val priv-blur">${brl(p.atual)}</div>
+      <div class="whero-val priv-blur">${fmtHomeCur(p.atual)}</div>
       <div class="whero-chips priv-blur">
-        <span class="whero-chip ${dayP>=0?'up':'down'}"><i class="fa-solid fa-arrow-${dayP>=0?'up':'down'}"></i> ${dayP>=0?'+':'−'}${brl(Math.abs(dayVal))} hoje</span>
+        <span class="whero-chip ${dayP>=0?'up':'down'}"><i class="fa-solid fa-arrow-${dayP>=0?'up':'down'}"></i> ${dayP>=0?'+':'−'}${fmtHomeCur(Math.abs(dayVal))} hoje</span>
         <span class="whero-chip2 ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% total</span>
       </div>
       <div class="whero-spark"><canvas id="wSpark" role="img" aria-label="Evolução do seu patrimônio"></canvas></div>
       <div class="whero-foot priv-blur">
-        <div><span>Investido</span><b>${brl(p.invest)}</b></div>
-        <div><span>Lucro total</span><b>${p.lucroProv>=0?'+':'−'}${brl(Math.abs(p.lucroProv))}</b></div>
-        <div><span>Renda/mês</span><b>${brl(p.renda)}</b></div>
+        <div><span>Investido</span><b>${fmtHomeCur(p.invest)}</b></div>
+        <div><span>Lucro total</span><b>${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))}</b></div>
+        <div><span>Renda/mês</span><b>${fmtHomeCur(p.renda)}</b></div>
       </div>
     </div>
 
+    ${cmpRows.length>1?`<div class="wcompare">
+      <div class="wcmp-head"><span class="wcmp-t"><i class="fa-solid fa-chart-simple"></i> Hoje vs. mercado</span><span class="wcmp-sub">variação do dia</span></div>
+      ${cmpHTML}
+    </div>`:''}
+
     <div class="wstats">
-      <div class="wstat"><span class="ws-ic" style="color:#0E7C5A;background:rgba(14,124,90,.1)"><i class="fa-solid fa-arrow-trend-up"></i></span><div><span class="ws-l">Ganho de capital</span><b class="ws-v ${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':'−'}${brl(Math.abs(p.lucro))}</b></div></div>
-      <div class="wstat"><span class="ws-ic" style="color:#B8860B;background:rgba(184,134,11,.1)"><i class="fa-solid fa-coins"></i></span><div><span class="ws-l">Proventos recebidos</span><b class="ws-v up">${brl(p.prov)}</b></div></div>
+      <div class="wstat"><span class="ws-ic" style="color:#1B4F9C;background:rgba(27,79,156,.1)"><i class="fa-solid fa-arrow-trend-up"></i></span><div><span class="ws-l">Ganho de capital</span><b class="ws-v priv-blur ${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucro))}</b></div></div>
+      <div class="wstat"><span class="ws-ic" style="color:#B8860B;background:rgba(184,134,11,.1)"><i class="fa-solid fa-coins"></i></span><div><span class="ws-l">Proventos recebidos</span><b class="ws-v priv-blur up">${fmtHomeCur(p.prov)}</b></div></div>
       <div class="wstat"><span class="ws-ic" style="color:#3F79D6;background:rgba(63,121,214,.1)"><i class="fa-solid fa-chart-line"></i></span><div><span class="ws-l">Rentabilidade</span><b class="ws-v ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,2)}%</b></div></div>
     </div>
 
@@ -8100,8 +8166,8 @@ function initWealthSpark(){
   if(typeof Chart==='undefined') return;
   const d=patrimonioEvolution(); if(!d||!d.cart) return;
   if(charts.wspark) charts.wspark.destroy();
-  const c2=ctx.getContext('2d'); const g=c2.createLinearGradient(0,0,0, ctx.height||120); g.addColorStop(0,'rgba(255,255,255,.34)'); g.addColorStop(1,'rgba(255,255,255,0)');
-  charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:d.labels, datasets:[{ data:d.cart, borderColor:'#eafff5', backgroundColor:g, fill:true, tension:.4, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5 }] },
+  const c2=ctx.getContext('2d'); const g=c2.createLinearGradient(0,0,0, ctx.height||120); g.addColorStop(0,'rgba(255,255,255,.32)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:d.labels, datasets:[{ data:d.cart, borderColor:'#dbe8ff', backgroundColor:g, fill:true, tension:.4, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5 }] },
     options:{ responsive:true, maintainAspectRatio:false, layout:{padding:0}, interaction:{mode:'index',intersect:false},
       plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, callbacks:{ title:c=>c[0].label, label:c=>brl0(c.parsed.y) } } },
       scales:{ x:{ display:false }, y:{ display:false } } } });
