@@ -3311,6 +3311,46 @@ body.pdf-lock { overflow:hidden; }
 .dash-grid { display:grid; grid-template-columns:1.5fr 1fr; gap:16px; margin-bottom:16px; }
 @media (max-width:900px){ .dash-grid { grid-template-columns:1fr; } }
 @media (max-width:640px){ .dash-kpis { grid-template-columns:repeat(2,1fr); gap:12px; } .dash-kpi { padding:14px 15px; } .dash-kpi .dk-val { font-size:22px; } }
+/* ══ Home da carteira — visual premium (hero + stats + alocação) ══ */
+.wdash { margin-bottom:18px; }
+.whero { position:relative; overflow:hidden; border-radius:var(--r-xl); padding:22px 24px 20px; color:#fff;
+  background:linear-gradient(150deg,#1AA571 0%,#0E7C5A 46%,#083f2e 100%); box-shadow:0 20px 48px rgba(9,83,60,.34);
+  display:flex; flex-direction:column; }
+.whero-orb { position:absolute; top:-45%; right:-12%; width:340px; height:340px; border-radius:50%; z-index:0; pointer-events:none;
+  background:radial-gradient(circle, rgba(255,255,255,.18), transparent 66%); }
+.whero > *:not(.whero-orb) { position:relative; z-index:1; }
+.whero-top { display:flex; align-items:center; justify-content:space-between; }
+.whero-lbl { font-size:11.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:rgba(255,255,255,.82); display:inline-flex; align-items:center; gap:8px; }
+.whero-demo { font-size:9px; font-weight:800; letter-spacing:.04em; padding:3px 8px; border-radius:20px; background:rgba(255,255,255,.18); text-transform:uppercase; }
+.whero-demo i { font-size:8px; }
+.whero-eye { width:34px; height:34px; border-radius:10px; border:none; background:rgba(255,255,255,.16); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; }
+.whero-eye:hover { background:rgba(255,255,255,.26); }
+.whero-val { font-family:var(--mono); font-size:clamp(30px,8vw,40px); font-weight:800; letter-spacing:-.02em; line-height:1.02; margin-top:8px; }
+.whero-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:11px; }
+.whero-chip, .whero-chip2 { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12.5px; font-weight:800; padding:5px 11px; border-radius:20px; }
+.whero-chip { background:rgba(255,255,255,.16); color:#eafff5; } .whero-chip.down { color:#ffd9d9; }
+.whero-chip2 { background:rgba(0,0,0,.14); color:#c9f7e2; } .whero-chip2.down { color:#ffd9d9; }
+.whero-spark { position:relative; height:104px; margin:16px -24px -4px; overflow:hidden; }
+.whero-spark canvas { display:block; width:100% !important; height:100% !important; }
+.whero-foot { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; padding-top:15px; border-top:1px solid rgba(255,255,255,.16); }
+.whero-foot > div span { display:block; font-size:10.5px; color:rgba(255,255,255,.66); text-transform:uppercase; letter-spacing:.03em; }
+.whero-foot > div b { display:block; font-family:var(--mono); font-size:14.5px; font-weight:800; margin-top:3px; letter-spacing:-.01em; }
+.wstats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:14px; }
+.wstat { display:flex; align-items:center; gap:11px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:14px 15px; }
+.ws-ic { width:38px; height:38px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:15px; }
+.ws-l { display:block; font-size:11px; color:var(--ink-3); font-weight:600; }
+.ws-v { display:block; font-family:var(--mono); font-size:17px; font-weight:800; color:var(--ink); margin-top:3px; letter-spacing:-.01em; }
+.ws-v.up { color:var(--up); } .ws-v.down { color:var(--down); }
+.walloc { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:18px 20px; margin-top:14px; }
+.walloc-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.walloc-t { font-size:15px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
+.walloc-bar { display:flex; height:12px; border-radius:8px; overflow:hidden; background:var(--surface-3); gap:2px; }
+.walloc-bar i { display:block; min-width:4px; }
+.walloc-leg { display:flex; flex-wrap:wrap; gap:9px 18px; margin-top:14px; }
+.wlg { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; color:var(--ink-2); }
+.wlg i { width:9px; height:9px; border-radius:50%; flex:none; }
+.wlg b { font-family:var(--mono); color:var(--ink); }
+@media (max-width:640px){ .wstats { grid-template-columns:1fr; gap:10px; } .whero-foot > div b { font-size:13.5px; } }
 
 /* ════ CARTEIRA — autocomplete, prévia no modal e histórico de aportes ════ */
 .fld-rel { position:relative; }
@@ -7782,7 +7822,7 @@ function afterRender(v, soft){
     const pv = $('#patVal');
     if(pv){ if(soft) pv.textContent = Math.floor(p.atual).toLocaleString('pt-BR'); else animateNum(pv, Math.floor(p.atual), {dec:0}); }
     initIbov();
-    if(CARTEIRA.length){ initHomeEvol(); initHomeAlloc(); }
+    if(CARTEIRA.length){ initWealthSpark(); }
     if(!soft) askAI(true);
   } else { stopHeroTimer(); }
   if(['fiis','acoes','bdrs','etfs','etfsint','stocks','cripto'].includes(v)){ renderAssets(v); }
@@ -8011,49 +8051,60 @@ function initAlloc(){
 
 /* ── Home Dashboard: visão de carteira estilo painel (KPIs + evolução + alocação) ── */
 function renderHomeDashboard(p){
+  // variação do dia (ponderada pelas posições)
+  let dayVal=0; (p._byT||[]).forEach(g=>{ const v=(g.f&&g.f.a&&typeof g.f.a.var==='number')?g.f.a.var:0; dayVal+=g.val*v/100; });
+  const dayP=p.atual?dayVal/p.atual*100:0;
+  // alocação por classe
+  const CLS={acoes:['Ações','#0E7C5A'],fiis:['FIIs','#3F79D6'],etfs:['ETFs','#B8860B'],etfsint:['ETFs int.','#2f6f9e'],bdrs:['BDRs','#8b5cf6'],stocks:['Stocks','#0ea5e9'],cripto:['Cripto','#f59e0b']};
+  const alloc={}; (p._byT||[]).forEach(g=>{ const lk=assetLookup(g.tk); const k=(lk&&lk.k)||'acoes'; alloc[k]=(alloc[k]||0)+g.val; });
+  const allocEnt=Object.entries(alloc).sort((a,b)=>b[1]-a[1]);
+  const allocBar=allocEnt.map(([k,v])=>{ const w=p.atual?v/p.atual*100:0; const c=(CLS[k]||['','#94a3b8'])[1]; return `<i style="width:${w}%;background:${c}"></i>`; }).join('');
+  const allocLeg=allocEnt.map(([k,v])=>{ const w=p.atual?Math.round(v/p.atual*100):0; const cl=CLS[k]||[k,'#94a3b8']; return `<span class="wlg"><i style="background:${cl[1]}"></i>${cl[0]}<b>${w}%</b></span>`; }).join('');
   return `
-  <div class="dash-head">
-    <div class="sec-title" style="margin:0;font-size:19px"><i class="fa-solid fa-wallet" style="color:var(--brand);margin-right:9px"></i>Sua carteira${demoMode?' <span class="chip ilus" style="vertical-align:middle;margin-left:6px"><i class="fa-solid fa-flask"></i> demonstração</span>':''}</div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <button class="btn btn-ghost btn-sm" onclick="goView('carteira')">Ver carteira <i class="fa-solid fa-arrow-right"></i></button>
-      <button class="priv-eye" onclick="togglePriv()" title="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button>
-    </div>
-  </div>
-  <div class="dash-kpis">
-    <div class="dash-kpi">
-      <div class="dk-top"><span class="dk-ic"><i class="fa-solid fa-sack-dollar"></i></span><span class="dk-lbl">Patrimônio total</span></div>
-      <div class="dk-val priv-blur">${brl(p.atual)} <span class="chip ${p.lucroP>=0?'chip-up':'chip-down'}" style="font-size:11px;vertical-align:middle">${p.lucroP>=0?'+':''}${pc(p.lucroP,2)}%</span></div>
-      <div class="dk-sub"><div><div class="s-l">Valor investido</div><div class="s-v priv-blur">${brl(p.invest)}</div></div></div>
-    </div>
-    <div class="dash-kpi">
-      <div class="dk-top"><span class="dk-ic"><i class="fa-solid fa-coins"></i></span><span class="dk-lbl">Lucro total</span></div>
-      <div class="dk-val priv-blur ${p.lucroProv>=0?'up':'down'}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div>
-      <div class="dk-sub">
-        <div><div class="s-l">Ganho de Capital</div><div class="s-v priv-blur ${p.lucro>=0?'up':'down'}">${brl(p.lucro)}</div></div>
-        <div><div class="s-l">Dividendos Recebidos</div><div class="s-v priv-blur">${brl(p.prov)}</div></div>
+  <div class="wdash">
+    <div class="whero">
+      <div class="whero-orb"></div>
+      <div class="whero-top">
+        <span class="whero-lbl">Patrimônio total${demoMode?' <span class="whero-demo"><i class="fa-solid fa-flask"></i> demonstração</span>':''}</span>
+        <button class="whero-eye" onclick="togglePriv()" aria-label="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button>
+      </div>
+      <div class="whero-val priv-blur">${brl(p.atual)}</div>
+      <div class="whero-chips priv-blur">
+        <span class="whero-chip ${dayP>=0?'up':'down'}"><i class="fa-solid fa-arrow-${dayP>=0?'up':'down'}"></i> ${dayP>=0?'+':'−'}${brl(Math.abs(dayVal))} hoje</span>
+        <span class="whero-chip2 ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% total</span>
+      </div>
+      <div class="whero-spark"><canvas id="wSpark" role="img" aria-label="Evolução do seu patrimônio"></canvas></div>
+      <div class="whero-foot priv-blur">
+        <div><span>Investido</span><b>${brl(p.invest)}</b></div>
+        <div><span>Lucro total</span><b>${p.lucroProv>=0?'+':'−'}${brl(Math.abs(p.lucroProv))}</b></div>
+        <div><span>Renda/mês</span><b>${brl(p.renda)}</b></div>
       </div>
     </div>
-    <div class="dash-kpi">
-      <div class="dk-top"><span class="dk-ic"><i class="fa-solid fa-money-bill-trend-up"></i></span><span class="dk-lbl">Proventos Recebidos</span></div>
-      <div class="dk-val priv-blur up">${brl(p.prov)}</div>
-      <div class="dk-sub"><div><div class="s-l">Renda estimada</div><div class="s-v priv-blur">${brl(p.renda)}/mês</div></div></div>
+
+    <div class="wstats">
+      <div class="wstat"><span class="ws-ic" style="color:#0E7C5A;background:rgba(14,124,90,.1)"><i class="fa-solid fa-arrow-trend-up"></i></span><div><span class="ws-l">Ganho de capital</span><b class="ws-v ${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':'−'}${brl(Math.abs(p.lucro))}</b></div></div>
+      <div class="wstat"><span class="ws-ic" style="color:#B8860B;background:rgba(184,134,11,.1)"><i class="fa-solid fa-coins"></i></span><div><span class="ws-l">Proventos recebidos</span><b class="ws-v up">${brl(p.prov)}</b></div></div>
+      <div class="wstat"><span class="ws-ic" style="color:#3F79D6;background:rgba(63,121,214,.1)"><i class="fa-solid fa-chart-line"></i></span><div><span class="ws-l">Rentabilidade</span><b class="ws-v ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,2)}%</b></div></div>
     </div>
-    <div class="dash-kpi">
-      <div class="dk-top"><span class="dk-ic"><i class="fa-solid fa-chart-line"></i></span><span class="dk-lbl">Rentabilidade</span></div>
-      <div class="dk-val ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,2)}%</div>
-      <div class="dk-sub"><div><div class="s-l">Rentabilidade total</div><div class="s-v ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}%</div></div></div>
-    </div>
-  </div>
-  <div class="dash-grid">
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Evolução do Patrimônio</div><span class="chip ilus" title="Reconstrução ilustrativa a partir dos aportes"><i class="fa-solid fa-flask"></i> ilustrativo</span></div>
-      <div style="position:relative;height:290px;margin-top:8px"><canvas id="homeEvolChart" role="img" aria-label="Evolução do patrimônio"></canvas></div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-chart-pie"></i></span> Ativos na Carteira</div></div>
-      <div style="position:relative;height:290px;margin-top:8px"><canvas id="homeAllocChart" role="img" aria-label="Ativos na carteira"></canvas></div>
+
+    <div class="walloc">
+      <div class="walloc-head"><span class="walloc-t">Sua alocação</span><button class="btn btn-ghost btn-sm" onclick="goView('carteira')">Ver carteira <i class="fa-solid fa-arrow-right"></i></button></div>
+      <div class="walloc-bar">${allocBar}</div>
+      <div class="walloc-leg">${allocLeg}</div>
     </div>
   </div>`;
+}
+function initWealthSpark(){
+  const ctx=$('#wSpark'); if(!ctx) return;
+  if(typeof HAS_CHART!=='undefined' && !HAS_CHART) return;
+  if(typeof Chart==='undefined') return;
+  const d=patrimonioEvolution(); if(!d||!d.cart) return;
+  if(charts.wspark) charts.wspark.destroy();
+  const c2=ctx.getContext('2d'); const g=c2.createLinearGradient(0,0,0, ctx.height||120); g.addColorStop(0,'rgba(255,255,255,.34)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:d.labels, datasets:[{ data:d.cart, borderColor:'#eafff5', backgroundColor:g, fill:true, tension:.4, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5 }] },
+    options:{ responsive:true, maintainAspectRatio:false, layout:{padding:0}, interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, callbacks:{ title:c=>c[0].label, label:c=>brl0(c.parsed.y) } } },
+      scales:{ x:{ display:false }, y:{ display:false } } } });
 }
 function initHomeEvol(){
   const ctx=$('#homeEvolChart'); if(!ctx) return;
