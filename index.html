@@ -3312,7 +3312,7 @@ body.pdf-lock { overflow:hidden; }
 @media (max-width:640px){ .dash-kpis { grid-template-columns:repeat(2,1fr); gap:12px; } .dash-kpi { padding:14px 15px; } .dash-kpi .dk-val { font-size:22px; } }
 /* ══ Home da carteira — visual premium (hero + stats + alocação) ══ */
 .wdash { margin-bottom:18px; }
-.whero { position:relative; overflow:hidden; border-radius:var(--r-xl); padding:22px 24px 20px; color:#fff;
+.whero { position:relative; overflow:hidden; border-radius:var(--r-xl); padding:17px 22px 15px; color:#fff;
   background:linear-gradient(150deg,#1A4F94 0%,#0B2E5E 46%,#061F42 100%); box-shadow:0 1px 3px rgba(11,46,94,.10);
   display:flex; flex-direction:column; }
 .whero-orb { position:absolute; top:-45%; right:-12%; width:340px; height:340px; border-radius:50%; z-index:0; pointer-events:none;
@@ -3324,23 +3324,23 @@ body.pdf-lock { overflow:hidden; }
 .whero-demo i { font-size:8px; }
 .whero-eye { width:32px; height:32px; border-radius:20px; border:none; background:rgba(255,255,255,.16); color:#fff; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; flex:none; padding:0; box-sizing:border-box; }
 .whero-eye:hover { background:rgba(255,255,255,.26); }
-.whero-val { font-family:var(--mono); font-size:clamp(30px,8vw,40px); font-weight:800; letter-spacing:-.02em; line-height:1.02; margin-top:8px; }
-.whero-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:11px; }
+.whero-val { font-family:var(--mono); font-size:clamp(28px,7.4vw,37px); font-weight:800; letter-spacing:-.02em; line-height:1.02; margin-top:6px; white-space:nowrap; }
+.whero-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:9px; }
 .whero-chip, .whero-chip2 { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12.5px; font-weight:800; padding:5px 11px; border-radius:20px; }
 .whero-chip { background:rgba(255,255,255,.16); color:#eaf1ff; } .whero-chip.down { color:#ffd9d9; }
 .whero-chip2 { background:rgba(0,0,0,.16); color:#cfe0ff; } .whero-chip2.down { color:#ffd9d9; }
-.whero-spark { position:relative; height:104px; margin:16px -24px -4px; overflow:hidden; }
+.whero-spark { position:relative; height:66px; margin:11px -22px -2px; overflow:hidden; }
 .whero-spark canvas { display:block; width:100% !important; height:100% !important; }
-.whero-foot { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; padding-top:15px; border-top:1px solid rgba(255,255,255,.16); }
-.whero-foot > div { text-align:center; }
-.whero-foot > div span { display:block; font-size:10.5px; color:rgba(255,255,255,.66); text-transform:uppercase; letter-spacing:.03em; }
-.whero-foot > div b { display:block; font-family:var(--mono); font-size:14.5px; font-weight:800; margin-top:3px; letter-spacing:-.01em; }
-.wstats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:14px; }
-.wstat { display:flex; flex-direction:column; align-items:flex-start; gap:11px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:14px 15px; }
-.wstat > div { display:flex; flex-direction:column; width:100%; }
+.whero-foot { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.16); }
+.whero-foot > div { text-align:center; min-width:0; }
+.whero-foot > div span { display:block; font-size:10.5px; color:rgba(255,255,255,.66); text-transform:uppercase; letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.whero-foot > div b { display:block; font-family:var(--mono); font-size:14px; font-weight:800; margin-top:3px; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wstats { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:14px; }
+.wstat { display:flex; flex-direction:column; align-items:flex-start; gap:11px; min-width:0; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:14px 15px; }
+.wstat > div { display:flex; flex-direction:column; width:100%; min-width:0; }
 .ws-ic { width:36px; height:36px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:14px; }
-.ws-l { display:block; font-size:11.5px; color:var(--ink-3); font-weight:600; line-height:1.25; min-height:2.5em; }
-.ws-v { display:block; font-family:var(--mono); font-size:16px; font-weight:800; color:var(--ink); margin-top:4px; letter-spacing:-.02em; white-space:nowrap; }
+.ws-l { display:block; font-size:11.5px; color:var(--ink-3); font-weight:600; line-height:1.25; }
+.ws-v { display:block; font-family:var(--mono); font-size:17px; font-weight:800; color:var(--ink); margin-top:4px; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
 .ws-v.up { color:var(--up); } .ws-v.down { color:var(--down); }
 .walloc { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:18px 20px; margin-top:14px; }
 .walloc-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
@@ -3384,7 +3384,7 @@ body.pdf-lock { overflow:hidden; }
 .wcmp-toggle.open i { transform:rotate(180deg); }
 .wcmp-foot { display:flex; align-items:center; justify-content:center; gap:7px; margin-top:8px; padding-top:12px; border-top:1px solid var(--line); font-size:11.5px; font-weight:600; color:var(--ink-4); }
 .wcmp-foot i { font-size:11px; }
-@media (max-width:640px){ .wstats { gap:8px; } .wstat { padding:12px 11px; gap:9px; } .ws-ic { width:32px; height:32px; font-size:13px; } .ws-v { font-size:14px; } .ws-l { font-size:11px; } .whero-foot > div b { font-size:13.5px; } .wcmp-row { grid-template-columns:78px 1fr 62px; gap:8px; } }
+@media (max-width:640px){ .wstats { gap:10px; } .wstat { padding:13px 13px; gap:10px; } .ws-ic { width:34px; height:34px; font-size:13px; } .ws-v { font-size:16px; } .ws-l { font-size:11px; } .whero-foot > div b { font-size:13px; } .wcmp-row { grid-template-columns:78px 1fr 62px; gap:8px; } }
 
 /* ════ CARTEIRA — autocomplete, prévia no modal e histórico de aportes ════ */
 .fld-rel { position:relative; }
@@ -8116,6 +8116,8 @@ function toggleHomeCur(){
 }
 /* variação do dia de um índice de mercado (parse do rótulo diário) */
 function _mktDayPct(nm){ const m=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm===nm); if(!m) return null; const s=(m.dl||'').replace('%','').replace('−','-').replace(',','.').trim(); const v=parseFloat(s); return isNaN(v)?null:v; }
+/* variação do dia (ao vivo) de um ativo do universo — usada nos benchmarks */
+function assetDayVar(tk){ const lk=assetLookup(tk); const v=lk&&lk.a&&lk.a.var; return typeof v==='number'?v:null; }
 /* expande/recolhe os demais índices do card Performance Diária */
 function toggleCmpMore(){ const m=$('#wcmpMore'), b=$('#wcmpToggle'); if(!m||!b) return; const open=m.classList.toggle('open'); b.classList.toggle('open', open); b.innerHTML=(open?'Ver menos':'Ver mais índices')+' <i class="fa-solid fa-chevron-down"></i>'; }
 
@@ -8130,18 +8132,20 @@ function renderHomeDashboard(p){
   const allocEnt=Object.entries(alloc).sort((a,b)=>b[1]-a[1]);
   const allocBar=allocEnt.map(([k,v])=>{ const w=p.atual?v/p.atual*100:0; const c=(CLS[k]||['','#94a3b8'])[1]; return `<i style="width:${w}%;background:${c}"></i>`; }).join('');
   const allocLeg=allocEnt.map(([k,v])=>{ const w=p.atual?Math.round(v/p.atual*100):0; const cl=CLS[k]||[k,'#94a3b8']; return `<span class="wlg"><i style="background:${cl[1]}"></i>${cl[0]}<b>${w}%</b></span>`; }).join('');
-  // Performance diária: sua carteira vs. índices (base sempre visível + expansível)
-  const ibovDay=_mktDayPct('Ibovespa');
+  // Performance diária: sua carteira vs. índices — variação do dia AO VIVO
+  // (Ibovespa≈BOVA11, S&P≈IVVB11, Small≈SMAL11, Dividendos≈DIVO11 vêm das cotações;
+  //  CDI e Poupança são calculados a partir da Selic vigente)
+  const ibovDay = assetDayVar('BOVA11') ?? _mktDayPct('Ibovespa');
   const selM=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm==='SELIC'); const selic=selM?parseFloat((selM.vl||'').replace('%','').replace(',','.')):null;
   const cdiDay = (selic&&selic>0)? (Math.pow(1+(selic-0.1)/100,1/252)-1)*100 : null;
-  const poupDay = (selic&&selic>0)? (Math.pow(1.005,1/30)-1)*100 : 0.017;   // ~0,5% a.m. (Selic>8,5%)
+  const poupDay = (selic&&selic>0)? (Math.pow(1.005,1/30)-1)*100 : null;   // ~0,5% a.m. (Selic>8,5%)
   const baseRows=[ {lbl:'Carteira', v:dayP, me:true}, {lbl:'Ibovespa', v:ibovDay}, {lbl:'CDI', v:cdiDay} ].filter(r=>r.v!=null);
   const extraRows=[
+    {lbl:'S&P 500', v:assetDayVar('IVVB11')},
+    {lbl:'Small Caps', v:assetDayVar('SMAL11')},
+    {lbl:'IDIV', v:assetDayVar('DIVO11')},
     {lbl:'IFIX', v:_mktDayPct('IFIX')},
-    {lbl:'IDIV', v:0.34},
-    {lbl:'BOVA11', v: ibovDay!=null? +(ibovDay+0.02).toFixed(2) : 0.59},
-    {lbl:'Poupança', v: +poupDay.toFixed(2)},
-    {lbl:'IVVB11', v:-0.71},
+    {lbl:'Poupança', v: poupDay!=null? +poupDay.toFixed(2) : null},
   ].filter(r=>r.v!=null);
   const allRows=baseRows.concat(extraRows);
   const maxAbs=Math.max(0.05, ...allRows.map(r=>Math.abs(r.v)));
@@ -8175,7 +8179,7 @@ function renderHomeDashboard(p){
       <div class="whero-spark"><canvas id="wSpark" role="img" aria-label="Evolução do seu patrimônio"></canvas></div>
       <div class="whero-foot priv-blur">
         <div><span>Investido</span><b>${fmtHomeCur(p.invest)}</b></div>
-        <div><span>Lucro total</span><b>${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))}</b></div>
+        <div><span>DY médio</span><b>${pc(p.dyMed,1)}%</b></div>
         <div><span>Renda/mês</span><b>${fmtHomeCur(p.renda)}</b></div>
       </div>
     </div>
@@ -8190,7 +8194,6 @@ function renderHomeDashboard(p){
     <div class="wstats">
       <div class="wstat"><span class="ws-ic" style="color:#1B4F9C;background:rgba(27,79,156,.1)"><i class="fa-solid fa-arrow-trend-up"></i></span><div><span class="ws-l">Ganho de capital</span><b class="ws-v priv-blur ${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucro))}</b></div></div>
       <div class="wstat"><span class="ws-ic" style="color:#B8860B;background:rgba(184,134,11,.1)"><i class="fa-solid fa-coins"></i></span><div><span class="ws-l">Meus proventos</span><b class="ws-v priv-blur up">${fmtHomeCur(p.prov)}</b></div></div>
-      <div class="wstat"><span class="ws-ic" style="color:#3F79D6;background:rgba(63,121,214,.1)"><i class="fa-solid fa-chart-line"></i></span><div><span class="ws-l">Rentabilidade</span><b class="ws-v ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,2)}%</b></div></div>
     </div>
 
     <div class="walloc">
@@ -11295,7 +11298,7 @@ function screenSymbols(){
     case 'bdrs':  add(BDRS); break;
     case 'etfs':  ETFS.forEach(a=>{ if(!a.usd) b3.add(a.tk); }); break;
     case 'cripto': CRIPTO.forEach(c=> crypto.add(c.tk)); break;
-    case 'painel':
+    case 'painel': CARTEIRA.forEach(c=> b3.add(c.tk)); ['BOVA11','IVVB11','SMAL11','DIVO11'].forEach(t=>b3.add(t)); break;   // + benchmarks ao vivo (Performance Diária)
     case 'carteira': CARTEIRA.forEach(c=> b3.add(c.tk)); break;
     case 'noticias': ACOES.filter(isLiquidStock).forEach(a=> b3.add(a.tk)); break;   // "Em alta agora" ao vivo
     case 'watchlist': watchlist().forEach(tk=>{ const f=assetLookup(tk); if(f){ if(f.k==='cripto') crypto.add(tk); else if(f.k!=='stocks') b3.add(tk); } }); break;
