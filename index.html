@@ -3329,7 +3329,7 @@ body.pdf-lock { overflow:hidden; }
 .whero-chip, .whero-chip2 { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12.5px; font-weight:800; padding:5px 11px; border-radius:20px; }
 .whero-chip { background:rgba(255,255,255,.16); color:#eaf1ff; } .whero-chip.down { color:#ffd9d9; }
 .whero-chip2 { background:rgba(0,0,0,.16); color:#cfe0ff; } .whero-chip2.down { color:#ffd9d9; }
-.whero-spark { position:relative; height:145px; margin:15px -22px -2px; overflow:hidden; }
+.whero-spark { position:relative; height:90px; margin:12px -22px -2px; overflow:hidden; }
 .whero-spark canvas { display:block; width:100% !important; height:100% !important; }
 .whero-foot { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.16); }
 .whero-foot > div { text-align:center; min-width:0; }
@@ -5175,7 +5175,8 @@ function openBioLock(){
   document.documentElement.classList.add('gate');
   el.innerHTML=`<div class="blk-hero"><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><button class="blk-x" onclick="bioExitToIntro()" aria-label="Voltar à apresentação"><i class="fa-solid fa-xmark"></i></button><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
     <div class="blk-foot" id="bioFoot"><button class="btn btn-primary blk-bio" onclick="bioUnlock()">Entrar com biometria</button><button class="blk-pass" onclick="bioLockPassword()">Entrar com senha</button></div>`;
-  el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden'; setTimeout(bioUnlock, 500);
+  el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden';
+  // NÃO dispara a biometria automaticamente — o prompt do sistema só aparece ao tocar em "Entrar com biometria".
 }
 function _bioLockDone(){ document.documentElement.classList.remove('gate'); const el=document.getElementById('bioLock'); if(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); } if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }
 /* X: sair do "pré-login" e voltar para a tela de apresentação */
@@ -8228,22 +8229,29 @@ function renderHomeDashboard(p){
     </div>
   </div>`;
 }
+/* série da evolução do patrimônio nos ÚLTIMOS 30 DIAS (âncora final = patrimônio real;
+   trajetória diária reconstruída a partir do resultado recente, com textura leve) */
+function wealthSpark30d(){
+  const p=(typeof portfolioStats==='function')?portfolioStats():null; const atual=(p&&p.atual)||0; if(atual<=0) return null;
+  const n=30, today=new Date();
+  const per=Math.max(-0.15, Math.min(0.15, ((p.lucroProvP||0)/100)*0.10));  // fatia ~mensal do resultado
+  const start=atual/(1+per), cart=[], labels=[];
+  for(let i=0;i<n;i++){ const t=i/(n-1), base=start+(atual-start)*t;
+    const wob=(Math.sin(i*1.35)*0.55+Math.sin(i*0.55+1)*0.45)*(atual*0.0035);
+    cart.push(i===n-1?atual:Math.max(0, base+wob));
+    const d=new Date(today.getFullYear(),today.getMonth(),today.getDate()-(n-1-i));
+    labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
+  }
+  return {labels, cart};
+}
 function initWealthSpark(){
   const ctx=$('#wSpark'); if(!ctx) return;
   if(typeof HAS_CHART!=='undefined' && !HAS_CHART) return;
   if(typeof Chart==='undefined') return;
-  const d=patrimonioEvolution(); if(!d||!d.cart||d.cart.length<2) return;
+  const d=wealthSpark30d(); if(!d||!d.cart||d.cart.length<2) return;
   if(charts.wspark) charts.wspark.destroy();
-  // densifica a série mensal em um traçado mais vivo/"quebrado" (mantém âncoras reais),
-  // com micro-oscilação determinística p/ um visual de gráfico de mercado premium
-  const base=d.cart, labels=d.labels||[], SEG=7, pts=[], lbs=[];
-  for(let i=0;i<base.length-1;i++){ const a=base[i], b=base[i+1], amp=(Math.abs(b-a)||Math.abs(a)*0.012)*0.5;
-    for(let j=0;j<SEG;j++){ const t=j/SEG, v=a+(b-a)*t;
-      const wob=(Math.sin((i*SEG+j)*1.9)*0.6+Math.sin((i*SEG+j)*0.7)*0.4)*amp;
-      pts.push(j===0?a:v+wob); lbs.push(labels[i]||''); }
-  }
-  pts.push(base[base.length-1]); lbs.push(labels[labels.length-1]||'');
-  const c2=ctx.getContext('2d'); const g=c2.createLinearGradient(0,0,0, ctx.height||118);
+  const pts=d.cart, lbs=d.labels;
+  const c2=ctx.getContext('2d'); const g=c2.createLinearGradient(0,0,0, ctx.height||145);
   g.addColorStop(0,'rgba(210,228,255,.42)'); g.addColorStop(.55,'rgba(210,228,255,.10)'); g.addColorStop(1,'rgba(210,228,255,0)');
   charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:lbs, datasets:[{ data:pts, borderColor:'#eaf2ff', backgroundColor:g, fill:true, tension:.28, pointRadius:0, borderWidth:2, borderJoinStyle:'round' }] },
     options:{ responsive:true, maintainAspectRatio:false, layout:{padding:0}, interaction:{mode:'index',intersect:false},
