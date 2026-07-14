@@ -75,10 +75,10 @@
   --mono:  'Inter', ui-monospace, monospace;
 
   /* Radius */
-  --r-sm: 5px;
-  --r:    8px;
-  --r-lg: 12px;
-  --r-xl: 16px;
+  --r-sm: 4px;
+  --r:    6px;
+  --r-lg: 9px;
+  --r-xl: 12px;
 
   /* Shadow — refined, layered */
   --sh-sm: 0 1px 2px rgba(15,20,25,.04), 0 1px 1px rgba(15,20,25,.03);
@@ -3228,8 +3228,8 @@ body.pdf-lock { overflow:hidden; }
 .home-greet { display:flex; align-items:center; gap:11px; margin-bottom:16px; }
 .insight.insight-full { margin-bottom:18px; }
 .hero-greet-ic { width:34px; height:34px; flex:none; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--gold); background:linear-gradient(150deg,color-mix(in srgb,var(--gold) 16%,transparent),transparent); }
-.hero-greet-t { font-size:14.5px; font-weight:700; letter-spacing:-.01em; color:var(--ink); min-width:0; }
-.hero-greet-d { font-size:11.5px; color:var(--ink-3); text-transform:capitalize; margin-left:auto; padding-left:12px; text-align:right; white-space:nowrap; flex:none; }
+.hero-greet-t { font-size:14.5px; font-weight:700; letter-spacing:-.01em; color:var(--ink); min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hero-greet-d { font-size:11.5px; color:var(--ink-3); margin-left:auto; padding-left:12px; text-align:right; white-space:nowrap; flex:none; }
 .hero-hr { height:1px; background:linear-gradient(90deg, var(--line-2), transparent 82%); margin-bottom:16px; }
 .hero-mkt-lbl { display:flex; align-items:center; gap:7px; font-size:11px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); margin-bottom:5px; }
 .hero-live { width:6px; height:6px; border-radius:50%; background:var(--up); box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 55%,transparent); animation:heroLive 2.2s var(--ease) infinite; }
@@ -3312,7 +3312,7 @@ body.pdf-lock { overflow:hidden; }
 @media (max-width:640px){ .dash-kpis { grid-template-columns:repeat(2,1fr); gap:12px; } .dash-kpi { padding:14px 15px; } .dash-kpi .dk-val { font-size:22px; } }
 /* ══ Home da carteira — visual premium (hero + stats + alocação) ══ */
 .wdash { margin-bottom:18px; }
-.whero { position:relative; overflow:hidden; border-radius:var(--r-xl); padding:17px 22px 15px; color:#fff;
+.whero { position:relative; overflow:hidden; border-radius:var(--r-xl); padding:20px 22px 17px; color:#fff;
   background:linear-gradient(150deg,#1A4F94 0%,#0B2E5E 46%,#061F42 100%); box-shadow:0 1px 3px rgba(11,46,94,.10);
   display:flex; flex-direction:column; }
 .whero-orb { position:absolute; top:-45%; right:-12%; width:340px; height:340px; border-radius:50%; z-index:0; pointer-events:none;
@@ -3329,7 +3329,7 @@ body.pdf-lock { overflow:hidden; }
 .whero-chip, .whero-chip2 { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12.5px; font-weight:800; padding:5px 11px; border-radius:20px; }
 .whero-chip { background:rgba(255,255,255,.16); color:#eaf1ff; } .whero-chip.down { color:#ffd9d9; }
 .whero-chip2 { background:rgba(0,0,0,.16); color:#cfe0ff; } .whero-chip2.down { color:#ffd9d9; }
-.whero-spark { position:relative; height:66px; margin:11px -22px -2px; overflow:hidden; }
+.whero-spark { position:relative; height:145px; margin:15px -22px -2px; overflow:hidden; }
 .whero-spark canvas { display:block; width:100% !important; height:100% !important; }
 .whero-foot { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.16); }
 .whero-foot > div { text-align:center; min-width:0; }
@@ -3814,7 +3814,8 @@ const MARKET = [
   { nm:'Ibovespa', vl:'168.619', dl:'+0,61%', up:true,  spark:[155,157,159,156,160,162,164,166,167,168.6] },
   { nm:'IFIX',     vl:'3.777',   dl:'+0,42%', up:true,  spark:[3680,3700,3720,3710,3740,3755,3760,3770,3775,3777] },
   { nm:'Dólar',    vl:'5,18',    dl:'+0,19%', up:false, spark:[5.05,5.08,5.10,5.12,5.11,5.14,5.16,5.15,5.17,5.18] },
-  { nm:'SELIC',    vl:'14,50%',  dl:'a.a.',   up:null,  spark:[13.75,13.75,14.25,14.25,14.5,14.5,14.5,14.5,14.5,14.5] },
+  { nm:'SELIC',    vl:'15,00%',  dl:'a.a.',   up:null,  spark:[13.75,14.25,14.75,14.75,15,15,15,15,15,15] },
+  { nm:'IPCA',     vl:'5,35%',   dl:'12 meses', up:null, spark:[4.5,4.6,4.7,4.8,5.0,5.1,5.2,5.25,5.3,5.35] },
   { nm:'Bitcoin',  vl:'319,8k',  dl:'+0,59%', up:true,  spark:[298,305,312,308,315,318,316,320,319,319.8] },
 ];
 
@@ -5443,7 +5444,7 @@ function greetingLabel(){
   return nome ? `${g}, ${nome.charAt(0).toUpperCase()+nome.slice(1)}` : g;
 }
 function greetingIcon(){ const h=new Date().getHours(); return h<6?'fa-moon': h<12?'fa-mug-hot': h<18?'fa-sun':'fa-moon'; }
-function todayLabel(){ return new Date().toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'long'}); }
+function todayLabel(){ const s=new Date().toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'long'}); return s.charAt(0).toUpperCase()+s.slice(1); }
 function topOpportunities(n=4){
   const pool=[...ACOES.map(a=>({a,k:'acoes'})), ...FIIS.map(a=>({a,k:'fiis'}))].filter(o=>typeof o.a.score==='number' && o.a.px>0);
   return pool.sort((x,y)=>y.a.score-x.a.score).slice(0,n);
@@ -5523,8 +5524,9 @@ function viewPainel(){
   // variação real do dia da carteira (ponderada pelas posições, com cotação ao vivo)
   let _patDayVal=0; (p._byT||[]).forEach(g=>{ const v=(g.f&&g.f.a&&typeof g.f.a.var==='number')?g.f.a.var:0; _patDayVal += g.val*v/100; });
   const patDayP = p.atual ? _patDayVal/p.atual*100 : 0;
-  // faixa de mercado (inclui o Ibovespa, já que o hero passou a ser a carteira)
-  const mstrip = MARKET.map((m,i)=>{
+  // faixa de mercado: 4 indicadores que NÃO aparecem na Performance Diária
+  const HOME_MKT=['Dólar','SELIC','IPCA','Bitcoin'];
+  const mstrip = HOME_MKT.map(nm=>MARKET.find(m=>m.nm===nm)).filter(Boolean).map((m,i)=>{
     // cor pelo sinal da variação do dia (não pela flag 'up', que é invertida p/ o dólar)
     const dd=(m.dl||'').trim();
     const dir = (dd.startsWith('-')||dd.startsWith('−')) ? 'down' : (dd.startsWith('+') ? 'up' : 'flat');
@@ -7877,6 +7879,7 @@ function afterRender(v, soft){
     if(pv){ if(soft) pv.textContent = Math.floor(p.atual).toLocaleString('pt-BR'); else animateNum(pv, Math.floor(p.atual), {dec:0}); }
     initIbov();
     if(CARTEIRA.length){ initWealthSpark(); }
+    if(typeof loadMacroReal==='function') loadMacroReal();   // Selic/IPCA/Dólar/BTC reais (BCB + CoinGecko)
     if(!soft) askAI(true);
   } else { stopHeroTimer(); }
   if(['fiis','acoes','bdrs','etfs','etfsint','stocks','cripto'].includes(v)){ renderAssets(v); }
@@ -8121,6 +8124,28 @@ function assetDayVar(tk){ const lk=assetLookup(tk); const v=lk&&lk.a&&lk.a.var; 
 /* expande/recolhe os demais índices do card Performance Diária */
 function toggleCmpMore(){ const m=$('#wcmpMore'), b=$('#wcmpToggle'); if(!m||!b) return; const open=m.classList.toggle('open'); b.classList.toggle('open', open); b.innerHTML=(open?'Ver menos':'Ver mais índices')+' <i class="fa-solid fa-chevron-down"></i>'; }
 
+/* ── Indicadores macro REAIS (Banco Central SGS + CoinGecko) p/ os mini-cards da Home ──
+   Fontes públicas e gratuitas; em caso de falha (offline/CORS) mantém os valores de
+   demonstração. Throttle de 5 min. */
+let _macroTs=0, _macroBusy=false;
+async function loadMacroReal(){
+  if(_macroBusy) return; const now=(typeof performance!=='undefined'?performance.now():0);
+  if(_macroTs && now-_macroTs < 5*60*1000) return; _macroTs=now||1; _macroBusy=true;
+  const bcb=(code,n)=>fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados/ultimos/${n}?formato=json`).then(r=>r.ok?r.json():null).catch(()=>null);
+  const setM=(nm,fn)=>{ const m=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm===nm); if(m) fn(m); };
+  const brNum=v=>v.toFixed(2).replace('.',',');
+  try{
+    const [selic, ipca, dolar] = await Promise.all([ bcb(432,10), bcb(13522,10), bcb(1,12) ]);
+    if(Array.isArray(selic)&&selic.length){ const s=selic.map(x=>parseFloat(x.valor)).filter(n=>!isNaN(n)); const v=s[s.length-1]; if(v>0) setM('SELIC',m=>{ m.vl=brNum(v)+'%'; m.spark=s; }); }
+    if(Array.isArray(ipca)&&ipca.length){ const s=ipca.map(x=>parseFloat(x.valor)).filter(n=>!isNaN(n)); const v=s[s.length-1]; if(!isNaN(v)) setM('IPCA',m=>{ m.vl=brNum(v)+'%'; m.spark=s; }); }
+    if(Array.isArray(dolar)&&dolar.length){ const s=dolar.map(x=>parseFloat(x.valor)).filter(n=>!isNaN(n)); const v=s[s.length-1], prev=s[s.length-2]||v; if(v>0){ const ch=prev?(v/prev-1)*100:0; setM('Dólar',m=>{ m.vl=brNum(v); m.dl=(ch>=0?'+':'−')+brNum(Math.abs(ch))+'%'; m.spark=s; }); } }
+    try{ const cg=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl&include_24hr_change=true').then(r=>r.ok?r.json():null); const b=cg&&cg.bitcoin;
+      if(b&&b.brl){ const ch=b.brl_24h_change||0; setM('Bitcoin',m=>{ m.vl='R$ '+(b.brl/1000).toFixed(0)+'k'; m.dl=(ch>=0?'+':'−')+brNum(Math.abs(ch))+'%'; }); } }catch(e){}
+    if(typeof currentView!=='undefined' && currentView==='painel' && typeof softRefreshView==='function') softRefreshView();
+  }catch(e){ /* mantém demonstração */ }
+  finally{ _macroBusy=false; }
+}
+
 /* ── Home Dashboard: visão de carteira estilo painel (patrimônio + comparativo + alocação) ── */
 function renderHomeDashboard(p){
   // variação do dia (ponderada pelas posições)
@@ -8179,7 +8204,7 @@ function renderHomeDashboard(p){
       <div class="whero-spark"><canvas id="wSpark" role="img" aria-label="Evolução do seu patrimônio"></canvas></div>
       <div class="whero-foot priv-blur">
         <div><span>Investido</span><b>${fmtHomeCur(p.invest)}</b></div>
-        <div><span>DY médio</span><b>${pc(p.dyMed,1)}%</b></div>
+        <div><span>DY médio</span><b>${pc(p.dyMed,2)}%</b></div>
         <div><span>Renda/mês</span><b>${fmtHomeCur(p.renda)}</b></div>
       </div>
     </div>
@@ -8207,13 +8232,23 @@ function initWealthSpark(){
   const ctx=$('#wSpark'); if(!ctx) return;
   if(typeof HAS_CHART!=='undefined' && !HAS_CHART) return;
   if(typeof Chart==='undefined') return;
-  const d=patrimonioEvolution(); if(!d||!d.cart) return;
+  const d=patrimonioEvolution(); if(!d||!d.cart||d.cart.length<2) return;
   if(charts.wspark) charts.wspark.destroy();
-  const c2=ctx.getContext('2d'); const g=c2.createLinearGradient(0,0,0, ctx.height||120); g.addColorStop(0,'rgba(255,255,255,.32)'); g.addColorStop(1,'rgba(255,255,255,0)');
-  charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:d.labels, datasets:[{ data:d.cart, borderColor:'#dbe8ff', backgroundColor:g, fill:true, tension:.4, cubicInterpolationMode:'monotone', pointRadius:0, borderWidth:2.5 }] },
+  // densifica a série mensal em um traçado mais vivo/"quebrado" (mantém âncoras reais),
+  // com micro-oscilação determinística p/ um visual de gráfico de mercado premium
+  const base=d.cart, labels=d.labels||[], SEG=7, pts=[], lbs=[];
+  for(let i=0;i<base.length-1;i++){ const a=base[i], b=base[i+1], amp=(Math.abs(b-a)||Math.abs(a)*0.012)*0.5;
+    for(let j=0;j<SEG;j++){ const t=j/SEG, v=a+(b-a)*t;
+      const wob=(Math.sin((i*SEG+j)*1.9)*0.6+Math.sin((i*SEG+j)*0.7)*0.4)*amp;
+      pts.push(j===0?a:v+wob); lbs.push(labels[i]||''); }
+  }
+  pts.push(base[base.length-1]); lbs.push(labels[labels.length-1]||'');
+  const c2=ctx.getContext('2d'); const g=c2.createLinearGradient(0,0,0, ctx.height||118);
+  g.addColorStop(0,'rgba(210,228,255,.42)'); g.addColorStop(.55,'rgba(210,228,255,.10)'); g.addColorStop(1,'rgba(210,228,255,0)');
+  charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:lbs, datasets:[{ data:pts, borderColor:'#eaf2ff', backgroundColor:g, fill:true, tension:.28, pointRadius:0, borderWidth:2, borderJoinStyle:'round' }] },
     options:{ responsive:true, maintainAspectRatio:false, layout:{padding:0}, interaction:{mode:'index',intersect:false},
-      plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, callbacks:{ title:c=>c[0].label, label:c=>brl0(c.parsed.y) } } },
-      scales:{ x:{ display:false }, y:{ display:false } } } });
+      plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, callbacks:{ title:c=>c[0].label||'', label:c=>brl0(c.parsed.y) } } },
+      scales:{ x:{ display:false }, y:{ display:false, grace:'6%' } } } });
 }
 function initHomeEvol(){
   const ctx=$('#homeEvolChart'); if(!ctx) return;
