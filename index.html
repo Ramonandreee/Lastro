@@ -3225,6 +3225,9 @@ body.pdf-lock { overflow:hidden; }
 
 /* ════ HOME: hero de mercado, destaques e carteira compacta ════ */
 .hero-greet { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
+/* Home focada na carteira: saudação no topo + IA em largura total */
+.home-greet { display:flex; align-items:center; gap:11px; margin-bottom:16px; }
+.insight.insight-full { margin-bottom:18px; }
 .hero-greet-ic { width:34px; height:34px; flex:none; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--gold); background:linear-gradient(150deg,color-mix(in srgb,var(--gold) 16%,transparent),transparent); }
 .hero-greet-t { font-size:14.5px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
 .hero-greet-d { font-size:11.5px; color:var(--ink-3); text-transform:capitalize; margin-top:1px; }
@@ -5428,8 +5431,8 @@ function viewPainel(){
   // variação real do dia da carteira (ponderada pelas posições, com cotação ao vivo)
   let _patDayVal=0; (p._byT||[]).forEach(g=>{ const v=(g.f&&g.f.a&&typeof g.f.a.var==='number')?g.f.a.var:0; _patDayVal += g.val*v/100; });
   const patDayP = p.atual ? _patDayVal/p.atual*100 : 0;
-  // Ibovespa já é o destaque do hero — a faixa abaixo mostra os demais índices (sem repetir)
-  const mstrip = MARKET.slice(1).map((m,i)=>{
+  // faixa de mercado (inclui o Ibovespa, já que o hero passou a ser a carteira)
+  const mstrip = MARKET.map((m,i)=>{
     // cor pelo sinal da variação do dia (não pela flag 'up', que é invertida p/ o dólar)
     const dd=(m.dl||'').trim();
     const dir = (dd.startsWith('-')||dd.startsWith('−')) ? 'down' : (dd.startsWith('+') ? 'up' : 'flat');
@@ -5483,36 +5486,24 @@ function viewPainel(){
     </div>`;
 
   return `
-  <div class="hero">
-    <div class="hero-main hero-mkt clickable" onclick="cycleHero()" title="Toque para alternar Ibovespa / Nasdaq">
-      <div class="hero-greet">
-        <span class="hero-greet-ic"><i class="fa-solid ${greetingIcon()}"></i></span>
-        <div><div class="hero-greet-t">${greetingLabel()}</div><div class="hero-greet-d">${todayLabel()}</div></div>
-      </div>
-      <div class="hero-hr"></div>
-      <div class="hero-mkt-head">
-        <div class="hero-mkt-lbl" id="heroIdxLbl"><span class="hero-live" aria-hidden="true"></span>${ib.nm}</div>
-      </div>
-      <div class="hero-value"><span id="heroIdxVal">${ib.vl}</span><span class="hero-pts">pts</span></div>
-      <div class="hero-delta">
-        <span class="chip ${ib.up?'chip-up':'chip-down'}" id="heroIdxChip"><i class="fa-solid fa-arrow-${ib.up?'up':'down'}" style="font-size:9px"></i> ${ib.dl}</span>
-        <span class="faint" style="font-size:12.5px">no pregão de hoje</span>
-      </div>
-      <div class="hero-chart" id="heroChartWrap"><canvas id="heroChart" role="img" aria-label="Variação do índice no dia"></canvas></div>
-    </div>
+  <div class="home-greet">
+    <span class="hero-greet-ic"><i class="fa-solid ${greetingIcon()}"></i></span>
+    <div><div class="hero-greet-t">${greetingLabel()}</div><div class="hero-greet-d">${todayLabel()}</div></div>
+  </div>
 
-    <div class="insight">
-      <div class="insight-head">
-        <div class="insight-orb"><i class="fa-solid fa-sparkles"></i></div>
-        <div class="insight-title">Inteligência Lastro<span class="tag">Análise por IA · Claude</span></div>
-      </div>
-      <div class="insight-body" id="insightBody">
-        <span class="faint">Lendo o mercado de hoje…</span>
-      </div>
-      <div class="insight-input">
-        <input id="insightInput" placeholder="Pergunte sobre o mercado ou um ativo…" onkeydown="if(event.key==='Enter')askAI()">
-        <button class="insight-send" onclick="askAI()"><i class="fa-solid fa-arrow-up"></i></button>
-      </div>
+  ${CARTEIRA.length ? renderHomeDashboard(p) : patCard}
+
+  <div class="insight insight-full">
+    <div class="insight-head">
+      <div class="insight-orb"><i class="fa-solid fa-sparkles"></i></div>
+      <div class="insight-title">Inteligência Lastro<span class="tag">Análise por IA · Claude</span></div>
+    </div>
+    <div class="insight-body" id="insightBody">
+      <span class="faint">Lendo o mercado de hoje…</span>
+    </div>
+    <div class="insight-input">
+      <input id="insightInput" placeholder="Pergunte sobre o mercado ou um ativo…" onkeydown="if(event.key==='Enter')askAI()">
+      <button class="insight-send" onclick="askAI()"><i class="fa-solid fa-arrow-up"></i></button>
     </div>
   </div>
 
@@ -5526,8 +5517,6 @@ function viewPainel(){
     <button class="qa-card" onclick="goView('simulador')"><span class="qa-ic qa-ic-accent"><i class="fa-solid fa-calculator"></i></span><span class="qa-t">Simular</span></button>
     <button class="qa-card" onclick="nav('indicar')"><span class="qa-ic qa-ic-gift"><i class="fa-solid fa-gift"></i></span><span class="qa-t">Indique</span></button>
   </div>
-
-  ${CARTEIRA.length ? renderHomeDashboard(p) : patCard}
 
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="card-head">
@@ -7789,10 +7778,7 @@ function afterRender(v, soft){
   if(newsTimer){ clearInterval(newsTimer); newsTimer = null; }   // pausa o feed ao sair de Notícias
   if(v==='painel'){
     const p = portfolioStats();
-    // hero = pulso de mercado: alterna entre Ibovespa e Nasdaq
-    renderHeroIdx();
-    if(!soft) startHeroTimer();
-    // carteira (card compacto, só quando existe)
+    // hero da Home agora é a CARTEIRA (dashboard): patrimônio, evolução e alocação
     const pv = $('#patVal');
     if(pv){ if(soft) pv.textContent = Math.floor(p.atual).toLocaleString('pt-BR'); else animateNum(pv, Math.floor(p.atual), {dec:0}); }
     initIbov();
