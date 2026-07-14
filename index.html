@@ -3228,8 +3228,8 @@ body.pdf-lock { overflow:hidden; }
 .home-greet { display:flex; align-items:center; gap:11px; margin-bottom:16px; }
 .insight.insight-full { margin-bottom:18px; }
 .hero-greet-ic { width:34px; height:34px; flex:none; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--gold); background:linear-gradient(150deg,color-mix(in srgb,var(--gold) 16%,transparent),transparent); }
-.hero-greet-t { font-size:14.5px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
-.hero-greet-d { font-size:11.5px; color:var(--ink-3); text-transform:capitalize; margin-top:1px; }
+.hero-greet-t { font-size:14.5px; font-weight:700; letter-spacing:-.01em; color:var(--ink); min-width:0; }
+.hero-greet-d { font-size:11.5px; color:var(--ink-3); text-transform:capitalize; margin-left:auto; padding-left:12px; text-align:right; white-space:nowrap; flex:none; }
 .hero-hr { height:1px; background:linear-gradient(90deg, var(--line-2), transparent 82%); margin-bottom:16px; }
 .hero-mkt-lbl { display:flex; align-items:center; gap:7px; font-size:11px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); margin-bottom:5px; }
 .hero-live { width:6px; height:6px; border-radius:50%; background:var(--up); box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 55%,transparent); animation:heroLive 2.2s var(--ease) infinite; }
@@ -4348,7 +4348,7 @@ function applyPriv(){
     nodes.forEach(node=>{
       if(on){
         if(!_privOrig.has(node)){ if(!/\d/.test(node.nodeValue)) return; _privOrig.set(node, node.nodeValue); }
-        node.nodeValue=_privOrig.get(node).replace(/\d/g,'*');
+        node.nodeValue=_privOrig.get(node).replace(/\d[\d.,]*\d|\d/g, m=>'*'.repeat(m.length));
       } else if(_privOrig.has(node)){ node.nodeValue=_privOrig.get(node); _privOrig.delete(node); }
     });
   });
@@ -5580,7 +5580,8 @@ function viewPainel(){
   return `
   <div class="home-greet">
     <span class="hero-greet-ic"><i class="fa-solid ${greetingIcon()}"></i></span>
-    <div><div class="hero-greet-t">${greetingLabel()}</div><div class="hero-greet-d">${todayLabel()}</div></div>
+    <div class="hero-greet-t">${greetingLabel()}</div>
+    <div class="hero-greet-d">${todayLabel()}</div>
   </div>
 
   ${CARTEIRA.length ? renderHomeDashboard(p) : patCard}
@@ -8153,7 +8154,6 @@ function renderHomeDashboard(p){
     </div>`; };
   const cmpBase=baseRows.map(cmpRow).join('');
   const cmpExtra=extraRows.map(cmpRow).join('');
-  const nowTime=new Date().toLocaleTimeString('pt-BR');
   // moeda: bandeira + código
   const curFlag=_homeCur==='USD'?'🇺🇸':'🇧🇷';
   return `
@@ -8185,7 +8185,6 @@ function renderHomeDashboard(p){
       ${cmpBase}
       ${cmpExtra?`<div class="wcmp-more" id="wcmpMore"><div class="wcmp-more-in">${cmpExtra}</div></div>
       <button class="wcmp-toggle" id="wcmpToggle" onclick="toggleCmpMore()">Ver mais índices <i class="fa-solid fa-chevron-down"></i></button>`:''}
-      <div class="wcmp-foot"><i class="fa-regular fa-clock"></i> Atualizado ${nowTime}</div>
     </div>`:''}
 
     <div class="wstats">
