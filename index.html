@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#070C16" media="(prefers-color-scheme: dark)">
 <title>Lastro · Inteligência de Investimentos</title>
 <!-- App icons / PWA -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -126,7 +127,7 @@
 
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: var(--canvas); }
 /* ── Splash / abertura do app ── */
-#splash { position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; background:radial-gradient(120% 90% at 50% 35%, #1A4F94 0%, #0B2E5E 45%, #061A38 100%); color:#fff; opacity:1; transition:opacity .55s var(--ease-out); }
+#splash { position:fixed; inset:0; width:100%; height:100vh; height:100dvh; min-height:100dvh; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; background:radial-gradient(120% 90% at 50% 35%, #1A4F94 0%, #0B2E5E 45%, #061A38 100%); color:#fff; opacity:1; transition:opacity .55s var(--ease-out); }
 #splash.hide { opacity:0; pointer-events:none; }
 .splash-inner { display:flex; flex-direction:column; align-items:center; }
 .splash-mark { width:84px; height:84px; border-radius:24px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.14); box-shadow:inset 0 1px 1px rgba(255,255,255,.3), 0 16px 40px rgba(0,0,0,.28); backdrop-filter:blur(4px); animation:spMark .8s var(--ease-out) both; }
@@ -858,7 +859,9 @@ img, svg, canvas, video { max-width: 100%; }
 </style>
 </head>
 <body>
-<script>/* portão: esconde o app já no 1º paint quando não há acesso (evita o flash da Home ao abrir) */try{var _s=localStorage.getItem('lastro_session');var _b=localStorage.getItem('lastro_bio')==='1';if(!_s||_b)document.documentElement.classList.add('gate');}catch(e){}</script>
+<script>/* portão: esconde o app já no 1º paint quando não há acesso (evita o flash da Home ao abrir) */try{var _s=localStorage.getItem('lastro_session');var _b=localStorage.getItem('lastro_bio')==='1';if(!_s||_b)document.documentElement.classList.add('gate');}catch(e){}
+/* fundo do <html> escuro desde o 1º paint p/ não aparecer barra branca embaixo do splash
+   (fica invisível sob o body no app; no dark mode o html já é escuro) */try{document.documentElement.style.background='#0B2E5E';}catch(e){}</script>
 <div id="splash" role="img" aria-label="Lastro">
   <div class="splash-inner">
     <div class="splash-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
@@ -2306,11 +2309,14 @@ html.gate .sidebar, html.gate .main, html.gate .sidebar-scrim { visibility:hidde
 #bioLock { position:fixed; inset:0; z-index:9997; display:none; flex-direction:column; background:#F4F3EE; }
 #bioLock.show { display:flex; animation:introFade .4s var(--ease-out); }
 .blk-hero { flex:1; position:relative; display:flex; flex-direction:column; justify-content:flex-end; padding:calc(26px + env(safe-area-inset-top,0px)) 26px 34px calc(26px + env(safe-area-inset-left,0px)); overflow:hidden;
-  background:radial-gradient(130% 62% at 50% -2%, rgba(52,132,200,.55) 0%, rgba(22,70,124,.32) 28%, transparent 58%),
-            linear-gradient(180deg,#124478 0%,#0c2c58 24%,#06162e 56%,#01060f 100%); }
-/* textura de partículas (nebulosa) — densa no topo, some antes das escritas */
-.blk-dust { position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; mix-blend-mode:screen; opacity:.6;
-  -webkit-mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.72) 36%, transparent 66%); mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.72) 36%, transparent 66%); }
+  background:
+    radial-gradient(85% 48% at 26% 10%, rgba(58,138,205,.40) 0%, transparent 60%),
+    radial-gradient(78% 44% at 80% 4%, rgba(38,102,172,.34) 0%, transparent 58%),
+    radial-gradient(130% 60% at 50% -6%, rgba(46,120,190,.34) 0%, rgba(20,64,116,.18) 34%, transparent 64%),
+    linear-gradient(180deg,#123f72 0%,#0c2c58 26%,#06172f 58%,#01060f 100%); }
+/* nebulosa suave (nuvens borradas) + estrelas esparsas — densa no topo, some antes das escritas */
+.blk-dust { position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; mix-blend-mode:screen; opacity:.9;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.7) 40%, transparent 70%); mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.7) 40%, transparent 70%); }
 .blk-logo { position:absolute; z-index:1; top:calc(26px + env(safe-area-inset-top,0px)); left:calc(26px + env(safe-area-inset-left,0px)); display:flex; align-items:center; gap:9px; }
 .blk-logo .it-mark { width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.16); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; }
 .blk-logo .it-mark svg { width:19px; height:19px; }
@@ -5179,7 +5185,7 @@ function bioFirstName(){ try{ const p=(typeof getProfile==='function')?getProfil
 function openBioLock(){
   const el=document.getElementById('bioLock'); if(!el){ maybeOnboard(); return; }
   document.documentElement.classList.add('gate');
-  el.innerHTML=`<div class="blk-hero"><svg class="blk-dust" viewBox="0 0 240 420" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><filter id="blkDust" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.68" numOctaves="2" seed="7" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0.32  0 0 0 0 0.63  0 0 0 0 0.86  0 0 0 1.25 -0.48"/></filter></defs><rect width="240" height="420" filter="url(#blkDust)"/></svg><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><button class="blk-x" onclick="bioExitToIntro()" aria-label="Voltar à apresentação"><i class="fa-solid fa-xmark"></i></button><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
+  el.innerHTML=`<div class="blk-hero"><svg class="blk-dust" viewBox="0 0 300 520" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><filter id="blkClouds" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.018 0.03" numOctaves="3" seed="4" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0.24  0 0 0 0 0.52  0 0 0 0 0.80  0 0 0 0.5 -0.06"/><feGaussianBlur stdDeviation="3.2"/></filter><filter id="blkStars" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="1" seed="9" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0.80  0 0 0 0 0.88  0 0 0 0 1  0 0 0 16 -13.4"/></filter></defs><rect width="300" height="520" filter="url(#blkClouds)" opacity="0.75"/><rect width="300" height="520" filter="url(#blkStars)"/></svg><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><button class="blk-x" onclick="bioExitToIntro()" aria-label="Voltar à apresentação"><i class="fa-solid fa-xmark"></i></button><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
     <div class="blk-foot" id="bioFoot"><button class="btn btn-primary blk-bio" onclick="bioUnlock()">Entrar com biometria</button><button class="blk-pass" onclick="bioLockPassword()">Entrar com senha</button></div>`;
   el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden';
   // NÃO dispara a biometria automaticamente — o prompt do sistema só aparece ao tocar em "Entrar com biometria".
