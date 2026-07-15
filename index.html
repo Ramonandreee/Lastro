@@ -2305,8 +2305,13 @@ html.gate .sidebar, html.gate .main, html.gate .sidebar-scrim { visibility:hidde
 /* tela "boas-vindas de volta" (desbloqueio) — estilo editorial */
 #bioLock { position:fixed; inset:0; z-index:9997; display:none; flex-direction:column; background:#F4F3EE; }
 #bioLock.show { display:flex; animation:introFade .4s var(--ease-out); }
-.blk-hero { flex:1; position:relative; background:linear-gradient(160deg,#1A4F94 0%,#0B2E5E 42%,#061A38 100%); display:flex; flex-direction:column; justify-content:flex-end; padding:calc(26px + env(safe-area-inset-top,0px)) 26px 34px calc(26px + env(safe-area-inset-left,0px)); overflow:hidden; }
-.blk-hero::after { content:''; position:absolute; top:-20%; right:-20%; width:70%; height:70%; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.16), transparent 66%); pointer-events:none; }
+.blk-hero { flex:1; position:relative; display:flex; flex-direction:column; justify-content:flex-end; padding:calc(26px + env(safe-area-inset-top,0px)) 26px 34px calc(26px + env(safe-area-inset-left,0px)); overflow:hidden;
+  background:radial-gradient(130% 62% at 50% -2%, rgba(52,132,200,.55) 0%, rgba(22,70,124,.32) 28%, transparent 58%),
+            linear-gradient(180deg,#124478 0%,#0c2c58 24%,#06162e 56%,#01060f 100%); }
+/* textura de partículas (nebulosa) — densa no topo, some antes das escritas */
+.blk-dust { position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; mix-blend-mode:screen; opacity:.6;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.72) 36%, transparent 66%); mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.72) 36%, transparent 66%); }
+.blk-hero > *:not(.blk-dust){ position:relative; z-index:1; }
 .blk-logo { position:absolute; top:calc(26px + env(safe-area-inset-top,0px)); left:calc(26px + env(safe-area-inset-left,0px)); display:flex; align-items:center; gap:9px; }
 .blk-logo .it-mark { width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.16); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; }
 .blk-logo .it-mark svg { width:19px; height:19px; }
@@ -5175,7 +5180,7 @@ function bioFirstName(){ try{ const p=(typeof getProfile==='function')?getProfil
 function openBioLock(){
   const el=document.getElementById('bioLock'); if(!el){ maybeOnboard(); return; }
   document.documentElement.classList.add('gate');
-  el.innerHTML=`<div class="blk-hero"><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><button class="blk-x" onclick="bioExitToIntro()" aria-label="Voltar à apresentação"><i class="fa-solid fa-xmark"></i></button><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
+  el.innerHTML=`<div class="blk-hero"><svg class="blk-dust" viewBox="0 0 240 420" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><filter id="blkDust" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.68" numOctaves="2" seed="7" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0.32  0 0 0 0 0.63  0 0 0 0 0.86  0 0 0 1.25 -0.48"/></filter></defs><rect width="240" height="420" filter="url(#blkDust)"/></svg><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><button class="blk-x" onclick="bioExitToIntro()" aria-label="Voltar à apresentação"><i class="fa-solid fa-xmark"></i></button><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
     <div class="blk-foot" id="bioFoot"><button class="btn btn-primary blk-bio" onclick="bioUnlock()">Entrar com biometria</button><button class="blk-pass" onclick="bioLockPassword()">Entrar com senha</button></div>`;
   el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden';
   // NÃO dispara a biometria automaticamente — o prompt do sistema só aparece ao tocar em "Entrar com biometria".
@@ -8244,7 +8249,7 @@ function wealthSpark7d(){
   const per=Math.max(-0.06, Math.min(0.06, ((p.lucroProvP||0)/100)*0.03));  // fatia ~semanal do resultado
   const start=atual/(1+per), cart=[], labels=[];
   for(let i=0;i<n;i++){ const t=i/(n-1), base=start+(atual-start)*t;
-    const wob=(Math.sin(i*0.9)*0.55+Math.sin(i*0.42+1)*0.45)*(atual*0.0045);
+    const wob=(Math.sin(i*0.5)*0.6+Math.sin(i*0.21+0.7)*0.4)*(atual*0.0013);
     cart.push(i===n-1?atual:Math.max(0, base+wob));
     const dayIdx=Math.round((days-1)*t); const d=new Date(today.getFullYear(),today.getMonth(),today.getDate()-(days-1-dayIdx));
     labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
@@ -8258,13 +8263,17 @@ function initWealthSpark(){
   const d=wealthSpark7d(); if(!d||!d.cart||d.cart.length<2) return;
   if(charts.wspark) charts.wspark.destroy();
   const pts=d.cart, lbs=d.labels;
+  // mantém a linha na METADE SUPERIOR do card; abaixo dela fica só a sombra degradê
+  // (a faixa dos textos Investido/DY/Renda). min/max do eixo empurram a série p/ cima.
+  const mn=Math.min(...pts), mx=Math.max(...pts); let rng=mx-mn; if(rng<=0) rng=Math.max(1, Math.abs(mx)*0.008);
+  const yMin=mn - rng*1.7, yMax=mx + rng*0.35;
   // preenchimento: da cor da linha (topo) descendo em degradê leve até a cor do card (base)
   const c2=ctx.getContext('2d'); const g=c2.createLinearGradient(0,0,0, ctx.height||172);
-  g.addColorStop(0,'rgba(150,186,240,.40)'); g.addColorStop(.6,'rgba(90,132,196,.18)'); g.addColorStop(1,'rgba(13,43,77,.55)');
-  charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:lbs, datasets:[{ data:pts, borderColor:'#eaf2ff', backgroundColor:g, fill:true, tension:.34, pointRadius:0, borderWidth:2, borderJoinStyle:'round' }] },
+  g.addColorStop(0,'rgba(150,186,240,.38)'); g.addColorStop(.5,'rgba(90,132,196,.16)'); g.addColorStop(1,'rgba(13,43,77,.5)');
+  charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:lbs, datasets:[{ data:pts, borderColor:'#eaf2ff', backgroundColor:g, fill:true, tension:.4, pointRadius:0, borderWidth:2, borderJoinStyle:'round' }] },
     options:{ responsive:true, maintainAspectRatio:false, layout:{padding:0}, interaction:{mode:'index',intersect:false},
       plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, callbacks:{ title:c=>c[0].label||'', label:c=>brl0(c.parsed.y) } } },
-      scales:{ x:{ display:false }, y:{ display:false, grace:'6%' } } } });
+      scales:{ x:{ display:false }, y:{ display:false, min:yMin, max:yMax } } } });
 }
 function initHomeEvol(){
   const ctx=$('#homeEvolChart'); if(!ctx) return;
