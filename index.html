@@ -18,7 +18,10 @@
 <meta name="apple-mobile-web-app-title" content="Lastro">
 <meta name="mobile-web-app-capable" content="yes">
 
-<script>(function(){try{var t=localStorage.getItem('lastro_theme')||'auto';var d=t==='dark'||(t!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem('lastro_theme')||'auto';var d=t==='dark'||(t!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');
+/* boot: fundo escuro e barra do navegador (theme-color) escura enquanto o splash cobre a tela — evita a faixa branca embaixo */
+window.__booting=true;document.documentElement.classList.add('booting');
+var _tc=document.createElement('meta');_tc.id='tcOverride';_tc.setAttribute('name','theme-color');_tc.setAttribute('content','#0B2E5E');document.head.appendChild(_tc);}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap">
@@ -127,7 +130,9 @@
 
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: var(--canvas); }
 /* ── Splash / abertura do app ── */
-#splash { position:fixed; inset:0; width:100%; height:100vh; height:100dvh; min-height:100dvh; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; background:radial-gradient(120% 90% at 50% 35%, #1A4F94 0%, #0B2E5E 45%, #061A38 100%); color:#fff; opacity:1; transition:opacity .55s var(--ease-out); }
+#splash { position:fixed; inset:0; width:100%; height:100%; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; background:radial-gradient(120% 90% at 50% 35%, #1A4F94 0%, #0B2E5E 45%, #061A38 100%); color:#fff; opacity:1; transition:opacity .55s var(--ease-out); }
+/* durante o boot, fundo escuro no html E body p/ nunca aparecer barra branca (standalone/Safari) */
+html.booting, html.booting body { background:#0B2E5E !important; }
 #splash.hide { opacity:0; pointer-events:none; }
 .splash-inner { display:flex; flex-direction:column; align-items:center; }
 .splash-mark { width:84px; height:84px; border-radius:24px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.14); box-shadow:inset 0 1px 1px rgba(255,255,255,.3), 0 16px 40px rgba(0,0,0,.28); backdrop-filter:blur(4px); animation:spMark .8s var(--ease-out) both; }
@@ -860,8 +865,7 @@ img, svg, canvas, video { max-width: 100%; }
 </head>
 <body>
 <script>/* portão: esconde o app já no 1º paint quando não há acesso (evita o flash da Home ao abrir) */try{var _s=localStorage.getItem('lastro_session');var _b=localStorage.getItem('lastro_bio')==='1';if(!_s||_b)document.documentElement.classList.add('gate');}catch(e){}
-/* fundo do <html> escuro desde o 1º paint p/ não aparecer barra branca embaixo do splash
-   (fica invisível sob o body no app; no dark mode o html já é escuro) */try{document.documentElement.style.background='#0B2E5E';}catch(e){}</script>
+</script>
 <div id="splash" role="img" aria-label="Lastro">
   <div class="splash-inner">
     <div class="splash-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
@@ -11302,7 +11306,8 @@ function applyTheme(reRender){
   document.documentElement.setAttribute('data-theme', eff);
   // tema manual: meta de override (sem media) vence; tema automático: removemos o override e as metas por media-query seguem o SO em tempo real
   const pref0=getThemePref(); let ov=document.getElementById('tcOverride');
-  if(pref0==='auto'){ if(ov){ ov.remove(); } }
+  if(window.__booting){ if(!ov){ ov=document.createElement('meta'); ov.id='tcOverride'; ov.setAttribute('name','theme-color'); document.head.appendChild(ov); } ov.setAttribute('content','#0B2E5E'); }  // durante o boot: barra escura (cor do splash)
+  else if(pref0==='auto'){ if(ov){ ov.remove(); } }
   else { if(!ov){ ov=document.createElement('meta'); ov.id='tcOverride'; ov.setAttribute('name','theme-color'); document.head.appendChild(ov); } ov.setAttribute('content', eff==='dark'?'#0A0E13':'#F4F5F7'); }
   const pref=getThemePref();
   const ic=$('#themeIcon'), lb=$('#themeLabel');
@@ -11577,13 +11582,14 @@ setInterval(()=>{
   // aparece a apresentação/desbloqueio, nunca a Home (corrige o "flash" da tela inicial).
   let gated=false;
   try{ if(!isAuthed()){ startIntro(); gated=true; } else if(bioEnabled()){ openBioLock(); gated=true; } }catch(e){}
+  const endBoot=()=>{ try{ window.__booting=false; document.documentElement.classList.remove('booting'); if(typeof applyTheme==='function') applyTheme(); }catch(e){} };
   const finish=()=>{ if(!gated){ try{ maybeOnboard(); }catch(e){} } };
-  if(!sp){ finish(); return; }
+  if(!sp){ endBoot(); finish(); return; }
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
   // primeiro acesso ganha o momento de marca completo; retornos são instantâneos
   let seen=false; try{ seen=!!localStorage.getItem('lastro_splash_seen'); localStorage.setItem('lastro_splash_seen','1'); }catch(e){}
   const hold=reduce?600:(seen?700:2400);
-  setTimeout(()=>{ sp.classList.add('hide'); setTimeout(()=>{ sp.remove(); finish(); }, 600); }, hold);
+  setTimeout(()=>{ sp.classList.add('hide'); endBoot(); setTimeout(()=>{ sp.remove(); finish(); }, 600); }, hold);
 })();
 </script>
 </body>
