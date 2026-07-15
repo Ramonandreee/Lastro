@@ -2633,8 +2633,7 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .sup-dot { width:8px; height:8px; border-radius:50%; background:var(--up); box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 60%,transparent); animation:supPulse 2s infinite; }
 @keyframes supPulse { 0%{ box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 55%,transparent); } 70%{ box-shadow:0 0 0 6px transparent; } 100%{ box-shadow:0 0 0 0 transparent; } }
 /* privacidade: o mascaramento é feito por JS (applyPriv) — só os DÍGITOS viram '*',
-   preservando títulos, símbolos (R$, %, +/−) e separadores. Aqui só um leve respiro. */
-body.priv .priv-blur { letter-spacing:.04em; }
+   preservando títulos, símbolos (R$, %, +/−) e separadores. */
 .priv-blur { transition:opacity .2s var(--ease); }
 .priv-eye { width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; transition:all .14s var(--ease); flex:none; }
 .priv-eye:hover { color:var(--ink); border-color:var(--line-2); }
@@ -8207,16 +8206,16 @@ function renderHomeDashboard(p){
         </div>
       </div>
       <div class="whero-val priv-blur">${fmtHomeCur(p.atual)}</div>
-      <div class="whero-chips priv-blur">
-        <span class="whero-chip ${dayP>=0?'up':'down'}"><i class="fa-solid fa-arrow-${dayP>=0?'up':'down'}"></i> ${dayP>=0?'+':'−'}${fmtHomeCur(Math.abs(dayVal))} hoje</span>
+      <div class="whero-chips">
+        <span class="whero-chip priv-blur ${dayP>=0?'up':'down'}"><i class="fa-solid fa-arrow-${dayP>=0?'up':'down'}"></i> ${dayP>=0?'+':'−'}${fmtHomeCur(Math.abs(dayVal))} hoje</span>
         <span class="whero-chip2 ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% total</span>
       </div>
       <div class="whero-graph">
         <canvas id="wSpark" role="img" aria-label="Evolução do seu patrimônio nos últimos 7 dias"></canvas>
-        <div class="whero-foot priv-blur">
-          <div><span>Investido</span><b>${fmtHomeCur(p.invest)}</b></div>
+        <div class="whero-foot">
+          <div><span>Investido</span><b class="priv-blur">${fmtHomeCur(p.invest)}</b></div>
           <div><span>DY médio</span><b>${pc(p.dyMed,2)}%</b></div>
-          <div><span>Renda/mês</span><b>${fmtHomeCur(p.renda)}</b></div>
+          <div><span>Renda/mês</span><b class="priv-blur">${fmtHomeCur(p.renda)}</b></div>
         </div>
       </div>
     </div>
@@ -8262,6 +8261,8 @@ function initWealthSpark(){
   const d=wealthSpark7d(); if(!d||!d.cart||d.cart.length<2) return;
   if(charts.wspark) charts.wspark.destroy();
   const pts=d.cart, lbs=d.labels;
+  // % acumulada de cada ponto no período (p/ o tooltip quando a privacidade está ligada)
+  const base0=pts[0]||0; const pcts=pts.map(v=> base0? (v/base0-1)*100 : 0);
   // mantém a linha na METADE SUPERIOR do card; abaixo dela fica só a sombra degradê
   // (a faixa dos textos Investido/DY/Renda). min/max do eixo empurram a série p/ cima.
   const mn=Math.min(...pts), mx=Math.max(...pts); let rng=mx-mn; if(rng<=0) rng=Math.max(1, Math.abs(mx)*0.008);
@@ -8273,8 +8274,22 @@ function initWealthSpark(){
   g.addColorStop(0, dark?'rgba(106,166,255,.30)':'rgba(46,99,176,.22)'); g.addColorStop(.55, dark?'rgba(106,166,255,.09)':'rgba(46,99,176,.07)'); g.addColorStop(1, dark?'rgba(106,166,255,0)':'rgba(46,99,176,0)');
   charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:lbs, datasets:[{ data:pts, borderColor:lineCol, backgroundColor:g, fill:true, tension:.4, pointRadius:0, borderWidth:2, borderJoinStyle:'round' }] },
     options:{ responsive:true, maintainAspectRatio:false, layout:{padding:0}, interaction:{mode:'index',intersect:false},
-      plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, callbacks:{ title:c=>c[0].label||'', label:c=>brl0(c.parsed.y) } } },
+      plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, callbacks:{
+        title:c=>c[0].label||'',
+        // com privacidade ligada, mostra só a variação % do dia (sem o valor em R$)
+        label:c=> (typeof privOn==='function'&&privOn()) ? `${pcts[c.dataIndex]>=0?'+':'−'}${Math.abs(pcts[c.dataIndex]).toFixed(2).replace('.',',')}%` : brl0(c.parsed.y)
+      } } },
       scales:{ x:{ display:false }, y:{ display:false, min:yMin, max:yMax } } } });
+  // some rápido: ao tocar fora do gráfico esconde na hora; parado, some em ~2,5s
+  const ch=charts.wspark; let _hideT;
+  const hideTip=()=>{ try{ if(!charts.wspark) return; charts.wspark.setActiveElements([]); if(charts.wspark.tooltip) charts.wspark.tooltip.setActiveElements([],{x:0,y:0}); charts.wspark.update('none'); }catch(e){} };
+  const bump=()=>{ clearTimeout(_hideT); _hideT=setTimeout(hideTip, 2500); };
+  ctx.addEventListener('pointermove', bump, {passive:true});
+  ctx.addEventListener('pointerdown', bump, {passive:true});
+  ctx.addEventListener('pointerleave', ()=>{ clearTimeout(_hideT); _hideT=setTimeout(hideTip, 400); });
+  if(window._wsOutside) document.removeEventListener('pointerdown', window._wsOutside, true);
+  window._wsOutside=(e)=>{ if(e.target!==ctx) hideTip(); };
+  document.addEventListener('pointerdown', window._wsOutside, true);
 }
 function initHomeEvol(){
   const ctx=$('#homeEvolChart'); if(!ctx) return;
