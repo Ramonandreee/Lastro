@@ -8276,8 +8276,9 @@ function initWealthSpark(){
     options:{ responsive:true, maintainAspectRatio:false, layout:{padding:0}, interaction:{mode:'index',intersect:false},
       plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, animation:{duration:120}, callbacks:{
         title:c=>c[0].label||'',
-        // com privacidade ligada, mostra só a variação % do dia (sem o valor em R$)
-        label:c=> (typeof privOn==='function'&&privOn()) ? `${pcts[c.dataIndex]>=0?'+':'−'}${Math.abs(pcts[c.dataIndex]).toFixed(2).replace('.',',')}%` : brl0(c.parsed.y)
+        // normal: valor em R$ + variação % do dia; privacidade: só a variação %
+        label:c=>{ const p=pcts[c.dataIndex]||0; const pctStr=`${p>=0?'+':'−'}${Math.abs(p).toFixed(2).replace('.',',')}%`;
+          return (typeof privOn==='function'&&privOn()) ? pctStr : [brl0(c.parsed.y), pctStr]; }
       } } },
       scales:{ x:{ display:false }, y:{ display:false, min:yMin, max:yMax } } } });
   // regra p/ QUALQUER modo: ao tocar fora do gráfico o tooltip some na hora;
