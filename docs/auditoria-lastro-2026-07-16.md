@@ -183,8 +183,15 @@ Aprovada por **finance → qa → review** (todos *LIBERAR/OK*).
 | Toast offline com erro cru | Baixo | ✅ | Mensagem amigável ("Sem conexão — exibindo dados de demonstração"). |
 | `backdrop-filter` sem `-webkit-` (iOS) | Baixo | ✅ | Prefixo adicionado nos 6 scrims/splash. |
 
-**Pendente (próximas rodadas):**
-- **Dado real "de verdade"** para o gráfico de 7 dias (snapshots diários de patrimônio) e para DY histórico por ano (histórico real por ativo).
-- **Entitlement server-side** (tabela de billing + webhook) para reativar o PRO com fonte confiável.
-- **CDN sob demanda restante:** PDF.js e ícones de cripto (jsdelivr) — auto-hospedar ou aceitar como risco menor.
-- **Não-bloqueadores restantes:** `chartUnavail()` nos gráficos silenciosos (mitigado por hospedar o Chart.js), 2FA real, fallback JS do scroll-lock (`:has()`), tokens vs cores fixas inline, limpar `setInterval` de boot, corrigir contagem de linhas nas docs, renomear `document.js`/`documents.js`.
+## 7. Remediação — rodada 3 (higiene/segurança leve) · 2026-07-16 · commit `e513abd`
+
+| Item | Sev. orig. | Status |
+|---|---|---|
+| PDF.js em CDN (import por foto/PDF) | Alto (CDN JS) | ✅ Auto-hospedado em `vendor/pdfjs/` — todos os JS de terceiros agora locais |
+| Cores fixas inline nos cards (contraste dark) | Baixo | ✅ Tokens (`var(--brand)`/`--gold` + `-l`) |
+| Contagem de linhas defasada nas docs | Alto (integridade) | ✅ README/HANDOFF corrigidos (~11.600) + nota do `vendor/` |
+
+**Pendente (dependem de infra/decisão de produto):**
+- **Dado real "de verdade"** para o gráfico de 7 dias (snapshots diários de patrimônio) e para DY histórico por ano.
+- **Entitlement server-side** (tabela de billing + webhook) para reativar o PRO.
+- **Menores aceitos como risco baixo / opcionais:** ícones de cripto em CDN (jsdelivr — imagens SVG, sem execução de JS); `chartUnavail()` (mitigado por hospedar o Chart.js); 2FA real; fallback JS do scroll-lock (`:has()`, iOS <15.4); `setInterval` de tema (já faz early-return quando pref≠auto); renomear `document.js`/`documents.js`.
