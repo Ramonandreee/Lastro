@@ -151,3 +151,27 @@ _Totais (novos) — Crítico: 0 · Alto: 1 · Médio: 0 · Baixo: 2_
 **Baixo (higiene):** `-webkit-backdrop-filter`; fallback do scroll-lock; toast amigável offline; tokens no lugar de cores fixas; limpar `setInterval` de boot; corrigir contagem de linhas nas docs; renomear `document.js`/`documents.js`.
 
 > Regra de time: cada correção que toque em dinheiro do usuário volta ao ciclo **finance → qa → review** antes de publicar na `main`.
+
+---
+
+## 5. Remediação — rodada 1 (bloqueadores) · 2026-07-16 · commit `3704e2b`
+
+Aprovada por **finance → qa → review** (review: *LIBERAR*; qa: *LIBERADO*, 0 regressões / 0 exceções em 12 cenários). Escopo escolhido: **bloqueadores**, com **dado real onde dá, senão selo de estimativa**.
+
+| Bloqueador | Status | Como foi fechado |
+|---|---|---|
+| IA com carteira/macro fabricados (`SYS`) | ✅ Fechado | `buildSys()` injeta carteira real (`portfolioByTicker`) + macro real (`MARKET`) e instrui a **nunca inventar** número. |
+| Saída da IA sem `esc()` (XSS) | ✅ Fechado | `esc(txt)` antes do markdown mínimo. |
+| Endpoint da IA apontando p/ Anthropic no cliente | ✅ Fechado | Default `/api/ai` no chat e no Raio-X, com `Authorization: Bearer` da sessão. |
+| `api/ai.js` relay aberto | ✅ Fechado | JWT do Supabase obrigatório, CORS por allowlist, cap de model/max_tokens, timeout, rate-limit, erros genéricos. |
+| Escalonamento de plano via `user_state` | ✅ Fechado | `loadCloudState` não lê `data.plan`/`data.sub`; `cloudPayload` não os grava (deny-by-default). |
+| Gráfico "7 dias" fabricado sem selo | ✅ Rotulado | Selo "estimativa · 7d" + tooltip com prefixo "~". |
+| Proventos por RNG no home | ✅ Fechado/rotulado | RNG removido de `provPerCotaMonth` (determinístico); card "Meus proventos" marcado "est.". |
+| DY/Dividendos por ano por RNG | ✅ Rotulado | Chips "estimativa" nos cards do ativo; a **tabela** de proventos usa dado real quando há `ASSET_LIVE`. |
+
+**Pré-requisito operacional (Vercel):** `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY` nas env vars (sem elas, `/api/ai` fica *fail-closed* em 401). Opcional: `ALLOWED_ORIGINS` para domínios de preview.
+
+**Pendente (próximas rodadas):**
+- **Dado real "de verdade"** para o gráfico de 7 dias (snapshots diários de patrimônio) e para DY histórico por ano (histórico real por ativo) — substituir a estimativa quando a fonte existir.
+- **Entitlement server-side** (tabela de billing + webhook de pagamento) para reativar o plano PRO com fonte confiável.
+- **Alto/Médio/Baixo** não-bloqueadores: SRI nos CDNs, timeouts em `refreshQuotes`/`loadMacroReal`, unificar fórmula do Score, `chartUnavail()` nos gráficos silenciosos, 2FA real, `-webkit-backdrop-filter`, fallback do scroll-lock, toast amigável offline, tokens vs cores fixas, limpar `setInterval` de boot, corrigir contagem de linhas nas docs.
