@@ -8243,8 +8243,8 @@ function renderHomeDashboard(p){
     </div>`:''}
 
     <div class="wstats">
-      <div class="wstat"><span class="ws-ic" style="color:#1B4F9C;background:rgba(27,79,156,.1)"><i class="fa-solid fa-arrow-trend-up"></i></span><div><span class="ws-l">Ganho de capital</span><b class="ws-v priv-blur ${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucro))}</b></div></div>
-      <div class="wstat"><span class="ws-ic" style="color:#B8860B;background:rgba(184,134,11,.1)"><i class="fa-solid fa-coins"></i></span><div><span class="ws-l">Meus proventos <span class="ws-est">est.</span></span><b class="ws-v priv-blur up">${fmtHomeCur(p.prov)}</b></div></div>
+      <div class="wstat"><span class="ws-ic" style="color:var(--brand);background:var(--brand-l)"><i class="fa-solid fa-arrow-trend-up"></i></span><div><span class="ws-l">Ganho de capital</span><b class="ws-v priv-blur ${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucro))}</b></div></div>
+      <div class="wstat"><span class="ws-ic" style="color:var(--gold);background:var(--gold-l)"><i class="fa-solid fa-coins"></i></span><div><span class="ws-l">Meus proventos <span class="ws-est">est.</span></span><b class="ws-v priv-blur up">${fmtHomeCur(p.prov)}</b></div></div>
     </div>
 
     <div class="walloc">
@@ -11081,8 +11081,8 @@ function loadPdfjs(){
   if(_pdfjsPromise) return _pdfjsPromise;
   _pdfjsPromise=new Promise((res,rej)=>{
     const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    s.onload=()=>{ try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; res(window.pdfjsLib); }catch(e){ rej(e); } };
+    s.src='/vendor/pdfjs/pdf.min.js';
+    s.onload=()=>{ try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc='/vendor/pdfjs/pdf.worker.min.js'; res(window.pdfjsLib); }catch(e){ rej(e); } };
     s.onerror=()=>rej(new Error('pdfjs load'));
     document.head.appendChild(s);
   });

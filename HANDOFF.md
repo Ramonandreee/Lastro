@@ -10,7 +10,7 @@
 Plataforma web de inteligência para o investidor brasileiro, focada em **renda variável** — concorrente premium do Investidor10, com design refinado, Score proprietário e IA integrada. Produto será comercializado (planos Free / Premium / Investidor Pro).
 
 - Identidade: **Lastro** (reserva que dá respaldo). Marca esmeralda `#0E7C5A`/`#23B07E`, ouro para elite do Score, tinta quase-preta, dark mode nativo.
-- App é **single-file**: `index.html` (~9.900 linhas, HTML + CSS + JS puro, sem framework).
+- App é **single-file**: `index.html` (~11.600 linhas, HTML + CSS + JS puro, sem framework). Assets sempre carregados (Chart.js, Font Awesome, PDF.js) são auto-hospedados em `vendor/`.
 
 ## Estado atual (jul/2026)
 

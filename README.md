@@ -8,7 +8,7 @@ Plataforma de análise para o investidor brasileiro — FIIs, ações da B3, BDR
 
 ## 1. Visão geral do produto
 
-O app é um **SPA single-file**: quase tudo vive em `index.html` (~9.900 linhas, HTML + CSS + JS puro, sem framework). Abre em qualquer navegador e funciona **em modo demonstração** sem backend; com `config.js` preenchido, liga login, sincronização, IA e dados reais.
+O app é um **SPA single-file**: quase tudo vive em `index.html` (~11.600 linhas, HTML + CSS + JS puro, sem framework). Abre em qualquer navegador e funciona **em modo demonstração** sem backend; com `config.js` preenchido, liga login, sincronização, IA e dados reais. Assets de terceiros sempre carregados (Chart.js, Font Awesome, PDF.js) são **auto-hospedados** em `vendor/`.
 
 **Telas principais** (todas em `index.html`):
 
