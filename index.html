@@ -25,7 +25,7 @@ var _tc=document.createElement('meta');_tc.id='tcOverride';_tc.setAttribute('nam
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
 <script>window.LASTRO_CONFIG = window.LASTRO_CONFIG || {};</script>
 <script src="config.js" onerror="void 0"></script>
 
@@ -135,7 +135,7 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust
 html.booting, html.booting body { background:#0B2E5E !important; }
 #splash.hide { opacity:0; pointer-events:none; }
 .splash-inner { display:flex; flex-direction:column; align-items:center; }
-.splash-mark { width:84px; height:84px; border-radius:24px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.14); box-shadow:inset 0 1px 1px rgba(255,255,255,.3), 0 16px 40px rgba(0,0,0,.28); backdrop-filter:blur(4px); animation:spMark .8s var(--ease-out) both; }
+.splash-mark { width:84px; height:84px; border-radius:24px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.14); box-shadow:inset 0 1px 1px rgba(255,255,255,.3), 0 16px 40px rgba(0,0,0,.28); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); animation:spMark .8s var(--ease-out) both; }
 .splash-mark svg { width:46px; height:46px; }
 .splash-name { font-size:34px; font-weight:800; letter-spacing:-.02em; margin-top:20px; animation:spUp .7s var(--ease-out) .18s both; }
 .splash-tag { font-size:13px; font-weight:500; color:rgba(255,255,255,.78); margin-top:6px; animation:spUp .7s var(--ease-out) .3s both; }
@@ -747,7 +747,7 @@ img, svg, canvas, video { max-width: 100%; }
 
 .menu-btn { display:none; width:38px; height:38px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--surface); color:var(--ink-2); align-items:center; justify-content:center; cursor:pointer; flex:none; margin-right:6px; }
 .menu-btn:hover { color:var(--ink); }
-.sidebar-scrim { display:none; position:fixed; inset:0; background:rgba(15,20,25,.45); backdrop-filter:blur(2px); z-index:60; opacity:0; transition:opacity .25s var(--ease); }
+.sidebar-scrim { display:none; position:fixed; inset:0; background:rgba(15,20,25,.45); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); z-index:60; opacity:0; transition:opacity .25s var(--ease); }
 
 /* tablet: rail de ícones */
 @media (max-width: 1080px) and (min-width: 901px) {
@@ -1594,7 +1594,7 @@ input[type=range]::-moz-range-thumb {
   display: none;
   position: fixed; inset: 0;
   background: rgba(15,20,25,.4);
-  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
   z-index: 200;
   align-items: flex-start; justify-content: center;
   padding-top: 12vh;
@@ -1859,7 +1859,7 @@ table.tbl tbody tr.no-hover td { border:none; }
 .row-act.danger:hover { color:var(--down); border-color:var(--down); background:var(--down-l); }
 
 /* modal genérico (posição) */
-.modal-scrim { position:fixed; inset:0; z-index:260; background:rgba(10,14,19,.55); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; overflow-y:auto; padding:calc(20px + env(safe-area-inset-top,0px)) calc(20px + env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) calc(20px + env(safe-area-inset-left,0px)); }
+.modal-scrim { position:fixed; inset:0; z-index:260; background:rgba(10,14,19,.55); -webkit-backdrop-filter:blur(5px); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; overflow-y:auto; padding:calc(20px + env(safe-area-inset-top,0px)) calc(20px + env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) calc(20px + env(safe-area-inset-left,0px)); }
 .modal-scrim .modal-card { margin:auto; max-height:calc(100dvh - 40px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)); overflow-y:auto; }
 .modal-scrim.open { display:flex; animation:fadeIn .2s var(--ease); }
 /* ao interagir com um gráfico, a página não rola (fica travada no gesto) */
@@ -2422,7 +2422,7 @@ body.is-premium .nav-badge-pro, body.is-premium .pro-tag { display:none; }
 /* trava o scroll do fundo quando qualquer camada está aberta (menu, modal, busca) */
 body:has(.modal-scrim.open), body:has(.search-modal.open), body.nav-open { overflow:hidden; }
 html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) { overflow:hidden; overscroll-behavior:none; }
-.modal-scrim { background:rgba(10,14,19,.55) !important; backdrop-filter:blur(5px); }
+.modal-scrim { background:rgba(10,14,19,.55) !important; -webkit-backdrop-filter:blur(5px); backdrop-filter:blur(5px); }
 /* diálogo de confirmação */
 .confirm-card { width:380px; max-width:92vw; padding:24px 24px 20px; text-align:center; }
 .confirm-t { font-size:17px; font-weight:700; letter-spacing:-.01em; }
@@ -3058,7 +3058,7 @@ body.report-open { overflow:hidden; }
 .tc-row b { font-family:var(--mono); color:var(--ink); font-weight:600; }
 .tc-close { display:none; }
 /* scrim do bottom-sheet (mobile) */
-.tip-scrim { position:fixed; inset:0; z-index:299; background:rgba(15,20,25,.42); backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .2s var(--ease); }
+.tip-scrim { position:fixed; inset:0; z-index:299; background:rgba(15,20,25,.42); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .2s var(--ease); }
 .tip-scrim.show { opacity:1; pointer-events:auto; }
 .tip.sheet { position:fixed; left:0; right:0; bottom:0; top:auto; max-width:none; width:100%; border-radius:22px 22px 0 0; transform:translateY(101%); transition:transform .32s var(--ease-out); box-shadow:0 -16px 48px rgba(0,0,0,.25); }
 .tip.sheet.show { transform:none; }
@@ -3498,36 +3498,34 @@ body.pdf-lock { overflow:hidden; }
 }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="/vendor/chart.umd.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════
    LASTRO — DADOS
    ══════════════════════════════════════════════════════════ */
 
-// Score Lastro: composto transparente 0-100
-// (DY sustentável 35% · P/VP 30% · Liquidez 20% · Consistência 15%)
-function scoreLastro(a){
-  const dyN  = Math.min(a.dy/15, 1) * 35;
-  const pvpN = (a.pvp <= 1 ? 1 : Math.max(0, 1.6 - a.pvp)/0.6) * 30;
-  const liqN = Math.min(a.liq/50, 1) * 20;
-  const conN = (a.consist||0.7) * 15;
-  return Math.round(dyN + pvpN + liqN + conN);
-}
-/* Score garantido para QUALQUER ativo: usa o Score curado se existir; senão
-   calcula a partir dos fundamentos reais (DY, P/VP, ROE) já carregados. */
-function ensureScore(a){
-  if(a && typeof a.score==='number') return a.score;
+// Score Lastro: composto transparente 0-100 — MESMA fórmula para dado curado e ao vivo
+// (DY sustentável 35% · P/VP 30% · Solidez 20% · Consistência 15%; teto 100).
+// Solidez = ROE para empresas (ações); liquidez para fundos (FIIs, sem ROE); neutro se nenhum.
+// Dado ausente entra como NEUTRO, sem trocar o critério — assim o mesmo ativo recebe o mesmo Score
+// seja pelos dados curados, seja pelos fundamentos reais carregados.
+function scoreOf(a){
   if(!a) return null;
+  if(typeof a.score==='number') return a.score;            // score explícito (se houver) vence, em ambos os caminhos
   const dy=typeof a.dy==='number'?a.dy:null;
   const pvp=typeof a.pvp==='number'?a.pvp:null;
   const roe=typeof a.roe==='number'?a.roe:null;
-  if(dy==null && pvp==null && roe==null) return null;      // sem dados ainda
-  const dyN  = dy!=null  ? Math.min(dy/15,1)*35 : 17.5;    // neutro se ausente
+  const liq=typeof a.liq==='number'?a.liq:null;
+  if(dy==null && pvp==null && roe==null && liq==null) return null;   // sem dados ainda
+  const dyN  = dy!=null  ? Math.min(dy/15,1)*35 : 17.5;              // neutro se ausente
   const pvpN = pvp!=null ? (pvp<=1?1:Math.max(0,1.6-pvp)/0.6)*30 : 15;
-  const roeN = roe!=null ? Math.min(Math.max(roe,0)/25,1)*20 : 10;
-  const conN = 0.7*15;
-  return Math.round(dyN + pvpN + roeN + conN);
+  const solN = roe!=null ? Math.min(Math.max(roe,0)/25,1)*20
+             : liq!=null ? Math.min(liq/50,1)*20 : 10;
+  const conN = (typeof a.consist==='number'?a.consist:0.7)*15;
+  return Math.min(100, Math.round(dyN + pvpN + solN + conN));   // teto garantido (defesa se consist>1)
 }
+function scoreLastro(a){ return scoreOf(a); }
+function ensureScore(a){ return scoreOf(a); }
 function scoreColor(s){ return s>=80?'var(--brand)': s>=65?'var(--accent)': s>=50?'var(--gold)':'var(--down)'; }
 function scoreChip(s){ return s>=80?'chip-up': s>=65?'chip-blue': s>=50?'chip-gold':'chip-down'; }
 function scoreTier(s){ return s>=80?'Excelente': s>=65?'Sólido': s>=50?'Razoável':'Atenção'; }
@@ -8147,6 +8145,11 @@ function assetDayVar(tk){ const lk=assetLookup(tk); const v=lk&&lk.a&&lk.a.var; 
 /* expande/recolhe os demais índices do card Performance Diária */
 function toggleCmpMore(){ const m=$('#wcmpMore'), b=$('#wcmpToggle'); if(!m||!b) return; const open=m.classList.toggle('open'); b.classList.toggle('open', open); b.innerHTML=(open?'Ver menos':'Ver mais índices')+' <i class="fa-solid fa-chevron-down"></i>'; }
 
+/* fetch com timeout (AbortController) — evita requisição pendurada travar o fluxo */
+function fetchT(url, opts, ms){
+  const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(), ms||12000);
+  return fetch(url, Object.assign({}, opts||{}, {signal:ctl.signal})).finally(()=>clearTimeout(to));
+}
 /* ── Indicadores macro REAIS (Banco Central SGS + CoinGecko) p/ os mini-cards da Home ──
    Fontes públicas e gratuitas; em caso de falha (offline/CORS) mantém os valores de
    demonstração. Throttle de 5 min. */
@@ -8154,7 +8157,7 @@ let _macroTs=0, _macroBusy=false;
 async function loadMacroReal(){
   if(_macroBusy) return; const now=(typeof performance!=='undefined'?performance.now():0);
   if(_macroTs && now-_macroTs < 5*60*1000) return; _macroTs=now||1; _macroBusy=true;
-  const bcb=(code,n)=>fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados/ultimos/${n}?formato=json`).then(r=>r.ok?r.json():null).catch(()=>null);
+  const bcb=(code,n)=>fetchT(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados/ultimos/${n}?formato=json`, null, 8000).then(r=>r.ok?r.json():null).catch(()=>null);
   const setM=(nm,fn)=>{ const m=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm===nm); if(m) fn(m); };
   const brNum=v=>v.toFixed(2).replace('.',',');
   try{
@@ -8162,7 +8165,7 @@ async function loadMacroReal(){
     if(Array.isArray(selic)&&selic.length){ const s=selic.map(x=>parseFloat(x.valor)).filter(n=>!isNaN(n)); const v=s[s.length-1]; if(v>0) setM('SELIC',m=>{ m.vl=brNum(v)+'%'; m.spark=s; }); }
     if(Array.isArray(ipca)&&ipca.length){ const s=ipca.map(x=>parseFloat(x.valor)).filter(n=>!isNaN(n)); const v=s[s.length-1]; if(!isNaN(v)) setM('IPCA',m=>{ m.vl=brNum(v)+'%'; m.spark=s; }); }
     if(Array.isArray(dolar)&&dolar.length){ const s=dolar.map(x=>parseFloat(x.valor)).filter(n=>!isNaN(n)); const v=s[s.length-1], prev=s[s.length-2]||v; if(v>0){ const ch=prev?(v/prev-1)*100:0; setM('Dólar',m=>{ m.vl=brNum(v); m.dl=(ch>=0?'+':'−')+brNum(Math.abs(ch))+'%'; m.spark=s; }); } }
-    try{ const cg=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl&include_24hr_change=true').then(r=>r.ok?r.json():null); const b=cg&&cg.bitcoin;
+    try{ const cg=await fetchT('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl&include_24hr_change=true', null, 8000).then(r=>r.ok?r.json():null); const b=cg&&cg.bitcoin;
       if(b&&b.brl){ const ch=b.brl_24h_change||0; setM('Bitcoin',m=>{ m.vl='R$ '+(b.brl/1000).toFixed(0)+'k'; m.dl=(ch>=0?'+':'−')+brNum(Math.abs(ch))+'%'; }); } }catch(e){}
     if(typeof currentView!=='undefined' && currentView==='painel' && typeof softRefreshView==='function') softRefreshView();
   }catch(e){ /* mantém demonstração */ }
@@ -11501,7 +11504,7 @@ async function refreshQuotes(manual){
     const qs = new URLSearchParams();
     if(b3.length) qs.set('symbols', b3.join(','));
     if(crypto.length) qs.set('crypto', crypto.join(','));
-    const r = await fetch(`${quotesEndpoint()}?${qs.toString()}`);
+    const r = await fetchT(`${quotesEndpoint()}?${qs.toString()}`, null, 12000);
     if(!r.ok){ const body = await r.text().catch(()=> ''); throw new Error(`quotes ${r.status}: ${body.slice(0,160)}`); }
     const data = await r.json();
     const updated = applyQuotes(data);
@@ -11515,13 +11518,13 @@ async function refreshQuotes(manual){
       LIVE.lastError = (data && data.note) || 'sem cotações para esta tela';
       console.warn('[Lastro] cotações:', LIVE.lastError);
       setDataStatus(LIVE.on ? 'stale' : 'demo', LIVE.on ? 'Offline · em cache' : 'Demonstração');
-      if(manual===true) toast(`Cotações: ${LIVE.lastError}`);
+      if(manual===true) toast(LIVE.on ? 'Sem novas cotações — exibindo último valor' : 'Sem conexão — exibindo dados de demonstração');
     }
   }catch(e){
     LIVE.fails++; LIVE.lastError = String(e && e.message || e);
     console.warn('[Lastro] falha nas cotações:', LIVE.lastError);
     setDataStatus(LIVE.on ? 'stale' : 'demo', LIVE.on ? 'Offline · em cache' : 'Demonstração');
-    if(manual===true) toast(LIVE.on ? 'Sem conexão — exibindo último valor' : `Cotações: ${LIVE.lastError}`);
+    if(manual===true) toast(LIVE.on ? 'Sem conexão — exibindo último valor' : 'Sem conexão — exibindo dados de demonstração');
   }
 }
 
