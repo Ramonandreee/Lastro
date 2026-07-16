@@ -3335,6 +3335,8 @@ body.pdf-lock { overflow:hidden; }
 .whero-lbl { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); display:inline-flex; align-items:center; gap:8px; }
 .whero-demo { font-size:9px; font-weight:800; letter-spacing:.04em; padding:3px 8px; border-radius:20px; background:var(--gold-l); color:var(--gold); text-transform:uppercase; }
 .whero-demo i { font-size:8px; }
+.whero-est { position:absolute; top:0; right:0; z-index:2; font-size:9px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--ink-4); background:var(--surface-2); border:1px solid var(--line); border-radius:20px; padding:2px 8px; display:inline-flex; align-items:center; gap:5px; pointer-events:none; }
+.whero-est i { font-size:8px; }
 .whero-eye { width:34px; height:32px; border-radius:var(--r-lg); border:none; background:var(--surface-3); color:var(--ink-2); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; flex:none; padding:0; box-sizing:border-box; }
 .whero-eye:hover { background:var(--line-2); }
 .whero-val { font-family:var(--mono); font-size:clamp(28px,7.4vw,37px); font-weight:800; letter-spacing:-.02em; line-height:1.02; margin-top:6px; white-space:nowrap; color:var(--ink); }
@@ -3359,6 +3361,7 @@ body.pdf-lock { overflow:hidden; }
 .ws-l { display:block; font-size:11.5px; color:var(--ink-3); font-weight:600; line-height:1.25; }
 .ws-v { display:block; font-family:var(--mono); font-size:17px; font-weight:800; color:var(--ink); margin-top:4px; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
 .ws-v.up { color:var(--up); } .ws-v.down { color:var(--down); }
+.ws-est { font-size:8px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; color:var(--ink-4); background:var(--surface-3); border-radius:5px; padding:1px 4px; margin-left:3px; vertical-align:middle; }
 .walloc { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:18px 20px; margin-top:14px; }
 .walloc-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
 .walloc-t { font-size:15px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
@@ -3667,13 +3670,9 @@ function removePosition(tk){ CARTEIRA = CARTEIRA.filter(c=>c.tk!==tk); savePortf
 function provPerCota(k,a){ return (k==='fiis' && typeof a.div==='number') ? a.div : (typeof a.dy==='number' && a.px ? a.px*(a.dy/100)/12 : 0); }
 /* dia de pagamento estável por ativo (cada fundo paga sempre por volta do mesmo dia) */
 function provPayDay(tk){ return 8 + (seedFrom(tk+'payday') % 12); }   // dia 8..19, fixo por ativo
-/* valor por cota daquele mês — varia mês a mês em torno do rendimento-base (determinístico) */
-function provPerCotaMonth(tk, base, y, m){
-  if(base<=0) return 0;
-  const r = rngF(seedFrom(tk+'|'+y+'|'+m));
-  const factor = 0.84 + r()*0.34;   // ~0,84..1,18 do rendimento-base
-  return base*factor;
-}
+/* valor por cota do mês = rendimento-base declarado (SEM variação inventada por RNG).
+   Proventos exibidos são ESTIMATIVA a partir do rendimento/DY declarado, não pagamentos reais por data-com. */
+function provPerCotaMonth(tk, base, y, m){ return base>0 ? base : 0; }
 /* pagamentos mensais de um ativo desde a data de cada aporte (dia e valor realistas por ativo) */
 function groupPayments(g){
   const a=g.f.a, k=g.f.k, base=provPerCota(k,a); const pays=[];
@@ -4777,10 +4776,11 @@ async function loadCloudState(){
       if(Array.isArray(d.carteira)){ CARTEIRA=d.carteira; normLots(); savePortfolio(); }
       if(Array.isArray(d.watch)) localStorage.setItem('lastro_watch', JSON.stringify(d.watch));
       if(Array.isArray(d.alerts)) localStorage.setItem('lastro_alerts', JSON.stringify(d.alerts));
-      if(d.plan) localStorage.setItem('lastro_plan', d.plan);
+      // ENTITLEMENT: plano/assinatura (d.plan/d.sub) NÃO são lidos do user_state — o blob é gravável
+      // pelo próprio usuário (RLS só garante a linha), então confiar nele permitiria virar PRO editando
+      // data.plan. Fonte de verdade do plano = billing server-side (a implementar). Deny-by-default.
       if(d.theme){ localStorage.setItem('lastro_theme', d.theme); applyTheme(false); }
       if(d.profile && typeof d.profile==='object'){ let loc={}; try{ loc=JSON.parse(localStorage.getItem('lastro_profile')||'{}'); }catch(e){} localStorage.setItem('lastro_profile', JSON.stringify({...loc, ...d.profile})); }
-      if('sub' in d){ if(d.sub) localStorage.setItem('lastro_sub', JSON.stringify(d.sub)); else localStorage.removeItem('lastro_sub'); }
       const pf=d.prefs||{};
       if([30,50,100].includes(+pf.pgsize)){ sessionStorage.setItem('lastro_pgsize', pf.pgsize); Object.keys(tableState).forEach(k=>tableState[k].pageSize=+pf.pgsize); }
       if(pf.chartType) homeChartType=pf.chartType;
@@ -4797,7 +4797,8 @@ async function loadCloudState(){
   }catch(e){}
 }
 let _cloudT;
-function cloudPayload(){ return { carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), plan:getPlan(), theme:getThemePref(), profile:getProfile(), sub:getSub(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } }; }
+/* plano/assinatura NÃO entram no payload da nuvem (entitlement não vive no blob editável do usuário) */
+function cloudPayload(){ return { carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), theme:getThemePref(), profile:getProfile(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } }; }
 function _postCloud(s,c,keepalive){
   return fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data:cloudPayload(), updated_at:new Date().toISOString()}), keepalive:!!keepalive});
 }
@@ -8221,7 +8222,8 @@ function renderHomeDashboard(p){
         <span class="whero-chip2 ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% total</span>
       </div>
       <div class="whero-graph">
-        <canvas id="wSpark" role="img" aria-label="Evolução do seu patrimônio nos últimos 7 dias"></canvas>
+        <span class="whero-est"><i class="fa-solid fa-flask"></i> estimativa · 7d</span>
+        <canvas id="wSpark" role="img" aria-label="Evolução estimada do patrimônio nos últimos 7 dias (reconstrução a partir do resultado; não é histórico diário real)"></canvas>
         <div class="whero-foot">
           <div><span>Investido</span><b class="priv-blur">${fmtHomeCur(p.invest)}</b></div>
           <div><span>DY médio</span><b>${pc(p.dyMed,2)}%</b></div>
@@ -8239,7 +8241,7 @@ function renderHomeDashboard(p){
 
     <div class="wstats">
       <div class="wstat"><span class="ws-ic" style="color:#1B4F9C;background:rgba(27,79,156,.1)"><i class="fa-solid fa-arrow-trend-up"></i></span><div><span class="ws-l">Ganho de capital</span><b class="ws-v priv-blur ${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucro))}</b></div></div>
-      <div class="wstat"><span class="ws-ic" style="color:#B8860B;background:rgba(184,134,11,.1)"><i class="fa-solid fa-coins"></i></span><div><span class="ws-l">Meus proventos</span><b class="ws-v priv-blur up">${fmtHomeCur(p.prov)}</b></div></div>
+      <div class="wstat"><span class="ws-ic" style="color:#B8860B;background:rgba(184,134,11,.1)"><i class="fa-solid fa-coins"></i></span><div><span class="ws-l">Meus proventos <span class="ws-est">est.</span></span><b class="ws-v priv-blur up">${fmtHomeCur(p.prov)}</b></div></div>
     </div>
 
     <div class="walloc">
@@ -8287,8 +8289,9 @@ function initWealthSpark(){
       plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, animation:{duration:120}, callbacks:{
         title:c=>c[0].label||'',
         // normal: valor em R$ + variação % do dia; privacidade: só a variação %
-        label:c=>{ const p=pcts[c.dataIndex]||0; const pctStr=`${p>=0?'+':'−'}${Math.abs(p).toFixed(2).replace('.',',')}%`;
-          return (typeof privOn==='function'&&privOn()) ? pctStr : [brl0(c.parsed.y), pctStr]; }
+        label:c=>{ const p=pcts[c.dataIndex]||0; const pctStr=`~ ${p>=0?'+':'−'}${Math.abs(p).toFixed(2).replace('.',',')}%`;
+          // valores da série de 7 dias são ESTIMATIVA (reconstrução) — prefixo "~" sinaliza aproximação
+          return (typeof privOn==='function'&&privOn()) ? pctStr : ['~ '+brl0(c.parsed.y), pctStr]; }
       } } },
       scales:{ x:{ display:false }, y:{ display:false, min:yMin, max:yMax } } } });
   // regra p/ QUALQUER modo: ao tocar fora do gráfico o tooltip some na hora;
@@ -8559,9 +8562,10 @@ async function rxAnalyzePhotos(files){
   try{
     const imgs=(await Promise.all([...files].slice(0,5).map(fileToB64))).filter(Boolean);
     if(!imgs.length) throw new Error('img');
-    const endpoint=(window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || 'https://api.anthropic.com/v1/messages';
+    const endpoint=(window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || '/api/ai';
     const content=[...imgs.map(i=>({type:'image',source:{type:'base64',media_type:i.media_type,data:i.data}})), {type:'text', text:RX_EXTRACT_PROMPT}];
-    const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,system:RX_EXTRACT_SYS,messages:[{role:'user',content}]})});
+    const _sx=(typeof getSession==='function')?getSession():null; const _hx={'Content-Type':'application/json'}; if(_sx&&_sx.access_token) _hx.Authorization=`Bearer ${_sx.access_token}`;
+    const r=await fetch(endpoint,{method:'POST',headers:_hx,body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,system:RX_EXTRACT_SYS,messages:[{role:'user',content}]})});
     const dd=await r.json(); const txt=(dd.content&&dd.content[0]&&dd.content[0].text)||'';
     const arr=JSON.parse((txt.match(/\[[\s\S]*\]/)||['[]'])[0]);
     const lots=arr.map(x=>{ const tk=String(x.ticker||x.tk||'').toUpperCase().replace(/[^A-Z0-9]/g,''); const lk=assetLookup(tk); if(!lk) return null; const cotas=Math.max(0,Math.round(+x.cotas||+x.quantidade||0)); if(!cotas) return null; const pm=(+x.pm||+x.preco_medio||lk.a.px||0); return { id:uid(), tk, cotas, pm, date:todayISO() }; }).filter(Boolean);
@@ -9119,12 +9123,27 @@ function brl0(n){ return 'R$ '+Math.round(n).toLocaleString('pt-BR'); }
 /* ══════════════════════════════════════════════════════════
    IA — Anthropic
    ══════════════════════════════════════════════════════════ */
-const SYS = `Você é a Inteligência Lastro, assistente financeiro especializado no mercado brasileiro.
-O usuário (Ramon) investe em FIIs e ações B3, focado em renda passiva com dividendos.
-Carteira: HGLG11 (logístico), KNCR11 (papel CDI+), VISC11 (shopping), VGIR11 (papel IPCA+). Candidato: XPML11.
-Contexto macro: SELIC 14,5%, IPCA 4,39% a.a., IFIX 3.777 pts, Ibovespa 168.619.
-Responda em português, objetivo, máximo 3 parágrafos curtos. Use indicadores reais (DY, P/VP, ROE).
-Nunca prometa rentabilidade; eduque sobre risco. Não dê recomendação direta de compra/venda — apresente análise para decisão própria.`;
+/* Prompt do sistema montado com DADOS REAIS do usuário (carteira + macro do app),
+   nunca valores fixos. A IA é instruída a NÃO inventar número ausente. */
+function buildSys(){
+  const nm = (typeof profileName==='function' && profileName()) || 'investidor';
+  let cart = 'o usuário ainda não cadastrou ativos na carteira';
+  try{
+    const g = portfolioByTicker().filter(x=>x.val>0).sort((a,b)=>b.val-a.val);
+    const tot = g.reduce((s,x)=>s+x.val,0);
+    if(g.length){
+      cart = g.slice(0,12).map(x=>{ const lk=assetLookup(x.tk); const k=(lk&&lk.k)||'';
+        const kind = k==='fiis'?'FII':k==='acoes'?'ação':(k==='etfs'||k==='etfsint')?'ETF':k==='stocks'?'stock':k==='bdrs'?'BDR':k==='cripto'?'cripto':'';
+        const w = tot?Math.round(x.val/tot*100):0; return `${x.tk}${kind?' ('+kind+')':''} ${w}%`; }).join(', ');
+    }
+  }catch(e){}
+  const mk=(n)=>{ const m=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm===n); return m?`${m.vl}${(m.dl&&m.dl!=='a.a.')?' ('+m.dl+')':''}`:'n/d'; };
+  const macro = `SELIC ${mk('SELIC')}, IPCA ${mk('IPCA')}, IFIX ${mk('IFIX')}, Ibovespa ${mk('Ibovespa')}, Dólar ${mk('Dólar')}`;
+  return `Você é a Inteligência Lastro, assistente financeiro especializado no mercado brasileiro de renda variável (FIIs, ações B3, ETFs, BDRs, cripto).
+Usuário: ${nm}. Carteira ATUAL do usuário: ${cart}.
+Contexto macro (valores atuais exibidos no app): ${macro}.
+Regras: responda em português, objetivo, no máximo 3 parágrafos curtos. Baseie-se na carteira e nos dados acima e em conhecimento geral de mercado. IMPORTANTE: se um dado específico (DY, P/VP, ROE, cotação, proventos de um ativo) não estiver acima, diga explicitamente que não tem o valor atualizado — NUNCA invente número. Nunca prometa rentabilidade; eduque sobre risco. Não dê recomendação direta de compra/venda — apresente análise para decisão própria.`;
+}
 
 async function callAI(msg, el){
   if(!aiCanRun()){
@@ -9133,15 +9152,20 @@ async function callAI(msg, el){
   }
   if(!isPro()) aiInc();
   if(el) el.innerHTML = skelLines(3);
-  const endpoint = (window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || 'https://api.anthropic.com/v1/messages';
+  // sempre via proxy serverless (nunca o host da Anthropic direto do cliente — a chave fica só no servidor)
+  const endpoint = (window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || '/api/ai';
+  const s = (typeof getSession==='function') ? getSession() : null;
+  const headers = {'Content-Type':'application/json'};
+  if(s && s.access_token) headers.Authorization = `Bearer ${s.access_token}`;   // proxy valida a sessão
   try{
     const r = await fetch(endpoint,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, system:SYS, messages:[{role:'user',content:msg}] })
+      method:'POST', headers,
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, system:buildSys(), messages:[{role:'user',content:msg}] })
     });
     const d = await r.json();
     const txt = (d.content && d.content[0] && d.content[0].text) || null;
-    if(txt && el) el.innerHTML = txt.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    // escapa antes de aplicar markdown mínimo (evita XSS via retorno do modelo)
+    if(txt && el) el.innerHTML = esc(txt).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
     else if(el) el.innerHTML = '<span class="faint">Conecte o endpoint de IA (config.js → AI_ENDPOINT) para ativar a Inteligência Lastro.</span>';
   }catch(e){
     if(el) el.innerHTML = '<span class="faint">A Inteligência Lastro requer conexão com a API. Em produção, conecte via proxy serverless (veja README).</span>';
@@ -10755,16 +10779,16 @@ function tabProventos(tk,a,k,f){
   const realProv=Array.isArray((ASSET_LIVE[tk]||{}).dividends) && (ASSET_LIVE[tk].dividends.length>0);
   return `
   <div class="card card-pad" style="margin-bottom:16px">
-    <div class="ds-head"><span class="ds-title" style="margin:0">Dividend Yield por ano</span><span class="chip chip-neu" style="font-size:10px">10 anos</span></div>
+    <div class="ds-head"><span class="ds-title" style="margin:0">Dividend Yield por ano</span><span class="chip" style="font-size:10px;background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-flask"></i> estimativa · 10 anos</span></div>
     <div class="div-chart"><canvas id="dyHistChart"></canvas></div>
     <div class="prov-stats">
       <div class="hstat pri"><div class="l">DY atual</div><div class="v">${pc(a.dy,2)}%</div></div>
-      <div class="hstat"><div class="l">DY médio (5 anos)</div><div class="v">${pc(dyMed,2)}%</div></div>
+      <div class="hstat"><div class="l">DY médio (5 anos) · est.</div><div class="v">~${pc(dyMed,2)}%</div></div>
       <div class="hstat"><div class="l">${k==='fiis'?'Último rendimento':'Payout'}</div><div class="v">${k==='fiis'?brl(a.div):(f&&f.payout!=null?pc(f.payout,0)+'%':'—')}</div></div>
     </div>
   </div>
   <div class="card card-pad" style="margin-bottom:16px">
-    <div class="ds-head"><span class="ds-title" style="margin:0">${k==='fiis'?'Rendimentos (12 meses)':'Dividendos por ano'}</span></div>
+    <div class="ds-head"><span class="ds-title" style="margin:0">${k==='fiis'?'Rendimentos (12 meses)':'Dividendos por ano'}</span>${realProv?'':`<span class="chip" style="font-size:10px;background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-flask"></i> estimativa</span>`}</div>
     <div class="div-chart"><canvas id="detailDivChart"></canvas></div>
   </div>
   <div class="card card-pad">
