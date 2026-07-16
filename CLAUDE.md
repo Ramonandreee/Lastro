@@ -16,6 +16,26 @@ dos dois vai **direto para a `main`**.
 - Antes de começar e antes de dar push, rode `git pull origin main` para pegar o
   que houver de novo e evitar conflito.
 
+## Trabalho em equipe (multi-agentes) — modo padrão
+
+Somos **um time**. Para toda solicitação de qualquer um dos donos (**Ramon ou
+Mikael**), o **especialista da área entra em cena** — não trabalhe sozinho em algo
+que tem dono. Os agentes vivem em `.claude/agents/`:
+
+- **lastro-architect** — planejamento/arquitetura de features grandes ou ambíguas; mantém docs.
+- **lastro-frontend** — UI/UX, CSS/JS de interface no `index.html`, mobile-first iOS, dark/light, gráficos.
+- **lastro-backend** — `api/*` serverless, Supabase/RLS, coletor de notícias, dados reais (brapi, BCB, CoinGecko, CVM).
+- **lastro-finance** — indicadores, Score Lastro™, matemática de carteira, benchmarks, veracidade dos números.
+- **lastro-qa** — prova no navegador real (Playwright): screenshots, medições, estados.
+- **lastro-review** — auditoria do diff antes de publicar: bugs, iOS, segredos, validação.
+
+**Como orquestrar:** delegue ao(s) especialista(s) certo(s) (em paralelo quando as
+tarefas são independentes). Fluxo típico de uma feature: *architect* (plano) →
+*frontend/backend/finance* (execução) → *review* (auditoria) → *qa* (evidência).
+Os agentes **editam arquivos, mas não commitam** — **quem orquestra valida
+(`CSS chaves: 0 | JS: OK`), commita e publica direto na `main`** (sem PR). Pedidos
+triviais/conversa não precisam de delegação; trabalho de produto, sim.
+
 ## Consulte a documentação ANTES de qualquer alteração
 
 A documentação é atualizada constantemente pelos dois donos (Ramon e Mikael).
