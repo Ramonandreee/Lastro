@@ -171,7 +171,20 @@ Aprovada por **finance → qa → review** (review: *LIBERAR*; qa: *LIBERADO*, 0
 
 **Pré-requisito operacional (Vercel):** `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY` nas env vars (sem elas, `/api/ai` fica *fail-closed* em 401). Opcional: `ALLOWED_ORIGINS` para domínios de preview.
 
+## 6. Remediação — rodada 2 (robustez/segurança não-bloqueadora) · 2026-07-16 · commit `f91610c`
+
+Aprovada por **finance → qa → review** (todos *LIBERAR/OK*).
+
+| Item | Sev. orig. | Status | Como |
+|---|---|---|---|
+| CDN sem SRI (Chart.js/Font Awesome) | Alto | ✅ | **Auto-hospedados** em `vendor/` — sem CDN de terceiros para os assets sempre carregados. |
+| Timeout em `refreshQuotes`/`loadMacroReal` | Médio | ✅ | Helper `fetchT` (AbortController): BCB/CoinGecko 8s, cotações 12s. |
+| Fórmula do Score curado × ao vivo | Médio | ✅ | Função única `scoreOf` (solidez = ROE p/ ações, liquidez p/ FIIs; teto 100 com clamp). |
+| Toast offline com erro cru | Baixo | ✅ | Mensagem amigável ("Sem conexão — exibindo dados de demonstração"). |
+| `backdrop-filter` sem `-webkit-` (iOS) | Baixo | ✅ | Prefixo adicionado nos 6 scrims/splash. |
+
 **Pendente (próximas rodadas):**
-- **Dado real "de verdade"** para o gráfico de 7 dias (snapshots diários de patrimônio) e para DY histórico por ano (histórico real por ativo) — substituir a estimativa quando a fonte existir.
-- **Entitlement server-side** (tabela de billing + webhook de pagamento) para reativar o plano PRO com fonte confiável.
-- **Alto/Médio/Baixo** não-bloqueadores: SRI nos CDNs, timeouts em `refreshQuotes`/`loadMacroReal`, unificar fórmula do Score, `chartUnavail()` nos gráficos silenciosos, 2FA real, `-webkit-backdrop-filter`, fallback do scroll-lock, toast amigável offline, tokens vs cores fixas, limpar `setInterval` de boot, corrigir contagem de linhas nas docs.
+- **Dado real "de verdade"** para o gráfico de 7 dias (snapshots diários de patrimônio) e para DY histórico por ano (histórico real por ativo).
+- **Entitlement server-side** (tabela de billing + webhook) para reativar o PRO com fonte confiável.
+- **CDN sob demanda restante:** PDF.js e ícones de cripto (jsdelivr) — auto-hospedar ou aceitar como risco menor.
+- **Não-bloqueadores restantes:** `chartUnavail()` nos gráficos silenciosos (mitigado por hospedar o Chart.js), 2FA real, fallback JS do scroll-lock (`:has()`), tokens vs cores fixas inline, limpar `setInterval` de boot, corrigir contagem de linhas nas docs, renomear `document.js`/`documents.js`.
