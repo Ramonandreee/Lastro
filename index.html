@@ -216,7 +216,7 @@ a { color: inherit; text-decoration: none; }
   height: 100vh;
   padding: calc(22px + env(safe-area-inset-top,0px)) 16px calc(10px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px));
   z-index: 50;
-  transition: background .4s var(--ease), border-color .4s var(--ease);
+  transition: background .4s var(--ease), border-color .4s var(--ease), width .22s var(--ease), padding .22s var(--ease);
 }
 .brand {
   display: flex;
@@ -341,7 +341,7 @@ a { color: inherit; text-decoration: none; }
 }
 .nav-ghead:hover .nav-ghead-badge { transform: translateY(-1px); }
 .nav-ghead-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.nav-ghead-t { font-size: 13.5px; font-weight: 650; color: var(--ink); line-height: 1.2; }
+.nav-ghead-t { font-size: 13.5px; font-weight: 650; color: var(--ink); line-height: 1.2; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nav-ghead-s { font-size: 10.5px; color: var(--ink-4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nav-group:not(.collapsed) .nav-ghead-s { display: none; }        /* abre → some a prévia, entram os itens */
 .nav-chev { flex: none; font-size: 12px; color: var(--ink-4); transition: transform .22s var(--ease); }
@@ -369,10 +369,12 @@ a { color: inherit; text-decoration: none; }
 .nav-foot-meta a { color:var(--ink-3); }
 .hdr-gift i { color: var(--up); }
 .nav-soon {
-  flex: none; font-size: 9px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
-  color: var(--ink-4); background: var(--surface-3); padding: 3px 8px; border-radius: 20px;
+  flex: none; font-size: 8.5px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase;
+  color: var(--ink-4); background: var(--surface-3); padding: 2px 6px; border-radius: 20px; white-space: nowrap;
 }
 .nav-item .nav-soon { margin-left: auto; }
+/* "Em breve" agora vive na linha do subtítulo do grupo → o título usa a largura toda */
+.nav-ghead-s .nav-soon { margin-right: 6px; vertical-align: middle; position: relative; top: -1px; }
 .nav-soon-inline { margin-left: 6px; font-size: 8px; padding: 2px 6px; vertical-align: middle; position: relative; top: -1px; }
 .nav-item-soon { color: var(--ink-4); cursor: default; opacity: .7; }
 .nav-item-soon:hover { background: none; color: var(--ink-4); }
@@ -766,6 +768,37 @@ img, svg, canvas, video { max-width: 100%; }
   .user-chip > i { display:none; }
 }
 
+/* desktop: menu recolhível manualmente (rail) — botão de recolher/expandir */
+.nav-rail-toggle { display:none; }
+@media (min-width: 1081px) {
+  .nav-rail-toggle {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin:2px 4px 8px; padding:8px; width:calc(100% - 8px);
+    border:1px solid var(--line); background:var(--surface); color:var(--ink-4);
+    border-radius:10px; cursor:pointer; font-size:12px;
+    transition:color .15s var(--ease), background .15s var(--ease);
+  }
+  .nav-rail-toggle:hover { color:var(--ink-2); background:var(--surface-3); }
+  body.nav-rail .nav-rail-toggle { margin:2px 0 8px; width:auto; padding:9px 10px; }
+  body.nav-rail .nav-rail-toggle i { transform:rotate(180deg); }
+
+  /* rail: só ícones (espelha o rail de tablet) */
+  body.nav-rail .sidebar { width: 72px; padding: calc(22px + env(safe-area-inset-top,0px)) 12px calc(10px + env(safe-area-inset-bottom,0px)) 12px; }
+  body.nav-rail .brand-name, body.nav-rail .nav-item span, body.nav-rail .nav-label,
+  body.nav-rail .user-meta, body.nav-rail .theme-toggle span, body.nav-rail .nav-badge { display: none; }
+  body.nav-rail .nav-ghead, body.nav-rail .nav-soon { display: none; }
+  body.nav-rail .nav-group, body.nav-rail .nav-group:not(.collapsed) { background: none; padding-bottom: 0; }
+  body.nav-rail .nav-group .nav-gitems, body.nav-rail .nav-group.collapsed .nav-gitems { display: block !important; margin: 0 !important; padding-left: 0 !important; border-left: 0 !important; }
+  body.nav-rail .nav-item-soon { display: none; }
+  body.nav-rail .brand .brand-home { display: none; }
+  body.nav-rail .brand { justify-content: center; padding: 0 0 20px; }
+  body.nav-rail .nav-item { justify-content: center; padding: 11px; }
+  body.nav-rail .theme-toggle { justify-content: center; }
+  body.nav-rail .user-chip { justify-content: center; }
+  body.nav-rail .user-chip > i { display:none; }
+  body.nav-rail .nav-foot-meta, body.nav-rail .nav-social { display:none; }
+}
+
 /* mobile: sidebar off-canvas (drawer) + hambúrguer */
 @media (max-width: 900px) {
   .menu-btn { display:flex; }
@@ -901,6 +934,8 @@ img, svg, canvas, video { max-width: 100%; }
       <div class="brand-home nav-item active" data-view="painel" aria-current="page" onclick="nav('painel',this)" title="Início"><i class="fa-solid fa-house"></i><span>Início</span></div>
     </div>
 
+    <button class="nav-rail-toggle" type="button" onclick="toggleNavRail()" title="Recolher/expandir menu" aria-label="Recolher ou expandir o menu"><i class="fa-solid fa-angles-left"></i></button>
+
     <div class="nav-scroll">
     <div class="nav-sep"></div>
 
@@ -949,7 +984,7 @@ img, svg, canvas, video { max-width: 100%; }
     </nav>
 
     <nav class="nav-group nav-group-soon collapsed" data-group="rendafixa">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-landmark"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Renda Fixa</span><span class="nav-ghead-s">Tesouro · CDBs · Debêntures</span></span><span class="nav-soon">Em breve</span></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-landmark"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Renda Fixa</span><span class="nav-ghead-s"><span class="nav-soon">Em breve</span>Tesouro · CDBs · Debêntures</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item nav-item-soon"><i class="fa-solid fa-piggy-bank"></i><span>Tesouro Direto</span></div>
         <div class="nav-item nav-item-soon"><i class="fa-solid fa-file-contract"></i><span>CDBs, LCIs & LCAs</span></div>
@@ -958,7 +993,7 @@ img, svg, canvas, video { max-width: 100%; }
     </nav>
 
     <nav class="nav-group collapsed" data-group="internacional">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-earth-americas"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Internacional</span><span class="nav-ghead-s">Stocks · BDRs · ETFs globais</span></span><span class="nav-soon">Em breve</span></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-earth-americas"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Internacional</span><span class="nav-ghead-s"><span class="nav-soon">Em breve</span>Stocks · BDRs · ETFs globais</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item" data-view="stocks" onclick="nav('stocks',this)"><i class="fa-solid fa-flag-usa"></i><span>Stocks (EUA)</span></div>
         <div class="nav-item" data-view="bdrs" onclick="nav('bdrs',this)"><i class="fa-solid fa-globe"></i><span>BDRs</span></div>
@@ -969,7 +1004,7 @@ img, svg, canvas, video { max-width: 100%; }
     </nav>
 
     <nav class="nav-group nav-group-soon collapsed" data-group="aprenda">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-graduation-cap"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Aprenda</span><span class="nav-ghead-s">Academia · Glossário · Comunidade</span></span><span class="nav-soon">Em breve</span></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-graduation-cap"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Aprenda</span><span class="nav-ghead-s"><span class="nav-soon">Em breve</span>Academia · Glossário · Comunidade</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item nav-item-soon"><i class="fa-solid fa-book-open"></i><span>Academia Lastro</span></div>
         <div class="nav-item nav-item-soon"><i class="fa-solid fa-spell-check"></i><span>Glossário</span></div>
@@ -1003,8 +1038,6 @@ img, svg, canvas, video { max-width: 100%; }
         <span class="tb-name">Lastro</span>
       </div>
       <div class="topbar-right">
-        <div class="market-status"><span class="pulse"></span> Mercado aberto</div>
-        <button class="data-status demo" id="dataStatus" onclick="refreshQuotes(true)" title="Fonte de dados — clique para atualizar"><span class="ds-dot"></span><span id="dataStatusLabel">Demonstração</span></button>
         <div class="hdr-actions" id="hdrActions"></div>
       </div>
     </header>
@@ -4750,7 +4783,8 @@ async function authLogout(){
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
-  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist'].forEach(k=>localStorage.removeItem(k));
+  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts'].forEach(k=>localStorage.removeItem(k));
+  _stateTs = 0;   // zera o relógio de sincronização — o próximo login adota o estado da nuvem
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
   CARTEIRA = []; localStorage.setItem('lastro_sub',''); localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
   refreshPlanUI(); updateAuthUI(); applyPriv();
@@ -4762,6 +4796,17 @@ async function authLogout(){
 /* sync nuvem: tabela user_state (user_id pk, data jsonb). Falha graciosa p/ localStorage. */
 /* re-sincroniza o estado da nuvem ao voltar o foco/aba (PC ↔ celular), com debounce */
 let _lastSync=0;
+/* Reconciliação entre aparelhos (PC ↔ celular) por carimbo de tempo (last-write-wins).
+   _stateTs = momento da última MUTAÇÃO local (persistido). O payload leva esse ts; ao
+   carregar, só adotamos a nuvem se ela for mais nova — senão empurramos o local. Evita o
+   "ping-pong" em que abrir num aparelho sobrescrevia o outro com dados antigos. */
+let _stateTs = (function(){ try{ return +localStorage.getItem('lastro_state_ts')||0; }catch(e){ return 0; } })();
+let _applyingCloud=false;   // enquanto aplicamos a nuvem, nenhuma escrita re-empurra (sem eco)
+let _dirty=false;           // há mutação local ainda não confirmada na nuvem? (só então vale a pena dar flush)
+/* carimbo monotônico: nunca anda pra trás em relação ao que este aparelho já viu (inclui o ts
+   adotado da nuvem). Assim, mesmo num aparelho com relógio atrasado, uma edição local feita
+   DEPOIS de adotar a nuvem ainda supera o ts da nuvem — evita perder a própria edição. */
+function touchState(){ _stateTs = Math.max(Date.now(), _stateTs+1); _dirty=true; try{ localStorage.setItem('lastro_state_ts', String(_stateTs)); }catch(e){} }
 function syncOnReturn(){ if(!isAuthed()) return; const now=Date.now(); if(now-_lastSync<4000) return; _lastSync=now; try{ loadCloudState(); }catch(e){} }
 async function loadCloudState(){
   if(typeof testModeOn==='function' && testModeOn()) return;   // modo dev: não puxa a nuvem por cima dos dados de teste
@@ -4770,10 +4815,22 @@ async function loadCloudState(){
     const r=await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?select=data&user_id=eq.${s.user.id}`, {headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`}});
     if(!r.ok) return; const rows=await r.json();
     const d = rows[0] && rows[0].data;
-    if(d){
-      if(Array.isArray(d.carteira)){ CARTEIRA=d.carteira; normLots(); savePortfolio(); }
-      if(Array.isArray(d.watch)) localStorage.setItem('lastro_watch', JSON.stringify(d.watch));
-      if(Array.isArray(d.alerts)) localStorage.setItem('lastro_alerts', JSON.stringify(d.alerts));
+    if(!d){ await saveCloudState(); return; }   // primeira vez: envia o estado local
+    // Quem é mais novo? Se o local tem mutações e a nuvem não é mais recente, mantemos o local
+    // (e, se estivermos à frente, empurramos). Só adotamos a nuvem quando ela é de fato mais nova.
+    const cts = +d.ts || 0;
+    if(_stateTs > 0 && cts <= _stateTs){
+      if(cts < _stateTs){ try{ saveCloudState(); }catch(e){} }   // nuvem atrasada → sobe o local
+      return;
+    }
+    // migração (nuvem e local sem carimbo): não deixe uma nuvem VAZIA apagar dados reais locais
+    const migrating = (cts===0 && _stateTs===0);
+    const wipes = (arr, localLen) => migrating && Array.isArray(arr) && arr.length===0 && localLen>0;
+    _applyingCloud = true;
+    try{
+      if(Array.isArray(d.carteira) && !wipes(d.carteira, CARTEIRA.length)){ CARTEIRA=d.carteira; normLots(); try{ localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} if(typeof recordPatSnapshot==='function') recordPatSnapshot(); }
+      if(Array.isArray(d.watch) && !wipes(d.watch, (watchlist()||[]).length)) localStorage.setItem('lastro_watch', JSON.stringify(d.watch));
+      if(Array.isArray(d.alerts) && !wipes(d.alerts, (getAlerts()||[]).length)) localStorage.setItem('lastro_alerts', JSON.stringify(d.alerts));
       // ENTITLEMENT: plano/assinatura (d.plan/d.sub) NÃO são lidos do user_state — o blob é gravável
       // pelo próprio usuário (RLS só garante a linha), então confiar nele permitiria virar PRO editando
       // data.plan. Fonte de verdade do plano = billing server-side (a implementar). Deny-by-default.
@@ -4791,30 +4848,37 @@ async function loadCloudState(){
       if(+pf.trialStart>0){ const cur=trialStartTs(); if(!cur || +pf.trialStart<cur) localStorage.setItem('lastro_trial_start', +pf.trialStart); }
       // histórico de patrimônio: une o da nuvem com o local (local vence em conflito de data)
       if(Array.isArray(d.patHist)){ const map=new Map(); d.patHist.forEach(x=>{ if(x&&x.d&&typeof x.v==='number') map.set(x.d, Math.round(x.v)); }); patHistArr().forEach(x=>map.set(x.d, x.v)); patHistSave([...map.entries()].map(([dd,v])=>({d:dd,v})).sort((p,q)=>p.d<q.d?-1:1)); }
-      refreshPlanUI();
-      render(currentView);   // reflete preferências (tema/visualização) imediatamente
-    } else { await saveCloudState(); } // primeira vez: envia o estado local
+    } finally { _applyingCloud=false; }
+    // adota o carimbo da nuvem para não re-empurrar (se ela não tinha ts, estabelece um agora)
+    _stateTs = cts || Date.now(); try{ localStorage.setItem('lastro_state_ts', String(_stateTs)); }catch(e){}
+    refreshPlanUI();
+    render(currentView);   // reflete preferências (tema/visualização) imediatamente
   }catch(e){}
 }
 let _cloudT;
 /* plano/assinatura NÃO entram no payload da nuvem (entitlement não vive no blob editável do usuário) */
-function cloudPayload(){ return { carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), theme:getThemePref(), profile:getProfile(), patHist:patHistArr(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } }; }
+function cloudPayload(){ return { ts:_stateTs, carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), theme:getThemePref(), profile:getProfile(), patHist:patHistArr(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } }; }
 function _postCloud(s,c,keepalive){
   return fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data:cloudPayload(), updated_at:new Date().toISOString()}), keepalive:!!keepalive});
 }
 function saveCloudState(){
+  if(_applyingCloud) return Promise.resolve();   // enquanto adotamos a nuvem, não re-empurramos (sem eco)
   if(typeof testModeOn==='function' && testModeOn()) return Promise.resolve();   // modo dev: nunca grava dados de teste na nuvem
+  touchState();   // registra o momento desta mutação local (base da reconciliação entre aparelhos)
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
   clearTimeout(_cloudT);
-  return new Promise(res=>{ _cloudT=setTimeout(async()=>{ try{ await _postCloud(s,c); }catch(e){} res(); }, 700); });
+  return new Promise(res=>{ _cloudT=setTimeout(async()=>{ try{ const r=await _postCloud(s,c); if(r&&r.ok) _dirty=false; }catch(e){} res(); }, 700); });
 }
 /* envia imediatamente o que estiver pendente (evita perder dados ao sair/fechar).
-   Resolve para true/false conforme o servidor confirmou a gravação. */
-function flushCloudState(keepalive){
+   IMPORTANTE: só grava se houver mutação local pendente (_dirty) OU force=true. Assim, um
+   aparelho que apenas VISUALIZOU (sem editar) não sobrescreve, ao fechar/ocultar, uma versão
+   MAIS NOVA que outro aparelho acabou de subir. Resolve true/false conforme a gravação. */
+function flushCloudState(keepalive, force){
   if(typeof testModeOn==='function' && testModeOn()) return Promise.resolve(true);   // modo dev: não sincroniza
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve(true);
+  if(!force && !_dirty){ clearTimeout(_cloudT); return Promise.resolve(true); }   // nada pendente: não clobbera a nuvem
   clearTimeout(_cloudT);
-  return _postCloud(s,c,keepalive).then(r=>!!(r&&r.ok)).catch(()=>false);
+  return _postCloud(s,c,keepalive).then(r=>{ const ok=!!(r&&r.ok); if(ok) _dirty=false; return ok; }).catch(()=>false);
 }
 window.addEventListener('pagehide', ()=>{ try{ flushCloudState(true); }catch(e){} });
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden'){ try{ flushCloudState(true); }catch(e){} } });
@@ -5377,6 +5441,14 @@ function nav(v, el, noHist){
 function toggleSidebar(){ document.body.classList.toggle('nav-open'); }
 function openSidebar(){ document.body.classList.add('nav-open'); }
 function closeSidebar(){ document.body.classList.remove('nav-open'); }
+/* recolher/expandir o menu no desktop (rail), com preferência persistida */
+function toggleNavRail(){
+  const on = !document.body.classList.contains('nav-rail');
+  document.body.classList.toggle('nav-rail', on);
+  try{ localStorage.setItem('lastro_nav_collapsed', on?'1':'0'); }catch(e){}
+}
+function restoreNavRail(){ try{ if(localStorage.getItem('lastro_nav_collapsed')==='1') document.body.classList.add('nav-rail'); }catch(e){} }
+restoreNavRail();
 /* grupos recolhíveis do menu (accordion single-open) */
 function toggleNavGroup(head){
   const g=head.closest('.nav-group'); if(!g) return;
@@ -5537,13 +5609,8 @@ function stopHeroTimer(){ if(_heroTimer){ clearInterval(_heroTimer); _heroTimer=
 function cycleHero(){ heroIdx++; renderHeroIdx(true); startHeroTimer(); }
 
 function viewPainel(){
-  // sem carteira, carrega a demonstração automaticamente para dar vida ao painel
-  if(!CARTEIRA.length){
-    const demo=[['HGLG11',50,158.00],['KNCR11',80,103.00],['VISC11',60,108.00],['PETR4',100,36.50],['ITSA4',200,9.80]];
-    const now=new Date(); const lots=[];
-    demo.forEach((d,i)=>{ if(!assetLookup(d[0])) return; const dt=new Date(now.getFullYear(), now.getMonth()-(14-i*3), 10).toISOString().slice(0,10); lots.push({ id:uid(), tk:d[0], cotas:d[1], pm:d[2], date:dt }); });
-    if(lots.length){ CARTEIRA=lots; demoMode=true; }   // efêmero: não persiste
-  }
+  // App funcional: fora do modo desenvolvedor NÃO há carteira fictícia. Sem aportes,
+  // o painel mostra os estados vazios/zerados (dados fictícios vivem só no modo dev).
   const p = portfolioStats();
   // variação real do dia da carteira (ponderada pelas posições, com cotação ao vivo)
   let _patDayVal=0; (p._byT||[]).forEach(g=>{ const v=(g.f&&g.f.a&&typeof g.f.a.var==='number')?g.f.a.var:0; _patDayVal += g.val*v/100; });
@@ -6026,11 +6093,11 @@ function viewCarteira(){
   if(!n){
     const emptyCta = isPro()
       ? `${addBtn} <button class="btn btn-ghost" onclick="importCarteiraCSV()"><i class="fa-solid fa-file-import"></i> Importar CSV</button>`
-      : `${addBtn} <button class="btn btn-ghost" onclick="loadDemoCarteira()"><i class="fa-solid fa-wand-magic-sparkles"></i> Ver com dados de exemplo</button>`;
+      : addBtn;
     return `
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-wallet"></i></span> Minha Carteira</div>${addBtn}</div>
-      ${emptyState('fa-wallet','Sua carteira está vazia', isPro()?'Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.':'Veja como a carteira funciona com dados de exemplo. Para acompanhar a sua de verdade — com sincronização, proventos, Imposto de Renda e mais — crie sua conta e teste o Premium 7 dias grátis.', emptyCta)}
+      ${emptyState('fa-wallet','Sua carteira está vazia', isPro()?'Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.':'Adicione seus aportes para acompanhar a sua carteira de verdade — com sincronização entre aparelhos, proventos, Imposto de Renda e mais. Crie sua conta e teste o Premium 7 dias grátis.', emptyCta)}
     </div>`;
   }
 
@@ -9759,7 +9826,7 @@ function genTestAlerts(){
   return list;
 }
 /* TODOS os dados do usuário que o modo dev pode tocar — guardados/restaurados por inteiro */
-const DEV_DATA_KEYS = ['lastro_carteira','lastro_watch','lastro_alerts','lastro_sub','lastro_plan','lastro_profile','lastro_priv','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_pat_hist'];
+const DEV_DATA_KEYS = ['lastro_carteira','lastro_watch','lastro_alerts','lastro_sub','lastro_plan','lastro_profile','lastro_priv','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_pat_hist','lastro_state_ts'];
 function toggleTestMode(){
   closeAcctMenu();
   if(!testModeOn()){
@@ -9781,7 +9848,8 @@ function toggleTestMode(){
       localStorage.removeItem('lastro_dev_bkp');
       // recarrega o estado em memória a partir do que foi restaurado
       try{ CARTEIRA = loadPortfolio(); normLots(); }catch(e){ CARTEIRA=[]; }
-      if(typeof flushCloudState==='function') flushCloudState();   // fora do modo dev: re-sincroniza os dados reais
+      try{ _stateTs = +localStorage.getItem('lastro_state_ts')||0; }catch(e){}   // relógio de sync volta ao valor real
+      if(typeof flushCloudState==='function') flushCloudState(false, true);   // fora do modo dev: re-sincroniza os dados reais (força)
       toast('Modo desenvolvedor OFF — todos os seus dados reais foram restaurados ✓');
     } else {
       CARTEIRA=[]; savePortfolio();
