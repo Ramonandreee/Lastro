@@ -3782,8 +3782,10 @@ function nextProventoFor(g){
   const info=provRealInfo(g.tk);
   const payDay = info ? info.payDay    : provPayDay(g.tk);
   const offset = info ? info.comOffset : 0;            // proxy: data-com = dia de pagamento
-  let pay=new Date(now.getFullYear(), now.getMonth(), payDay);
-  if(pay<now) pay=new Date(now.getFullYear(), now.getMonth()+1, payDay);
+  const dim=(y,m)=>new Date(y, m+1, 0).getDate();      // dias do mês (evita dia 31 transbordar p/ o mês seguinte)
+  let py=now.getFullYear(), pm=now.getMonth();
+  let pay=new Date(py, pm, Math.min(payDay, dim(py,pm)));
+  if(pay<now){ pm++; if(pm>11){ pm=0; py++; } pay=new Date(py, pm, Math.min(payDay, dim(py,pm))); }
   const com=new Date(pay.getFullYear(), pay.getMonth(), pay.getDate()-offset);   // data-com projetada
   // cotas com direito: lotes comprados até a data-com (inclusive). Sem data → tratado como antigo.
   let cotas=0;
@@ -4931,7 +4933,7 @@ function _postCloudDirect(s,c,keepalive){
 function _postCloud(s,c,keepalive){
   return fetch(`${c.SUPABASE_URL}/rest/v1/rpc/save_state`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json'}, body:JSON.stringify({ p_data: cloudPayload() }), keepalive:!!keepalive})
     .then(async r=>{
-      if(r.ok){ try{ const ts=await r.clone().json(); if(typeof ts==='number' && ts>0){ _stateTs=ts; try{ localStorage.setItem('lastro_state_ts', String(ts)); }catch(e){} } }catch(e){} return r; }
+      if(r.ok){ try{ const ts=await r.clone().json(); const n=Number(ts); if(isFinite(n) && n>0){ _stateTs=n; try{ localStorage.setItem('lastro_state_ts', String(n)); }catch(e){} } }catch(e){} return r; }
       if(r.status===404 || r.status===400 || r.status===401) return _postCloudDirect(s,c,keepalive);   // função ausente → fallback
       return r;
     })
