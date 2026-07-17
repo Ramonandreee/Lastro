@@ -63,3 +63,33 @@ create policy "user_state insert own" on public.user_state for insert with check
 
 drop policy if exists "user_state update own" on public.user_state;
 create policy "user_state update own" on public.user_state for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ════════════════════════════════════════════════════════════
+-- SINCRONIZAÇÃO entre aparelhos: gravação com carimbo do SERVIDOR.
+-- Resolve o "clock-skew" (um aparelho com a hora errada ganhando sempre): o carimbo (ts) que
+-- decide "quem é mais novo" passa a vir do relógio do BANCO, não do celular/PC. O cliente chama
+-- rpc/save_state(p_data) e recebe de volta o ts autoritativo (epoch ms), já embutido em data.ts.
+-- security invoker → roda como o próprio usuário; a RLS acima continua valendo (só a própria linha).
+create or replace function public.save_state(p_data jsonb)
+returns bigint
+language plpgsql
+security invoker
+as $$
+declare
+  v_ts   bigint;
+  v_data jsonb;
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated';
+  end if;
+  v_ts   := (extract(epoch from clock_timestamp()) * 1000)::bigint;
+  v_data := coalesce(p_data, '{}'::jsonb) || jsonb_build_object('ts', v_ts);
+  insert into public.user_state (user_id, data, updated_at)
+    values (auth.uid(), v_data, now())
+  on conflict (user_id) do update
+    set data = v_data, updated_at = now();
+  return v_ts;
+end;
+$$;
+
+grant execute on function public.save_state(jsonb) to authenticated;

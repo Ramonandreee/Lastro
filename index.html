@@ -1307,6 +1307,10 @@ img, svg, canvas, video { max-width: 100%; }
   border-radius: var(--r);
   padding: 11px 14px;
   font-size: 13px;
+  color: var(--ink);           /* texto digitado sempre visível (não herda cor clara) */
+  line-height: 1.4;            /* evita cortar o topo/base das letras */
+  height: auto;
+  box-sizing: border-box;
   transition: border-color .18s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease);
 }
 .insight-input input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-l); }
@@ -2342,42 +2346,65 @@ html.gate .sidebar, html.gate .main, html.gate .sidebar-scrim { visibility:hidde
 .bio-foot .btn { width:100%; justify-content:center; padding:14px; }
 /* o modal de cadastro/login precisa ficar ACIMA do portão de entrada (#intro/#bioLock) */
 #authModal { z-index:10000; }
-/* tela "boas-vindas de volta" (desbloqueio) — estilo editorial */
-#bioLock { position:fixed; inset:0; z-index:9997; display:none; flex-direction:column; background:#F4F3EE; }
-#bioLock.show { display:flex; animation:introFade .4s var(--ease-out); }
-.blk-hero { flex:1; position:relative; display:flex; flex-direction:column; justify-content:flex-end; padding:calc(26px + env(safe-area-inset-top,0px)) 26px 34px calc(26px + env(safe-area-inset-left,0px)); overflow:hidden;
+/* ===== PRÉ-LOGIN "boas-vindas de volta" — fundo premium (marinho imersivo) ===== */
+#bioLock{ position:fixed; inset:0; z-index:9997; display:none; flex-direction:column;
   background:
-    radial-gradient(85% 48% at 26% 10%, rgba(58,138,205,.40) 0%, transparent 60%),
-    radial-gradient(78% 44% at 80% 4%, rgba(38,102,172,.34) 0%, transparent 58%),
-    radial-gradient(130% 60% at 50% -6%, rgba(46,120,190,.34) 0%, rgba(20,64,116,.18) 34%, transparent 64%),
-    linear-gradient(180deg,#123f72 0%,#0c2c58 26%,#06172f 58%,#01060f 100%); }
-/* nebulosa suave (nuvens borradas) + estrelas esparsas — densa no topo, some antes das escritas */
-.blk-dust { position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; mix-blend-mode:screen; opacity:.9;
-  -webkit-mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.7) 40%, transparent 70%); mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.7) 40%, transparent 70%); }
-.blk-logo { position:absolute; z-index:1; top:calc(26px + env(safe-area-inset-top,0px)); left:calc(26px + env(safe-area-inset-left,0px)); display:flex; align-items:center; gap:9px; }
-.blk-logo .it-mark { width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.16); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; }
-.blk-logo .it-mark svg { width:19px; height:19px; }
-.blk-word { font-family:var(--serif); font-size:20px; font-weight:700; letter-spacing:-.02em; color:#fff; }
-.blk-x { position:absolute; top:calc(24px + env(safe-area-inset-top,0px)); right:calc(22px + env(safe-area-inset-right,0px)); width:38px; height:38px; border-radius:11px; background:rgba(255,255,255,.16); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); border:none; color:#fff; font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:2; }
-.blk-x:hover { background:rgba(255,255,255,.26); }
-.blk-passform { display:flex; flex-direction:column; gap:6px; }
-.blk-passlbl { font-size:14px; font-weight:600; color:#3a352c; margin-bottom:4px; }
-.blk-passin { position:relative; display:flex; align-items:center; }
-.blk-passin > i { position:absolute; left:15px; color:#9a948a; font-size:13px; pointer-events:none; }
-.blk-passin input { width:100%; padding:16px 46px 16px 42px; border:1px solid #DBD8CF; border-radius:14px; background:#fff; color:#1B1712; font-size:15px; }
-.blk-passin input::placeholder { color:#a8a294; }
-.blk-passin input:focus { border-color:#0B2E5E; background:#fff; box-shadow:0 0 0 3px rgba(14,124,90,.16); }
-.blk-eye { position:absolute; right:9px; width:34px; height:34px; border-radius:9px; color:#9a948a; cursor:pointer; display:flex; align-items:center; justify-content:center; background:none; border:none; }
-.blk-passerr { font-size:12.5px; color:var(--down); min-height:14px; }
-.blk-passform .blk-bio { margin-top:12px; }
-.blk-greet { position:relative; z-index:1; color:#fff; line-height:1.12; }
-.blk-greet span { display:block; font-family:var(--serif); font-size:30px; font-weight:400; opacity:.92; }
-.blk-greet b { display:block; font-family:var(--serif); font-size:34px; font-weight:700; letter-spacing:-.01em; margin-top:2px; }
-.blk-foot { background:#F4F3EE; padding:26px 26px calc(28px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:6px; }
-.blk-bio { width:100%; justify-content:center; padding:16px; border-radius:16px; font-size:15px; background:#211C16; color:#fff; border:none; box-shadow:0 12px 28px rgba(20,16,12,.26); }
-.blk-bio:hover { background:#2c251d; }
-.blk-pass { background:none; border:none; color:#0B2E5E; font-size:14.5px; font-weight:700; cursor:pointer; padding:14px; }
-.blk-pass:hover { text-decoration:underline; }
+    radial-gradient(120% 78% at 50% -12%, #1a4c86 0%, #103a6e 22%, #0a2953 46%, transparent 72%),
+    radial-gradient(140% 90% at 50% 120%, #04101f 0%, transparent 55%),
+    linear-gradient(180deg, #0d2f5c 0%, #0a2549 34%, #061a34 64%, #030e1e 100%);
+  background-color:#061a34;
+  isolation:isolate; }
+#bioLock.show{ display:flex; animation:introFade .4s var(--ease-out); }
+/* camada 1 — aurora/mesh suave (blobs desfocados + brilho ouro discreto = "elite") */
+#bioLock::before{ content:''; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.9;
+  background:
+    radial-gradient(48% 36% at 22% 12%, rgba(70,142,214,.55) 0%, transparent 62%),
+    radial-gradient(44% 34% at 84% 6%, rgba(46,120,196,.48) 0%, transparent 60%),
+    radial-gradient(60% 40% at 60% 30%, rgba(58,150,220,.28) 0%, transparent 66%),
+    radial-gradient(70% 44% at 30% 96%, rgba(168,124,42,.16) 0%, transparent 60%);
+  -webkit-mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.85) 46%, rgba(0,0,0,.35) 74%, transparent 100%);
+  mask-image:linear-gradient(180deg,#000 0%, rgba(0,0,0,.85) 46%, rgba(0,0,0,.35) 74%, transparent 100%); }
+/* camada 2 — grão finíssimo (mata o banding do gradiente; nada de "granulado sujo") */
+#bioLock::after{ content:''; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.05;
+  mix-blend-mode:soft-light;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px 180px; }
+.blk-hero{ flex:1; position:relative; z-index:1; display:flex; flex-direction:column; justify-content:flex-end;
+  padding:calc(26px + env(safe-area-inset-top,0px)) 26px 30px calc(26px + env(safe-area-inset-left,0px));
+  overflow:hidden; background:transparent; }
+.blk-logo{ position:absolute; z-index:2; top:calc(26px + env(safe-area-inset-top,0px)); left:calc(26px + env(safe-area-inset-left,0px)); display:flex; align-items:center; gap:9px; }
+.blk-logo .it-mark{ width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.14); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; }
+.blk-logo .it-mark svg{ width:19px; height:19px; }
+.blk-word{ font-family:var(--serif); font-size:20px; font-weight:700; letter-spacing:-.02em; color:#fff; }
+.blk-x{ position:absolute; top:calc(24px + env(safe-area-inset-top,0px)); right:calc(22px + env(safe-area-inset-right,0px)); width:38px; height:38px; border-radius:11px; background:rgba(255,255,255,.12); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.16); color:#fff; font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:3; }
+.blk-x:hover{ background:rgba(255,255,255,.22); }
+.blk-greet{ position:relative; z-index:2; color:#fff; line-height:1.12; text-shadow:0 1px 18px rgba(0,0,0,.28); }
+.blk-greet span{ display:block; font-family:var(--serif); font-size:30px; font-weight:400; color:rgba(255,255,255,.82); }
+.blk-greet b{ display:block; font-family:var(--serif); font-size:34px; font-weight:700; letter-spacing:-.01em; margin-top:2px; color:#fff; }
+/* rodapé transparente (marinho contínuo) + leve véu p/ garantir contraste dos botões */
+.blk-foot{ position:relative; z-index:1; background:linear-gradient(180deg, transparent 0%, rgba(3,12,26,.45) 40%, rgba(3,12,26,.72) 100%); padding:22px 26px calc(28px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:8px; }
+/* primário: botão claro tátil (máximo contraste no marinho, feel iOS) */
+.blk-bio{ width:100%; justify-content:center; padding:16px; border-radius:16px; font-size:15px; font-weight:700;
+  background:linear-gradient(180deg,#ffffff 0%,#eef2f8 100%); color:#0B2E5E; border:none;
+  box-shadow:0 14px 34px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.9); }
+.blk-bio:hover{ background:linear-gradient(180deg,#ffffff 0%,#e6ecf5 100%); }
+.blk-bio:active{ transform:scale(.985); }
+/* secundário: texto claro fantasma */
+.blk-pass{ background:none; border:none; color:rgba(255,255,255,.72); font-size:14.5px; font-weight:700; cursor:pointer; padding:13px; }
+.blk-pass:hover{ color:#fff; }
+/* form de senha adaptado ao fundo escuro */
+.blk-passform{ display:flex; flex-direction:column; gap:6px; }
+.blk-passlbl{ font-size:14px; font-weight:600; color:rgba(255,255,255,.85); margin-bottom:4px; }
+.blk-passin{ position:relative; display:flex; align-items:center; }
+.blk-passin > i{ position:absolute; left:15px; color:rgba(255,255,255,.5); font-size:13px; pointer-events:none; }
+.blk-passin input{ width:100%; padding:16px 46px 16px 42px; border:1px solid rgba(255,255,255,.18); border-radius:14px; background:rgba(255,255,255,.08); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); color:#fff; font-size:15px; }
+.blk-passin input::placeholder{ color:rgba(255,255,255,.45); }
+.blk-passin input:focus{ border-color:rgba(120,170,230,.8); background:rgba(255,255,255,.12); box-shadow:0 0 0 3px rgba(79,143,232,.22); }
+.blk-eye{ position:absolute; right:9px; width:34px; height:34px; border-radius:9px; color:rgba(255,255,255,.55); cursor:pointer; display:flex; align-items:center; justify-content:center; background:none; border:none; }
+.blk-eye:hover{ color:#fff; }
+.blk-passerr{ font-size:12.5px; color:#ff9b9b; min-height:14px; }
+.blk-passform .blk-bio{ margin-top:12px; }
+@media (prefers-reduced-motion:reduce){ #bioLock::after{ display:none; } }
 /* tour guiado (coach marks) */
 .tour-ov { position:fixed; inset:0; z-index:400; display:none; }
 .tour-ov.open { display:block; }
@@ -3726,17 +3753,52 @@ function groupPayments(g){
 }
 /* extrato consolidado de proventos da carteira */
 function provPayments(){ const out=[]; portfolioByTicker().forEach(g=>{ (g.pays||groupPayments(g)).forEach(p=>out.push(p)); }); out.sort((a,b)=>b.date-a.date); return out; }
-/* próximos proventos da CARTEIRA do usuário (estimado) */
+/* parse de data de lote 'YYYY-MM-DD' como data LOCAL (evita erro de fuso ao comparar com data-com) */
+function parseLotDate(iso){
+  if(!iso) return null;
+  const s=String(iso), m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const d = m ? new Date(+m[1], +m[2]-1, +m[3]) : new Date(s);
+  return isNaN(d) ? null : d;
+}
+/* Info REAL de proventos do ativo, quando já carregado via /api/asset. Deriva do último
+   provento pago o dia de pagamento e o offset real da data-com. Retorna {payDay, comOffset, hasReal} ou null. */
+function provRealInfo(tk){
+  const dd=(ASSET_LIVE[tk]||{}).dividends;
+  if(!Array.isArray(dd)||!dd.length) return null;
+  const rows=dd.filter(d=>d&&d.date).slice().sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
+  if(!rows.length) return null;
+  const pay=new Date(rows[0].date); if(isNaN(pay)) return null;
+  let comOffset=0;
+  if(rows[0].com){ const c=new Date(rows[0].com);
+    if(!isNaN(c)){ const off=Math.round((pay-c)/86400000); if(off>=0&&off<=45) comOffset=off; } }
+  return { payDay:pay.getDate(), comOffset, hasReal:true };
+}
+/* Próximo provento ESTIMADO de um ativo, contando SOMENTE as cotas com direito na DATA-COM.
+   base por cota = provPerCota (FII: rendimento real declarado; ação: DY/12 estimado). */
+function nextProventoFor(g){
+  const a=g.f.a, k=g.f.k, base=provPerCota(k,a);
+  if(base<=0) return null;
+  const now=new Date();
+  const info=provRealInfo(g.tk);
+  const payDay = info ? info.payDay    : provPayDay(g.tk);
+  const offset = info ? info.comOffset : 0;            // proxy: data-com = dia de pagamento
+  let pay=new Date(now.getFullYear(), now.getMonth(), payDay);
+  if(pay<now) pay=new Date(now.getFullYear(), now.getMonth()+1, payDay);
+  const com=new Date(pay.getFullYear(), pay.getMonth(), pay.getDate()-offset);   // data-com projetada
+  // cotas com direito: lotes comprados até a data-com (inclusive). Sem data → tratado como antigo.
+  let cotas=0;
+  g.lots.forEach(l=>{ const dt=parseLotDate(l.date)||new Date(0); if(dt<=com) cotas+=l.cotas; });
+  if(cotas<=0) return null;                            // só comprou depois da data-com → sem provento no ciclo
+  const perCota=provPerCotaMonth(g.tk, base, pay.getFullYear(), pay.getMonth());
+  if(perCota<=0) return null;
+  const rate = g.cur==='usd' ? usdBrlRate() : 1;       // dolarizado: total em BRL p/ o card
+  return { tk:g.tk, date:pay, com, cotas, perCota, total:perCota*cotas*rate,
+           tipo:k==='fiis'?'Rendimento':'Dividendo', real:!!(info&&info.hasReal) };
+}
+/* próximos proventos da CARTEIRA — conta cotas elegíveis na DATA-COM (valor por cota é estimativa) */
 function upcomingProventos(){
-  const now=new Date(), out=[];
-  portfolioByTicker().forEach(g=>{
-    const a=g.f.a,k=g.f.k, base=provPerCota(k,a); if(base<=0||!g.cotas) return;
-    const day=provPayDay(g.tk);
-    let d=new Date(now.getFullYear(), now.getMonth(), day);
-    if(d < now) d=new Date(now.getFullYear(), now.getMonth()+1, day);
-    const perCota=provPerCotaMonth(g.tk, base, d.getFullYear(), d.getMonth());
-    out.push({ tk:g.tk, date:d, cotas:g.cotas, total:perCota*g.cotas, tipo:k==='fiis'?'Rendimento':'Dividendo' });
-  });
+  const out=[];
+  portfolioByTicker().forEach(g=>{ const p=nextProventoFor(g); if(p) out.push(p); });
   return out.sort((a,b)=>a.date-b.date).slice(0,6);
 }
 function portfolioByTicker(lots){
@@ -4785,6 +4847,7 @@ async function authLogout(){
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
   ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts'].forEach(k=>localStorage.removeItem(k));
   _stateTs = 0; _dirty = false;   // zera o relógio de sync — o próximo login adota o estado da nuvem
+  try{ sessionStorage.removeItem('lastro_unlocked'); }catch(e){}   // ao sair, o próximo acesso pede biometria de novo
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
   CARTEIRA = []; localStorage.setItem('lastro_sub',''); localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
   refreshPlanUI(); updateAuthUI(); applyPriv();
@@ -4858,8 +4921,21 @@ async function loadCloudState(){
 let _cloudT;
 /* plano/assinatura NÃO entram no payload da nuvem (entitlement não vive no blob editável do usuário) */
 function cloudPayload(){ return { ts:_stateTs, carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), theme:getThemePref(), profile:getProfile(), patHist:patHistArr(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } }; }
-function _postCloud(s,c,keepalive){
+/* grava direto na tabela (fallback, quando a função save_state ainda não foi criada no banco) */
+function _postCloudDirect(s,c,keepalive){
   return fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data:cloudPayload(), updated_at:new Date().toISOString()}), keepalive:!!keepalive});
+}
+/* grava via RPC save_state: o SERVIDOR carimba o ts (resolve clock-skew entre aparelhos) e
+   devolve esse ts autoritativo, que adotamos localmente. Se a função não existir no projeto
+   (404/404-ish), cai no upsert direto — o app continua sincronizando mesmo sem a migração. */
+function _postCloud(s,c,keepalive){
+  return fetch(`${c.SUPABASE_URL}/rest/v1/rpc/save_state`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json'}, body:JSON.stringify({ p_data: cloudPayload() }), keepalive:!!keepalive})
+    .then(async r=>{
+      if(r.ok){ try{ const ts=await r.clone().json(); if(typeof ts==='number' && ts>0){ _stateTs=ts; try{ localStorage.setItem('lastro_state_ts', String(ts)); }catch(e){} } }catch(e){} return r; }
+      if(r.status===404 || r.status===400 || r.status===401) return _postCloudDirect(s,c,keepalive);   // função ausente → fallback
+      return r;
+    })
+    .catch(()=>_postCloudDirect(s,c,keepalive));
 }
 function saveCloudState(){
   if(_applyingCloud) return Promise.resolve();   // enquanto adotamos a nuvem, não re-empurramos (sem eco)
@@ -5222,7 +5298,11 @@ function introFinish(mode){ openAuth(mode||'signup', true); }
 /* chamado só quando o usuário se autentica de verdade — aí sim revela o app */
 function introDone(){ document.documentElement.classList.remove('gate'); clearInterval(_introTypeT); clearInterval(_introCartT); document.removeEventListener('keydown', introKey); const el=$('#intro'); if(el){ el.removeEventListener('touchstart',introTS); el.removeEventListener('touchend',introTE); el.removeEventListener('mousedown',introMD); el.removeEventListener('mouseup',introMU); el.classList.add('closing'); setTimeout(()=>{ el.classList.remove('show','closing'); el.setAttribute('aria-hidden','true'); if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }, 400); } try{ localStorage.setItem('lastro_onboarded','1'); }catch(e){} }
 /* portão de acesso: sem cadastro/login, ninguém entra (captação de leads) */
-function afterSplash(){ try{ if(isAuthed()){ if(bioEnabled()){ openBioLock(); return; } maybeOnboard(); return; } startIntro(); return; }catch(e){} maybeOnboard(); }
+/* já desbloqueado NESTA sessão do navegador? (sessionStorage sobrevive ao refresh, mas
+   é limpo ao fechar o navegador) — evita repedir biometria a cada F5, só ao reabrir. */
+function unlockedThisSession(){ try{ return sessionStorage.getItem('lastro_unlocked')==='1'; }catch(e){ return false; } }
+function markUnlocked(){ try{ sessionStorage.setItem('lastro_unlocked','1'); }catch(e){} }
+function afterSplash(){ try{ if(isAuthed()){ if(bioEnabled() && !unlockedThisSession()){ openBioLock(); return; } markUnlocked(); maybeOnboard(); return; } startIntro(); return; }catch(e){} maybeOnboard(); }
 
 /* ══ Biometria facial (Face ID / WebAuthn) ══ */
 const BIO_FACE='<svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17v-5a3 3 0 0 1 3-3h5"/><path d="M39 17v-5a3 3 0 0 0-3-3h-5"/><path d="M9 31v5a3 3 0 0 0 3 3h5"/><path d="M39 31v5a3 3 0 0 1-3 3h-5"/><path d="M18 20v3.5"/><path d="M30 20v3.5"/><path d="M24 19v6.5l-2.4 1"/><path d="M18.5 30.5c1.6 1.5 3.4 2.2 5.5 2.2s3.9-.7 5.5-2.2"/></svg>';
@@ -5264,12 +5344,12 @@ function bioFirstName(){ try{ const p=(typeof getProfile==='function')?getProfil
 function openBioLock(){
   const el=document.getElementById('bioLock'); if(!el){ maybeOnboard(); return; }
   document.documentElement.classList.add('gate');
-  el.innerHTML=`<div class="blk-hero"><svg class="blk-dust" viewBox="0 0 300 520" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><filter id="blkClouds" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.018 0.03" numOctaves="3" seed="4" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0.24  0 0 0 0 0.52  0 0 0 0 0.80  0 0 0 0.5 -0.06"/><feGaussianBlur stdDeviation="3.2"/></filter><filter id="blkStars" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="1" seed="9" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0.80  0 0 0 0 0.88  0 0 0 0 1  0 0 0 16 -13.4"/></filter></defs><rect width="300" height="520" filter="url(#blkClouds)" opacity="0.75"/><rect width="300" height="520" filter="url(#blkStars)"/></svg><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><button class="blk-x" onclick="bioExitToIntro()" aria-label="Voltar à apresentação"><i class="fa-solid fa-xmark"></i></button><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
+  el.innerHTML=`<div class="blk-hero"><div class="blk-logo"><span class="it-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="#fff"/><path d="M4 19H20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></span><span class="blk-word">Lastro</span></div><button class="blk-x" onclick="bioExitToIntro()" aria-label="Voltar à apresentação"><i class="fa-solid fa-xmark"></i></button><div class="blk-greet"><span>${bioGreeting()},</span><b>${esc(bioFirstName())}.</b></div></div>
     <div class="blk-foot" id="bioFoot"><button class="btn btn-primary blk-bio" onclick="bioUnlock()">Entrar com biometria</button><button class="blk-pass" onclick="bioLockPassword()">Entrar com senha</button></div>`;
   el.classList.add('show'); el.setAttribute('aria-hidden','false'); document.documentElement.style.overflow='hidden';
   // NÃO dispara a biometria automaticamente — o prompt do sistema só aparece ao tocar em "Entrar com biometria".
 }
-function _bioLockDone(){ document.documentElement.classList.remove('gate'); const el=document.getElementById('bioLock'); if(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); } if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }
+function _bioLockDone(){ markUnlocked(); document.documentElement.classList.remove('gate'); const el=document.getElementById('bioLock'); if(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); } if(!(document.querySelector('.modal-scrim.open')||document.body.classList.contains('nav-open'))) document.documentElement.style.overflow=''; }
 /* X: sair do "pré-login" e voltar para a tela de apresentação */
 /* X do pré-login: finaliza o pré-login (encerra a sessão) e volta à apresentação.
    Assim, no próximo acesso o app abre direto na apresentação, não no pré-login. */
@@ -5641,8 +5721,8 @@ function viewPainel(){
   // App funcional: fora do modo desenvolvedor NÃO há carteira fictícia. Sem aportes,
   // o painel mostra os estados vazios/zerados (dados fictícios vivem só no modo dev).
   const p = portfolioStats();
-  // variação real do dia da carteira (ponderada pelas posições, com cotação ao vivo)
-  let _patDayVal=0; (p._byT||[]).forEach(g=>{ const v=(g.f&&g.f.a&&typeof g.f.a.var==='number')?g.f.a.var:0; _patDayVal += g.val*v/100; });
+  // variação real do dia da carteira (ponderada pelas posições) — só com cotação REAL (a.live)
+  let _patDayVal=0; (p._byT||[]).forEach(g=>{ const a=g.f&&g.f.a; const v=(a&&a.live&&typeof a.var==='number')?a.var:0; _patDayVal += g.val*v/100; });
   const patDayP = p.atual ? _patDayVal/p.atual*100 : 0;
   // faixa de mercado: 4 indicadores que NÃO aparecem na Performance Diária
   const HOME_MKT=['Dólar','SELIC','IPCA','Bitcoin'];
@@ -5663,10 +5743,10 @@ function viewPainel(){
   const totalUpc = upc.reduce((s,x)=>s+x.total,0);
   const MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   const timeline = upc.length ? upc.map(x=>`
-    <div class="tl-item" onclick="quickView('${x.tk}')">
+    <div class="tl-item" onclick="quickView('${x.tk}')" title="Data-com${x.real?'':' estimada'}: ${fmtDateBR(_patDay(x.com))} — só contam as cotas compradas até essa data. Valor por cota é estimativa (${x.tipo==='Rendimento'?'último rendimento declarado':'DY/12'})">
       <div class="tl-date"><div class="d">${String(x.date.getDate()).padStart(2,'0')}</div><div class="m">${MES[x.date.getMonth()]}</div></div>
       <div class="tl-info"><div class="tk">${x.tk}</div><div class="ds">${x.tipo} · ${x.cotas} cota${x.cotas!==1?'s':''}</div></div>
-      <div class="tl-val"><div class="v priv-blur">${brl(x.total)}</div><div class="t">estimado</div></div>
+      <div class="tl-val"><div class="v priv-blur">${brl(x.total)}</div><div class="t">${x.real?'estimado · data-com real':'estimado'}</div></div>
     </div>`).join('') : `<div class="tl-empty">${emptyState('fa-regular fa-calendar-check','Sem proventos previstos','Você não possui proventos previstos para os próximos dias. Adicione ativos pagadores de dividendos à carteira.')}</div>`;
 
   const altasRows = topMovers('up').map(moverRow).join('') || '<div class="drawer-empty" style="padding:14px 0">Carregando mercado…</div>';
@@ -5710,7 +5790,7 @@ function viewPainel(){
   <div class="insight insight-full">
     <div class="insight-head">
       <div class="insight-orb"><i class="fa-solid fa-sparkles"></i></div>
-      <div class="insight-title">Inteligência Lastro<span class="tag">Análise por IA · Claude</span></div>
+      <div class="insight-title">Inteligência Lastro<span class="tag">Análise por IA</span></div>
     </div>
     <div class="insight-body" id="insightBody">
       <span class="faint">Lendo o mercado de hoje…</span>
@@ -8274,7 +8354,9 @@ async function loadMacroReal(){
 function renderHomeDashboard(p){
   if(typeof recordPatSnapshot==='function') recordPatSnapshot();   // grava o snapshot ANTES do markup p/ o selo real/estimativa ficar consistente
   // variação do dia (ponderada pelas posições)
-  let dayVal=0; (p._byT||[]).forEach(g=>{ const v=(g.f&&g.f.a&&typeof g.f.a.var==='number')?g.f.a.var:0; dayVal+=g.val*v/100; });
+  // Variação do dia SÓ com cotação REAL (a.live). Sem pregão/sem cotação ao vivo, fica 0 —
+  // não fabrica "hoje" a partir do valor curado (evita mostrar variação com o mercado fechado).
+  let dayVal=0; (p._byT||[]).forEach(g=>{ const a=g.f&&g.f.a; const v=(a&&a.live&&typeof a.var==='number')?a.var:0; dayVal+=g.val*v/100; });
   const dayP=p.atual?dayVal/p.atual*100:0;
   // alocação por classe
   const CLS={acoes:['Ações','#0B2E5E'],fiis:['FIIs','#3F79D6'],etfs:['ETFs','#B8860B'],etfsint:['ETFs int.','#2f6f9e'],bdrs:['BDRs','#8b5cf6'],stocks:['Stocks','#0ea5e9'],cripto:['Cripto','#f59e0b']};
