@@ -4784,7 +4784,7 @@ async function authLogout(){
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
   ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts'].forEach(k=>localStorage.removeItem(k));
-  _stateTs = 0;   // zera o relógio de sincronização — o próximo login adota o estado da nuvem
+  _stateTs = 0; _dirty = false;   // zera o relógio de sync — o próximo login adota o estado da nuvem
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
   CARTEIRA = []; localStorage.setItem('lastro_sub',''); localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
   refreshPlanUI(); updateAuthUI(); applyPriv();
@@ -4864,8 +4864,8 @@ function _postCloud(s,c,keepalive){
 function saveCloudState(){
   if(_applyingCloud) return Promise.resolve();   // enquanto adotamos a nuvem, não re-empurramos (sem eco)
   if(typeof testModeOn==='function' && testModeOn()) return Promise.resolve();   // modo dev: nunca grava dados de teste na nuvem
-  touchState();   // registra o momento desta mutação local (base da reconciliação entre aparelhos)
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
+  touchState();   // registra o momento desta mutação local (só com sessão real — base da reconciliação)
   clearTimeout(_cloudT);
   return new Promise(res=>{ _cloudT=setTimeout(async()=>{ try{ const r=await _postCloud(s,c); if(r&&r.ok) _dirty=false; }catch(e){} res(); }, 700); });
 }
@@ -8337,9 +8337,12 @@ function recordPatSnapshot(){
   if(!CARTEIRA.length) return;
   const p=(typeof portfolioStats==='function')?portfolioStats():null; const v=p&&p.atual; if(!(v>0)) return;
   const today=_patDay(); const a=patHistArr(); const last=a[a.length-1];
-  if(last && last.d===today){ if(Math.abs(last.v-v)>=1){ last.v=Math.round(v); patHistSave(a); if(typeof saveCloudState==='function') saveCloudState(); } return; }
+  // Snapshot grava SÓ local. NÃO empurra a nuvem nem marca "dirty": ele dispara a cada tick de
+  // cotação ao vivo, e um push aqui sobrescreveria a linha inteira (carteira incluída) — um aparelho
+  // que só ESTÁ OLHANDO o painel apagaria o aporte concorrente de outro. O patHist sincroniza nas
+  // mutações reais (savePortfolio → saveCloudState) e no merge por data do loadCloudState.
+  if(last && last.d===today){ if(Math.abs(last.v-v)>=1){ last.v=Math.round(v); patHistSave(a); } return; }
   a.push({d:today, v:Math.round(v)}); patHistSave(a);
-  if(typeof saveCloudState==='function') saveCloudState();
 }
 /* série REAL dos últimos N dias a partir dos snapshots; null se histórico insuficiente na janela */
 function wealthReal(days){
