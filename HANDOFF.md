@@ -14,6 +14,22 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 
 ## Estado atual (jul/2026)
 
+> **App funcional (jul/2026) — dados reais, sem demo fora do dev.** Dados fictícios
+> agora vivem **só no Modo desenvolvedor** (donos). Fora dele, sem aportes, o painel
+> fica **zerado** (estado vazio "Monte sua carteira"), sem a antiga carteira demo
+> automática nem a pílula "Demonstração". A **sincronização entre aparelhos** ganhou
+> reconciliação *last-write-wins* por carimbo de tempo (`_stateTs`/`ts` no `user_state`):
+> só adota a nuvem se ela for mais nova, guarda anti-eco ao aplicar, **flush só quando
+> há edição local pendente** (aparelho que só visualizou não sobrescreve a nuvem ao
+> fechar), carimbo monotônico (mitiga relógio atrasado) e guarda de migração (nuvem
+> vazia não apaga carteira local). **Limite conhecido do beta:** a reconciliação usa o
+> relógio do cliente e substitui o blob inteiro — em edição *simultânea* nos dois
+> aparelhos, o último a gravar vence (sem merge por campo), e um device com hora
+> adiantada pode "ganhar" sempre. **Correção robusta futura:** mover a decisão de "quem
+> é mais novo" para o servidor (RPC/trigger no Postgres que só atualiza se
+> `incoming.ts >= stored.ts` usando `now()` do banco). Cabeçalho perdeu os indicadores
+> "Mercado aberto"/"Ao vivo"; o menu lateral virou **recolhível no desktop** (rail).
+
 Muito além do MVP inicial. Já implementado e no ar (`main`):
 
 - **Mercado:** Início, Ações, FIIs, ETFs (B3), Cripto, Notícias, Agenda, Score Lastro™. Filtros fundamentalistas (o antigo Rastreador) **embutidos** em cada listagem (botão Filtros) — **gratuitos**.
