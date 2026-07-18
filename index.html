@@ -10679,7 +10679,7 @@ function initDetailCharts(){ initAssetTabCharts(); }
 function metricsForDetail(a,k){
   if(k==='bdrs') return [['Cotação',brl(a.px)],['Paridade',a.par],['Dividend Yield',pc(a.dy,1)+'%',a.dy>0?'up':''],['Setor',a.seg]];
   if(k==='etfs') return [['Cotação',fmtPx(a,k)],['Patrimônio',a.pat],['Taxa de adm.',a.tx],['Índice/Tema',a.seg]];
-  if(k==='stocks') return [['Cotação',usd(a.px)],['Valor de mercado','$'+a.mkt],['P/L',pc(a.pe,1)+'x',a.pe<30?'up':''],['Dividend Yield',pc(a.dy,1)+'%'],['Setor',a.seg]];
+  if(k==='stocks') return [['Cotação',usd(a.px)],['Valor de mercado','$'+a.mkt],['P/L',pc(a.pe,1)+'x',a.pe<30?'up':''],['Setor',a.seg]];
   if(k==='cripto') return [['Cotação',fmtPx(a,k)],['Valor de mercado',a.mkt],['Variação 24h',(a.v24>=0?'+':'')+pc(a.v24,1)+'%',a.v24>=0?'up':'down'],['Variação 7d',(a.v7>=0?'+':'')+pc(a.v7,1)+'%',a.v7>=0?'up':'down']];
   return [];
 }
@@ -11117,7 +11117,8 @@ function aboutHTML(a,k,f){
       ? `${fRow('Segmento', a.seg)}${fRow('Tipo', f.tipo)}${fRow('Gestão', f.gestao)}${fRow('Taxa de adm.', f.txadm)}${fRow('Patrimônio líq.', f.plf)}${fRow('Valor de mercado', f.mkt)}${fRow('Nº de cotistas', f.cotistas)}${fRow('Nº de cotas', f.cotas)}`
       : `${fRow('Setor', f.setor)}${fRow('Segmento', f.sub)}${f.func?fRow('Funcionários', (typeof f.func==='number'?f.func.toLocaleString('pt-BR'):f.func)):''}${fRow('Governança', f.gov)}${fRow('Tag Along', f.tag)}${fRow('Free Float', f.ff)}${fRow('Nº de ações', f.shares)}${fRow('Valor de mercado', f.mkt)}${fRow('Valor de firma', f.ev)}`)
     : `${fRow('Segmento', a.seg)}${fRow('Classe', ASSET_CLASS[k].label)}${a.mkt?fRow('Valor de mercado', a.mkt):''}${fRow('Cotação', fmtPx(a,k))}`;
-  const site = f && f.site ? String(f.site) : '';
+  let site = f && f.site ? String(f.site).trim() : '';
+  if(site && !/^https?:\/\//i.test(site) && /^[\w.-]+\.[a-z]{2,}/i.test(site)) site='https://'+site;   // aceita "empresa.com"
   return `<div class="card card-pad">
     <div class="ds-title">${title}</div>
     <div class="about-head">${assetLogo(a.tk,k,'md')}<div><div style="font-weight:600;font-size:15px">${esc(a.nm)}</div><div style="font-size:12.5px;color:var(--ink-3);margin-top:2px">${sub}</div></div></div>
@@ -11393,8 +11394,10 @@ function keyStatsHTML(a,k,f){
   } else if(k==='etfs'){
     add('Patrimônio', a.pat); add('Taxa de adm.', a.tx); add('Índice / Tema', a.seg);
   } else if(k==='stocks'){
+    // DY/P-VP de ações EUA não têm fonte grátis confiável (Yahoo bloqueia; FMP não traz) →
+    // não exibimos para não passar dado curado como real. Mostramos só o que é REAL (FMP).
     add('Valor de mercado', a.mkt?('$'+a.mkt):null); add('P/L', typeof a.pe==='number'?pc(a.pe,1)+'x':null);
-    add('LPA', typeof f.lpa==='number'?('$'+pc(f.lpa,2)):null); add('Dividend Yield', typeof a.dy==='number'?pc(a.dy,1)+'%':null);
+    add('LPA', typeof f.lpa==='number'?('$'+pc(f.lpa,2)):null);
     add('Setor', a.seg);
   }
   const _lv=(typeof ASSET_LIVE!=='undefined')?ASSET_LIVE[a.tk]:null;   // volume real do dia (brapi)
