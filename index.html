@@ -10141,6 +10141,26 @@ const ASSET_LIVE = {};                 // tk -> payload do /api/asset (com _ts)
 const PRICE_SERIES = {};               // `${tk}:${range}` -> array de fechamentos reais
 const RANGE_MAP = { '1M':{r:'1mo',i:'1d'}, '3M':{r:'3mo',i:'1d'}, '6M':{r:'6mo',i:'1d'}, '1A':{r:'1y',i:'1d'}, '5A':{r:'5y',i:'1wk'} };
 function assetEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.ASSET_ENDPOINT) || '/api/asset'; }
+function fiiEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.FII_ENDPOINT) || '/api/fii'; }
+/* Dado REAL de FII vindo da CVM (VP/cota, P/VP, vacância, patrimônio líquido). Tem prioridade
+   sobre o brapi (que devolve P/VP nulo p/ FII) e sobre o curado. Marca *Real no FUND p/ o selo. */
+function applyFiiCvm(tk, fi){
+  const lk=assetLookup(tk); if(!lk||!fi) return; const a=lk.a;
+  const f = FUND[tk] = FUND[tk] || {};
+  if(fi.vp!=null){ a.vp=fi.vp; f.vpReal=true; }
+  if(fi.pvp!=null){ a.pvp=fi.pvp; f.pvpReal=true; }                 // P/VP real → também torna o VPA (px/pvp) real
+  if(fi.vacancia!=null){ a.vac=fi.vacancia; f.vacReal=true; }
+  if(fi.patrimonioLiquido!=null) f.pl='R$ '+fmtBig(fi.patrimonioLiquido);
+  if(fi.dataRef) f.cvmRef=fi.dataRef;
+  if(fi.nomeFundo) f.cvmNome=fi.nomeFundo;
+}
+/* busca os fundamentos reais do FII na CVM (não bloqueia o render; aplica quando chegar) */
+function loadFiiCvm(tk, name, price){
+  fetch(`${fiiEndpoint()}?ticker=${encodeURIComponent(tk)}&name=${encodeURIComponent(name||'')}&price=${price||''}`)
+    .then(r=>r.ok?r.json():null)
+    .then(fi=>{ if(fi && fi.source==='cvm' && fi.vp!=null){ applyFiiCvm(tk, fi); if(currentView==='asset' && currentAssetTk===tk) refreshAssetView(); } })
+    .catch(()=>{});
+}
 const LIVE_ASSET_KINDS = new Set(['acoes','fiis','bdrs','etfs']);
 
 function fmtBig(n){
@@ -10184,7 +10204,8 @@ function applyAssetLive(tk, d){
     if(fu.ev!=null)  setF('ev','R$ '+fmtBig(fu.ev));
     const dv=annualDivs(d.dividends,6); if(dv.length) f.divs=dv;
   } else if(k==='fiis'){
-    setA('pvp',fu.pvp); setA('dy',fu.dy);
+    if(!f.pvpReal) setA('pvp',fu.pvp);   // não deixa o brapi (P/VP nulo p/ FII) apagar o dado real da CVM
+    setA('dy',fu.dy);
     if(Array.isArray(d.dividends)&&d.dividends.length) setA('div',d.dividends[0].value);
     if(fu.mkt!=null) setF('mkt','R$ '+fmtBig(fu.mkt));
   } else {
@@ -10203,6 +10224,8 @@ function applyAssetLive(tk, d){
 
 async function loadAssetLive(tk){
   const lk=assetLookup(tk); if(!lk||!LIVE_ASSET_KINDS.has(lk.k)) return null;
+  // FII: busca VP/P-VP/vacância REAIS na CVM (brapi não cobre) — em paralelo, uma vez por FII
+  if(lk.k==='fiis' && !(FUND[tk]&&FUND[tk].pvpReal)) loadFiiCvm(tk, lk.a.nm, lk.a.px);
   const cached=ASSET_LIVE[tk];
   if(cached && cached._ts && Date.now()-cached._ts<300000){ applyAssetLive(tk,cached); return cached; }
   try{
@@ -10530,7 +10553,7 @@ function indCard(id, value, cls){
 /* ── modal de histórico de indicadores ── */
 let histState={ id:'pvp', years:10, type:'bar', ignore:false };
 function availableIndicators(a,k){
-  const order = k==='fiis' ? ['pvp','dy','dpa','vac'] : ['pl','pvp','evebitda','evebit','pebit','pativo','dy','payout','roe','roic','roa','mb','mebit','ml','giro','dleb','dlpl','lc','cagrRec','cagrLuc','vpa','lpa'];
+  const order = k==='fiis' ? ['pvp','vpa','dy','dpa','vac'] : ['pl','pvp','evebitda','evebit','pebit','pativo','dy','payout','roe','roic','roa','mb','mebit','ml','giro','dleb','dlpl','lc','cagrRec','cagrLuc','vpa','lpa'];
   return order.filter(id=>INDICATORS[id] && typeof indVal(id,a)==='number');
 }
 function openIndHistory(id){ const lk=assetLookup(currentAssetTk); if(!lk) return; if(id) histState.id=id; if(!availableIndicators(lk.a,lk.k).includes(histState.id)) histState.id=availableIndicators(lk.a,lk.k)[0]||histState.id; $('#indModal').classList.add('open'); renderIndHistory(); setTimeout(initHistChart,40); }
