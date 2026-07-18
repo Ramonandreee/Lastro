@@ -6144,7 +6144,7 @@ function assetFilterReset(kind){ Object.assign(tableState[kind], {fdyMin:0,fscor
 const FUND_LOADED = new Set();
 function fundamentalsEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.FUNDAMENTALS_ENDPOINT) || '/api/fundamentals'; }
 async function loadListFundamentals(kind, tickers){
-  if(!['acoes','fiis','bdrs'].includes(kind)) return;
+  if(!['acoes','fiis','bdrs','etfs'].includes(kind)) return;
   const want=[...new Set(tickers)].filter(tk=>!FUND_LOADED.has(tk));
   if(!want.length) return;
   want.forEach(tk=>FUND_LOADED.add(tk));           // evita refetch (mesmo se vier vazio)
@@ -6153,10 +6153,14 @@ async function loadListFundamentals(kind, tickers){
     if(!r.ok) return;
     const d=await r.json(); const res=(d&&d.results)||[];
     let any=false;
-    res.forEach(q=>{ const lk=assetLookup(q.symbol); if(!lk) return; const o=lk.a, kk=lk.k;
+    res.forEach(q=>{ const lk=assetLookup(q.symbol); if(!lk) return; const o=lk.a; const f=FUND[q.symbol]=FUND[q.symbol]||{};
       const setA=(key,v)=>{ if(v!=null) o[key]=v; };
-      if(kk==='acoes'){ setA('pl',q.pl); setA('pvp',q.pvp); setA('dy',q.dy); setA('roe',q.roe); setA('mgl',q.mgl); }
-      else { setA('pvp',q.pvp); setA('dy',q.dy); }
+      // aplica TODO campo real que o brapi devolver (null é ignorado) — maximiza a cobertura
+      // p/ BDRs e ETFs, não só ações. P/VP de FII vem nulo no brapi (usamos a CVM), e o dado
+      // real da CVM (f.pvpReal) tem prioridade — não deixamos o brapi sobrescrevê-lo.
+      if(!f.pvpReal) setA('pvp',q.pvp);
+      setA('dy',q.dy); setA('pl',q.pl); setA('roe',q.roe); setA('mgl',q.mgl);
+      if(q.mkt!=null) f.mkt='R$ '+fmtBig(q.mkt);
       any=true;
     });
     if(any && currentView===kind) renderAssets(kind);
