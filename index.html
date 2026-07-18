@@ -854,14 +854,15 @@ img, svg, canvas, video { max-width: 100%; }
   #dataTbl { width: 100% !important; min-width: 0 !important; table-layout: fixed; }
   #dataTbl th:nth-child(n+4), #dataTbl td:nth-child(n+4) { display: none; }
   #dataTbl th, #dataTbl td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 8px; padding-right: 8px; }
-  #dataTbl th:first-child, #dataTbl td:first-child { position: static; width: 42%; }
-  #dataTbl th:nth-child(2), #dataTbl td:nth-child(2) { width: 26%; }
+  #dataTbl th:first-child, #dataTbl td:first-child { position: static; width: 46%; }
+  #dataTbl th:nth-child(2), #dataTbl td:nth-child(2) { width: 22%; }
   /* Cotação: NUNCA truncar — largura suficiente e sem reticências */
   #dataTbl th:nth-child(3), #dataTbl td:nth-child(3) { width: 32%; overflow: visible; text-overflow: clip; font-size: 12.5px; padding-left: 4px; }
   #dataTbl .td-asset { gap: 9px; min-width: 0; }
   #dataTbl .td-asset .nm { min-width: 0; overflow: hidden; }
   #dataTbl .td-asset .tk { font-size: 13.5px; }
   #dataTbl .td-asset .ds { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #dataTbl .tk-meta { display: block; font-size: 11px; color: var(--ink-3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* ranking do Score (.tbl-rank): no mobile mostra Ativo · Score · Classificação, SEM rolar */
   table.tbl-rank { width: 100% !important; min-width: 0 !important; table-layout: fixed; }
   table.tbl-rank td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 9px; padding-right: 9px; }
@@ -1338,6 +1339,9 @@ img, svg, canvas, video { max-width: 100%; }
 .mkt-val { font-family: var(--mono); font-size: 19px; font-weight: 600; letter-spacing: -.01em; color: var(--ink); margin-top: 5px; }
 .mkt-spark { height: 40px; margin: 10px -16px 0; }
 .mkt-spark svg { display: block; width: 100%; height: 40px; }
+.mkt-trend { height: 40px; margin-top: 10px; display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-3); border-top: 1px solid var(--line); }
+.mkt-trend i { font-size: 11px; color: var(--ink-4); }
+.mkt-trend-lbl { margin-left: auto; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-4); }
 .mcell {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -1456,6 +1460,7 @@ table.tbl tbody tr:hover { background: var(--surface-2); }
 .td-asset .nm { line-height: 1.28; min-width: 0; }
 .td-asset .tk { font-family: var(--mono); font-weight: 600; font-size: 14.5px; color: var(--ink); letter-spacing: -.01em; }
 .td-asset .ds { font-size: 11.5px; color: var(--ink-3); font-weight: 450; }
+.tk-meta { display: none; }   /* linha Score·DY só aparece no mobile (desktop mostra nas colunas) */
 .seg {
   font-size: 10.5px; font-weight: 500;
   padding: 3px 9px; border-radius: 6px;
@@ -1556,17 +1561,17 @@ table.tbl tbody tr:hover { background: var(--surface-2); }
 .sel-wrap.sel-score .sel:focus { box-shadow: 0 0 0 3px var(--gold-l); }
 
 /* score gauge big (radial) */
-.gauge-card { display: flex; align-items: center; gap: 24px; }
-.gauge { position: relative; width: 132px; height: 132px; flex-shrink: 0; }
-.gauge svg { transform: rotate(-90deg); }
+.gauge-card { display: flex; align-items: center; gap: 20px; }
+.gauge { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+.gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .gauge-center {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
 }
-.gauge-num { font-family: var(--serif); font-size: 38px; font-weight: 600; line-height: 1; }
-.gauge-lbl { font-size: 10.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
-.gauge-break { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.gauge-num { font-family: var(--serif); font-size: 31px; font-weight: 600; line-height: 1; }
+.gauge-lbl { font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+.gauge-break { flex: 1; display: flex; flex-direction: column; gap: 9px; }
 .gb-row { }
 .gb-top { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
 .gb-top .v { font-family: var(--mono); font-weight: 600; }
@@ -1781,9 +1786,11 @@ input[type=range]::-moz-range-thumb {
   .mstrip { grid-template-columns: repeat(2,1fr); }
   .hero-value { font-size: 40px; }
   .sim-result { grid-template-columns: 1fr; }
-  .gauge-card { flex-direction: column; align-items: center; text-align: center; gap: 16px; }
-  .gauge-break { width: 100%; }
-  .gauge-break > div:first-child { text-align: center; }
+  .gauge-card { flex-direction: row; align-items: center; text-align: left; gap: 16px; }
+  .gauge { width: 92px; height: 92px; }
+  .gauge-num { font-size: 26px; }
+  .gauge-lbl { font-size: 8.5px; }
+  .gauge-break { width: auto; }
   .sec-title { font-size: 21px; }
   .sec-desc { font-size: 13px; }
 }
@@ -5816,10 +5823,15 @@ function viewPainel(){
     const dir = (dd.startsWith('-')||dd.startsWith('−')) ? 'down' : (dd.startsWith('+') ? 'up' : 'flat');
     const colHex = dir==='up'?cssVar('--up'): dir==='down'?cssVar('--down'):cssVar('--ink-3');
     const cls = dir==='up'?'up': dir==='down'?'down':'faint';
+    // taxas (SELIC/IPCA, up:null): trajetória factual em texto no lugar da sparkline "morta"
+    const sp = m.spark||[];
+    const viz = (m.up===null && sp.length>1)
+      ? `<div class="mkt-trend"><span class="mono">${pc(sp[0],2)}%</span> <i class="fa-solid fa-arrow-right-long"></i> <span class="mono" style="color:var(--ink)">${pc(sp[sp.length-1],2)}%</span><span class="mkt-trend-lbl">12m</span></div>`
+      : `<div class="mkt-spark">${mktSpark(m.spark, colHex, i)}</div>`;
     return `<div class="mkt-cell">
       <div class="mkt-head"><span class="mkt-nm">${m.nm}</span><span class="mkt-dl ${cls}">${m.dl}</span></div>
       <div class="mkt-val">${m.nm==='Dólar'?'R$ ':''}${m.vl}</div>
-      <div class="mkt-spark">${mktSpark(m.spark, colHex, i)}</div>
+      ${viz}
     </div>`;
   }).join('');
 
@@ -6179,7 +6191,7 @@ function renderAssets(kind){
     const vv = a[vfield];
     const vcell = `<td class="mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</td>`;
     return `<tr onclick="quickView('${a.tk}')">
-      <td class="cell-left"><div class="td-asset">${assetLogo(a.tk,kind,'sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div></div></div></td>
+      <td class="cell-left"><div class="td-asset">${assetLogo(a.tk,kind,'sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div>${typeof a.score==='number'?`<div class="tk-meta"><span style="color:${scoreColor(a.score)};font-weight:700">Score ${a.score}</span>${(typeof a.dy==='number'&&a.dy>0)?` · DY ${pc(a.dy,0)}%`:''}</div>`:''}</div></div></td>
       ${cfg.cols.map(c=>c.f(a)).join('')}
       ${vcell}
     </tr>`;
@@ -7576,6 +7588,7 @@ function viewScore(){
         ${gbRow('DY sustentável', Math.min(a.dy/15,1)*100)}
         ${gbRow('Valuation (P/VP)', (a.pvp<=1?1:Math.max(0,1.6-a.pvp)/0.6)*100)}
         ${gbRow('Liquidez', Math.min(a.liq/50,1)*100)}
+        ${gbRow('Consistência histórica', (typeof a.consist==='number'?a.consist:0.7)*100)}
       </div>
     </div>`;
   }).join('');
@@ -9691,7 +9704,8 @@ function assetLogo(tk,k,cls){
   const col=avatarColor(segOf(tk)||k||tk);
   const isCr = k==='cripto';
   const crBg = isCr ? (CRYPTO_COLORS[tk] || '#1A1F27') : '';
-  const mono=`<span class="logo-mono" style="background:${isCr?crBg:col};color:#fff${src?';display:none':''}"><i class="fa-solid ${segIcon(tk,k)}"></i></span>`;
+  const monoInner = isCr ? `<i class="fa-solid ${segIcon(tk,k)}"></i>` : (tk.replace(/[^A-Za-z]/g,'').slice(0,2) || tk.slice(0,2));
+  const mono=`<span class="logo-mono" style="background:${isCr?crBg:col};color:#fff${src?';display:none':''}">${monoInner}</span>`;
   const img=src?`<img class="logo-img" src="${src}"${isCr?` style="background:${crBg}"`:''} alt="${tk}" loading="lazy" onerror="logoErr(this,'${fb}')">`:'';
   return `<span class="logo ${cls||''}${isCr?' logo-cr':''}">${img}${mono}</span>`;
 }
