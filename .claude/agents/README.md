@@ -14,7 +14,20 @@ define um papel (frontmatter: `name`, `description`, `tools`, `model`) + as inst
 | **lastro-finance** | Especialista financeiro | Indicadores, Score Lastro™, matemática de carteira, benchmarks, veracidade dos números |
 | **lastro-qa** | QA / testes | Provar que funciona num navegador real (Playwright): screenshots, medições, estados |
 | **lastro-review** | Revisor de código | Antes de publicar: caçar bugs/regressões, validação obrigatória, iOS, segredos |
-| **lastro-design-studio** | Estúdio de design de produto | Desenhar feature/tela do zero ou reformular UX com rigor: 6 etapas (discovery → arquitetura → fluxo → wireframe → sistema de UI → auditoria QA) até uma spec pronta para handoff |
+
+## Estúdio de design (orquestrador + 6 especialistas)
+
+Desenho de feature/tela do zero ou reformulação de UX com rigor. O orquestrador comanda os 6 especialistas em sequência, faz o gate entre etapas e consolida a spec final.
+
+| Agente | Etapa | Função |
+|---|---|---|
+| **lastro-design-studio** | Orquestrador | Comanda os 6 na ordem, controla o gate, trata reprovações da QA, consolida a spec para handoff |
+| **lastro-ds-estrategista** | 1 · Discovery | Objetivo de negócio, usuário-alvo, JTBD, métrica de sucesso, restrições |
+| **lastro-ds-arquiteto-ux** | 2 · Arquitetura | Telas necessárias ao JTBD + modelo de navegação (justificado por uso) |
+| **lastro-ds-fluxo** | 3 · Fluxo | Fluxo crítico numerado (tela → ação → tela); atalhos p/ >3 passos |
+| **lastro-ds-wireframe** | 4 · Wireframe | Hierarquia visual + componentes (obrigatório/opcional) por tela |
+| **lastro-ds-ui** | 5 · Sistema de UI | Paleta, tipografia, espaçamento, componentes (contraste/AA, Material/HIG) |
+| **lastro-ds-qa** | 6 · Auditoria | Audita 1–5 sem complacência; reprova e devolve à etapa responsável |
 
 ## Como usar
 - **Orquestração:** quem coordena delega tarefas independentes a vários agentes em paralelo
