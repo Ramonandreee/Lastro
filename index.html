@@ -3438,6 +3438,15 @@ body.pdf-lock { overflow:hidden; }
 .ws-l { display:block; font-size:11.5px; color:var(--ink-3); font-weight:600; line-height:1.25; }
 .ws-v { display:block; font-family:var(--mono); font-size:17px; font-weight:800; color:var(--ink); margin-top:4px; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
 .ws-v.up { color:var(--up); } .ws-v.down { color:var(--down); }
+.hcard-health { display:flex; align-items:center; gap:15px; cursor:pointer; margin-bottom:16px; }
+.hh-ring { width:52px; height:52px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.hh-ring-in { width:40px; height:40px; border-radius:50%; background:var(--surface); display:flex; align-items:center; justify-content:center; }
+.hh-ring-in b { font-family:var(--serif); font-size:18px; font-weight:700; letter-spacing:-.02em; }
+.hh-body { flex:1; min-width:0; }
+.hh-t { font-size:14.5px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.hh-tier { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.hh-ins { font-size:12.5px; color:var(--ink-2); margin-top:3px; line-height:1.45; }
+.hh-cv { color:var(--ink-4); font-size:14px; flex:none; }
 .ws-est { font-size:8px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; color:var(--ink-4); background:var(--surface-3); border-radius:5px; padding:1px 4px; margin-left:3px; vertical-align:middle; }
 .walloc { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:18px 20px; margin-top:14px; }
 .walloc-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
@@ -5585,7 +5594,7 @@ const TOUR=[
   { sel:'[data-tour="mercado"]', pre:tourGroupPre, title:'Mercado', text:'Explore Ações, FIIs, BDRs, ETFs, Stocks e Cripto — com fundamentos completos e o Score Lastro™ (0 a 100) de cada ativo. As Notícias também ficam aqui.' },
   { sel:'[data-tour="carteira"]', pre:tourGroupPre, title:'Minha Carteira', text:'Cadastre seus aportes e acompanhe patrimônio, proventos, agenda de dividendos, watchlist, alertas e o Aporte Inteligente — sincronizado na nuvem.' },
   { sel:'[data-tour="analise"]', pre:tourGroupPre, title:'Análise', text:'Ferramentas de decisão: Raio-X da carteira, Backtest, Stress Test, Detector de Risco, Rastreador e Radar de Barganhas.' },
-  { sel:'.insight', pre:tourContentPre, title:'Inteligência Lastro', text:'Pergunte sobre o mercado ou qualquer ativo — respostas por IA, com base nos dados. Você também pode ler uma carteira por foto no Raio-X.' },
+  { sel:'.hcard-health', pre:tourContentPre, title:'Saúde da carteira', text:'Um retrato rápido da diversificação da sua carteira — toque para abrir o Raio-X completo com concentração por ativo, setor e classe.' },
   { sel:'.hdr-profile', pre:tourTopPre, title:'Sua conta', text:'Perfil, plano e tema claro/escuro ficam aqui no seu avatar. Para rever este tour, abra Suporte → Recursos.' },
   { center:true, ic:'fa-circle-check', title:'Tudo pronto!', text:'Explore à vontade. Você pode rever este tour quando quiser no menu da conta.' },
 ];
@@ -6003,19 +6012,7 @@ function viewPainel(){
 
   ${CARTEIRA.length ? renderHomeDashboard(p) : patCard}
 
-  <div class="insight insight-full">
-    <div class="insight-head">
-      <div class="insight-orb"><i class="fa-solid fa-sparkles"></i></div>
-      <div class="insight-title">Inteligência Lastro<span class="tag">Análise por IA</span></div>
-    </div>
-    <div class="insight-body" id="insightBody">
-      <span class="faint">Lendo o mercado de hoje…</span>
-    </div>
-    <div class="insight-input">
-      <input id="insightInput" placeholder="Pergunte sobre o mercado ou um ativo…" onkeydown="if(event.key==='Enter')askAI()">
-      <button class="insight-send" onclick="askAI()"><i class="fa-solid fa-arrow-up"></i></button>
-    </div>
-  </div>
+  ${CARTEIRA.length ? renderHealthCard(p) : ''}
 
   <div class="mstrip">${mstrip}</div>
 
@@ -8401,7 +8398,6 @@ function afterRender(v, soft){
     initIbov();
     if(CARTEIRA.length){ recordPatSnapshot(); initWealthSpark(); }
     if(typeof loadMacroReal==='function') loadMacroReal();   // Selic/IPCA/Dólar/BTC reais (BCB + CoinGecko)
-    if(!soft) askAI(true);
   } else { stopHeroTimer(); }
   if(['fiis','acoes','bdrs','etfs','etfsint','stocks','cripto'].includes(v)){ renderAssets(v); }
   // atualiza cotações/selo da tela atual, sob demanda (proxy /api/quotes).
@@ -8673,6 +8669,29 @@ async function loadMacroReal(){
 }
 
 /* ── Home Dashboard: visão de carteira estilo painel (patrimônio + comparativo + alocação) ── */
+/* card "Saúde da carteira" (substitui a IA no Início): concentração/diversificação */
+function renderHealthCard(p){
+  const byT=p._byT||[]; const n=byT.length; if(!n||!p.atual) return '';
+  const conc=Math.max(...byT.map(g=>g.val/p.atual*100));
+  const top=byT.slice().sort((a,b)=>b.val-a.val)[0]; const topTk=top?top.tk:'';
+  const saude=Math.max(0, Math.round(100 - (conc>30?15:6) - (n<6?12:0) - (n<3?10:0)));
+  const c=scoreColor(saude), tier=scoreTier(saude);
+  let ins;
+  if(conc>30) ins=`Concentração alta: <b>${topTk}</b> é ${pc(conc,0)}% da carteira.`;
+  else if(n<6) ins=`Apenas ${n} ativo${n>1?'s':''} — diversificar reduz o risco.`;
+  else ins=`Bem diversificada em <b>${n} ativos</b> · maior posição ${pc(conc,0)}%.`;
+  return `
+  <div class="card card-pad hcard-health" onclick="goView('raiox')">
+    <div class="hh-ring" style="background:conic-gradient(${c} ${saude*3.6}deg, var(--surface-3) 0)">
+      <div class="hh-ring-in"><b style="color:${c}">${saude}</b></div>
+    </div>
+    <div class="hh-body">
+      <div class="hh-t">Saúde da carteira <span class="hh-tier" style="color:${c}">${tier}</span></div>
+      <div class="hh-ins">${ins}</div>
+    </div>
+    <i class="fa-solid fa-chevron-right hh-cv"></i>
+  </div>`;
+}
 function renderHomeDashboard(p){
   if(typeof recordPatSnapshot==='function') recordPatSnapshot();   // grava o snapshot ANTES do markup p/ o selo real/estimativa ficar consistente
   // variação do dia (ponderada pelas posições)
@@ -8734,7 +8753,7 @@ function renderHomeDashboard(p){
         <canvas id="wSpark" role="img" aria-label="${wealthDays(7)>=2?'Evolução real do patrimônio nos últimos dias':'Patrimônio de hoje — o histórico diário começa a partir de agora'}"></canvas>
         <div class="whero-foot">
           <div><span>Investido</span><b class="priv-blur">${fmtHomeCur(p.invest)}</b></div>
-          <div><span>DY médio</span><b>${pc(p.dyMed,2)}%</b></div>
+          <div><span>Resultado</span><b class="priv-blur" style="color:${p.lucroProv>=0?'var(--up)':'var(--down)'}">${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))}</b></div>
           <div><span>Renda/mês</span><b class="priv-blur">${fmtHomeCur(p.renda)}</b></div>
         </div>
       </div>
