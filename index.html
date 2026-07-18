@@ -5038,11 +5038,17 @@ function flushCloudState(keepalive, force){
 }
 window.addEventListener('pagehide', ()=>{ try{ flushCloudState(true); }catch(e){} });
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden'){ try{ flushCloudState(true); }catch(e){} } });
-/* Vínculo forte entre aparelhos da MESMA conta: além de sincronizar ao focar/voltar a aba,
-   verifica a nuvem periodicamente enquanto o app está visível. loadCloudState só adota se a
-   nuvem for mais nova (reconciliação por ts), então isto nunca sobrescreve edição local. */
+/* validade (ms) do access_token atual, lida do próprio JWT (claim exp) */
+function tokenExpMs(){ try{ const s=getSession(); if(!s||!s.access_token) return 0; let p=s.access_token.split('.')[1]; if(!p) return 0; p=p.replace(/-/g,'+').replace(/_/g,'/'); if(p.length%4) p+='='.repeat(4-p.length%4); const j=JSON.parse(atob(p)); return (+j.exp||0)*1000; }catch(e){ return 0; } }
+/* Renova o token ANTES de expirar (proativo). É o que impede o "JWT expired" que travava a
+   sincronização automática: com o app aberto, o token nunca chega a vencer. */
+function keepTokenFresh(){ if(!isAuthed()) return; const exp=tokenExpMs(); if(exp && (exp - Date.now()) < 5*60*1000){ try{ refreshSession(); }catch(e){} } }
+/* Vínculo forte entre aparelhos da MESMA conta: sincroniza sozinho (ao abrir, ao focar a aba e
+   periodicamente). loadCloudState só adota se a nuvem for mais nova (reconciliação por ts), então
+   isto nunca sobrescreve edição local. NENHUM clique é necessário — é tudo automático. */
 setInterval(()=>{ try{
   if(document.visibilityState!=='visible' || !isAuthed()) return;
+  keepTokenFresh();   // mantém o token válido (invisível, não depende de interação)
   const ae=document.activeElement;
   if(ae && (ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable)) return;   // não interrompe digitação
   if(document.querySelector('.modal-scrim.open')) return;                                     // não fecha modal aberto
@@ -11653,8 +11659,8 @@ function setThemePref(p){ if(!THEME_SEQ.includes(p)) p='auto'; localStorage.setI
 function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SEQ.indexOf(cur)+1)%THEME_SEQ.length]; setThemePref(next); toast(next==='auto'?'Tema: Automático':next==='dark'?'Tema: Escuro':'Tema: Claro'); }
 // segue o sistema em tempo real quando em "automático"
 (function(){ const mq=matchMedia('(prefers-color-scheme: dark)'); const fn=()=>{ if(getThemePref()==='auto') applyTheme(true); }; if(mq.addEventListener) mq.addEventListener('change', fn); else if(mq.addListener) mq.addListener(fn);
-  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ if(getThemePref()==='auto') applyTheme(true); syncOnReturn(); } });
-  window.addEventListener('focus', ()=>{ if(getThemePref()==='auto') applyTheme(true); syncOnReturn(); });
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ if(getThemePref()==='auto') applyTheme(true); try{ keepTokenFresh(); }catch(e){} syncOnReturn(); } });
+  window.addEventListener('focus', ()=>{ if(getThemePref()==='auto') applyTheme(true); try{ keepTokenFresh(); }catch(e){} syncOnReturn(); });
   // iOS/PWA standalone às vezes NÃO dispara o evento de mudança de tema — polling leve garante atualização em tempo real
   setInterval(()=>{ if(getThemePref()!=='auto') return; const sysDark=matchMedia('(prefers-color-scheme: dark)').matches; const curDark=document.documentElement.getAttribute('data-theme')==='dark'; if(sysDark!==curDark) applyTheme(true); }, 1200);
 })();
