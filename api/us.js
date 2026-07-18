@@ -79,18 +79,41 @@ async function stooqQuotes(symbols) {
   return out;
 }
 
+// Financial Modeling Prep (fonte CONFIÁVEL, free tier 250/dia) — preço + variação +
+// fundamentos (P/L, LPA, market cap) em UM lote. Só usada se FMP_KEY existir no servidor.
+async function fmpQuotes(symbols, key) {
+  const url = `https://financialmodelingprep.com/api/v3/quote/${symbols.map(encodeURIComponent).join(',')}?apikey=${encodeURIComponent(key)}`;
+  const d = await fetchWith(url, 9000, false);
+  if (!Array.isArray(d)) return [];
+  return d.map((x) => ({
+    symbol: String(x.symbol || '').toUpperCase(),
+    price: num(x.price),
+    change: num(x.change),
+    changePct: num(x.changesPercentage),
+    prevClose: num(x.previousClose),
+    currency: 'USD',
+    pl: num(x.pe),
+    lpa: num(x.eps),
+    mkt: num(x.marketCap),
+    pvp: null, dy: null,
+    source: 'fmp',
+  })).filter((x) => x.price != null);
+}
+
 export default async function handler(req, res) {
   const parse = (s) => String(s || '').split(',').map((x) => x.trim().toUpperCase()).filter(Boolean);
   const symbols = [...new Set(parse((req.query || {}).symbols))].slice(0, 50);
   if (!symbols.length) return res.status(200).json({ results: [] });
   try {
-    let results = await yahooQuotes(symbols);          // preço + variação (quando o Yahoo responde)
-    const have = new Set(results.map((x) => x.symbol));
-    const missing = symbols.filter((s) => !have.has(s));
-    if (missing.length) {                              // completa preço via Stooq p/ o que faltou
-      const st = await stooqQuotes(missing);
-      results = results.concat(st);
-    }
+    let results = [];
+    // 1) fonte confiável (se houver chave); 2) Yahoo (grátis, + P/VP e DY); 3) Stooq (só preço)
+    if (process.env.FMP_KEY) results = await fmpQuotes(symbols, process.env.FMP_KEY);
+    let have = new Set(results.map((x) => x.symbol));
+    let missing = symbols.filter((s) => !have.has(s));
+    if (missing.length) { const y = await yahooQuotes(missing); results = results.concat(y); }
+    have = new Set(results.map((x) => x.symbol));
+    missing = symbols.filter((s) => !have.has(s));
+    if (missing.length) { const st = await stooqQuotes(missing); results = results.concat(st); }
     // cotação muda no pregão: cache curto na borda
     res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     return res.status(200).json({ results });
