@@ -6344,6 +6344,7 @@ function renderAssets(kind){
   const pg = $('#tblPager'); if(pg) pg.innerHTML = total ? pagerHTML(kind, st.page, pages, total, ps, start, pageData.length) : '';
   loadListFundamentals(kind, pageData.map(a=>a.tk));   // completa fundamentos reais das linhas visíveis
   if(kind==='stocks') loadUsQuotes(pageData.map(a=>a.tk));   // cotações reais dos EUA (Yahoo/Stooq)
+  if(kind==='fiis') loadFiiIndex();                          // P/VP real de FII (CVM) na listagem inteira
 }
 /* janela de números de página (1 … 4 5 6 … N) */
 function pageWindow(page, pages){
@@ -10418,6 +10419,37 @@ function loadFiiCvm(tk, name, price){
     .then(r=>r.ok?r.json():null)
     .then(fi=>{ if(fi && fi.source==='cvm' && fi.vp!=null){ applyFiiCvm(tk, fi); if(currentView==='asset' && currentAssetTk===tk) refreshAssetView(); } })
     .catch(()=>{});
+}
+/* ── Índice CVM de FIIs: P/VP real na LISTAGEM inteira, com match CONSERVADOR (unicidade +
+   token distintivo). Se não casar com CONFIANÇA, mantém o curado — nunca aplica VP no fundo errado. */
+function _fiiNorm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(); }
+const _FII_STOP = new Set(['fii','fdo','fundo','fundos','inv','invest','investimento','imob','imobiliario','imobiliaria','imobiliarios','de','do','da','dos','das','the','and','classe','cotas','recebiveis']);
+function _fiiTokens(nm){ return _fiiNorm(nm).split(' ').filter(t=>t.length>=3 && !_FII_STOP.has(t)); }
+let _fiiIndex=null, _fiiIndexAt=0;
+function matchFiiCvm(nm){
+  if(!_fiiIndex) return null;
+  const toks=_fiiTokens(nm); if(!toks.length || !toks.some(t=>t.length>=4)) return null;   // exige ao menos 1 token distintivo (≥4)
+  let hit=null, count=0;
+  for(const f of _fiiIndex){ if(toks.every(t=>f.tokens.has(t))){ hit=f; if(++count>1) return null; } }   // exige UNICIDADE
+  return count===1 ? hit : null;
+}
+function applyFiiIndexToList(){
+  if(!_fiiIndex) return; let any=false;
+  const data=(typeof ASSET_CFG!=='undefined' && ASSET_CFG.fiis)? ASSET_CFG.fiis.data() : (typeof FIIS!=='undefined'?FIIS:[]);
+  data.forEach(a=>{ const f0=FUND[a.tk]; if(f0&&f0.pvpReal) return;   // já real (asset page CVM) → não mexe
+    const m=matchFiiCvm(a.nm); if(m && m.vp>0 && a.px>0){ const f=FUND[a.tk]=FUND[a.tk]||{};
+      a.pvp=Math.round((a.px/m.vp)*100)/100; a.vp=m.vp; if(m.vac!=null) a.vac=m.vac;
+      f.pvpReal=true; f.vpReal=true; f.cvmRef=m.ref; f.cvmNome=m.nome; any=true; } });
+  if(any && currentView==='fiis') renderAssets('fiis');
+}
+function loadFiiIndex(){
+  if(_fiiIndex || (_fiiIndexAt && Date.now()-_fiiIndexAt<3600000)) return;
+  _fiiIndexAt=Date.now();
+  fetch(`${fiiEndpoint()}?index=1`).then(r=>r.ok?r.json():null).then(d=>{
+    const funds=(d&&d.funds)||[]; if(!funds.length) return;
+    _fiiIndex=funds.map(f=>({ vp:f.vp, vac:f.vacancia, ref:f.dataRef, nome:f.nome, tokens:new Set(_fiiTokens(f.nome)) }));
+    applyFiiIndexToList();
+  }).catch(()=>{});
 }
 const LIVE_ASSET_KINDS = new Set(['acoes','fiis','bdrs','etfs']);
 

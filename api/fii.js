@@ -195,8 +195,71 @@ function extractFromComplemento(comp, cnpj) {
   };
 }
 
+// Extrai o registro mais recente por CNPJ de TODO o complemento (para o modo índice).
+function extractAllFromComplemento(comp) {
+  const map = new Map();
+  if (!comp) return map;
+  const { header, rows } = parseCsv(comp.text);
+  const iCnpj = colIndex(header, 'cnpj_fundo', 'cnpj_fundo_classe', 'cnpj');
+  if (iCnpj < 0) return map;
+  const iData = colIndex(header, 'data_referencia');
+  const iVersao = colIndex(header, 'versao');
+  const iVp = colIndex(header, 'valor_patrimonial_cotas', 'valor_patrimonial_da_cota', 'valor_patrimonial_cota');
+  const iPl = colIndex(header, 'patrimonio_liquido', 'patrimonio_liquido_fundo', 'patrimonio_liquido_classe');
+  const iCotas = colIndex(header, 'cotas_emitidas', 'numero_cotas', 'quantidade_cotas');
+  const iVacF = colIndex(header, 'percentual_vacancia_financeira');
+  const iVacI = colIndex(header, 'percentual_vacancia_fisica', 'percentual_vacancia');
+  for (const r of rows) {
+    const cnpj = onlyDigits(r[iCnpj]); if (!cnpj) continue;
+    const data = iData >= 0 ? String(r[iData] || '').trim() : '';
+    const ver = iVersao >= 0 ? (parseNum(r[iVersao]) || 0) : 0;
+    const prev = map.get(cnpj);
+    if (prev && !(data > prev._data || (data === prev._data && ver >= prev._ver))) continue;
+    const pl = iPl >= 0 ? parseNum(r[iPl]) : null;
+    const cotas = iCotas >= 0 ? parseNum(r[iCotas]) : null;
+    let vp = iVp >= 0 ? parseNum(r[iVp]) : null;
+    if (vp == null && pl != null && cotas) vp = Math.round((pl / cotas) * 100) / 100;
+    const vacF = iVacF >= 0 ? parseNum(r[iVacF]) : null;
+    const vacI = iVacI >= 0 ? parseNum(r[iVacI]) : null;
+    map.set(cnpj, { _data: data, _ver: ver, vp: vp != null ? Math.round(vp * 100) / 100 : null, vacancia: vacF != null ? vacF : (vacI != null ? vacI : null) });
+  }
+  return map;
+}
+
+// MODO ÍNDICE: todos os fundos do informe, compacto, para o front casar a listagem inteira.
+async function handleIndex(res) {
+  const year = new Date().getFullYear();
+  const [cur, prev] = await Promise.all([fetchInforme(year), fetchInforme(year - 1)]);
+  const at = cur.csvs.length ? cur : prev;
+  if (!at.csvs.length) { res.setHeader('Cache-Control', 'no-store'); return res.status(200).json({ funds: [], note: 'informe indisponível' }); }
+  const geral = pickCsv(at.csvs, /geral/) || pickCsv(at.csvs, /inf_mensal_fii_\d{4}\.csv$/);
+  const comp = pickCsv(at.csvs, /complement/);
+  const compMap = extractAllFromComplemento(comp);
+  const funds = [];
+  if (geral) {
+    const { header, rows } = parseCsv(geral.text);
+    const iCnpj = colIndex(header, 'cnpj_fundo', 'cnpj_fundo_classe', 'cnpj');
+    const iNome = colIndex(header, 'nome_fundo', 'denominacao_social', 'nome_fundo_classe');
+    if (iCnpj >= 0) {
+      const seen = new Set();
+      for (const r of rows) {
+        const cnpj = onlyDigits(r[iCnpj]); if (!cnpj || seen.has(cnpj)) continue;
+        seen.add(cnpj);
+        const c = compMap.get(cnpj); if (!c || c.vp == null) continue;
+        funds.push({ cnpj, nome: iNome >= 0 ? (r[iNome] || '').trim() : '', vp: c.vp, vacancia: c.vacancia, dataRef: c._data || null });
+      }
+    }
+  }
+  res.setHeader('Cache-Control', 'public, s-maxage=43200, stale-while-revalidate=86400');
+  return res.status(200).json({ funds, count: funds.length, source: 'cvm' });
+}
+
 export default async function handler(req, res) {
   const q = req.query || {};
+  if (q.index) {
+    try { return await handleIndex(res); }
+    catch (e) { res.setHeader('Cache-Control', 'no-store'); return res.status(200).json({ funds: [], error: String((e && e.message) || e) }); }
+  }
   const ticker = String(q.ticker || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   const wantName = normalize(q.name);
   const paramCnpj = onlyDigits(q.cnpj);
