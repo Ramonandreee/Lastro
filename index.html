@@ -6289,7 +6289,7 @@ function viewCarteira(){
       : addBtn;
     return `
     <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-wallet"></i></span> Minha Carteira</div>${addBtn}</div>
+      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-wallet"></i></span> Minha Carteira</div></div>
       ${emptyState('fa-wallet','Sua carteira está vazia', isPro()?'Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.':'Adicione seus aportes para acompanhar a sua carteira de verdade — com sincronização entre aparelhos, proventos, Imposto de Renda e mais. Crie sua conta e teste o Premium 7 dias grátis.', emptyCta)}
     </div>`;
   }
@@ -7612,7 +7612,7 @@ function viewScore(){
   </div>`;
 }
 function gbRow(label, pct){
-  return `<div class="gb-row"><div class="gb-top"><span class="muted">${label}</span><span class="v">${Math.round(pct)}</span></div><div class="gb-bar"><i style="width:0%" data-w="${Math.round(pct)}%"></i></div></div>`;
+  return `<div class="gb-row"><div class="gb-top"><span class="muted">${label}</span><span class="v" style="color:${scoreColor(pct)}">${Math.round(pct)}</span></div><div class="gb-bar"><i style="width:0%;background:${scoreColor(pct)}" data-w="${Math.round(pct)}%"></i></div></div>`;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -9479,9 +9479,9 @@ async function callAI(msg, el){
     const txt = (d.content && d.content[0] && d.content[0].text) || null;
     // escapa antes de aplicar markdown mínimo (evita XSS via retorno do modelo)
     if(txt && el) el.innerHTML = esc(txt).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
-    else if(el) el.innerHTML = '<span class="faint">Conecte o endpoint de IA (config.js → AI_ENDPOINT) para ativar a Inteligência Lastro.</span>';
+    else if(el) el.innerHTML = '<span class="faint">Não consegui gerar a análise agora. Tente reformular a pergunta em instantes.</span>';
   }catch(e){
-    if(el) el.innerHTML = '<span class="faint">A Inteligência Lastro requer conexão com a API. Em produção, conecte via proxy serverless (veja README).</span>';
+    if(el) el.innerHTML = '<span class="faint">A Inteligência Lastro está indisponível no momento. Tente novamente em instantes.</span>';
   }
 }
 function askAISugg(q){ const inp=$('#insightInput'); if(inp) inp.value=q; askAI(); }
