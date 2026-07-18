@@ -1046,6 +1046,14 @@ img, svg, canvas, video { max-width: 100%; }
     <main class="content" id="content">
       <!-- Views injected below -->
     </main>
+
+    <nav class="tabbar" id="tabbar" aria-label="Navegação principal">
+      <button class="tab-item" data-tab="painel"   onclick="nav('painel')"   aria-label="Início"><span class="tab-pill"></span><i class="fa-solid fa-house"></i><span class="tab-lbl">Início</span></button>
+      <button class="tab-item" data-tab="mercado"  onclick="nav('mercado')"  aria-label="Mercado"><span class="tab-pill"></span><i class="fa-solid fa-chart-line"></i><span class="tab-lbl">Mercado</span></button>
+      <button class="tab-item" data-tab="carteira" onclick="nav('carteira')" aria-label="Carteira"><span class="tab-pill"></span><i class="fa-solid fa-wallet"></i><span class="tab-lbl">Carteira</span></button>
+      <button class="tab-item" data-tab="noticias" onclick="nav('noticias')" aria-label="Notícias"><span class="tab-pill"></span><i class="fa-solid fa-newspaper"></i><span class="tab-lbl">Notícias</span></button>
+      <button class="tab-item" data-tab="mais"     onclick="toggleSidebar()" aria-label="Mais opções"><span class="tab-pill"></span><i class="fa-solid fa-bars"></i><span class="tab-lbl">Mais</span></button>
+    </nav>
   </div>
 </div>
 
@@ -3472,6 +3480,64 @@ body.pdf-lock { overflow:hidden; }
 .wcmp-foot i { font-size:11px; }
 @media (max-width:640px){ .wstats { gap:10px; } .wstat { padding:13px 13px; gap:10px; } .ws-ic { width:34px; height:34px; font-size:13px; } .ws-v { font-size:16px; } .ws-l { font-size:11px; } .whero-foot > div b { font-size:13px; } .wcmp-row { grid-template-columns:78px 1fr 62px; gap:8px; } }
 
+/* ════ TAB BAR (navegação inferior mobile) + HUB MERCADO ════ */
+.tabbar { display:none; }
+@media (max-width:760px){
+  .tabbar {
+    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:60;
+    height:calc(56px + env(safe-area-inset-bottom,0px));
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    background:var(--surface); border-top:1px solid var(--line);
+    box-shadow:0 -2px 12px rgba(15,20,25,.05);
+  }
+  [data-theme="dark"] .tabbar { box-shadow:0 -2px 12px rgba(0,0,0,.3); }
+  .tab-item {
+    flex:1 1 20%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:3px; min-height:44px; padding:7px 0 6px; color:var(--ink-2); background:none; border:none;
+    cursor:pointer; position:relative; font-family:var(--sans); -webkit-tap-highlight-color:transparent;
+    transition:transform .1s var(--ease);
+  }
+  .tab-item .tab-pill { position:absolute; top:5px; left:50%; transform:translateX(-50%); width:44px; height:26px; border-radius:13px; background:var(--brand-l); opacity:0; transition:opacity .16s var(--ease); }
+  .tab-item i { font-size:19px; line-height:1; position:relative; z-index:1; }
+  .tab-item .tab-lbl { font-size:11px; font-weight:500; letter-spacing:-.01em; position:relative; z-index:1; }
+  .tab-item.active { color:var(--brand); }
+  .tab-item.active .tab-lbl { font-weight:600; }
+  .tab-item.active .tab-pill { opacity:1; }
+  .tab-item:active { transform:scale(.93); }
+  .menu-btn { display:none !important; }                 /* hambúrguer sai no mobile — aba "Mais" abre o menu */
+  .content { padding-bottom:calc(78px + env(safe-area-inset-bottom,0px)) !important; }  /* conteúdo não fica atrás da barra */
+}
+/* Hub Mercado */
+.mkt-sec-t { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin:20px 2px 10px; }
+.mkt-sec-t:first-child { margin-top:2px; }
+.mkt-recent { display:flex; gap:9px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.mkt-recent::-webkit-scrollbar { display:none; }
+.mrec { flex:none; display:flex; flex-direction:column; align-items:center; gap:5px; width:76px; padding:12px 6px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); cursor:pointer; }
+.mrec .logo { width:34px; height:34px; }
+.mrec-tk { font-family:var(--mono); font-size:12px; font-weight:600; color:var(--ink); }
+.mrec-v { font-size:11px; font-weight:600; }
+.mkt-classes { display:grid; grid-template-columns:repeat(2,1fr); gap:11px; }
+.mkt-class { display:flex; flex-direction:column; align-items:flex-start; gap:7px; padding:15px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; }
+.mkt-class:active { transform:scale(.98); }
+.mc-ic { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px; background:var(--brand-l); color:var(--brand); }
+.mc-nm { font-size:15px; font-weight:600; color:var(--ink); }
+.mc-n { font-size:12px; color:var(--ink-3); }
+.mkt-pulse { display:grid; grid-template-columns:repeat(3,1fr); gap:11px; }
+.mp-cell { padding:14px 14px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); text-align:left; }
+button.mp-cell { cursor:pointer; font-family:inherit; }
+.mp-l { font-size:11px; color:var(--ink-3); margin-bottom:5px; }
+.mp-v { font-size:16px; font-weight:700; color:var(--ink); letter-spacing:-.01em; }
+.mp-d { font-size:11.5px; font-weight:600; margin-top:3px; }
+.mkt-shortcuts { display:flex; flex-direction:column; gap:10px; }
+.mkt-short { display:flex; align-items:center; gap:13px; padding:14px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; }
+.mkt-short:active { transform:scale(.99); }
+.ms-ic { width:40px; height:40px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px; background:var(--brand-l); color:var(--brand); }
+.ms-tx { flex:1; display:flex; flex-direction:column; gap:2px; }
+.ms-tx b { font-size:14.5px; font-weight:600; color:var(--ink); }
+.ms-tx small { font-size:12px; color:var(--ink-3); }
+.ms-cv { color:var(--ink-4); font-size:13px; }
+@media (max-width:420px){ .mkt-pulse { grid-template-columns:1fr 1fr; } .mp-cell:last-child { grid-column:1 / -1; } }
+
 /* ════ CARTEIRA — autocomplete, prévia no modal e histórico de aportes ════ */
 .fld-rel { position:relative; }
 .pos-sug { position:absolute; left:0; right:0; top:100%; margin-top:6px; z-index:20; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r); box-shadow:var(--sh-lg); max-height:264px; overflow-y:auto; display:none; padding:5px; }
@@ -4192,6 +4258,7 @@ function posWeight(g){ const p=portfolioStats(); if(!p.atual) return 0; const gr
    ══════════════════════════════════════════════════════════ */
 const PAGES = {
   painel:       { t:'Início',                s:'Mercado, oportunidades e inteligência Lastro' },
+  mercado:      { t:'Mercado',               s:'Explore ativos por classe, veja o pulso do dia e descubra oportunidades' },
   acoes:        { t:'Ações',                 s:'Análise fundamentalista das principais ações da B3' },
   fiis:         { t:'Fundos Imobiliários',   s:'Indicadores e Score Lastro de FIIs' },
   bdrs:         { t:'BDRs',                   s:'Recibos de ações estrangeiras negociados na B3' },
@@ -5665,10 +5732,27 @@ function syncNavGroups(){
   groups.forEach(g=>{ const has=!!(active && g.contains(active)); g.classList.toggle('collapsed', !has); if(has) opened=true; });
   if(!opened){ const m=document.querySelector('.nav-group[data-group="mercado"]'); if(m) m.classList.remove('collapsed'); }
 }
+/* ── Tab bar inferior (mobile): acende a aba da SEÇÃO da tela atual ── */
+const VIEW_TAB = {
+  painel:'painel',
+  mercado:'mercado', acoes:'mercado', fiis:'mercado', etfs:'mercado', etfsint:'mercado', bdrs:'mercado', stocks:'mercado', cripto:'mercado', score:'mercado', agenda:'mercado', screener:'mercado',
+  carteira:'carteira', proventos:'carteira', aporte:'carteira', fire:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira', barganhas:'carteira', consultor:'carteira', deterioracao:'carteira',
+  noticias:'noticias',
+  simulador:'mais', comparador:'mais', recomendadas:'mais', recdetail:'mais', planos:'mais', indicar:'mais', assinatura:'mais', admin:'mais'
+};
+function syncTabBar(v){
+  const key = (v==='asset' && typeof prevView!=='undefined') ? prevView : v;   // detalhe herda a aba da origem
+  const tab = VIEW_TAB[key] || '';
+  document.querySelectorAll('#tabbar .tab-item').forEach(b=>{ b.classList.toggle('active', b.dataset.tab===tab); });
+}
+/* ── Vistos recentemente (gancho de retenção do Hub Mercado) ── */
+function getRecent(){ try{ return JSON.parse(localStorage.getItem('lastro_recent')||'[]'); }catch(e){ return []; } }
+function pushRecent(tk){ try{ let r=getRecent().filter(x=>x!==tk); r.unshift(tk); localStorage.setItem('lastro_recent', JSON.stringify(r.slice(0,8))); }catch(e){} }
 
 function render(v, soft){
   const c = $('#content');
   if(v==='painel')       c.innerHTML = viewPainel();
+  else if(v==='mercado')     c.innerHTML = viewMercado();
   else if(['fiis','acoes','bdrs','etfs','etfsint','stocks','cripto'].includes(v)) c.innerHTML = viewAssets(v);
   else if(v==='carteira')    c.innerHTML = viewCarteira();
   else if(v==='proventos')   c.innerHTML = viewProventos();
@@ -8075,6 +8159,56 @@ function newsAltaHTML(){
   return mv.map((a,i)=>`<div class="rank-row" onclick="quickView('${a.tk}')"><span class="rank-n">${i+1}</span><span class="rank-tk">${a.tk}</span><span class="rank-bar"><i style="width:${Math.max(8,(a.var/mx)*100).toFixed(0)}%;background:var(--up)"></i></span><span class="rank-pct up">+${pc(a.var)}%</span></div>`).join('');
 }
 function renderNewsAlta(){ const el=$('#newsAlta'); if(el) el.innerHTML=newsAltaHTML(); }
+/* ══════════════════════════════════════════════════════════
+   VIEW: MERCADO (hub — destino da aba "Mercado" da tab bar)
+   ══════════════════════════════════════════════════════════ */
+function viewMercado(){
+  const CLASSES=[
+    {k:'acoes',  ic:'fa-chart-column', nm:'Ações'},
+    {k:'fiis',   ic:'fa-building',     nm:'FIIs'},
+    {k:'etfs',   ic:'fa-layer-group',  nm:'ETFs'},
+    {k:'cripto', ic:'fa-bitcoin', br:true, nm:'Cripto'},
+    {k:'stocks', ic:'fa-earth-americas', nm:'Internacional'},
+  ];
+  const cards = CLASSES.map(c=>{
+    const cfg=ASSET_CFG[c.k]; const n=(cfg&&cfg.data)?cfg.data().length:0;
+    return `<button class="mkt-class" onclick="nav('${c.k}')">
+      <span class="mc-ic"><i class="fa-${c.br?'brands':'solid'} ${c.ic}"></i></span>
+      <span class="mc-nm">${c.nm}</span>
+      <span class="mc-n">${n} ativo${n!==1?'s':''}</span>
+    </button>`;
+  }).join('');
+
+  const rec = getRecent().map(tk=>{ const l=assetLookup(tk); return l?{a:l.a,k:l.k}:null; }).filter(Boolean).slice(0,8);
+  const recBlock = rec.length ? `
+    <div class="mkt-sec-t">Vistos recentemente</div>
+    <div class="mkt-recent">${rec.map(x=>{ const up=(x.a.var||0)>=0;
+      return `<button class="mrec" onclick="quickView('${x.a.tk}')">${assetLogo(x.a.tk,x.k,'sm')}<span class="mrec-tk">${x.a.tk}</span><span class="mrec-v ${up?'up':'down'}">${up?'+':''}${pc(x.a.var||0,1)}%</span></button>`;
+    }).join('')}</div>` : '';
+
+  const ib=MARKET.find(m=>m.nm==='Ibovespa')||MARKET[0], dol=MARKET.find(m=>m.nm==='Dólar');
+  const liq=(typeof ACOES!=='undefined'?ACOES:[]).filter(a=>a.px>0 && typeof a.var==='number');
+  const ups=liq.filter(a=>a.var>0).length, downs=liq.filter(a=>a.var<0).length;
+  const sgn = s => { const t=(s||'').trim(); return /^[-−]/.test(t)?'down':(/^\+/.test(t)?'up':'faint'); };
+  const pulse = `<div class="mkt-pulse">
+    <div class="mp-cell"><div class="mp-l">Ibovespa</div><div class="mp-v">${ib.vl}</div><div class="mp-d ${sgn(ib.dl)}">${ib.dl}</div></div>
+    <div class="mp-cell"><div class="mp-l">Dólar</div><div class="mp-v">R$ ${dol?dol.vl:'—'}</div><div class="mp-d ${dol?sgn(dol.dl):'faint'}">${dol?dol.dl:''}</div></div>
+    <button class="mp-cell" onclick="goView('painel')"><div class="mp-l">No dia</div><div class="mp-v"><span class="up">${ups}</span> · <span class="down">${downs}</span></div><div class="mp-d faint">altas · baixas</div></button>
+  </div>`;
+
+  return `
+  ${recBlock}
+  <div class="mkt-sec-t">Explorar por classe</div>
+  <div class="mkt-classes">${cards}</div>
+  <div class="mkt-sec-t">Pulso do mercado</div>
+  ${pulse}
+  <div class="mkt-sec-t">Descobrir</div>
+  <div class="mkt-shortcuts">
+    <button class="mkt-short" onclick="nav('score')"><span class="ms-ic" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></span><span class="ms-tx"><b>Score Lastro</b><small>Ranking de qualidade dos ativos</small></span><i class="fa-solid fa-chevron-right ms-cv"></i></button>
+    <button class="mkt-short" onclick="nav('agenda')"><span class="ms-ic"><i class="fa-solid fa-calendar-day"></i></span><span class="ms-tx"><b>Agenda de Dividendos</b><small>Calendário de proventos do mercado</small></span><i class="fa-solid fa-chevron-right ms-cv"></i></button>
+  </div>`;
+}
+
 function viewNoticias(){
   const items = NEWS.map(newsItemHTML).join('');
   return `
@@ -8167,6 +8301,7 @@ function destroyCharts(){ Object.values(charts).forEach(c=>{try{c.destroy()}catc
 
 function afterRender(v, soft){
   destroyCharts();
+  syncTabBar(v);                                    // acende a aba da seção (cobre boot e render() direto)
   if(typeof applyPriv==='function') applyPriv();   // reaplica máscara de privacidade nos valores recém-renderizados
   document.body.classList.toggle('view-inicio', v==='painel');
   // identidade Premium: ribbon discreto no topo das páginas Premium
@@ -11619,6 +11754,7 @@ function viewAssetDetail(tk){
 
 function openAsset(tk){
   if(!assetLookup(tk)){ toast(`${tk} — ativo não encontrado`); return; }
+  pushRecent(tk);
   if(currentView!=='asset') prevView=currentView;
   currentView='asset'; currentAssetTk=tk; detailRange='1A'; assetTab='geral';
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
