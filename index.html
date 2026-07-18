@@ -6252,6 +6252,22 @@ function usMktStr(n){ if(typeof n!=='number'||!isFinite(n)) return '—'; const 
   if(a>=1e9)  return (n/1e9 ).toLocaleString('pt-BR',{maximumFractionDigits:a>=1e11?0:1})+'B';
   if(a>=1e6)  return (n/1e6 ).toLocaleString('pt-BR',{maximumFractionDigits:0})+'M';
   return String(Math.round(n)); }
+/* Patrimônio + taxa de administração REAIS de ETFs B3 (CVM cad_fi). Match conservador por nome. */
+function fundinfoEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.FUNDINFO_ENDPOINT) || '/api/fundinfo'; }
+let _etfInfoDone=false;
+function loadEtfInfo(){
+  if(_etfInfoDone) return; _etfInfoDone=true;
+  const b3=(typeof ETFS!=='undefined')?ETFS.filter(a=>!a.usd):[];   // CVM só cobre fundos brasileiros
+  const names=b3.map(a=>a.nm).filter(Boolean); if(!names.length) return;
+  fetch(`${fundinfoEndpoint()}?names=${encodeURIComponent(names.join('|'))}`).then(r=>r.ok?r.json():null).then(d=>{
+    const res=(d&&d.results)||[]; if(!res.length) return; const byQ={}; res.forEach(x=>{ if(x&&x.nome) byQ[x.query]=x; });
+    let any=false;
+    b3.forEach(a=>{ const m=byQ[a.nm]; if(!m) return; const f=FUND[a.tk]=FUND[a.tk]||{};
+      if(m.patrimonio!=null && m.patrimonio>0){ a.pat='R$ '+usMktStr(m.patrimonio); f.patReal=true; any=true; }
+      if(m.taxaAdm!=null && m.taxaAdm>=0){ a.tx=pc(m.taxaAdm,2)+'%'; f.txReal=true; any=true; } });
+    if(any && currentView==='etfs') renderAssets('etfs');
+  }).catch(()=>{});
+}
 const _usFetched = new Map();
 async function loadUsQuotes(tickers){
   const now=Date.now();
@@ -6319,6 +6335,7 @@ function renderAssets(kind){
   loadListFundamentals(kind, pageData.map(a=>a.tk));   // completa fundamentos reais das linhas visíveis
   if(kind==='stocks') loadUsQuotes(pageData.map(a=>a.tk));   // cotações reais dos EUA (Yahoo/Stooq)
   if(kind==='fiis') loadFiiIndex();                          // P/VP real de FII (CVM) na listagem inteira
+  if(kind==='etfs') loadEtfInfo();                           // patrimônio + taxa reais de ETF B3 (CVM cad_fi)
 }
 /* janela de números de página (1 … 4 5 6 … N) */
 function pageWindow(page, pages){
