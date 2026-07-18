@@ -10541,6 +10541,7 @@ function applyAssetLive(tk, d){
     setF('psr',fu.psr); setF('lc',fu.liqCorrente); setF('evebitda',fu.evebitda); setF('evebit',fu.evebit);
     setF('pebit',fu.pebit); setF('pativo',fu.pativo); setF('giro',fu.giro); setF('dleb',fu.dleb);
     setF('dlpl',fu.dlpl); setF('payout',fu.payout); setF('cagrR',fu.cagrR); setF('cagrL',fu.cagrL);
+    if(fu.sharesOutstanding!=null) setF('shares', fmtBig(fu.sharesOutstanding));   // nº de ações real (aba Sobre)
     const usd = fu._raw && fu._raw.currency==='USD';
     if(fu.mkt!=null && !usd) setF('mkt','R$ '+fmtBig(fu.mkt));
     if(fu.ev!=null && !usd)  setF('ev','R$ '+fmtBig(fu.ev));
@@ -11114,14 +11115,16 @@ function aboutHTML(a,k,f){
     ).filter(Boolean).map(t=>`<span class="chip chip-neu">${esc(t)}</span>`).join('') : '';
   const grid = f ? (isFii
       ? `${fRow('Segmento', a.seg)}${fRow('Tipo', f.tipo)}${fRow('Gestão', f.gestao)}${fRow('Taxa de adm.', f.txadm)}${fRow('Patrimônio líq.', f.plf)}${fRow('Valor de mercado', f.mkt)}${fRow('Nº de cotistas', f.cotistas)}${fRow('Nº de cotas', f.cotas)}`
-      : `${fRow('Setor', f.setor)}${fRow('Segmento', f.sub)}${fRow('Governança', f.gov)}${fRow('Tag Along', f.tag)}${fRow('Free Float', f.ff)}${fRow('Nº de ações', f.shares)}${fRow('Valor de mercado', f.mkt)}${fRow('Valor de firma', f.ev)}`)
+      : `${fRow('Setor', f.setor)}${fRow('Segmento', f.sub)}${f.func?fRow('Funcionários', (typeof f.func==='number'?f.func.toLocaleString('pt-BR'):f.func)):''}${fRow('Governança', f.gov)}${fRow('Tag Along', f.tag)}${fRow('Free Float', f.ff)}${fRow('Nº de ações', f.shares)}${fRow('Valor de mercado', f.mkt)}${fRow('Valor de firma', f.ev)}`)
     : `${fRow('Segmento', a.seg)}${fRow('Classe', ASSET_CLASS[k].label)}${a.mkt?fRow('Valor de mercado', a.mkt):''}${fRow('Cotação', fmtPx(a,k))}`;
+  const site = f && f.site ? String(f.site) : '';
   return `<div class="card card-pad">
     <div class="ds-title">${title}</div>
     <div class="about-head">${assetLogo(a.tk,k,'md')}<div><div style="font-weight:600;font-size:15px">${esc(a.nm)}</div><div style="font-size:12.5px;color:var(--ink-3);margin-top:2px">${sub}</div></div></div>
     <p class="about-desc">${desc}</p>
     ${tags?`<div class="about-tags">${tags}</div>`:''}
     <div class="about-grid">${grid}</div>
+    ${/^https?:\/\//.test(site)?`<div style="margin-top:14px"><a href="${esc(site)}" target="_blank" rel="noopener noreferrer" style="font-size:12.5px;color:var(--brand);font-weight:600;text-decoration:none"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px"></i> Site oficial</a></div>`:''}
   </div>`;
 }
 
@@ -11515,17 +11518,33 @@ function proventosRows(tk,a,k){
   }
   return rows;
 }
+/* DY por ano REAL: proventos reais (ASSET_LIVE.dividends) ÷ cotação atual, por ano completo.
+   É "DY sobre a cotação de hoje" (yield-on-current-price) — real e honesto; mostra o crescimento
+   do provento. null se não houver proventos reais suficientes. */
+function realDyByYear(tk,a){
+  const dd=(ASSET_LIVE[tk]||{}).dividends;
+  if(!Array.isArray(dd)||!dd.length||!(a&&a.px>0)) return null;
+  const byY={};
+  dd.forEach(d=>{ if(!d||typeof d.value!=='number') return; const t=d.date?new Date(d.date):null; if(!t||isNaN(t)) return; byY[t.getFullYear()]=(byY[t.getFullYear()]||0)+d.value; });
+  const nowY=new Date().getFullYear();
+  const use=Object.keys(byY).map(Number).filter(y=>y<nowY).sort((x,y)=>x-y).slice(-10);   // só anos completos
+  if(use.length<2) return null;
+  return { labels:use.map(String), data:use.map(y=>+((byY[y]/a.px)*100).toFixed(2)), real:true };
+}
 function tabProventos(tk,a,k,f){
-  const h=indHistory('dy',tk,a.dy,10); const m5=h.data.slice(-6,-1); const dyMed=m5.reduce((s,v)=>s+v,0)/m5.length;
+  const dyReal=realDyByYear(tk,a);
   const rows=proventosRows(tk,a,k);
   const realProv=Array.isArray((ASSET_LIVE[tk]||{}).dividends) && (ASSET_LIVE[tk].dividends.length>0);
+  let dyMed, dyMedReal=false;
+  if(dyReal){ const arr=dyReal.data.slice(-5); dyMed=arr.reduce((s,v)=>s+v,0)/arr.length; dyMedReal=true; }
+  else { const h=indHistory('dy',tk,a.dy,10); const m5=h.data.slice(-6,-1); dyMed=m5.reduce((s,v)=>s+v,0)/m5.length; }
   return `
   <div class="card card-pad" style="margin-bottom:16px">
-    <div class="ds-head"><span class="ds-title" style="margin:0">Dividend Yield por ano</span><span class="chip" style="font-size:10px;background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-flask"></i> estimativa · 10 anos</span></div>
+    <div class="ds-head"><span class="ds-title" style="margin:0">Dividend Yield por ano${dyReal?' · sobre a cotação atual':''}</span>${dyReal?'<span class="chip" style="font-size:10px;background:var(--up-l);color:var(--up)"><i class="fa-solid fa-circle-check"></i> real</span>':'<span class="chip" style="font-size:10px;background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-flask"></i> estimativa · 10 anos</span>'}</div>
     <div class="div-chart"><canvas id="dyHistChart"></canvas></div>
     <div class="prov-stats">
       <div class="hstat pri"><div class="l">DY atual</div><div class="v">${pc(a.dy,2)}%</div></div>
-      <div class="hstat"><div class="l">DY médio (5 anos) · est.</div><div class="v">~${pc(dyMed,2)}%</div></div>
+      <div class="hstat"><div class="l">DY médio (5 anos)${dyMedReal?'':' · est.'}</div><div class="v">${dyMedReal?'':'~'}${pc(dyMed,2)}%</div></div>
       <div class="hstat"><div class="l">${k==='fiis'?'Último rendimento':'Payout'}</div><div class="v">${k==='fiis'?brl(a.div):(f&&f.payout!=null?pc(f.payout,0)+'%':'—')}</div></div>
     </div>
   </div>
@@ -11717,7 +11736,7 @@ function tabSobre(tk,a,k,f){
 function initDyHistChart(){
   const ctx=document.getElementById('dyHistChart'); if(!ctx||!currentAssetTk||typeof Chart==='undefined') return;
   const lk=assetLookup(currentAssetTk); if(!lk) return; const a=lk.a;
-  const h=indHistory('dy',currentAssetTk,a.dy,10); const col=cssVar('--brand')||'#0B2E5E';
+  const h=realDyByYear(currentAssetTk,a)||indHistory('dy',currentAssetTk,a.dy,10); const col=cssVar('--brand')||'#0B2E5E';
   charts.dyHist=new Chart(ctx,{type:'bar',data:{labels:h.labels,datasets:[{data:h.data,backgroundColor:hexToRgba(col,.6),hoverBackgroundColor:col,borderRadius:5,maxBarThickness:30}]},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:950},
       plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{label:c=>c.parsed.y.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'}}},
