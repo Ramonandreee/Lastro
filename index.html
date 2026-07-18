@@ -11366,6 +11366,40 @@ function assetTabContent(tk,a,k,f){
 }
 function illusNote(txt){ return `<div class="illus-note"><i class="fa-solid fa-circle-info"></i> ${txt}</div>`; }
 
+/* ── Estatísticas do ativo: expõe na Visão Geral TODO dado real disponível por classe
+   (só valores reais; null/— é omitido). Agrega o que o brapi/CVM já trazem mas não apareciam. ── */
+function keyStatsHTML(a,k,f){
+  f=f||{}; const rows=[];
+  const ok=(v)=> v!=null && v!=='' && v!=='—' && v!=='—%' && v!=='—x';
+  const add=(lbl,v)=>{ if(ok(v)) rows.push([lbl,v]); };
+  const mt=(id)=>{ const v=indVal(id,a,f); return (typeof v==='number'&&isFinite(v))? fmtMetric(id,v):null; };
+  if(k==='acoes'){
+    add('Valor de firma', f.ev); add('EV/EBITDA', mt('evebitda')); add('EV/EBIT', mt('evebit'));
+    add('P/EBIT', mt('pebit')); add('P/Ativo', mt('pativo')); add('PSR', mt('psr'));
+    add('ROIC'+(f.roicApprox?' (aprox.)':''), mt('roic')); add('ROA', mt('roa'));
+    add('Margem bruta', mt('mb')); add('Margem EBIT', mt('mebit'));
+    add('Dív. líq./EBITDA', mt('dleb')); add('Dív. líq./Patrim.', mt('dlpl')); add('Liq. corrente', mt('lc'));
+    add('Payout', mt('payout')); add('CAGR receita 5a', mt('cagrRec')); add('CAGR lucro 5a', mt('cagrLuc'));
+    add('LPA', mt('lpa')); add('VPA', mt('vpa'));
+  } else if(k==='fiis'){
+    add('Patrimônio líquido', f.plf||f.pl); add('VP por cota', mt('vpa'));
+    add('Último rendimento', typeof a.div==='number'?brl(a.div):null);
+    add('Vacância', typeof a.vac==='number'?pc(a.vac,1)+'%':null);
+    add('Cotistas', f.cotistas); add('Cotas emitidas', f.cotas); add('Liquidez diária', f.liqf);
+    add('Taxa de adm.', f.txadm); add('Gestão', f.gestao); add('Tipo', f.tipo);
+  } else if(k==='etfs'){
+    add('Patrimônio', a.pat); add('Taxa de adm.', a.tx); add('Índice / Tema', a.seg);
+  } else if(k==='stocks'){
+    add('Valor de mercado', a.mkt?('$'+a.mkt):null); add('P/L', typeof a.pe==='number'?pc(a.pe,1)+'x':null);
+    add('LPA', typeof f.lpa==='number'?('$'+pc(f.lpa,2)):null); add('Dividend Yield', typeof a.dy==='number'?pc(a.dy,1)+'%':null);
+    add('Setor', a.seg);
+  }
+  if(rows.length<3) return '';   // só vale a pena com conteúdo real suficiente
+  return `<div class="card card-pad" style="margin-bottom:16px">
+    <div class="ds-title" style="margin:0 0 12px"><i class="fa-solid fa-layer-group" style="color:var(--brand)"></i> Estatísticas do ativo</div>
+    <div class="metric-grid">${rows.map(r=>`<div style="background:var(--surface);padding:11px 13px"><div style="font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px">${r[0]}</div><div class="mono" style="font-size:14px;font-weight:600;color:var(--ink)">${r[1]}</div></div>`).join('')}</div>
+  </div>`;
+}
 /* ── Visão Geral ── */
 function tabGeral(tk,a,k,f){
   const cls=ASSET_CLASS[k], hasScore=cls.score && typeof a.score==='number';
@@ -11384,13 +11418,18 @@ function tabGeral(tk,a,k,f){
       <div class="range-tabs" id="detailRanges">${Object.keys(ASSET_RANGES).map(r=>`<button class="${r===detailRange?'on':''}" onclick="setDetailRange('${r}')">${r}</button>`).join('')}</div>
     </div>
     <div class="detail-chart"><canvas id="detailPriceChart"></canvas></div>
-    <div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--ink-3)">
-      <span>Mín 52s <strong class="mono" style="color:var(--ink)">${fmtPx({px:pmin},k)}</strong></span>
-      <span>Máx 52s <strong class="mono" style="color:var(--ink)">${fmtPx({px:pmax},k)}</strong></span>
+    ${(pmin!=null && pmax!=null && pmax>pmin && a.px>0) ? `<div style="margin-top:16px">
+      <div style="position:relative;height:6px;border-radius:6px;background:linear-gradient(90deg, color-mix(in srgb,var(--down) 30%,transparent), var(--surface-3) 50%, color-mix(in srgb,var(--up) 30%,transparent))">
+        <div title="Cotação atual" style="position:absolute;top:50%;left:${Math.max(1,Math.min(99,(a.px-pmin)/(pmax-pmin)*100)).toFixed(1)}%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:var(--brand);border:2.5px solid var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.28)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:6px"><span style="color:var(--ink-4)">Mín 52s · ${fmtPx({px:pmin},k)}</span><span style="color:var(--ink-2);font-weight:600">Hoje ${fmtPx(a,k)}</span><span style="color:var(--ink-4)">Máx 52s · ${fmtPx({px:pmax},k)}</span></div>
+    </div>` : ''}
+    <div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--ink-3)">
       <span>Variação 12m <strong class="mono" style="color:${var12>=0?'var(--up)':'var(--down)'}">${var12>=0?'+':''}${pc(var12,1)}%</strong></span>
       <span id="priceSrcNote" style="margin-left:auto;color:var(--ink-4)">${(rsY&&rsY.length>1)?'Histórico real':'Carregando histórico…'}</span>
     </div>
   </div>
+  ${keyStatsHTML(a,k,f)}
   ${ (k==='acoes'||k==='fiis') ? `<div class="dt-grid">${peersHTML(tk,a,k)}${ hasScore ? scoreBlockHTML(a) : newsHTML(tk) }</div>` : '' }
   `;
 }
