@@ -6246,6 +6246,12 @@ async function loadListFundamentals(kind, tickers){
 }
 /* cotações REAIS de Stocks EUA (via /api/us — Yahoo/Stooq, sem chave). O brapi não cobre EUA. */
 function usEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.US_ENDPOINT) || '/api/us'; }
+/* market cap compacto p/ o display de stock ('$'+a.mkt → ex.: 4,5T / 920B / 45M) */
+function usMktStr(n){ if(typeof n!=='number'||!isFinite(n)) return '—'; const a=Math.abs(n);
+  if(a>=1e12) return (n/1e12).toLocaleString('pt-BR',{maximumFractionDigits:1})+'T';
+  if(a>=1e9)  return (n/1e9 ).toLocaleString('pt-BR',{maximumFractionDigits:a>=1e11?0:1})+'B';
+  if(a>=1e6)  return (n/1e6 ).toLocaleString('pt-BR',{maximumFractionDigits:0})+'M';
+  return String(Math.round(n)); }
 const _usFetched = new Map();
 async function loadUsQuotes(tickers){
   const now=Date.now();
@@ -6257,9 +6263,15 @@ async function loadUsQuotes(tickers){
     if(!r.ok) return;
     const d=await r.json(); const res=(d&&d.results)||[];
     let any=false;
-    res.forEach(q=>{ const lk=assetLookup(q.symbol); if(!lk) return; const o=lk.a;
+    res.forEach(q=>{ const lk=assetLookup(q.symbol); if(!lk) return; const o=lk.a; const f=FUND[q.symbol]=FUND[q.symbol]||{};
       if(typeof q.price==='number' && q.price>0){ o.px=q.price; o.usd=true; o.live=true; any=true; }
       if(typeof q.changePct==='number') o.var=q.changePct;   // variação real (Yahoo); Stooq não traz → mantém
+      // fundamentos reais do Yahoo (só quando vierem — Stooq não traz)
+      if(typeof q.pl==='number') o.pe=q.pl;
+      if(typeof q.pvp==='number') o.pvp=q.pvp;
+      if(typeof q.dy==='number') o.dy=q.dy;
+      if(typeof q.mkt==='number' && q.mkt>0){ o.mkt=usMktStr(q.mkt); f.mktReal=true; }
+      if(typeof q.lpa==='number') f.lpa=q.lpa;
     });
     if(any && (currentView==='stocks'||currentView==='asset')){ if(currentView==='stocks') renderAssets('stocks'); else if(typeof refreshAssetView==='function') refreshAssetView(); }
   }catch(e){}

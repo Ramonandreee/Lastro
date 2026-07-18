@@ -36,6 +36,7 @@ async function yahooQuotes(symbols) {
     const d = await fetchWith(`${h}/v7/finance/quote?symbols=${q}`, 9000, false);
     const list = d && d.quoteResponse && Array.isArray(d.quoteResponse.result) ? d.quoteResponse.result : null;
     if (list && list.length) {
+      const pctY = (v) => (typeof v === 'number' && isFinite(v) ? Math.round(v * 1000) / 10 : null); // fração → %
       return list.map((x) => ({
         symbol: String(x.symbol || '').toUpperCase(),
         price: num(x.regularMarketPrice),
@@ -43,6 +44,14 @@ async function yahooQuotes(symbols) {
         changePct: num(x.regularMarketChangePercent),
         prevClose: num(x.regularMarketPreviousClose),
         currency: x.currency || 'USD',
+        // fundamentos reais que o próprio v7 já devolve (sem chamada extra):
+        pl: num(x.trailingPE),
+        pvp: num(x.priceToBook),
+        dy: pctY(num(x.trailingAnnualDividendYield)) ?? (num(x.dividendYield) != null ? Math.round(num(x.dividendYield) * 10) / 10 : null),
+        lpa: num(x.epsTrailingTwelveMonths),
+        mkt: num(x.marketCap),
+        week52Low: num(x.fiftyTwoWeekLow),
+        week52High: num(x.fiftyTwoWeekHigh),
         source: 'yahoo',
       })).filter((x) => x.price != null);
     }
