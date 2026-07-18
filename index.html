@@ -1052,7 +1052,7 @@ img, svg, canvas, video { max-width: 100%; }
       <button class="tab-item" data-tab="mercado"  onclick="nav('mercado')"  aria-label="Mercado"><span class="tab-pill"></span><i class="fa-solid fa-chart-line"></i><span class="tab-lbl">Mercado</span></button>
       <button class="tab-item" data-tab="carteira" onclick="nav('carteira')" aria-label="Carteira"><span class="tab-pill"></span><i class="fa-solid fa-wallet"></i><span class="tab-lbl">Carteira</span></button>
       <button class="tab-item" data-tab="noticias" onclick="nav('noticias')" aria-label="Notícias"><span class="tab-pill"></span><i class="fa-solid fa-newspaper"></i><span class="tab-lbl">Notícias</span></button>
-      <button class="tab-item" data-tab="mais"     onclick="toggleSidebar()" aria-label="Mais opções"><span class="tab-pill"></span><i class="fa-solid fa-bars"></i><span class="tab-lbl">Mais</span></button>
+      <button class="tab-item" data-tab="mais"     onclick="nav('mais')"     aria-label="Mais opções"><span class="tab-pill"></span><i class="fa-solid fa-bars"></i><span class="tab-lbl">Mais</span></button>
     </nav>
   </div>
 </div>
@@ -3538,6 +3538,36 @@ button.mp-cell { cursor:pointer; font-family:inherit; }
 .ms-cv { color:var(--ink-4); font-size:13px; }
 @media (max-width:420px){ .mkt-pulse { grid-template-columns:1fr 1fr; } .mp-cell:last-child { grid-column:1 / -1; } }
 
+/* Tela "Mais" (menu + conta em página cheia) */
+.mais-acct { display:flex; align-items:center; gap:13px; width:100%; padding:15px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; margin-bottom:6px; }
+.mais-acct.mais-anon { cursor:default; }
+.mais-av { width:48px; height:48px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:19px; color:#fff; background:linear-gradient(150deg,#1E56A6,#0B2E5E 60%,#061F42); overflow:hidden; }
+.mais-av .av-img { width:100%; height:100%; object-fit:cover; }
+.mais-av i { color:#fff; }
+.mais-acct-id { flex:1; display:flex; flex-direction:column; gap:4px; min-width:0; }
+.mais-nm { font-size:16px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mais-subt { font-size:12.5px; color:var(--ink-3); }
+.mais-plan { align-self:flex-start; font-size:11px; font-weight:600; padding:2px 9px; border-radius:20px; display:inline-flex; align-items:center; gap:4px; }
+.mais-plan.free { background:var(--surface-3); color:var(--ink-2); }
+.mais-plan.gold { background:var(--gold-l); color:var(--gold); }
+.mais-sec-t { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin:20px 4px 9px; }
+.mais-grp { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--sh-sm); }
+.mais-row { display:flex; align-items:center; gap:13px; width:100%; padding:13px 15px; background:none; border:none; border-top:1px solid var(--line); cursor:pointer; text-align:left; }
+.mais-row:first-child { border-top:none; }
+.mais-row:active { background:var(--surface-3); }
+.mais-ic { width:34px; height:34px; flex:none; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:14px; background:var(--brand-l); color:var(--brand); }
+.mais-ic-gold { background:var(--gold-l); color:var(--gold); }
+.mais-lbl { flex:1; font-size:14.5px; font-weight:500; color:var(--ink); }
+.mais-crown { color:var(--gold); font-size:10px; margin-left:5px; }
+.mais-cv { color:var(--ink-4); font-size:13px; }
+.mais-theme { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; margin-top:14px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); }
+.mais-theme > span { font-size:14px; font-weight:500; color:var(--ink); }
+.mais-theme-btns { display:flex; gap:6px; }
+.mais-theme-btns button { width:40px; height:34px; border-radius:8px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink-3); cursor:pointer; font-size:13px; }
+.mais-theme-btns button.on { background:var(--brand-l); border-color:color-mix(in srgb,var(--brand) 30%,transparent); color:var(--brand); }
+.mais-logout { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; margin-top:16px; padding:14px; border-radius:var(--r-lg); border:1px solid color-mix(in srgb,var(--down) 30%,transparent); background:var(--down-l); color:var(--down); font-size:14px; font-weight:600; cursor:pointer; }
+.mais-logout:active { transform:scale(.99); }
+
 /* ════ CARTEIRA — autocomplete, prévia no modal e histórico de aportes ════ */
 .fld-rel { position:relative; }
 .pos-sug { position:absolute; left:0; right:0; top:100%; margin-top:6px; z-index:20; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r); box-shadow:var(--sh-lg); max-height:264px; overflow-y:auto; display:none; padding:5px; }
@@ -4259,6 +4289,7 @@ function posWeight(g){ const p=portfolioStats(); if(!p.atual) return 0; const gr
 const PAGES = {
   painel:       { t:'Início',                s:'Mercado, oportunidades e inteligência Lastro' },
   mercado:      { t:'Mercado',               s:'Explore ativos por classe, veja o pulso do dia e descubra oportunidades' },
+  mais:         { t:'Mais',                   s:'Análises, ferramentas, internacional e sua conta' },
   acoes:        { t:'Ações',                 s:'Análise fundamentalista das principais ações da B3' },
   fiis:         { t:'Fundos Imobiliários',   s:'Indicadores e Score Lastro de FIIs' },
   bdrs:         { t:'BDRs',                   s:'Recibos de ações estrangeiras negociados na B3' },
@@ -5738,7 +5769,7 @@ const VIEW_TAB = {
   mercado:'mercado', acoes:'mercado', fiis:'mercado', etfs:'mercado', etfsint:'mercado', bdrs:'mercado', stocks:'mercado', cripto:'mercado', score:'mercado', agenda:'mercado', screener:'mercado',
   carteira:'carteira', proventos:'carteira', aporte:'carteira', fire:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira', barganhas:'carteira', consultor:'carteira', deterioracao:'carteira',
   noticias:'noticias',
-  simulador:'mais', comparador:'mais', recomendadas:'mais', recdetail:'mais', planos:'mais', indicar:'mais', assinatura:'mais', admin:'mais'
+  mais:'mais', simulador:'mais', comparador:'mais', recomendadas:'mais', recdetail:'mais', planos:'mais', indicar:'mais', assinatura:'mais', admin:'mais'
 };
 function syncTabBar(v){
   const key = (v==='asset' && typeof prevView!=='undefined') ? prevView : v;   // detalhe herda a aba da origem
@@ -5753,6 +5784,7 @@ function render(v, soft){
   const c = $('#content');
   if(v==='painel')       c.innerHTML = viewPainel();
   else if(v==='mercado')     c.innerHTML = viewMercado();
+  else if(v==='mais')        c.innerHTML = viewMais();
   else if(['fiis','acoes','bdrs','etfs','etfsint','stocks','cripto'].includes(v)) c.innerHTML = viewAssets(v);
   else if(v==='carteira')    c.innerHTML = viewCarteira();
   else if(v==='proventos')   c.innerHTML = viewProventos();
@@ -8159,6 +8191,72 @@ function newsAltaHTML(){
   return mv.map((a,i)=>`<div class="rank-row" onclick="quickView('${a.tk}')"><span class="rank-n">${i+1}</span><span class="rank-tk">${a.tk}</span><span class="rank-bar"><i style="width:${Math.max(8,(a.var/mx)*100).toFixed(0)}%;background:var(--up)"></i></span><span class="rank-pct up">+${pc(a.var)}%</span></div>`).join('');
 }
 function renderNewsAlta(){ const el=$('#newsAlta'); if(el) el.innerHTML=newsAltaHTML(); }
+/* ══════════════════════════════════════════════════════════
+   VIEW: MAIS (tela cheia — destino da aba "Mais" da tab bar)
+   Substitui o antigo drawer: página de menu + conta, estilo app.
+   ══════════════════════════════════════════════════════════ */
+function viewMais(){
+  const authed=isAuthed(), pref=getThemePref(), pro=isPro();
+  const GROUPS=[
+    {t:'Minha Carteira', items:[
+      ['proventos','fa-coins','Meus Proventos',1],
+      ['acompanhar','fa-star','Acompanhar',0],
+      ['aporte','fa-scale-balanced','Aporte Inteligente',1],
+      ['fire','fa-fire','Independência Financeira',1],
+      ['ir','fa-file-invoice-dollar','Imposto de Renda',1],
+      ['agenda','fa-calendar-day','Agenda de Dividendos',0],
+    ]},
+    {t:'Análises Pro', items:[
+      ['raiox','fa-magnifying-glass-chart','Raio-X da Carteira',1],
+      ['consultor','fa-user-tie','Consultor IA da Carteira',1],
+      ['deterioracao','fa-arrow-trend-down','Detector de Risco',1],
+      ['stress','fa-heart-pulse','Stress Test',1],
+      ['backtest','fa-chart-line','Backtest da Carteira',1],
+      ['barganhas','fa-magnifying-glass-dollar','Radar de Barganhas',1],
+    ]},
+    {t:'Ferramentas', items:[
+      ['comparador','fa-code-compare','Comparador',0],
+      ['recomendadas','fa-layer-group','Carteiras Recomendadas',0],
+      ['simulador','fa-calculator','Simuladores',0],
+    ]},
+    {t:'Internacional', items:[
+      ['stocks','fa-flag-usa','Stocks (EUA)',0],
+      ['bdrs','fa-globe','BDRs',0],
+      ['etfsint','fa-layer-group','ETFs internacionais',0],
+    ]},
+  ];
+  const grpHTML = GROUPS.map(g=>`
+    <div class="mais-sec-t">${g.t}</div>
+    <div class="mais-grp">${g.items.map(([v,ic,label,prem])=>{
+      const crown=(prem&&!pro)?' <i class="fa-solid fa-crown mais-crown"></i>':'';
+      return `<button class="mais-row" onclick="nav('${v}')"><span class="mais-ic"><i class="fa-solid ${ic}"></i></span><span class="mais-lbl">${label}${crown}</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`;
+    }).join('')}</div>`).join('');
+
+  let head;
+  if(authed){
+    const u=currentUser(), tier=planTier();
+    const chip = tier==='pro'?'<span class="mais-plan gold"><i class="fa-solid fa-crown"></i> Investidor Pro</span>'
+      : tier==='premium'?'<span class="mais-plan gold"><i class="fa-solid fa-crown"></i> Premium</span>'
+      : (trialActive()?`<span class="mais-plan gold"><i class="fa-solid fa-clock"></i> Teste Premium · ${trialDaysLeft()}d</span>`:'<span class="mais-plan free">Plano Gratuito</span>');
+    head=`<button class="mais-acct" onclick="openProfile()"><span class="mais-av">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</span><span class="mais-acct-id"><span class="mais-nm">${esc(profileName())}</span>${chip}</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`;
+  } else {
+    head=`<div class="mais-acct mais-anon"><span class="mais-av"><i class="fa-regular fa-circle-user"></i></span><span class="mais-acct-id"><span class="mais-nm">Bem-vindo à Lastro</span><span class="mais-subt">Entre para sincronizar sua carteira</span></span></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin:2px 0 4px" onclick="openAuth('login')"><i class="fa-solid fa-right-to-bracket"></i> Entrar ou criar conta</button>`;
+  }
+  const conta=`<div class="mais-sec-t">Conta</div><div class="mais-grp">
+    ${authed?`<button class="mais-row" onclick="openProfile()"><span class="mais-ic"><i class="fa-solid fa-user"></i></span><span class="mais-lbl">Meu perfil</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
+    <button class="mais-row" onclick="nav('planos')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-lbl">Planos e assinatura</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
+    ${authed?`<button class="mais-row" onclick="nav('indicar')"><span class="mais-ic"><i class="fa-solid fa-gift"></i></span><span class="mais-lbl">Indique e Ganhe</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
+    <button class="mais-row" onclick="openSupport()"><span class="mais-ic"><i class="fa-solid fa-headset"></i></span><span class="mais-lbl">Ajuda &amp; Suporte</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
+  </div>`;
+  const themeRow=`<div class="mais-theme"><span>Tema</span><div class="mais-theme-btns">
+    <button class="${pref==='light'?'on':''}" onclick="setThemePref('light')" aria-label="Tema claro"><i class="fa-solid fa-sun"></i></button>
+    <button class="${pref==='dark'?'on':''}" onclick="setThemePref('dark')" aria-label="Tema escuro"><i class="fa-solid fa-moon"></i></button>
+    <button class="${pref==='auto'?'on':''}" onclick="setThemePref('auto')" aria-label="Tema automático"><i class="fa-solid fa-circle-half-stroke"></i></button>
+  </div></div>`;
+  return `${head}${grpHTML}${conta}${themeRow}${authed?`<button class="mais-logout" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>`:''}`;
+}
+
 /* ══════════════════════════════════════════════════════════
    VIEW: MERCADO (hub — destino da aba "Mercado" da tab bar)
    ══════════════════════════════════════════════════════════ */
