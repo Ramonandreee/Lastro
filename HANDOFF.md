@@ -29,6 +29,24 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 > é mais novo" para o servidor (RPC/trigger no Postgres que só atualiza se
 > `incoming.ts >= stored.ts` usando `now()` do banco). Cabeçalho perdeu os indicadores
 > "Mercado aberto"/"Ao vivo"; o menu lateral virou **recolhível no desktop** (rail).
+>
+> **Sync — correção da causa-raiz (jul/2026):** o `access_token` do Supabase expira
+> (~1h) e não era renovado → 401 "JWT expired", carteira parava de subir e o outro
+> aparelho podia sincronizar vazio por cima (perda de dados no logout). Agora:
+> `refreshSession()` renova com o `refresh_token` e `sbFetch()` repete a requisição em
+> 401. A função **`save_state`** (RPC no `backend/supabase/schema.sql`) carimba o `ts`
+> pelo relógio do **servidor** (resolve clock-skew); cliente usa a RPC com fallback ao
+> upsert direto. Duas blindagens anti-perda em `loadCloudState`: **(1)** com mutação
+> local pendente (`_dirty`, persistido em `lastro_dirty`) o aparelho **empurra o local**
+> em vez de adotar a nuvem; **(2)** carteira **vazia da nuvem nunca apaga** carteira
+> local com posições. `authLogout` só apaga os dados do aparelho se confirmar o flush
+> (senão pede confirmação). Há **status de sync visível** no menu da conta + "Sincronizar
+> agora" (`syncNow`, puxa antes de subir). **Trade-offs conhecidos (by-design):** *(M1)*
+> não dá para **esvaziar a carteira de forma sincronizada** — a blindagem (2) faz os
+> ativos "voltarem" no outro aparelho; *(M2)* um aparelho `_dirty` vence a nuvem sem
+> comparar `ts`, então edição concorrente do peer pode ser descartada. Ambos erram para
+> **preservar** dados. **Setup obrigatório:** rodar `backend/supabase/schema.sql` no
+> Supabase (cria `user_state` + `save_state`); sem isso, não há sync na nuvem.
 
 Muito além do MVP inicial. Já implementado e no ar (`main`):
 
