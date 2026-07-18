@@ -43,6 +43,26 @@ async function fetchJson(url, ms = 15000) {
 
 const num = (v) => (typeof v === 'number' && isFinite(v) ? v : null);
 const pct = (v) => (typeof v === 'number' && isFinite(v) ? Math.round(v * 1000) / 10 : null); // fração → %, 1 casa
+const x2 = (v) => (typeof v === 'number' && isFinite(v) ? Math.round(v * 100) / 100 : null);   // múltiplo (x), 2 casas
+
+// Extrai o array de demonstrações do módulo brapi (aceita [] ou {history:[]}).
+function stmtArr(x) {
+  if (!x) return [];
+  if (Array.isArray(x)) return x;
+  if (Array.isArray(x.history)) return x.history;
+  return [];
+}
+// Ordena do período mais recente para o mais antigo (por endDate/date).
+function sortRecent(arr) {
+  return arr.slice().sort((a, b) => (Date.parse((b && (b.endDate || b.date)) || 0) || 0) - (Date.parse((a && (a.endDate || a.date)) || 0) || 0));
+}
+// CAGR (%): base e topo precisam ser positivos para não distorcer.
+function cagr(newV, oldV, years) {
+  if (typeof newV !== 'number' || typeof oldV !== 'number' || years <= 0) return null;
+  if (oldV <= 0 || newV <= 0) return null;
+  const r = Math.pow(newV / oldV, 1 / years) - 1;
+  return isFinite(r) ? Math.round(r * 1000) / 10 : null;
+}
 
 function normHistory(arr) {
   if (!Array.isArray(arr)) return [];
@@ -97,33 +117,127 @@ function normFund(r) {
   const sd = r.summaryDetail || {};
   const ks = r.defaultKeyStatistics || {};
   const fd = r.financialData || {};
+
+  // ── Demonstrações reais (para derivar o que o brapi não entrega pronto) ──
+  const inc = sortRecent(stmtArr(r.incomeStatementHistory));
+  const bal = sortRecent(stmtArr(r.balanceSheetHistory));
+  const i0 = inc[0] || {};
+  const b0 = bal[0] || {};
+
+  const mkt = num(sd.marketCap) ?? num(r.marketCap);
+  const ev = num(ks.enterpriseValue);
+  const receita = num(fd.totalRevenue) ?? num(i0.totalRevenue);
+  const lucro = num(fd.netIncomeToCommon) ?? num(ks.netIncomeToCommon) ?? num(i0.netIncome);
+  const caixa = num(fd.totalCash);
+  const divida = num(fd.totalDebt);
+  const ebitda = num(fd.ebitda) ?? num(i0.ebitda);
+  const ebit = num(i0.ebit) ?? num(i0.operatingIncome);
+  const ativoTotal = num(b0.totalAssets);
+  const patrimonio = num(b0.totalStockholderEquity)
+    ?? ((num(ks.bookValue) != null && num(ks.sharesOutstanding) != null) ? ks.bookValue * ks.sharesOutstanding : null);
+
+  // Dívida líquida = dívida total − caixa (usa financialData; senão, balanço)
+  let netDebt = null;
+  if (divida != null && caixa != null) netDebt = divida - caixa;
+  else if (b0) {
+    const dBal = (num(b0.shortLongTermDebt) || 0) + (num(b0.longTermDebt) || 0);
+    const cBal = (num(b0.cash) || 0) + (num(b0.shortTermInvestments) || 0);
+    if (dBal || cBal) netDebt = dBal - cBal;
+  }
+
+  // Múltiplos derivados (só de dado real; senão null)
+  const dleb = (netDebt != null && ebitda && ebitda > 0) ? x2(netDebt / ebitda) : null;
+  const dlpl = (netDebt != null && patrimonio && patrimonio > 0) ? x2(netDebt / patrimonio) : null;
+  const pativo = (mkt != null && ativoTotal && ativoTotal > 0) ? x2(mkt / ativoTotal) : null;
+  const pebit = (mkt != null && ebit && ebit > 0) ? x2(mkt / ebit) : null;
+  const evebit = (ev != null && ebit && ebit > 0) ? x2(ev / ebit) : null;
+  const giro = (receita != null && ativoTotal && ativoTotal > 0) ? x2(receita / ativoTotal) : null;
+
+  // ROIC aproximado = NOPAT / capital investido, tudo de dado real da DRE/balanço.
+  //   NOPAT = EBIT × (1 − alíquota efetiva);  alíquota = impostos / lucro antes de impostos.
+  //   capital investido = patrimônio + dívida total.
+  let roic = null;
+  if (ebit && patrimonio != null && divida != null) {
+    const pretax = num(i0.incomeBeforeTax);
+    const taxExp = num(i0.incomeTaxExpense);
+    let tax = 0.34; // alíquota nominal BR como piso conservador
+    if (pretax && pretax > 0 && taxExp != null) { const t = taxExp / pretax; if (t >= 0 && t < 0.6) tax = t; }
+    const nopat = ebit * (1 - tax);
+    const invested = patrimonio + divida;
+    if (invested > 0) roic = pct(nopat / invested);
+  }
+
+  // CAGR de receita e lucro (mais antigo → mais recente da DRE anual)
+  let cagrR = null, cagrL = null;
+  if (inc.length >= 2) {
+    const oldI = inc[inc.length - 1], newI = inc[0];
+    const yrs = inc.length - 1;
+    cagrR = cagr(num(newI.totalRevenue), num(oldI.totalRevenue), yrs);
+    cagrL = cagr(num(newI.netIncome), num(oldI.netIncome), yrs);
+  }
+
+  // Payout: preferimos o índice pronto (fração→%); senão, dividendRate/LPA.
+  let payout = pct(num(ks.payoutRatio) ?? num(sd.payoutRatio));
+  const lpa = num(r.earningsPerShare) ?? num(ks.trailingEps);
+  const dividendRate = num(sd.dividendRate) ?? num(sd.trailingAnnualDividendRate);
+  if (payout == null && dividendRate != null && lpa && lpa > 0) payout = Math.round((dividendRate / lpa) * 1000) / 10;
+
   return {
     pl: num(r.priceEarnings) ?? num(sd.trailingPE) ?? num(ks.trailingPE),
     pvp: num(ks.priceToBook),
     dy: pct(sd.dividendYield),
     roe: pct(fd.returnOnEquity),
     roa: pct(fd.returnOnAssets),
+    roic,
     mgl: pct(fd.profitMargins),
     mgbruta: pct(fd.grossMargins),
     mgebit: pct(fd.operatingMargins),
-    psr: num(sd.priceToSalesTrailing12Months),
-    dividaPl: num(fd.debtToEquity),
+    mgebitda: pct(fd.ebitdaMargins) ?? ((ebitda != null && receita && receita > 0) ? pct(ebitda / receita) : null),
+    psr: num(sd.priceToSalesTrailing12Months) ?? num(ks.priceToSalesTrailing12Months),
+    ev,
+    evebitda: x2(num(ks.enterpriseToEbitda)),
+    evebit,
+    pebit,
+    pativo,
+    giro,
+    dividaPl: num(fd.debtToEquity),  // Yahoo: dívida TOTAL/patrimônio ×100 (auditoria)
+    dleb,
+    dlpl,
     liqCorrente: num(fd.currentRatio),
-    lpa: num(r.earningsPerShare) ?? num(ks.trailingEps),
+    payout,
+    cagrR,
+    cagrL,
+    lpa,
     vpa: num(ks.bookValue),
-    mkt: num(sd.marketCap) ?? num(r.marketCap),
-    ev: num(ks.enterpriseValue),
-    receita: num(fd.totalRevenue),
-    lucro: num(fd.netIncomeToCommon) ?? num(ks.netIncomeToCommon),
-    caixa: num(fd.totalCash),
-    divida: num(fd.totalDebt),
+    mkt,
+    sharesOutstanding: num(ks.sharesOutstanding) ?? num(sd.sharesOutstanding),
+    dividendRate,
+    week52Low: num(sd.fiftyTwoWeekLow) ?? num(r.fiftyTwoWeekLow),
+    week52High: num(sd.fiftyTwoWeekHigh) ?? num(r.fiftyTwoWeekHigh),
+    receita,
+    lucro,
+    ebitda,
+    ebit,
+    caixa,
+    divida,
+    ativoTotal,
+    patrimonio,
     _raw: {
       dividendYield: num(sd.dividendYield),
       returnOnEquity: num(fd.returnOnEquity),
       returnOnAssets: num(fd.returnOnAssets),
       profitMargins: num(fd.profitMargins),
+      grossMargins: num(fd.grossMargins),
+      operatingMargins: num(fd.operatingMargins),
+      ebitdaMargins: num(fd.ebitdaMargins),
       priceEarnings: num(r.priceEarnings),
       priceToBook: num(ks.priceToBook),
+      enterpriseToEbitda: num(ks.enterpriseToEbitda),
+      debtToEquity: num(fd.debtToEquity),
+      payoutRatio: num(ks.payoutRatio) ?? num(sd.payoutRatio),
+      netDebt,
+      currency: r.currency || null,
+      roicApprox: roic != null,  // ROIC é DERIVADO (NOPAT/capital), não bruto do brapi
     },
   };
 }

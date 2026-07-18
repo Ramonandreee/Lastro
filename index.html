@@ -10201,19 +10201,31 @@ function applyAssetLive(tk, d){
   if(fu.mgl==null && typeof fu.receita==='number' && fu.receita>0 && typeof fu.lucro==='number') fu.mgl=Math.round(fu.lucro/fu.receita*1000)/10;
   if(fu.mgl==null){ const inc=d.statements&&d.statements.income, r0=Array.isArray(inc)&&inc[0];
     if(r0 && typeof r0.totalRevenue==='number' && r0.totalRevenue>0 && typeof r0.netIncome==='number') fu.mgl=Math.round(r0.netIncome/r0.totalRevenue*1000)/10; }
+  // fundamentos derivados REAIS (DRE/balanço via brapi) — comuns a empresa (ação) e BDR.
+  // Valores monetários (mkt/ev) só quando a moeda for BRL — BDR pode vir em USD.
+  const setCompanyFund=()=>{
+    setF('roa',fu.roa); setF('roic',fu.roic); setF('mb',fu.mgbruta); setF('mebit',fu.mgebit);
+    setF('psr',fu.psr); setF('lc',fu.liqCorrente); setF('evebitda',fu.evebitda); setF('evebit',fu.evebit);
+    setF('pebit',fu.pebit); setF('pativo',fu.pativo); setF('giro',fu.giro); setF('dleb',fu.dleb);
+    setF('dlpl',fu.dlpl); setF('payout',fu.payout); setF('cagrR',fu.cagrR); setF('cagrL',fu.cagrL);
+    const usd = fu._raw && fu._raw.currency==='USD';
+    if(fu.mkt!=null && !usd) setF('mkt','R$ '+fmtBig(fu.mkt));
+    if(fu.ev!=null && !usd)  setF('ev','R$ '+fmtBig(fu.ev));
+    if(fu.roic!=null && fu._raw && fu._raw.roicApprox) f.roicApprox=true;   // ROIC é derivado (rótulo "aprox.")
+  };
   if(k==='acoes'){
     setA('pl',fu.pl); setA('pvp',fu.pvp); setA('dy',fu.dy); setA('roe',fu.roe); setA('mgl',fu.mgl);
-    setF('roa',fu.roa); setF('mb',fu.mgbruta); setF('mebit',fu.mgebit); setF('psr',fu.psr); setF('lc',fu.liqCorrente);
-    if(fu.mkt!=null) setF('mkt','R$ '+fmtBig(fu.mkt));
-    if(fu.ev!=null)  setF('ev','R$ '+fmtBig(fu.ev));
+    setCompanyFund();
     const dv=annualDivs(d.dividends,6); if(dv.length) f.divs=dv;
   } else if(k==='fiis'){
     if(!f.pvpReal) setA('pvp',fu.pvp);   // não deixa o brapi (P/VP nulo p/ FII) apagar o dado real da CVM
     setA('dy',fu.dy);
     if(Array.isArray(d.dividends)&&d.dividends.length) setA('div',d.dividends[0].value);
     if(fu.mkt!=null) setF('mkt','R$ '+fmtBig(fu.mkt));
-  } else {
-    setA('pvp',fu.pvp); setA('dy',fu.dy);
+  } else {   // BDRs (empresa estrangeira) e ETFs — aplica o que vier (null é ignorado)
+    setA('pl',fu.pl); if(!f.pvpReal) setA('pvp',fu.pvp); setA('dy',fu.dy); setA('roe',fu.roe); setA('mgl',fu.mgl);
+    setCompanyFund();
+    const dv=annualDivs(d.dividends,6); if(dv.length) f.divs=dv;
   }
   // perfil real da empresa (setor, indústria, descrição, site, funcionários)
   if(pr.desc) setF('desc',pr.desc);

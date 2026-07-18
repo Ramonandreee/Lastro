@@ -32,27 +32,70 @@ async function fetchJson(url, ms = 15000) {
 
 const num = (v) => (typeof v === 'number' && isFinite(v) ? v : null);
 const pct = (v) => (typeof v === 'number' && isFinite(v) ? Math.round(v * 1000) / 10 : null); // fração → %, 1 casa
+const x2 = (v) => (typeof v === 'number' && isFinite(v) ? Math.round(v * 100) / 100 : null);   // múltiplo (x), 2 casas
 
 function mapOne(q) {
   const sd = q.summaryDetail || {};
   const ks = q.defaultKeyStatistics || {};
   const fd = q.financialData || {};
+
   const pl = num(q.priceEarnings) ?? num(sd.trailingPE) ?? num(ks.trailingPE);
   const pvp = num(ks.priceToBook);
   const dy = pct(sd.dividendYield);
   const roe = pct(fd.returnOnEquity);
+  const roa = pct(fd.returnOnAssets);
   const mgl = pct(fd.profitMargins);
+  const mgbruta = pct(fd.grossMargins);
+  const mgebit = pct(fd.operatingMargins);
+  const ebitda = num(fd.ebitda);
+  const receita = num(fd.totalRevenue);
+  const mgebitda = pct(fd.ebitdaMargins) ?? ((ebitda != null && receita && receita > 0) ? pct(ebitda / receita) : null);
+  const psr = num(sd.priceToSalesTrailing12Months) ?? num(ks.priceToSalesTrailing12Months);
+  const ev = num(ks.enterpriseValue);
+  const evebitda = x2(num(ks.enterpriseToEbitda));
+  const lc = num(fd.currentRatio);
   const mkt = num(sd.marketCap) ?? num(q.marketCap);
+  const lpa = num(q.earningsPerShare) ?? num(ks.trailingEps);
+  const vpa = num(ks.bookValue);
+  const shares = num(ks.sharesOutstanding) ?? num(sd.sharesOutstanding);
+  const dividendRate = num(sd.dividendRate) ?? num(sd.trailingAnnualDividendRate);
+
+  // Patrimônio total = VPA × ações (aprox. sem balanço no lote) → habilita dleb/dlpl
+  const caixa = num(fd.totalCash);
+  const divida = num(fd.totalDebt);
+  const netDebt = (divida != null && caixa != null) ? divida - caixa : null;
+  const patrimonio = (vpa != null && shares != null) ? vpa * shares : null;
+  const dleb = (netDebt != null && ebitda && ebitda > 0) ? x2(netDebt / ebitda) : null;
+  const dlpl = (netDebt != null && patrimonio && patrimonio > 0) ? x2(netDebt / patrimonio) : null;
+
+  let payout = pct(num(ks.payoutRatio) ?? num(sd.payoutRatio));
+  if (payout == null && dividendRate != null && lpa && lpa > 0) payout = Math.round((dividendRate / lpa) * 1000) / 10;
+
   return {
     symbol: q.symbol,
+    // núcleo (já consumido pelas listagens)
     pl, pvp, dy, roe, mgl, mkt,
+    // enriquecimento (para colunas/telas adicionais)
+    roa, mgbruta, mgebit, mgebitda, psr, ev, evebitda, lc, dleb, dlpl,
+    payout, lpa, vpa, sharesOutstanding: shares, dividendRate,
+    week52Low: num(sd.fiftyTwoWeekLow) ?? num(q.fiftyTwoWeekLow),
+    week52High: num(sd.fiftyTwoWeekHigh) ?? num(q.fiftyTwoWeekHigh),
     _raw: {
       priceEarnings: num(q.priceEarnings),
       trailingPE: num(sd.trailingPE),
       priceToBook: num(ks.priceToBook),
       dividendYield: num(sd.dividendYield),
       returnOnEquity: num(fd.returnOnEquity),
+      returnOnAssets: num(fd.returnOnAssets),
       profitMargins: num(fd.profitMargins),
+      grossMargins: num(fd.grossMargins),
+      operatingMargins: num(fd.operatingMargins),
+      ebitdaMargins: num(fd.ebitdaMargins),
+      enterpriseToEbitda: num(ks.enterpriseToEbitda),
+      payoutRatio: num(ks.payoutRatio) ?? num(sd.payoutRatio),
+      debtToEquity: num(fd.debtToEquity),
+      netDebt,
+      currency: q.currency || null,
     },
   };
 }
