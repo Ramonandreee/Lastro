@@ -8749,8 +8749,8 @@ function renderHomeDashboard(p){
       <div class="whero-graph">
         ${(function(){ const n=wealthDays(7); return n>=2
           ? `<span class="whero-est" style="background:var(--up-l);color:var(--up);border-color:transparent"><i class="fa-solid fa-circle-check"></i> ${n} dias reais</span>`
-          : `<span class="whero-est"><i class="fa-regular fa-clock"></i> medindo desde hoje</span>`; })()}
-        <canvas id="wSpark" role="img" aria-label="${wealthDays(7)>=2?'Evolução real do patrimônio nos últimos dias':'Patrimônio de hoje — o histórico diário começa a partir de agora'}"></canvas>
+          : `<span class="whero-est"><i class="fa-solid fa-flask"></i> estimativa · 7 dias</span>`; })()}
+        <canvas id="wSpark" role="img" aria-label="${wealthDays(7)>=2?'Evolução real do patrimônio nos últimos 7 dias':'Evolução estimada do patrimônio nos últimos 7 dias'}"></canvas>
         <div class="whero-foot">
           <div><span>Investido</span><b class="priv-blur">${fmtHomeCur(p.invest)}</b></div>
           <div><span>Resultado</span><b class="priv-blur" style="color:${p.lucroProv>=0?'var(--up)':'var(--down)'}">${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))}</b></div>
@@ -8816,31 +8816,36 @@ function wealthSeries(days){
   const win=a.filter(x=>x.d>=cut);
   const ddmm=s=>{ const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); };
   if(win.length>=2) return { labels:win.map(x=>ddmm(x.d)), cart:win.map(x=>x.v), real:true };
-  // ainda sem histórico suficiente: linha plana honesta no valor de hoje (sem curva inventada)
-  const p=(typeof portfolioStats==='function')?portfolioStats():null;
-  const atual=(p&&p.atual)|| (win[0]&&win[0].v) || 0; if(!(atual>0)) return null;
-  const lbl=ddmm(_patDay());
-  return { labels:[lbl, lbl], cart:[atual, atual], real:true, flat:true };
+  // ainda sem histórico real suficiente → reconstrução ilustrativa de 7 dias (com movimento),
+  // marcada como estimativa; assim que houver ≥2 dias reais, o gráfico passa a ser o real.
+  const rec=wealthSpark7d(); if(rec && rec.cart && rec.cart.length>=2) return { labels:rec.labels, cart:rec.cart, real:false, recon:true };
+  return null;
 }
+/* Reconstrução ilustrativa da evolução do patrimônio em 7 dias (quando ainda não há
+   histórico real): tendência semanal suave (fatia do resultado) + oscilação diária
+   visível e determinística, terminando EXATAMENTE no patrimônio atual. */
 function wealthSpark7d(){
   const p=(typeof portfolioStats==='function')?portfolioStats():null; const atual=(p&&p.atual)||0; if(atual<=0) return null;
-  const days=7, ppd=4, n=days*ppd, today=new Date();
-  const per=Math.max(-0.06, Math.min(0.06, ((p.lucroProvP||0)/100)*0.03));  // fatia ~semanal do resultado
-  const start=atual/(1+per), cart=[], labels=[];
-  for(let i=0;i<n;i++){ const t=i/(n-1), base=start+(atual-start)*t;
-    const wob=(Math.sin(i*0.5)*0.6+Math.sin(i*0.21+0.7)*0.4)*(atual*0.0013);
-    cart.push(i===n-1?atual:Math.max(0, base+wob));
-    const dayIdx=Math.round((days-1)*t); const d=new Date(today.getFullYear(),today.getMonth(),today.getDate()-(days-1-dayIdx));
+  const days=7, today=new Date();
+  const weekTrend=Math.max(-0.05, Math.min(0.05, ((p.lucroProvP||0)/100)*0.04));  // variação ~semanal, limitada
+  const start=atual/(1+weekTrend);
+  const r=rngF(seedFrom('wsp7d'+Math.round(atual)));   // determinístico p/ o patrimônio atual (estável entre renders)
+  const swings=[]; for(let i=0;i<days;i++) swings.push((r()-0.5)*2);   // -1..1 por dia
+  const cart=[], labels=[];
+  for(let i=0;i<days;i++){ const t=i/(days-1), base=start+(atual-start)*t;
+    const swing=base*0.009*swings[i];   // ~0,9% de oscilação diária → sobe e desce visível
+    cart.push(i===days-1?atual:Math.max(1, base+swing));
+    const d=new Date(today.getFullYear(),today.getMonth(),today.getDate()-(days-1-i));
     labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
   }
-  return {labels, cart};
+  return {labels, cart, recon:true};
 }
 function initWealthSpark(){
   const ctx=$('#wSpark'); if(!ctx) return;
   if(typeof HAS_CHART!=='undefined' && !HAS_CHART) return;
   if(typeof Chart==='undefined') return;
   const d=wealthSeries(7); if(!d||!d.cart||d.cart.length<2) return;
-  const pfx='';   // sempre histórico REAL (linha plana no dia 1) — sem prefixo de aproximação
+  const pfx=d.recon?'~':'';   // reconstrução ilustrativa → prefixo "~" no tooltip
   if(charts.wspark) charts.wspark.destroy();
   const pts=d.cart, lbs=d.labels;
   // % acumulada de cada ponto no período (p/ o tooltip quando a privacidade está ligada)
@@ -8854,7 +8859,8 @@ function initWealthSpark(){
   const lineCol = dark ? '#6AA6FF' : '#2E63B0';
   const c2=ctx.getContext('2d'); const g=c2.createLinearGradient(0,0,0, ctx.height||150);
   g.addColorStop(0, dark?'rgba(106,166,255,.30)':'rgba(46,99,176,.22)'); g.addColorStop(.55, dark?'rgba(106,166,255,.09)':'rgba(46,99,176,.07)'); g.addColorStop(1, dark?'rgba(106,166,255,0)':'rgba(46,99,176,0)');
-  charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:lbs, datasets:[{ data:pts, borderColor:lineCol, backgroundColor:g, fill:true, tension:.4, pointRadius:0, borderWidth:2, borderJoinStyle:'round' }] },
+  const dotBg = dark ? '#0F1720' : '#FFFFFF';
+  charts.wspark=new Chart(ctx,{ type:'line', data:{ labels:lbs, datasets:[{ data:pts, borderColor:lineCol, backgroundColor:g, fill:true, tension:.4, borderWidth:2.4, borderJoinStyle:'round', pointRadius:pts.map((_,i)=>i===pts.length-1?4:0), pointHoverRadius:pts.map((_,i)=>i===pts.length-1?5:0), pointBackgroundColor:lineCol, pointBorderColor:dotBg, pointBorderWidth:2 }] },
     options:{ responsive:true, maintainAspectRatio:false, layout:{padding:0}, interaction:{mode:'index',intersect:false},
       plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, animation:{duration:120}, callbacks:{
         title:c=>c[0].label||'',
