@@ -4808,6 +4808,35 @@ function currentUser(){ const s=getSession(); return s&&s.user ? s.user : null; 
 function isAuthed(){ return !!currentUser(); }
 function saveSession(s){ localStorage.setItem('lastro_session', JSON.stringify(s)); ensureTrial(); updateAuthUI(); refreshPlanUI(); }
 function clearSession(){ localStorage.removeItem('lastro_session'); updateAuthUI(); }
+/* O access_token do Supabase expira (~1h). Sem renovar, TODA gravação/leitura na nuvem passa
+   a falhar com 401 "JWT expired" e os dados param de sincronizar. Aqui renovamos com o
+   refresh_token (uma vez, deduplicado) e regravamos a sessão. */
+let _refreshing=null;
+async function refreshSession(){
+  const s=getSession(), c=_sb();
+  if(!s || !s.refresh_token || !c.SUPABASE_URL) return false;
+  if(_refreshing) return _refreshing;
+  _refreshing=(async()=>{
+    try{
+      const r=await fetch(`${c.SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {method:'POST', headers:authHeaders(), body:JSON.stringify({refresh_token:s.refresh_token})});
+      const d=await r.json().catch(()=>({}));
+      if(r.ok && d.access_token){ saveSession({access_token:d.access_token, refresh_token:d.refresh_token||s.refresh_token, user:{id:(d.user&&d.user.id)||s.user.id, email:(d.user&&d.user.email)||s.user.email}}); return true; }
+      return false;
+    }catch(e){ return false; }
+  })();
+  const res=await _refreshing; _refreshing=null; return res;
+}
+/* fetch autenticado no Supabase: injeta apikey + Bearer do token ATUAL e, em 401, renova o
+   token e repete uma vez. Retorna sempre um Response (401 sintético se não houver sessão). */
+async function sbFetch(url, opts, _retried){
+  const s=getSession(), c=_sb();
+  if(!s || !c.SUPABASE_URL) return new Response('{}', {status:401});
+  const o=Object.assign({}, opts||{});
+  o.headers=Object.assign({}, o.headers||{}, { apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}` });
+  const r=await fetch(url, o);
+  if(r.status===401 && !_retried){ const ok=await refreshSession(); if(ok) return sbFetch(url, opts, true); }
+  return r;
+}
 
 /* traduz erros comuns do Supabase Auth para português */
 function translateAuthErr(msg){
@@ -4859,8 +4888,8 @@ function _doLogout(){
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
-  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts'].forEach(k=>localStorage.removeItem(k));
-  _stateTs = 0; _dirty = false; setSync('idle','');   // zera o relógio de sync — o próximo login adota o estado da nuvem
+  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts','lastro_dirty'].forEach(k=>localStorage.removeItem(k));
+  _stateTs = 0; clearDirty(); setSync('idle','');   // zera o relógio de sync — o próximo login adota o estado da nuvem
   try{ sessionStorage.removeItem('lastro_unlocked'); }catch(e){}   // ao sair, o próximo acesso pede biometria de novo
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
   CARTEIRA = []; localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
@@ -4879,7 +4908,11 @@ let _lastSync=0;
    "ping-pong" em que abrir num aparelho sobrescrevia o outro com dados antigos. */
 let _stateTs = (function(){ try{ return +localStorage.getItem('lastro_state_ts')||0; }catch(e){ return 0; } })();
 let _applyingCloud=false;   // enquanto aplicamos a nuvem, nenhuma escrita re-empurra (sem eco)
-let _dirty=false;           // há mutação local ainda não confirmada na nuvem? (só então vale a pena dar flush)
+/* mutação local ainda não confirmada na nuvem. PERSISTIDO: sobrevive ao reload, então um
+   aparelho que editou mas não conseguiu subir (ex.: token expirado) não perde a prioridade
+   ao recarregar — ele empurra o local em vez de adotar uma nuvem possivelmente vazia/antiga. */
+let _dirty=(function(){ try{ return localStorage.getItem('lastro_dirty')==='1'; }catch(e){ return false; } })();
+function clearDirty(){ _dirty=false; try{ localStorage.removeItem('lastro_dirty'); }catch(e){} }
 /* estado de sincronização VISÍVEL (diagnóstico): idle | saving | ok | error (com mensagem do servidor) */
 const SYNC = { state:'idle', at:0, msg:'' };
 function setSync(state, msg){ SYNC.state=state; SYNC.at=Date.now(); SYNC.msg=msg||''; }
@@ -4893,23 +4926,32 @@ function syncLabel(){
 async function syncNow(){
   if(!isAuthed()){ openAuth('login'); return; }
   toast('Sincronizando…');
-  let ok=false; try{ ok=await flushCloudState(false, true); await loadCloudState(); }catch(e){}
+  // PUXA primeiro (adota a nuvem/protege dados locais); só SOBE se houver mudança local pendente.
+  // Assim um aparelho com a carteira vazia não empurra vazio por cima de dados reais na nuvem.
+  try{ await loadCloudState(); if(_dirty) await flushCloudState(false, true); }catch(e){}
+  const ok = SYNC.state!=='error';
   toast(ok ? 'Sincronizado ✓' : ('Falha ao sincronizar' + (SYNC.msg?': '+SYNC.msg:' — verifique sua conexão')));
   if(currentView==='painel'||currentView==='carteira') render(currentView);
 }
 /* carimbo monotônico: nunca anda pra trás em relação ao que este aparelho já viu (inclui o ts
    adotado da nuvem). Assim, mesmo num aparelho com relógio atrasado, uma edição local feita
    DEPOIS de adotar a nuvem ainda supera o ts da nuvem — evita perder a própria edição. */
-function touchState(){ _stateTs = Math.max(Date.now(), _stateTs+1); _dirty=true; try{ localStorage.setItem('lastro_state_ts', String(_stateTs)); }catch(e){} }
+function touchState(){ _stateTs = Math.max(Date.now(), _stateTs+1); _dirty=true; try{ localStorage.setItem('lastro_state_ts', String(_stateTs)); localStorage.setItem('lastro_dirty','1'); }catch(e){} }
 function syncOnReturn(){ if(!isAuthed()) return; const now=Date.now(); if(now-_lastSync<4000) return; _lastSync=now; try{ loadCloudState(); }catch(e){} }
 async function loadCloudState(){
   if(typeof testModeOn==='function' && testModeOn()) return;   // modo dev: não puxa a nuvem por cima dos dados de teste
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return;
+  // PROTEÇÃO 1: temos mutação local ainda não confirmada na nuvem (ex.: token estava expirado) →
+  // a nossa versão manda. Não puxa nada: empurra o local (agora com o token renovado no sbFetch).
+  if(_dirty){ try{ saveCloudState(); }catch(e){} return; }
   try{
-    const r=await fetch(`${c.SUPABASE_URL}/rest/v1/user_state?select=data&user_id=eq.${s.user.id}`, {headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`}});
-    if(!r.ok) return; const rows=await r.json();
+    const r=await sbFetch(`${c.SUPABASE_URL}/rest/v1/user_state?select=data&user_id=eq.${s.user.id}`, {});
+    if(!r.ok){ if(r.status===401) setSync('error','401 · sessão expirada'); return; } const rows=await r.json();
     const d = rows[0] && rows[0].data;
     if(!d){ await saveCloudState(); return; }   // primeira vez: envia o estado local
+    // PROTEÇÃO 2: nuvem com carteira VAZIA nunca apaga uma carteira local com posições —
+    // mantém o local e o empurra. (Um portfólio real jamais é "sincronizado para vazio".)
+    if(Array.isArray(d.carteira) && d.carteira.length===0 && Array.isArray(CARTEIRA) && CARTEIRA.length>0){ try{ saveCloudState(); }catch(e){} return; }
     // Quem é mais novo? Se o local tem mutações e a nuvem não é mais recente, mantemos o local
     // (e, se estivermos à frente, empurramos). Só adotamos a nuvem quando ela é de fato mais nova.
     const cts = +d.ts || 0;
@@ -4954,7 +4996,7 @@ let _cloudT;
 function cloudPayload(){ return { ts:_stateTs, carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), theme:getThemePref(), profile:getProfile(), patHist:patHistArr(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } }; }
 /* grava direto na tabela (fallback, quando a função save_state ainda não foi criada no banco) */
 function _postCloudDirect(s,c,keepalive){
-  return fetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data:cloudPayload(), updated_at:new Date().toISOString()}), keepalive:!!keepalive});
+  return sbFetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data:cloudPayload(), updated_at:new Date().toISOString()}), keepalive:!!keepalive});
 }
 /* grava via RPC save_state: o SERVIDOR carimba o ts (resolve clock-skew entre aparelhos) e
    devolve esse ts autoritativo, que adotamos localmente. Se a função não existir no projeto
@@ -4963,13 +5005,13 @@ async function _postCloud(s,c,keepalive){
   setSync('saving');
   // 1) tenta a RPC (carimbo do servidor); em QUALQUER falha, cai no upsert direto.
   try{
-    const r=await fetch(`${c.SUPABASE_URL}/rest/v1/rpc/save_state`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json'}, body:JSON.stringify({ p_data: cloudPayload() }), keepalive:!!keepalive});
-    if(r.ok){ try{ const ts=await r.clone().json(); const n=Number(ts); if(isFinite(n) && n>0){ _stateTs=n; try{ localStorage.setItem('lastro_state_ts', String(n)); }catch(e){} } }catch(e){} setSync('ok'); return r; }
+    const r=await sbFetch(`${c.SUPABASE_URL}/rest/v1/rpc/save_state`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ p_data: cloudPayload() }), keepalive:!!keepalive});
+    if(r.ok){ try{ const ts=await r.clone().json(); const n=Number(ts); if(isFinite(n) && n>0){ _stateTs=n; try{ localStorage.setItem('lastro_state_ts', String(n)); }catch(e){} } }catch(e){} clearDirty(); setSync('ok'); return r; }
   }catch(e){ /* rede/rpc indisponível → tenta o upsert direto abaixo */ }
   // 2) fallback: grava direto na tabela user_state
   try{
     const r2=await _postCloudDirect(s,c,keepalive);
-    if(r2 && r2.ok){ setSync('ok'); return r2; }
+    if(r2 && r2.ok){ clearDirty(); setSync('ok'); return r2; }
     let reason=''; try{ const b=await r2.clone().json(); reason=(b&&(b.message||b.hint||b.details||b.code))||''; }catch(e){}
     setSync('error', `HTTP ${r2?r2.status:'?'}${reason?' · '+String(reason).slice(0,80):''}`);
     return r2 || {ok:false, status:0};
@@ -4981,7 +5023,7 @@ function saveCloudState(){
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
   touchState();   // registra o momento desta mutação local (só com sessão real — base da reconciliação)
   clearTimeout(_cloudT);
-  return new Promise(res=>{ _cloudT=setTimeout(async()=>{ try{ const r=await _postCloud(s,c); if(r&&r.ok) _dirty=false; }catch(e){} res(); }, 700); });
+  return new Promise(res=>{ _cloudT=setTimeout(async()=>{ try{ const r=await _postCloud(s,c); if(r&&r.ok) clearDirty(); }catch(e){} res(); }, 700); });
 }
 /* envia imediatamente o que estiver pendente (evita perder dados ao sair/fechar).
    IMPORTANTE: só grava se houver mutação local pendente (_dirty) OU force=true. Assim, um
@@ -4992,7 +5034,7 @@ function flushCloudState(keepalive, force){
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve(true);
   if(!force && !_dirty){ clearTimeout(_cloudT); return Promise.resolve(true); }   // nada pendente: não clobbera a nuvem
   clearTimeout(_cloudT);
-  return _postCloud(s,c,keepalive).then(r=>{ const ok=!!(r&&r.ok); if(ok) _dirty=false; return ok; }).catch(()=>false);
+  return _postCloud(s,c,keepalive).then(r=>{ const ok=!!(r&&r.ok); if(ok) clearDirty(); return ok; }).catch(()=>false);
 }
 window.addEventListener('pagehide', ()=>{ try{ flushCloudState(true); }catch(e){} });
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden'){ try{ flushCloudState(true); }catch(e){} } });
