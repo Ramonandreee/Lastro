@@ -133,17 +133,22 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust
 /* Splash preenche a VIEWPORT (não o documento). `height:100%` dependia da altura do html,
    que no iOS fica menor que a tela visível → sobrava um pedaço embaixo (a "divisão"). Aqui
    fixamos pela viewport dinâmica (100dvh) com piso 100vh p/ iOS antigo. */
-#splash { position:fixed; top:0; left:0; right:0; bottom:0; width:100%; height:100vh; height:100dvh; min-height:100vh; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; background:radial-gradient(120% 90% at 50% 35%, #1A4F94 0%, #0B2E5E 45%, #061A38 100%); color:#fff; opacity:1; transition:opacity .55s var(--ease-out); }
-/* Durante o boot, o DOCUMENTO é travado na altura da tela (viewport) e sem rolagem, para o
-   fundo do html/body cobrir exatamente a viewport com o MESMO gradiente do splash — assim,
-   mesmo que o splash não alcance algum pixel, atrás está a continuação idêntica: TELA ÚNICA. */
-html.booting { height:100vh; height:100dvh; overflow:hidden; }
+/* O splash TRANSBORDA a safe-area inferior (home-indicator): estende a altura em
+   env(safe-area-inset-bottom) para que o PRÓPRIO splash pinte aquela faixa — em vez de
+   deixar o iOS pintá-la com a cor do manifest (a "divisão"). Não depende de reinstalar. */
+#splash { position:fixed; top:0; left:0; right:0; width:100%;
+  height:100vh; height:100dvh;
+  min-height:calc(100vh + env(safe-area-inset-bottom, 0px));
+  min-height:calc(100dvh + env(safe-area-inset-bottom, 0px));
+  z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0;
+  background:radial-gradient(120% 90% at 50% 35%, #1A4F94 0%, #0B2E5E 45%, #061A38 100%); color:#fff; opacity:1; transition:opacity .55s var(--ease-out); }
+/* fundo do boot = mesmo gradiente (rede de segurança onde o splash não alcançar) */
 html.booting, html.booting body {
   min-height:100vh; min-height:100dvh;
   background:
     radial-gradient(130% 100% at 50% 42%, transparent 52%, rgba(0,0,0,.38) 100%),
     radial-gradient(120% 90% at 50% 35%, #1A4F94 0%, #0B2E5E 45%, #061A38 100%) !important;
-  background-color:#082248 !important;
+  background-color:#061A38 !important;
 }
 #splash.hide { opacity:0; pointer-events:none; }
 .splash-inner { display:flex; flex-direction:column; align-items:center; }
