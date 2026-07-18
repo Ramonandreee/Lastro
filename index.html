@@ -11837,7 +11837,12 @@ setInterval(()=>{
   // Monta o portão de entrada JÁ por baixo do splash — assim, quando o splash some,
   // aparece a apresentação/desbloqueio, nunca a Home (corrige o "flash" da tela inicial).
   let gated=false;
-  try{ if(!isAuthed()){ startIntro(); gated=true; } else if(bioEnabled()){ openBioLock(); gated=true; } }catch(e){}
+  // biometria só bloqueia ao REABRIR o navegador; refresh na mesma sessão vai direto ao app
+  try{
+    if(!isAuthed()){ startIntro(); gated=true; }
+    else if(bioEnabled() && !unlockedThisSession()){ openBioLock(); gated=true; }
+    else { markUnlocked(); document.documentElement.classList.remove('gate'); }   // libera o app (remove o gate do 1º paint)
+  }catch(e){}
   const endBoot=()=>{ try{ window.__booting=false; document.documentElement.classList.remove('booting'); if(typeof applyTheme==='function') applyTheme(); }catch(e){} };
   const finish=()=>{ if(!gated){ try{ maybeOnboard(); }catch(e){} } };
   if(!sp){ endBoot(); finish(); return; }
