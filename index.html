@@ -6028,50 +6028,12 @@ function viewPainel(){
     <button class="qa-card" onclick="nav('indicar')"><span class="qa-ic qa-ic-gift"><i class="fa-solid fa-gift"></i></span><span class="qa-t">Indique</span></button>
   </div>
 
-  <div class="card card-pad" style="margin-bottom:16px">
+  <div class="card card-pad">
     <div class="card-head">
-      <div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></span> Destaques Lastro</div>
-      <button class="btn btn-ghost btn-sm" onclick="goView('score')">Ver ranking <i class="fa-solid fa-arrow-right"></i></button>
+      <div class="card-h"><span class="ico"><i class="fa-regular fa-calendar"></i></span> Próximos proventos</div>
+      ${upc.length?`<span class="chip chip-up priv-blur">${brl(totalUpc)}</span>`:''}
     </div>
-    <div class="opp-grid opp-scroll">${opps}</div>
-  </div>
-
-  <div class="grid" style="grid-template-columns: 1.4fr 1fr;">
-    <div class="card card-pad">
-      <div class="card-head">
-        <div class="ap-wrap">
-          <button class="card-h ap-trigger" onclick="toggleAssetPicker(event)"><span class="ico" style="background:var(--accent-l);color:var(--accent)"><i class="fa-solid fa-chart-area"></i></span> <span id="homeAssetName">${homeAsset.nm}</span> <i class="fa-solid fa-chevron-down ap-cv"></i></button>
-          <div class="ap-panel" id="apPanel"></div>
-        </div>
-        <div class="chart-ctrls">
-          <button class="chart-toggle" id="homeTypeBtn" onclick="toggleHomeType()" title="Alternar Linha / Candles"></button>
-          <div class="tf-wrap">
-            <button class="tf-toggle" onclick="toggleTfPanel()"><i class="fa-regular fa-clock"></i> <span id="tfLabel">${homeChartPeriod}</span> <i class="fa-solid fa-chevron-down tf-cv"></i></button>
-            <div class="tf-panel" id="tfPanel">${HOME_TF.map(t=>`<button class="${t[0]===homeChartPeriod?'on':''}" onclick="setIbov('${t[0]}')">${t[0]}</button>`).join('')}</div>
-          </div>
-        </div>
-      </div>
-      <div class="home-chart"><canvas id="ibovChart" role="img" aria-label="Histórico do Nasdaq"></canvas></div>
-    </div>
-
-    <div class="card card-pad">
-      <div class="card-head">
-        <div class="card-h"><span class="ico"><i class="fa-regular fa-calendar"></i></span> Próximos proventos</div>
-        ${upc.length?`<span class="chip chip-up priv-blur">${brl(totalUpc)}</span>`:''}
-      </div>
-      <div class="timeline">${timeline}</div>
-    </div>
-  </div>
-
-  <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top:16px;">
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-arrow-trend-up"></i></span> Maiores altas</div><span class="card-sub">ações · dia</span></div>
-      <div class="mv-list">${altasRows}</div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-arrow-trend-down"></i></span> Maiores baixas</div><span class="card-sub">ações · dia</span></div>
-      <div class="mv-list">${baixasRows}</div>
-    </div>
+    <div class="timeline">${timeline}</div>
   </div>`;
 }
 
