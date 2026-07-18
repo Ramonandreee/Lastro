@@ -8759,12 +8759,11 @@ function renderHomeDashboard(p){
         <span class="whero-chip2 ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% total</span>
       </div>
       <div class="whero-graph">
-        ${(function(){ const n=wealthDays(7); return n>=7
-          ? `<span class="whero-est" style="background:var(--up-l);color:var(--up);border-color:transparent"><i class="fa-solid fa-circle-check"></i> 7 dias reais</span>`
-          : n>=1
-          ? `<span class="whero-est"><i class="fa-solid fa-flask"></i> ${n}/7 dias reais</span>`
-          : `<span class="whero-est"><i class="fa-solid fa-flask"></i> estimativa · 7 dias</span>`; })()}
-        <canvas id="wSpark" role="img" aria-label="${wealthDays(7)>=2?'Evolução real do patrimônio nos últimos 7 dias':'Evolução estimada do patrimônio nos últimos 7 dias'}"></canvas>
+        ${(function(){ const w=(typeof wealthSeries==='function')?wealthSeries():null; if(!w) return '';
+          return w.real
+          ? `<span class="whero-est" style="background:var(--up-l);color:var(--up);border-color:transparent"><i class="fa-solid fa-circle-check"></i> histórico real</span>`
+          : `<span class="whero-est"><i class="fa-solid fa-flask"></i> desde ${w.startLabel}</span>`; })()}
+        <canvas id="wSpark" role="img" aria-label="Evolução do patrimônio a partir das suas compras"></canvas>
         <div class="whero-foot">
           <div><span>Investido</span><b class="priv-blur">${fmtHomeCur(p.invest)}</b></div>
           <div><span>Resultado</span><b class="priv-blur" style="color:${p.lucroProv>=0?'var(--up)':'var(--down)'}">${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))}</b></div>
@@ -8824,28 +8823,43 @@ function wealthReal(days){
 function wealthDays(days){ const a=patHistArr(); const t=new Date(); const cut=_patDay(new Date(t.getFullYear(),t.getMonth(),t.getDate()-((days||7)-1))); return a.filter(x=>x.d>=cut).length; }
 /* série p/ o gráfico: SEMPRE histórico REAL (nada de estimativa). Com ≥2 dias, curva real;
    com só o dia de hoje, linha PLANA no valor atual — o gráfico começa a se mover no dia seguinte. */
-function wealthSeries(days){
-  days=days||7;
-  const a=patHistArr(); const realMap={}; a.forEach(x=>{ realMap[x.d]=x.v; });
-  const t=new Date(); const base=new Date(t.getFullYear(),t.getMonth(),t.getDate());
-  const dates=[]; for(let i=days-1;i>=0;i--) dates.push(new Date(base.getFullYear(),base.getMonth(),base.getDate()-i));
-  const keys=dates.map(_patDay);
-  const labels=dates.map(d=>d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
-  const realCount=keys.filter(k=>realMap[k]!=null).length;
-  // janela toda real → curva 100% real
-  if(realCount>=days) return { labels, cart:keys.map(k=>realMap[k]), real:true, realCount };
-  // caso contrário, monta a janela de 7 dias MISTURANDO os dias reais (17,18…) com a reconstrução
-  // ilustrativa dos dias sem registro (o app só grava 1 ponto por dia aberto).
-  const rec=wealthSpark7d();
-  const p=(typeof portfolioStats==='function')?portfolioStats():null; const atual=(p&&p.atual)||0;
-  const reconCart = (rec&&rec.cart&&rec.cart.length===days)? rec.cart : null;
-  if(!reconCart && realCount<1 && !(atual>0)) return null;
-  const cart=keys.map((k,i)=>{
-    if(realMap[k]!=null) return realMap[k];            // dia com snapshot real
-    if(reconCart && reconCart[i]!=null) return reconCart[i];  // dia reconstruído
-    return atual;
-  });
-  return { labels, cart, real:false, recon:true, realCount };
+function wealthSeries(){
+  // Evolução do patrimônio a partir das SUAS COMPRAS: usa a data e o preço de compra (pm) de
+  // cada aporte + o preço atual, ancorando o início no custo e o fim no patrimônio real.
+  // Dias com snapshot real são sobrepostos (valor exato). O caminho entre é interpolado
+  // (do preço pago até o atual) — vira histórico real conforme o app é aberto dia a dia.
+  const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[]; if(!groups.length) return null;
+  const lots=[];
+  groups.forEach(g=>{ const px=(g.f&&g.f.a&&g.f.a.px)||0; const rate=(g.cur==='usd')?usdBrlRate():1; const seed=seedFrom(g.tk);
+    (g.lots||[]).forEach(l=>{ let d=l.date?new Date(l.date+'T00:00:00'):null; if(!d||isNaN(d)) d=new Date();
+      lots.push({ cotas:l.cotas, pm:l.pm||0, px, rate, date:d, seed }); }); });
+  if(!lots.length) return null;
+  const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  let first=lots.reduce((m,l)=> l.date<m?l.date:m, lots[0].date);
+  let f0=new Date(first.getFullYear(),first.getMonth(),first.getDate());
+  if(f0>=t0) f0=new Date(t0.getTime()-6*86400000);        // aporte de hoje → mostra ~1 semana
+  const spanDays=Math.max(1, Math.round((t0-f0)/86400000));
+  const N=Math.max(7, Math.min(30, spanDays+1));
+  const realMap={}; patHistArr().forEach(x=>{ realMap[x.d]=x.v; });
+  const p2=n=>String(n).padStart(2,'0'); const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+  const labels=[], cart=[]; let realDays=0;
+  for(let i=0;i<N;i++){ const frac=i/(N-1); const d=new Date(f0.getTime()+(t0.getTime()-f0.getTime())*frac);
+    const dk=key(d); let v;
+    if(realMap[dk]!=null){ v=realMap[dk]; realDays++; }
+    else { v=0;
+      for(const l of lots){ if(l.date<=d){
+        const denom=Math.max(86400000, t0.getTime()-l.date.getTime());
+        let f=(d.getTime()-l.date.getTime())/denom; f=Math.max(0,Math.min(1,f));
+        let price=l.pm+(l.px-l.pm)*f;                       // do preço pago até o atual
+        if(i>0 && i<N-1){ const rr=rngF(l.seed+i*131)(); price*=(1+(rr-0.5)*0.01); }   // textura leve (±0,5%)
+        v+=l.cotas*price*l.rate;
+      }}
+    }
+    labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})); cart.push(v);
+  }
+  const ps=(typeof portfolioStats==='function')?portfolioStats():null; if(ps&&ps.atual>0) cart[cart.length-1]=ps.atual;   // fecha no patrimônio real
+  const allReal=realDays>=N;
+  return { labels, cart, real:allReal, recon:!allReal, realCount:realDays, days:N, startLabel:f0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) };
 }
 /* Reconstrução ilustrativa da evolução do patrimônio em 7 dias (quando ainda não há
    histórico real): tendência semanal suave (fatia do resultado) + oscilação diária
@@ -8870,8 +8884,8 @@ function initWealthSpark(){
   const ctx=$('#wSpark'); if(!ctx) return;
   if(typeof HAS_CHART!=='undefined' && !HAS_CHART) return;
   if(typeof Chart==='undefined') return;
-  const d=wealthSeries(7); if(!d||!d.cart||d.cart.length<2) return;
-  const pfx=d.recon?'~':'';   // reconstrução ilustrativa → prefixo "~" no tooltip
+  const d=wealthSeries(); if(!d||!d.cart||d.cart.length<2) return;
+  const pfx=d.recon?'~':'';   // caminho interpolado entre pontos reais → prefixo "~" no tooltip
   if(charts.wspark) charts.wspark.destroy();
   const pts=d.cart, lbs=d.labels;
   // % acumulada de cada ponto no período (p/ o tooltip quando a privacidade está ligada)
