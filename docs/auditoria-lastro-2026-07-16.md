@@ -5,6 +5,18 @@
 **Escopo:** `index.html` (11.596 linhas), `api/*` (8 proxies serverless), `backend/` (coletor), Supabase/RLS, dados reais (brapi/BCB/CoinGecko/CVM), fluxos end-to-end.
 **Estado do código:** validação obrigatória `CSS chaves: 0 | JS: OK` (íntegro). Nenhuma alteração foi feita — esta é uma auditoria de leitura.
 
+> ### 🟢 Atualização — 2026-07-18 (estado atual)
+> Os **4 Críticos** e os demais **bloqueadores** foram remediados (rodadas 1–4, §5–§8).
+> Destaques desde a auditoria: o **gráfico de 7 dias virou histórico REAL** (snapshots
+> diários — a série sintética saiu); o app **saiu do modo demonstração** (dados fictícios
+> só no Modo desenvolvedor); a **sincronização entre aparelhos passou a funcionar de
+> verdade** (renovação de JWT + carimbo de tempo no servidor + blindagens anti-perda);
+> **proventos** agora respeitam a **data-com**; e a **variação do dia** só usa cotação real.
+> **Veredito de publicação atual: liberado** (as mudanças que tocam dinheiro passaram por
+> finance → qa → review). **Pendências reais que restam:** entitlement server-side (billing),
+> 2FA real e refactors de arquitetura (dívida técnica, sem impacto de veracidade). A tabela
+> de riscos abaixo é o **retrato de 2026-07-16**; para o que já foi fechado, ver §5–§8.
+
 ---
 
 ## 1. Sumário executivo — os 5 riscos mais críticos
@@ -192,6 +204,29 @@ Aprovada por **finance → qa → review** (todos *LIBERAR/OK*).
 | Contagem de linhas defasada nas docs | Alto (integridade) | ✅ README/HANDOFF corrigidos (~11.600) + nota do `vendor/` |
 
 **Pendente (dependem de infra/decisão de produto):**
-- **Dado real "de verdade"** para o gráfico de 7 dias (snapshots diários de patrimônio) e para DY histórico por ano.
+- ~~**Dado real "de verdade"** para o gráfico de 7 dias~~ → **✅ FEITO** (§8): histórico real por snapshots diários; a série sintética saiu. Falta só **DY histórico por ano** (depende de fonte por data-com).
 - **Entitlement server-side** (tabela de billing + webhook) para reativar o PRO.
 - **Menores aceitos como risco baixo / opcionais:** ícones de cripto em CDN (jsdelivr — imagens SVG, sem execução de JS); `chartUnavail()` (mitigado por hospedar o Chart.js); 2FA real; fallback JS do scroll-lock (`:has()`, iOS <15.4); `setInterval` de tema (já faz early-return quando pref≠auto); renomear `document.js`/`documents.js`.
+
+## 8. Remediação — rodada 4 (app funcional + sincronização real) · 2026-07-17/18
+
+Foco: tirar o app do "modo demonstração", tornar os dados do usuário **reais/zerados** e
+fazer a **sincronização entre aparelhos funcionar de verdade**. Cada mudança que toca
+dinheiro passou por **finance → qa → review** (LIBERAR/OK/PASSOU).
+
+| Item | Sev. orig. | Status | Como foi fechado |
+|---|---|---|---|
+| Gráfico de 7 dias (era estimativa rotulada, §5) | Crítico | ✅ Agora **REAL** | Snapshots diários de patrimônio (`lastro_pat_hist` + sync); a série sintética `wealthSpark7d` saiu do fluxo. Sem histórico, mostra **linha plana** no valor real de hoje; selo "N dias reais" / "medindo desde hoje". Removido o selo "estimativa · 7d". |
+| App preso no "modo demonstração" | — | ✅ Fechado | Removida a carteira demo automática do painel e o botão "ver com exemplo". Sem aportes → tudo **zerado**. Dados fictícios **só no Modo desenvolvedor**. |
+| Variação do dia fabricada c/ mercado fechado | — | ✅ Fechado | O "hoje" soma **só ativos com cotação REAL** (`a.live`); sem pregão → R$ 0,00. |
+| Próximos proventos ignoravam a data-com | Médio (finance) | ✅ Fechado | Conta **só as cotas elegíveis na data-com** (usa data-com/dia reais quando o ativo foi carregado); rótulo distingue "data-com real" de estimativa; corrige também a conversão USD→BRL que faltava. |
+| Data do aporte deslocava 1 dia (fuso) | — | ✅ Fechado | `fmtDateBR`/`todayISO`/proventos passam a usar **data LOCAL** (fim do off-by-one UTC). |
+| Sincronização entre aparelhos não funcionava | Médio (frontend: `user_state`) | ✅ Fechado | **Causa-raiz:** o access_token do Supabase expirava (~1h) sem renovação → 401 "JWT expired", dados presos, e o outro aparelho sincronizava vazio (perda no logout). Agora: `refreshSession()`/`sbFetch` renovam o token (proativo no poll/foco + reativo em 401); RPC **`save_state`** carimba o `ts` no **servidor** (resolve clock-skew); **blindagens** impedem apagar carteira real com nuvem vazia e priorizam mutação local pendente; `authLogout` só apaga após confirmar a nuvem. Tudo **automático, sem botão**. Requer rodar `backend/supabase/schema.sql`. |
+| Higiene de UI/UX | Baixo | ✅ | Cabeçalho sem "Mercado aberto"/"Ao vivo"; menu lateral **recolhível no desktop** com tooltip; refresh não repete o pré-login (só ao reabrir o navegador); **papel de parede premium** do pré-login; card de IA sem menção à marca do modelo; input da IA com texto sempre visível. |
+
+**Ainda pendente (infra/decisão de produto):**
+- **Entitlement server-side** (tabela de billing + webhook de pagamento) para reativar o PRO — o `save_state` já é server-side, mas o **plano** ainda não é validado no servidor.
+- **2FA real** (hoje cosmético) + rodapé institucional (CNPJ/termos/LGPD).
+- **Refactors de arquitetura** (God-objects `viewAlertas`/`viewAssinatura`; todo o JS num único `<script>`) — dívida técnica, **sem impacto de veracidade**.
+- **DY histórico por ano** real (depende de fonte por data-com); `chartUnavail()` nos gráficos silenciosos; renomear `document.js`/`documents.js`.
+- **Robustez do sync (Baixa, anotado):** `syncNow` pode reportar "ok" após falha silenciosa de GET; `fetch` de logout sem timeout; retry de token no `pagehide` pode não concluir (mitigado pela persistência de `_dirty`). Trade-offs by-design: não dá para esvaziar a carteira de forma sincronizada, e um aparelho `_dirty` vence a nuvem sem comparar `ts` (ambos erram para **preservar** dados).

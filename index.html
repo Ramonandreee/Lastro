@@ -4348,7 +4348,6 @@ function acctMenuHTML(){
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();openAssinatura()")}
       ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
-      <button class="acct-item" onclick="closeAcctMenu();syncNow()" title="Salvar e sincronizar seus dados agora"><i class="fa-solid ${SYNC.state==='error'?'fa-triangle-exclamation':'fa-rotate'}" ${SYNC.state==='error'?'style="color:var(--down)"':''}></i> <span style="min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(syncLabel())}</span></button>
       ${themeRow}
       ${isOwner()? `<div class="acct-sep"></div>
       ${item('fa-gauge-high','Painel administrativo',"closeAcctMenu();nav('admin')",'acct-admin')}
