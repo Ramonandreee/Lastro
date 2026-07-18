@@ -8747,8 +8747,10 @@ function renderHomeDashboard(p){
         <span class="whero-chip2 ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% total</span>
       </div>
       <div class="whero-graph">
-        ${(function(){ const n=wealthDays(7); return n>=2
-          ? `<span class="whero-est" style="background:var(--up-l);color:var(--up);border-color:transparent"><i class="fa-solid fa-circle-check"></i> ${n} dias reais</span>`
+        ${(function(){ const n=wealthDays(7); return n>=7
+          ? `<span class="whero-est" style="background:var(--up-l);color:var(--up);border-color:transparent"><i class="fa-solid fa-circle-check"></i> 7 dias reais</span>`
+          : n>=1
+          ? `<span class="whero-est"><i class="fa-solid fa-flask"></i> ${n}/7 dias reais</span>`
           : `<span class="whero-est"><i class="fa-solid fa-flask"></i> estimativa · 7 dias</span>`; })()}
         <canvas id="wSpark" role="img" aria-label="${wealthDays(7)>=2?'Evolução real do patrimônio nos últimos 7 dias':'Evolução estimada do patrimônio nos últimos 7 dias'}"></canvas>
         <div class="whero-foot">
@@ -8811,15 +8813,27 @@ function wealthDays(days){ const a=patHistArr(); const t=new Date(); const cut=_
 /* série p/ o gráfico: SEMPRE histórico REAL (nada de estimativa). Com ≥2 dias, curva real;
    com só o dia de hoje, linha PLANA no valor atual — o gráfico começa a se mover no dia seguinte. */
 function wealthSeries(days){
-  const a=patHistArr(); const t=new Date();
-  const cut=_patDay(new Date(t.getFullYear(),t.getMonth(),t.getDate()-((days||7)-1)));
-  const win=a.filter(x=>x.d>=cut);
-  const ddmm=s=>{ const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); };
-  if(win.length>=2) return { labels:win.map(x=>ddmm(x.d)), cart:win.map(x=>x.v), real:true };
-  // ainda sem histórico real suficiente → reconstrução ilustrativa de 7 dias (com movimento),
-  // marcada como estimativa; assim que houver ≥2 dias reais, o gráfico passa a ser o real.
-  const rec=wealthSpark7d(); if(rec && rec.cart && rec.cart.length>=2) return { labels:rec.labels, cart:rec.cart, real:false, recon:true };
-  return null;
+  days=days||7;
+  const a=patHistArr(); const realMap={}; a.forEach(x=>{ realMap[x.d]=x.v; });
+  const t=new Date(); const base=new Date(t.getFullYear(),t.getMonth(),t.getDate());
+  const dates=[]; for(let i=days-1;i>=0;i--) dates.push(new Date(base.getFullYear(),base.getMonth(),base.getDate()-i));
+  const keys=dates.map(_patDay);
+  const labels=dates.map(d=>d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
+  const realCount=keys.filter(k=>realMap[k]!=null).length;
+  // janela toda real → curva 100% real
+  if(realCount>=days) return { labels, cart:keys.map(k=>realMap[k]), real:true, realCount };
+  // caso contrário, monta a janela de 7 dias MISTURANDO os dias reais (17,18…) com a reconstrução
+  // ilustrativa dos dias sem registro (o app só grava 1 ponto por dia aberto).
+  const rec=wealthSpark7d();
+  const p=(typeof portfolioStats==='function')?portfolioStats():null; const atual=(p&&p.atual)||0;
+  const reconCart = (rec&&rec.cart&&rec.cart.length===days)? rec.cart : null;
+  if(!reconCart && realCount<1 && !(atual>0)) return null;
+  const cart=keys.map((k,i)=>{
+    if(realMap[k]!=null) return realMap[k];            // dia com snapshot real
+    if(reconCart && reconCart[i]!=null) return reconCart[i];  // dia reconstruído
+    return atual;
+  });
+  return { labels, cart, real:false, recon:true, realCount };
 }
 /* Reconstrução ilustrativa da evolução do patrimônio em 7 dias (quando ainda não há
    histórico real): tendência semanal suave (fatia do resultado) + oscilação diária
