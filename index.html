@@ -4348,6 +4348,7 @@ function acctMenuHTML(){
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();openAssinatura()")}
       ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
       ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
+      <button class="acct-item" onclick="closeAcctMenu();syncNow()" title="Salvar e sincronizar seus dados agora"><i class="fa-solid ${SYNC.state==='error'?'fa-triangle-exclamation':'fa-rotate'}" ${SYNC.state==='error'?'style="color:var(--down)"':''}></i> <span style="min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(syncLabel())}</span></button>
       ${themeRow}
       ${isOwner()? `<div class="acct-sep"></div>
       ${item('fa-gauge-high','Painel administrativo',"closeAcctMenu();nav('admin')",'acct-admin')}
@@ -4841,17 +4842,28 @@ async function authLogin(email, pass){
   }catch(e){ return {error:'Sem conexão com o servidor'}; }
 }
 async function authLogout(){
+  const hadData = Array.isArray(CARTEIRA) && CARTEIRA.length>0;
+  // FORÇA salvar na nuvem antes de sair. Só apagamos os dados deste aparelho se confirmarmos
+  // que estão salvos — senão o usuário perderia a carteira (foi o bug relatado no PC).
+  let flushed=true; try{ flushed = await flushCloudState(false, true); }catch(e){ flushed=false; }
+  if(!flushed && hadData){
+    showConfirm('Sair sem sincronizar?',
+      'Não consegui salvar sua carteira na nuvem agora'+(SYNC.msg?' ('+SYNC.msg+')':'')+'. Se sair, os dados deste aparelho serão apagados e podem não estar em outro dispositivo. Sair mesmo assim?',
+      'Sair assim mesmo', ()=>_doLogout(), true);
+    return;
+  }
+  _doLogout();
+}
+function _doLogout(){
   const s=getSession(), c=_sb();
-  // grava o que estiver pendente ANTES de revogar o token (senão o último "Salvar" se perde)
-  try{ await flushCloudState(); }catch(e){}
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
   ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts'].forEach(k=>localStorage.removeItem(k));
-  _stateTs = 0; _dirty = false;   // zera o relógio de sync — o próximo login adota o estado da nuvem
+  _stateTs = 0; _dirty = false; setSync('idle','');   // zera o relógio de sync — o próximo login adota o estado da nuvem
   try{ sessionStorage.removeItem('lastro_unlocked'); }catch(e){}   // ao sair, o próximo acesso pede biometria de novo
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
-  CARTEIRA = []; localStorage.setItem('lastro_sub',''); localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
+  CARTEIRA = []; localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
   refreshPlanUI(); updateAuthUI(); applyPriv();
   closeAuth(); closeAcctMenu();
   toast('Você saiu da conta');
@@ -4868,6 +4880,23 @@ let _lastSync=0;
 let _stateTs = (function(){ try{ return +localStorage.getItem('lastro_state_ts')||0; }catch(e){ return 0; } })();
 let _applyingCloud=false;   // enquanto aplicamos a nuvem, nenhuma escrita re-empurra (sem eco)
 let _dirty=false;           // há mutação local ainda não confirmada na nuvem? (só então vale a pena dar flush)
+/* estado de sincronização VISÍVEL (diagnóstico): idle | saving | ok | error (com mensagem do servidor) */
+const SYNC = { state:'idle', at:0, msg:'' };
+function setSync(state, msg){ SYNC.state=state; SYNC.at=Date.now(); SYNC.msg=msg||''; }
+function syncLabel(){
+  if(!isAuthed()) return 'Entre para sincronizar';
+  if(SYNC.state==='saving') return 'Sincronizando…';
+  if(SYNC.state==='error') return 'Falha ao sincronizar' + (SYNC.msg?' · '+SYNC.msg:'');
+  if(SYNC.state==='ok'){ const s=Math.max(0,Math.round((Date.now()-SYNC.at)/1000)); return s<45?'Sincronizado ✓':'Sincronizado há '+(s<90?'1 min':Math.round(s/60)+' min'); }
+  return 'Toque para sincronizar';
+}
+async function syncNow(){
+  if(!isAuthed()){ openAuth('login'); return; }
+  toast('Sincronizando…');
+  let ok=false; try{ ok=await flushCloudState(false, true); await loadCloudState(); }catch(e){}
+  toast(ok ? 'Sincronizado ✓' : ('Falha ao sincronizar' + (SYNC.msg?': '+SYNC.msg:' — verifique sua conexão')));
+  if(currentView==='painel'||currentView==='carteira') render(currentView);
+}
 /* carimbo monotônico: nunca anda pra trás em relação ao que este aparelho já viu (inclui o ts
    adotado da nuvem). Assim, mesmo num aparelho com relógio atrasado, uma edição local feita
    DEPOIS de adotar a nuvem ainda supera o ts da nuvem — evita perder a própria edição. */
@@ -4930,14 +4959,21 @@ function _postCloudDirect(s,c,keepalive){
 /* grava via RPC save_state: o SERVIDOR carimba o ts (resolve clock-skew entre aparelhos) e
    devolve esse ts autoritativo, que adotamos localmente. Se a função não existir no projeto
    (404/404-ish), cai no upsert direto — o app continua sincronizando mesmo sem a migração. */
-function _postCloud(s,c,keepalive){
-  return fetch(`${c.SUPABASE_URL}/rest/v1/rpc/save_state`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json'}, body:JSON.stringify({ p_data: cloudPayload() }), keepalive:!!keepalive})
-    .then(async r=>{
-      if(r.ok){ try{ const ts=await r.clone().json(); const n=Number(ts); if(isFinite(n) && n>0){ _stateTs=n; try{ localStorage.setItem('lastro_state_ts', String(n)); }catch(e){} } }catch(e){} return r; }
-      if(r.status===404 || r.status===400 || r.status===401) return _postCloudDirect(s,c,keepalive);   // função ausente → fallback
-      return r;
-    })
-    .catch(()=>_postCloudDirect(s,c,keepalive));
+async function _postCloud(s,c,keepalive){
+  setSync('saving');
+  // 1) tenta a RPC (carimbo do servidor); em QUALQUER falha, cai no upsert direto.
+  try{
+    const r=await fetch(`${c.SUPABASE_URL}/rest/v1/rpc/save_state`, {method:'POST', headers:{apikey:c.SUPABASE_ANON_KEY, Authorization:`Bearer ${s.access_token}`, 'Content-Type':'application/json'}, body:JSON.stringify({ p_data: cloudPayload() }), keepalive:!!keepalive});
+    if(r.ok){ try{ const ts=await r.clone().json(); const n=Number(ts); if(isFinite(n) && n>0){ _stateTs=n; try{ localStorage.setItem('lastro_state_ts', String(n)); }catch(e){} } }catch(e){} setSync('ok'); return r; }
+  }catch(e){ /* rede/rpc indisponível → tenta o upsert direto abaixo */ }
+  // 2) fallback: grava direto na tabela user_state
+  try{
+    const r2=await _postCloudDirect(s,c,keepalive);
+    if(r2 && r2.ok){ setSync('ok'); return r2; }
+    let reason=''; try{ const b=await r2.clone().json(); reason=(b&&(b.message||b.hint||b.details||b.code))||''; }catch(e){}
+    setSync('error', `HTTP ${r2?r2.status:'?'}${reason?' · '+String(reason).slice(0,80):''}`);
+    return r2 || {ok:false, status:0};
+  }catch(e){ setSync('error','sem conexão'); return {ok:false, status:0}; }
 }
 function saveCloudState(){
   if(_applyingCloud) return Promise.resolve();   // enquanto adotamos a nuvem, não re-empurramos (sem eco)
