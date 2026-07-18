@@ -21,7 +21,7 @@
 <script>(function(){try{var t=localStorage.getItem('lastro_theme')||'auto';var d=t==='dark'||(t!=='light'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');
 /* boot: fundo escuro e barra do navegador (theme-color) escura enquanto o splash cobre a tela — evita a faixa branca embaixo */
 window.__booting=true;document.documentElement.classList.add('booting');
-var _tc=document.createElement('meta');_tc.id='tcOverride';_tc.setAttribute('name','theme-color');_tc.setAttribute('content','#061A38');document.head.appendChild(_tc);}catch(e){}})();</script>
+var _tc=document.createElement('meta');_tc.id='tcOverride';_tc.setAttribute('name','theme-color');_tc.setAttribute('content','#082248');document.head.appendChild(_tc);}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap">
@@ -143,7 +143,7 @@ html.booting, html.booting body {
   background:
     radial-gradient(130% 100% at 50% 42%, transparent 52%, rgba(0,0,0,.38) 100%),
     radial-gradient(120% 90% at 50% 35%, #1A4F94 0%, #0B2E5E 45%, #061A38 100%) !important;
-  background-color:#061A38 !important;
+  background-color:#082248 !important;
 }
 #splash.hide { opacity:0; pointer-events:none; }
 .splash-inner { display:flex; flex-direction:column; align-items:center; }
@@ -12117,7 +12117,7 @@ function applyTheme(reRender){
   document.documentElement.setAttribute('data-theme', eff);
   // tema manual: meta de override (sem media) vence; tema automático: removemos o override e as metas por media-query seguem o SO em tempo real
   const pref0=getThemePref(); let ov=document.getElementById('tcOverride');
-  if(window.__booting){ if(!ov){ ov=document.createElement('meta'); ov.id='tcOverride'; ov.setAttribute('name','theme-color'); document.head.appendChild(ov); } ov.setAttribute('content','#061A38'); }  // durante o boot: barra igual à BASE do splash (evita faixa azul clara na safe-area)
+  if(window.__booting){ if(!ov){ ov=document.createElement('meta'); ov.id='tcOverride'; ov.setAttribute('name','theme-color'); document.head.appendChild(ov); } ov.setAttribute('content','#082248'); }  // durante o boot: barra igual à BASE do splash (evita faixa azul clara na safe-area)
   else if(pref0==='auto'){ if(ov){ ov.remove(); } }
   else { if(!ov){ ov=document.createElement('meta'); ov.id='tcOverride'; ov.setAttribute('name','theme-color'); document.head.appendChild(ov); } ov.setAttribute('content', eff==='dark'?'#0A0E13':'#F4F5F7'); }
   const pref=getThemePref();
