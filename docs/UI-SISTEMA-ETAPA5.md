@@ -59,8 +59,12 @@ no claro; 5.4:1 vs 7.0:1 no escuro — no escuro o inativo é numericamente maio
 mas a distinção vem de COR/peso, ver §5, não só de contraste).
 
 **Distinção ativo/inativo não pode depender só de cor** (daltonismo): o item
-ativo carrega **3 sinais redundantes** — cor de marca + peso 600 no rótulo +
-pill `--brand-l` atrás do ícone. Inativo = `--ink-2` + peso 500 + sem pill.
+ativo carrega **3 sinais redundantes garantidos** — cor de marca + peso 600 no
+rótulo + pill `--brand-l` atrás do ícone. Inativo = `--ink-2` + peso 500 + sem
+pill. A troca de glifo regular(inativo)/solid(ativo) **não** entra nessa conta:
+o Font Awesome free é build local e a maioria dos glifos das abas não tem
+variante "regular" no free — vira reforço só quando o glifo tiver as duas
+variantes; senão, não conta (ver §4.1).
 
 ### 1.2 HUB MERCADO
 
@@ -71,7 +75,7 @@ pill `--brand-l` atrás do ícone. Inativo = `--ink-2` + peso 500 + sem pill.
 | Título de card de classe | `--ink` | `--surface` | claro ≈16:1 / escuro ≈13:1 | ✅ |
 | Contagem ("42 ativos") | `--ink-2` | `--surface` | ≥6:1 | secundário, cor neutra — **não** ouro |
 | Ícone da classe (moldura) | `--brand` sobre `--brand-l` | — | reusa `.card-h .ico` | navy de marca |
-| Atalho **Score** | `--gold` sobre `--gold-l` | `--surface` | ver §1.4 | **única exceção de ouro** — é Premium |
+| Atalho **Score** | ícone `--gold`; texto `--ink` — ambos sobre `--gold-l` | `--surface` | ouro puro = 3.28:1 (só ícone/large text); texto usa `--ink`. Ver §1.4 | **única exceção de ouro** — é Premium |
 | Atalho **Agenda** | `--brand` sobre `--brand-l` | `--surface` | navy | não-premium → navy, não ouro |
 | Pulso ↑/↓ (só aqui) | `--up` / `--down` | `--surface` | up ≈4.9:1 / down ≈4.6:1 (claro) | única superfície onde verde/vermelho aparece |
 
@@ -83,19 +87,29 @@ pill `--brand-l` atrás do ícone. Inativo = `--ink-2` + peso 500 + sem pill.
 | Cabeçalho da conta (nome) | `--ink` | `--canvas` | ≥14:1 | título |
 | E-mail / plano | `--ink-2` | `--canvas` | ≥6:1 | secundário |
 | Linha de item (`more-row`) | texto `--ink`, ícone `--ink-2`, chevron `--ink-4` | `--surface` | texto ≥14:1; ícone ≥6:1; chevron ≈2.7:1 | chevron é decorativo/redundante, aceitável <3:1 |
-| Selo **Premium** | `--gold` sobre `--gold-l` | `--surface` | ver §1.4 | Premium legítimo |
+| Selo **Premium** | ícone `--gold`; texto `--ink` — ambos sobre `--gold-l` | `--surface` | ouro puro = 3.28:1 (só ícone/large text); texto usa `--ink`. Ver §1.4 | Premium legítimo |
 | Toggle de Tema (trilho ativo) | `--brand` | `--surface` | ≥5:1 | usa `accent-color: var(--brand)` já global |
 | Linha destrutiva (Sair) | `--down` | `--surface` | ≈4.6:1 claro | **exceção consciente**: `--down` aqui = ação destrutiva, não "baixa de mercado". Ver §Divergências. |
 
 ### 1.4 Verificação do OURO (Score / Premium)
 
-`--gold` #A87C2A sobre `--gold-l` #F6EFDF (claro) = **≈4.0:1** — abaixo de 4.5:1
-para texto pequeno. **Mitigação obrigatória:** o rótulo textual do selo Score/
-Premium usa `--ink`/`--gold-d`-equivalente (não o `--gold` puro) OU peso ≥600 em
-≥14px (large text, mín. 3:1). O `--gold` puro fica reservado ao **ícone/coroa**
-(UI ≥3:1 → passa: ≈4.0:1) e à moldura `--gold-l`. No escuro `--gold` #D6AC5C
-sobre `--gold-l` translúcido dá ≈6:1 → ok. Registrar como ponto de atenção na
-Etapa 6 (auditoria): nunca usar `--gold` como texto de corpo pequeno.
+`--gold` #A87C2A sobre `--gold-l` #F6EFDF (claro) = **3.28:1** (medido) — abaixo
+de 4.5:1 para texto pequeno e abaixo até do piso "large text" quando o texto não
+é grande o bastante. 3.28:1 só habilita **large text** (≥18px normal OU ≥14px
+bold, piso 3:1). Logo, o selo Score/Premium com `--gold` puro no texto exige
+**SIMULTANEAMENTE peso ≥600 E ≥14px**; abaixo disso, **não usar `--gold` no
+texto**.
+
+**Regra fixada (sem token novo — só `--gold` e `--gold-l` existem no `:root`; ver
+§6 "zero token novo"):** o **texto do selo = `var(--ink)` sobre `--gold-l`**
+(contraste alto, seguro para qualquer tamanho). O **`--gold` puro fica reservado
+só para o ícone/coroa** — como elemento de UI/ícone o piso é 3:1 e 3.28:1 passa,
+ok como ícone. Nunca aplicar `--gold` puro em texto de corpo pequeno.
+
+No escuro `--gold` #D6AC5C sobre `--gold-l` translúcido dá ≈6:1 → o texto do selo
+pode voltar a usar o próprio dourado no tema escuro; no claro, mantém `--ink`.
+Registrado na Etapa 6 (auditoria): `--gold` puro nunca como texto de corpo
+pequeno no claro.
 
 ---
 
@@ -151,10 +165,16 @@ está marcado **⚠ DIVERGÊNCIA**.
 - **Estrutura:** célula flex-column, `align-items:center`, `justify-content:center`,
   ícone 24px + rótulo 11px, gap 2px. Célula inteira é o alvo (largura = 100/5%,
   altura 56px) → alvo ≥44px garantido.
-- **Ícone:** Font Awesome (já carregado), 24px. Preferir versão "regular" no
-  inativo e "solid" no ativo (3º sinal de estado, além de cor/peso) — padrão iOS.
+- **Ícone:** Font Awesome (já carregado), 24px. O build free é **local** e a
+  maioria dos glifos das abas **não tem variante "regular"** no free — então a
+  troca regular(inativo)/solid(ativo) **só é aplicável quando o glifo tiver as
+  duas variantes no free**; quando não tiver, **não conta como sinal de estado**.
+  Não vender como garantido: o estado ativo já é garantido pelos 3 sinais
+  redundantes abaixo (cor `--brand` + peso 600 do rótulo + pill).
 - **Ativo:** ícone+rótulo `--brand`; rótulo peso 600; pill `--brand-l` atrás do
-  ícone (radius 16px). **Só 1 ativo por vez.**
+  ícone (radius 16px). **Só 1 ativo por vez.** Esses **3 sinais** (cor + peso +
+  pill) são a garantia de estado; a troca regular/solid é um 4º reforço
+  **oportunista**, não garantido.
 - **Inativo:** ícone+rótulo `--ink-2`; rótulo peso 500; sem pill.
 - **Conformidade:** ✅ Material (56px, rótulo visível) + HIG (tab bar inferior).
 - ⚠ **DIVERGÊNCIA controlada:** Material 3 usa "pill" horizontal largo atrás do
@@ -190,8 +210,9 @@ está marcado **⚠ DIVERGÊNCIA**.
 - **Estrutura:** linha 56px, `display:flex; align-items:center; gap:12px`,
   ícone 20px (`--ink-2`) + texto T2 (`--ink`) + chevron `--ink-4` à direita.
   Reusa a gramática de `.nav-item`.
-- **Selo Premium** (quando aplicável): chip `--gold`/`--gold-l` à direita (antes
-  do chevron). Toggle de Tema: trilho `--brand`.
+- **Selo Premium** (quando aplicável): chip fundo `--gold-l` à direita (antes do
+  chevron), **texto `var(--ink)`** e ícone/coroa `--gold` (ver §1.4). Toggle de
+  Tema: trilho `--brand`.
 - **Press:** fundo `--surface-3` (= `.nav-item:hover`).
 - **Conformidade:** ✅ HIG "grouped list" / Material list item. Separadores `--line`.
 - ⚠ **DIVERGÊNCIA:** linha "Sair" usa `--down` como cor de texto. `--down` é
@@ -206,7 +227,8 @@ está marcado **⚠ DIVERGÊNCIA**.
 ## 5. Estados (ativo, hover/press) e safe-area
 
 ### 5.1 Estados
-- **Tab ativa:** cor `--brand` + peso 600 + pill `--brand-l` + ícone "solid".
+- **Tab ativa:** cor `--brand` + peso 600 + pill `--brand-l` (+ ícone "solid"
+  quando o glifo tiver a variante no free — reforço opcional, não garantido).
   Transição de cor `.18s var(--ease)` (padrão do app). Sem animação de layout.
 - **Hover (só cursor/desktop, `@media (hover:hover)`):** tab inativa → `--ink`;
   more-row → fundo `--surface-3`. Nunca aplicar hover em `hover:none` (mobile).
@@ -233,6 +255,25 @@ está marcado **⚠ DIVERGÊNCIA**.
 - **Só ≤760px:** acima disso a tab bar some e volta o `.sidebar` (a topbar perde
   ícone de conta e hambúrguer no mobile, conforme Etapa 1–4).
 
+### 5.3 Riscos de implementação (com dono/regra explícita)
+
+1. **Z-INDEX (empilhamento).** A tab bar fica **ACIMA do conteúdo** e **ABAIXO do
+   drawer e dos modais**. Usando os z-index reais do projeto (drawer ~`z70`,
+   modais ~`z260`), a tab bar fica em **~`z60`**. Consequência desejada: o drawer
+   aberto pela aba "Mais" e qualquer modal **cobrem** a barra (não ficam por baixo
+   dela). Ordem: conteúdo < tab bar (~z60) < drawer (~z70) < modais (~z260).
+2. **TECLADO iOS.** Barra `position:fixed; bottom:0` **flutua junto com o teclado**
+   no Safari iOS (o teclado empurra o viewport e a barra sobe grudada nele).
+   **Regra:** **esconder a tab bar quando um input recebe foco** (telas de busca /
+   simulador) e **reexibir no blur**. Declarado como comportamento — pendência
+   assumida por escrito (implementar via listeners de `focus`/`blur` nos campos ou
+   classe no container).
+3. **VOLTAR × TAB BAR no detalhe do ativo.** Com a tab bar **sempre visível**, os
+   dois controles têm **papéis separados, nunca o mesmo**: o botão **"Voltar"** do
+   detalhe retorna à **ORIGEM** de onde o ativo foi aberto (Hub / lista / carteira);
+   a **tab bar** troca de **SEÇÃO** (raiz de navegação). Voltar ≠ trocar de aba —
+   documentado para não colapsarem no mesmo gesto.
+
 ---
 
 ## 6. Resumo de tokens usados (nada novo inventado)
@@ -248,13 +289,31 @@ Foco = `--brand-l` · Easing = `--ease`. **Zero variáveis CSS novas necessária
 
 ## 7. Decisões que faltam (NÃO supus — perguntar aos donos)
 
-1. **Quantidade e quais destinos da tab bar (3–5).** A Etapa 2 definiu Hub,
-   Score/Agenda, Mais, mas o conjunto exato dos 4–5 ícones não está travado.
-   Preciso da lista final para fechar largura de célula e ícones.
-2. **Linha "Sair" no Mais:** usar `--down` (vermelho destrutivo, diverge da regra
+### 7.1 Destinos da tab bar — TRAVADO (não é mais pendência)
+
+As **5 abas foram travadas na Etapa 2** e não estão em aberto. São exatamente
+estes **5 destinos** (nesta ordem):
+
+| # | Destino | Ícone (Font Awesome) |
+|---|---|---|
+| 1 | **Início** | `fa-house` |
+| 2 | **Mercado** | `fa-chart-line` |
+| 3 | **Carteira** | `fa-wallet` |
+| 4 | **Notícias** | `fa-newspaper` |
+| 5 | **Mais** | `fa-bars` (ou `fa-ellipsis`) |
+
+- **Largura de célula:** 100 / 5 = **20% cada** (5 células iguais).
+- **Score** e **Agenda** **NÃO** são abas — são **atalhos DENTRO do Hub Mercado**
+  (Etapa 4), não destinos da tab bar. Removidos como candidatos a aba.
+- Largura de célula e ícones estão **fechados** — deixaram de ser pendência.
+
+### 7.2 Decisões ainda em aberto
+
+1. **Linha "Sair" no Mais:** usar `--down` (vermelho destrutivo, diverge da regra
    do token) ou `--ink` neutro? (§4.5)
-3. **Recent-chip mostra variação (%)?** Se sim, entra `--up`/`--down`; se for só
+2. **Recent-chip mostra variação (%)?** Se sim, entra `--up`/`--down`; se for só
    atalho de navegação, fica neutro (`--ink`).
 
-Enquanto não houver resposta, o default assumido e sinalizado é: **5 destinos**,
-**Sair em `--down`**, **recent-chip neutro sem %**. Trocar quando decidido.
+Enquanto não houver resposta, o default assumido e sinalizado é: **Sair em
+`--down`**, **recent-chip neutro sem %**. Trocar quando decidido. (As 5 abas
+não têm default assumido — já estão travadas em §7.1.)
