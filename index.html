@@ -11394,6 +11394,8 @@ function keyStatsHTML(a,k,f){
     add('LPA', typeof f.lpa==='number'?('$'+pc(f.lpa,2)):null); add('Dividend Yield', typeof a.dy==='number'?pc(a.dy,1)+'%':null);
     add('Setor', a.seg);
   }
+  const _lv=(typeof ASSET_LIVE!=='undefined')?ASSET_LIVE[a.tk]:null;   // volume real do dia (brapi)
+  if(_lv && typeof _lv.volume==='number' && _lv.volume>0) rows.push(['Volume (dia)', fmtBig(_lv.volume)]);
   if(rows.length<3) return '';   // só vale a pena com conteúdo real suficiente
   return `<div class="card card-pad" style="margin-bottom:16px">
     <div class="ds-title" style="margin:0 0 12px"><i class="fa-solid fa-layer-group" style="color:var(--brand)"></i> Estatísticas do ativo</div>
