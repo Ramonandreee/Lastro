@@ -77,6 +77,29 @@ fica só no servidor, em `BRAPI_TOKEN` na Vercel):
 - **`api/documents.js`** — **Documentos oficiais da CVM** (Fatos Relevantes, Comunicados,
   Assembleias, Atas) com download. Baixa o ZIP anual do dataset IPE e descompacta com
   `zlib` nativo (Vercel roda em `gru1`/Brasil → alcança a CVM).
+- **`api/fii.js`** — **VP/cota, P/VP e vacância REAIS de FII** (brapi não dá) do **Informe
+  Mensal FII da CVM**. `?ticker&name&price` (um fundo, casa CNPJ pelo nome) e `?index=1`
+  (todos os fundos, p/ a listagem). Front: `loadFiiCvm`/`applyFiiCvm` (página) e
+  `loadFiiIndex`/`matchFiiCvm` (listagem, match por nome com **unicidade** — nunca no
+  fundo errado; `f.pvpReal` tem prioridade).
+- **`api/fundinfo.js`** — **patrimônio líquido + taxa de administração de ETFs B3** do
+  cadastro de fundos da CVM (`cad_fi.csv`: `VL_PATRIM_LIQ`/`TAXA_ADM`). Front: `loadEtfInfo`
+  sobrepõe `a.pat`/`a.tx` (match por nome com unicidade).
+- **`api/us.js`** — **cotação + fundamentos REAIS de Stocks EUA** (brapi cobre só B3).
+  Ordem: **FMP** (se `FMP_KEY` no servidor — free tier, confiável, preço+P/L+market cap) →
+  **Yahoo v7** (grátis, + P/VP e DY) → **Stooq** (fallback só de preço). Front: `loadUsQuotes`
+  sobrepõe `a.px/a.var/a.pe/a.pvp/a.dy/a.mkt`. Tudo em USD.
+
+**Fundamentos maximizados (brapi Pro):** `api/asset.js`/`api/fundamentals.js` derivam de
+dado real (DRE/balanço) também ROA, ROIC (aprox.), margens, PSR, EV/EBITDA, EV/EBIT,
+P/EBIT, P/Ativo, giro, dív.líq/EBITDA, dív.líq/PL, payout, CAGR, LPA, VPA, 52 sem. —
+ligados no front p/ ações e BDRs. **Env vars de servidor (Vercel):** `BRAPI_TOKEN`
+(obrigatória p/ B3) e `FMP_KEY` (opcional, estabiliza Stocks EUA). CVM não precisa de chave.
+
+> **Nota:** os proxies da CVM/US **não são testáveis fora do Brasil / do ambiente de
+> deploy** (geobloqueio/política de rede). Todos **falham com segurança** (retornam null →
+> o front mantém o curado, sem regressão). Validar em produção nas URLs `/api/us?symbols=…`,
+> `/api/fii?index=1`, `/api/fundinfo?names=…`.
 
 **Página de ativo:** todas as abas + **Comparador** exibem dados reais, com fallback
 seguro para os dados curados se um proxy falhar. Cripto (CoinGecko) e notícias (coletor
