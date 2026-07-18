@@ -14,6 +14,7 @@ define um papel (frontmatter: `name`, `description`, `tools`, `model`) + as inst
 | **lastro-finance** | Especialista financeiro | Indicadores, Score Lastro™, matemática de carteira, benchmarks, veracidade dos números |
 | **lastro-qa** | QA / testes | Provar que funciona num navegador real (Playwright): screenshots, medições, estados |
 | **lastro-review** | Revisor de código | Antes de publicar: caçar bugs/regressões, validação obrigatória, iOS, segredos |
+| **lastro-design-studio** | Estúdio de design de produto | Desenhar feature/tela do zero ou reformular UX com rigor: 6 etapas (discovery → arquitetura → fluxo → wireframe → sistema de UI → auditoria QA) até uma spec pronta para handoff |
 
 ## Como usar
 - **Orquestração:** quem coordena delega tarefas independentes a vários agentes em paralelo
