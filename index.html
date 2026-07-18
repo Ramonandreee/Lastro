@@ -11531,8 +11531,16 @@ function realDyByYear(tk,a){
   if(use.length<2) return null;
   return { labels:use.map(String), data:use.map(y=>+((byY[y]/a.px)*100).toFixed(2)), real:true };
 }
+/* resumo REAL dos proventos dos últimos 12 meses (total pago por cota + nº de pagamentos) */
+function divSummary12m(tk){
+  const dd=(ASSET_LIVE[tk]||{}).dividends; if(!Array.isArray(dd)||!dd.length) return null;
+  const now=Date.now(), cut=now-365*864e5; let tot=0,n=0;
+  dd.forEach(d=>{ const t=Date.parse(d.date); if(isFinite(t)&&t>=cut&&t<=now&&typeof d.value==='number'&&d.value>0){ tot+=d.value; n++; } });
+  return n? { tot:+tot.toFixed(4), n } : null;
+}
 function tabProventos(tk,a,k,f){
   const dyReal=realDyByYear(tk,a);
+  const s12=divSummary12m(tk);
   const rows=proventosRows(tk,a,k);
   const realProv=Array.isArray((ASSET_LIVE[tk]||{}).dividends) && (ASSET_LIVE[tk].dividends.length>0);
   let dyMed, dyMedReal=false;
@@ -11546,6 +11554,7 @@ function tabProventos(tk,a,k,f){
       <div class="hstat pri"><div class="l">DY atual</div><div class="v">${pc(a.dy,2)}%</div></div>
       <div class="hstat"><div class="l">DY médio (5 anos)${dyMedReal?'':' · est.'}</div><div class="v">${dyMedReal?'':'~'}${pc(dyMed,2)}%</div></div>
       <div class="hstat"><div class="l">${k==='fiis'?'Último rendimento':'Payout'}</div><div class="v">${k==='fiis'?brl(a.div):(f&&f.payout!=null?pc(f.payout,0)+'%':'—')}</div></div>
+      ${s12?`<div class="hstat"><div class="l">Pago (12m) · por cota</div><div class="v">${brl(s12.tot)} <span style="font-size:11px;color:var(--ink-4);font-weight:500">· ${s12.n}×</span></div></div>`:''}
     </div>
   </div>
   <div class="card card-pad" style="margin-bottom:16px">
