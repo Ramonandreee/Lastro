@@ -6282,6 +6282,26 @@ async function loadListFundamentals(kind, tickers){
     if(any && currentView===kind) renderAssets(kind);
   }catch(e){}
 }
+/* cotações REAIS de Stocks EUA (via /api/us — Yahoo/Stooq, sem chave). O brapi não cobre EUA. */
+function usEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.US_ENDPOINT) || '/api/us'; }
+const _usFetched = new Map();
+async function loadUsQuotes(tickers){
+  const now=Date.now();
+  const want=[...new Set(tickers)].filter(tk=>{ const t=_usFetched.get(tk); return !t || now-t>60000; });   // reusa por 60s
+  if(!want.length) return;
+  want.forEach(tk=>_usFetched.set(tk, now));
+  try{
+    const r=await fetch(`${usEndpoint()}?symbols=${encodeURIComponent(want.join(','))}`);
+    if(!r.ok) return;
+    const d=await r.json(); const res=(d&&d.results)||[];
+    let any=false;
+    res.forEach(q=>{ const lk=assetLookup(q.symbol); if(!lk) return; const o=lk.a;
+      if(typeof q.price==='number' && q.price>0){ o.px=q.price; o.usd=true; o.live=true; any=true; }
+      if(typeof q.changePct==='number') o.var=q.changePct;   // variação real (Yahoo); Stooq não traz → mantém
+    });
+    if(any && (currentView==='stocks'||currentView==='asset')){ if(currentView==='stocks') renderAssets('stocks'); else if(typeof refreshAssetView==='function') refreshAssetView(); }
+  }catch(e){}
+}
 function renderAssets(kind){
   const cfg = ASSET_CFG[kind], st = tableState[kind];
   let data = cfg.data().slice();
@@ -6323,6 +6343,7 @@ function renderAssets(kind){
   $('#dataTbl').innerHTML = `<thead>${thead}</thead>${body}`;
   const pg = $('#tblPager'); if(pg) pg.innerHTML = total ? pagerHTML(kind, st.page, pages, total, ps, start, pageData.length) : '';
   loadListFundamentals(kind, pageData.map(a=>a.tk));   // completa fundamentos reais das linhas visíveis
+  if(kind==='stocks') loadUsQuotes(pageData.map(a=>a.tk));   // cotações reais dos EUA (Yahoo/Stooq)
 }
 /* janela de números de página (1 … 4 5 6 … N) */
 function pageWindow(page, pages){
@@ -11863,6 +11884,7 @@ function openAsset(tk){
   $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'});
   closeSidebar();
   loadAssetLive(tk);   // busca dados reais (brapi) e re-renderiza quando chegam
+  if(assetLookup(tk).k==='stocks') loadUsQuotes([tk]);   // Stocks EUA: cotação real via /api/us (brapi não cobre)
 }
 function backFromAsset(){
   const v=prevView||'painel'; currentView=v;
