@@ -4113,18 +4113,28 @@ const ETFS = [
   { tk:'TECK11', nm:'Trend Tech US',      seg:'Exterior',          px:19.40,  pat:'R$ 260M', tx:'0,30%', var:+1.62 },
   { tk:'WRLD11', nm:'Trend ETF Mundo',    seg:'Exterior',          px:22.80,  pat:'R$ 210M', tx:'0,30%', var:+0.74 },
   { tk:'GOVE11', nm:'It Now Governança',  seg:'Renda Variável BR', px:91.50,  pat:'R$ 190M', tx:'0,30%', var:+0.45 },
-  { tk:'PIBB11', nm:'iShares IBrX-50 (PIBB)', seg:'Renda Variável BR', px:0, pat:'—', tx:'0,06%', var:0 },
-  { tk:'BRAX11', nm:'iShares IBrX-100',    seg:'Renda Variável BR', px:0, pat:'—', tx:'0,20%', var:0 },
-  { tk:'XBOV11', nm:'Caixa Ibovespa',      seg:'Renda Variável BR', px:0, pat:'—', tx:'0,50%', var:0 },
-  { tk:'BBSD11', nm:'BB S&P Dividendos BR',seg:'Dividendos BR',     px:0, pat:'—', tx:'0,38%', var:0 },
-  { tk:'XFIX11', nm:'It Now IFIX (FIIs)',  seg:'Imobiliário BR',    px:0, pat:'—', tx:'0,37%', var:0 },
-  { tk:'IRFM11', nm:'It Now IRF-M (Pré)',  seg:'Renda Fixa',        px:0, pat:'—', tx:'0,25%', var:0 },
-  { tk:'LFTS11', nm:'It Now Tesouro Selic',seg:'Renda Fixa',        px:0, pat:'—', tx:'0,20%', var:0 },
-  { tk:'QBTC11', nm:'QR Bitcoin',          seg:'Criptoativos',      px:0, pat:'—', tx:'0,75%', var:0 },
-  { tk:'QETH11', nm:'QR Ethereum',         seg:'Criptoativos',      px:0, pat:'—', tx:'0,75%', var:0 },
-  { tk:'BITH11', nm:'Hashdex Bitcoin',     seg:'Criptoativos',      px:0, pat:'—', tx:'0,90%', var:0 },
-  { tk:'ETHE11', nm:'Hashdex Ethereum',    seg:'Criptoativos',      px:0, pat:'—', tx:'0,90%', var:0 },
-  { tk:'GURU11', nm:'Investo Wall St (EUA)',seg:'Exterior',         px:0, pat:'—', tx:'0,80%', var:0 },
+  /* ETFs B3 adicionais: `_b3` = confirmados/nomeados/precificados pela brapi ao carregar;
+     ficam OCULTOS até a brapi confirmar (ticker inexistente nunca aparece). Nome provisório
+     abaixo é só fallback — a brapi sobrescreve com o nome oficial (loadB3EtfQuotes). */
+  { tk:'PIBB11', nm:'iShares IBrX-50 (PIBB)', seg:'Renda Variável BR', px:0, pat:'—', tx:'0,06%', var:0, _b3:true },
+  { tk:'BRAX11', nm:'iShares IBrX-100',    seg:'Renda Variável BR', px:0, pat:'—', tx:'0,20%', var:0, _b3:true },
+  { tk:'XBOV11', nm:'Caixa Ibovespa',      seg:'Renda Variável BR', px:0, pat:'—', tx:'0,50%', var:0, _b3:true },
+  { tk:'BOVB11', nm:'BTG Ibovespa',        seg:'Renda Variável BR', px:0, pat:'—', tx:'0,30%', var:0, _b3:true },
+  { tk:'BBSD11', nm:'BB S&P Dividendos BR',seg:'Dividendos BR',     px:0, pat:'—', tx:'0,38%', var:0, _b3:true },
+  { tk:'XFIX11', nm:'It Now IFIX (FIIs)',  seg:'Imobiliário BR',    px:0, pat:'—', tx:'0,37%', var:0, _b3:true },
+  { tk:'IRFM11', nm:'It Now IRF-M (Pré)',  seg:'Renda Fixa',        px:0, pat:'—', tx:'0,25%', var:0, _b3:true },
+  { tk:'LFTS11', nm:'It Now Tesouro Selic',seg:'Renda Fixa',        px:0, pat:'—', tx:'0,20%', var:0, _b3:true },
+  { tk:'QBTC11', nm:'QR Bitcoin',          seg:'Criptoativos',      px:0, pat:'—', tx:'0,75%', var:0, _b3:true },
+  { tk:'QETH11', nm:'QR Ethereum',         seg:'Criptoativos',      px:0, pat:'—', tx:'0,75%', var:0, _b3:true },
+  { tk:'BITH11', nm:'Hashdex Bitcoin',     seg:'Criptoativos',      px:0, pat:'—', tx:'0,90%', var:0, _b3:true },
+  { tk:'ETHE11', nm:'Hashdex Ethereum',    seg:'Criptoativos',      px:0, pat:'—', tx:'0,90%', var:0, _b3:true },
+  { tk:'DEFI11', nm:'Hashdex DeFi',        seg:'Criptoativos',      px:0, pat:'—', tx:'0,90%', var:0, _b3:true },
+  { tk:'WEB311', nm:'Hashdex Web3',        seg:'Criptoativos',      px:0, pat:'—', tx:'0,90%', var:0, _b3:true },
+  { tk:'GURU11', nm:'Investo Wall St (EUA)',seg:'Exterior',         px:0, pat:'—', tx:'0,80%', var:0, _b3:true },
+  { tk:'TECB11', nm:'Investo Tech (EUA)',  seg:'Exterior',          px:0, pat:'—', tx:'0,60%', var:0, _b3:true },
+  { tk:'ASIA11', nm:'Trend Ásia',          seg:'Exterior',          px:0, pat:'—', tx:'0,75%', var:0, _b3:true },
+  { tk:'EURP11', nm:'Trend Europa',        seg:'Exterior',          px:0, pat:'—', tx:'0,75%', var:0, _b3:true },
+  { tk:'JOGO11', nm:'Trend Games (eSports)',seg:'Exterior',         px:0, pat:'—', tx:'0,75%', var:0, _b3:true },
   /* ── ETFs internacionais (listados nos EUA, em USD) ── */
   { tk:'IVV',  nm:'iShares Core S&P 500',        seg:'S&P 500',        px:612.40, pat:'$560B', tx:'0,03%', var:+0.62, usd:true },
   { tk:'VOO',  nm:'Vanguard S&P 500',            seg:'S&P 500',        px:565.10, pat:'$540B', tx:'0,03%', var:+0.61, usd:true },
@@ -6117,7 +6127,7 @@ const ASSET_CFG = {
     ai:'Ex: vale a pena BDR de NVIDIA (NVDC34) ou comprar via stock?',
   },
   etfs: {
-    data:()=>ETFS.filter(a=>!a.usd), icon:'fa-layer-group', label:'ETFs', unit:'ETFs', score:false,
+    data:()=>ETFS.filter(a=>!a.usd && !(a._b3 && !a.live)), icon:'fa-layer-group', label:'ETFs', unit:'ETFs', score:false,
     segs:['Renda Variável BR','Exterior','Small Caps BR','Dividendos BR','Criptoativos','Commodities','Financeiro BR','Renda Fixa','Imobiliário BR'],
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
@@ -6412,9 +6422,10 @@ async function loadB3EtfQuotes(){
     res.forEach(q=>{ const a=byTk[q.symbol]; if(!a) return;
       if(typeof q.price==='number' && q.price>0){ a.px=q.price; a.live=true; any=true; }
       if(typeof q.change==='number') a.var=q.change;
-      if(q.name && a._uni) a.nm=q.name; });   // nome oficial do brapi p/ ativos sem curadoria
+      if(q.name && (a._uni||a._b3)) a.nm=q.name; });   // nome oficial do brapi p/ ativos sem curadoria
     if(any && currentView==='etfs') renderAssets('etfs');
     else if(any && currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView();
+    else if(any && currentView==='mercado') render('mercado', true);   // atualiza a contagem no hub
   }catch(e){ _b3EtfDone=false; }
 }
 function renderAssets(kind){
@@ -10723,6 +10734,59 @@ async function loadAssetLive(tk){
   }catch(e){ console.warn('[Lastro] asset live indisponível:', e.message); return null; }
 }
 
+/* ── Detalhe REAL de ativos dos EUA (FMP via /api/usdetail): perfil, fundamentos,
+   histórico de preço, dividendos e — para ETFs — taxa/AUM/posições. ── */
+const US_DETAIL={};
+function usDetailEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.USDETAIL_ENDPOINT) || '/api/usdetail'; }
+function isUsAsset(lk){ return lk && (lk.k==='stocks' || (lk.k==='etfs' && lk.a.usd)); }
+function applyUsDetail(tk,d){
+  const lk=assetLookup(tk); if(!lk||!d||d.error||d.note) return;
+  const a=lk.a, p=d.profile||{}, fu=d.fund||{};
+  const f=FUND[tk]=FUND[tk]||{};
+  const setF=(key,v)=>{ if(v!=null&&v!=='') f[key]=v; };
+  // perfil (aba Sobre)
+  setF('desc',p.desc); setF('setor',p.sector); setF('sub',p.industry);
+  setF('site',p.website); if(p.employees!=null) setF('func',p.employees);
+  setF('ceo',p.ceo); setF('pais',p.country);
+  // fundamentos reais
+  if(typeof fu.pe==='number') a.pe=fu.pe;
+  if(typeof fu.pb==='number') a.pvp=fu.pb;
+  if(typeof fu.dy==='number') a.dy=fu.dy;
+  if(typeof fu.roe==='number') a.roe=fu.roe;
+  setF('lpa',fu.eps); setF('vpa',fu.bvps);
+  setF('npm',fu.npm); setF('mb',fu.gpm); setF('opm',fu.opm); setF('roa',fu.roa);
+  if(typeof fu.shares==='number' && fu.shares>0) setF('shares',fmtBig(fu.shares));
+  if(typeof fu.mktCap==='number' && fu.mktCap>0){ a.mkt=usMktStr(fu.mktCap); f.mkt='$'+usMktStr(fu.mktCap); f.mktReal=true; }
+  if(typeof fu.ev==='number' && fu.ev>0) setF('ev','$'+usMktStr(fu.ev));
+  // ETF: taxa de adm. (expense ratio), patrimônio (AUM), posições, setores
+  if(d.etf){ const e=d.etf;
+    if(typeof e.expenseRatio==='number') a.tx=pc(e.expenseRatio,2)+'%';
+    if(typeof e.aum==='number' && e.aum>0) a.pat='$'+usMktStr(e.aum);
+    if(typeof e.holdingsCount==='number') setF('holdingsCount',e.holdingsCount);
+    if(Array.isArray(e.holdings)&&e.holdings.length) setF('holdings',e.holdings);
+    if(Array.isArray(e.sectors)&&e.sectors.length) setF('sectors',e.sectors);
+  }
+  // dividendos (para o DY por ano) + histórico de preço real
+  if(Array.isArray(d.dividends)&&d.dividends.length){ const dv=annualDivs(d.dividends,6); if(dv.length) f.divs=dv; }
+  if(Array.isArray(d.history)&&d.history.length) PRICE_SERIES[tk+':1A']=d.history.map(x=>x.c);
+  f._live=true; f._usd=true;
+}
+async function loadUsDetail(tk){
+  const lk=assetLookup(tk); if(!isUsAsset(lk)) return null;
+  const isEtf = lk.k==='etfs' && lk.a.usd;
+  const cached=US_DETAIL[tk];
+  if(cached && cached._ts && Date.now()-cached._ts<600000){ applyUsDetail(tk,cached); return cached; }
+  try{
+    const r=await fetch(`${usDetailEndpoint()}?symbol=${encodeURIComponent(tk)}${isEtf?'&kind=etf':''}`);
+    if(!r.ok) return null;
+    const d=await r.json();
+    if(!d || d.error || d.note) return null;
+    d._ts=Date.now(); US_DETAIL[tk]=d; applyUsDetail(tk,d);
+    if(currentView==='asset' && currentAssetTk===tk && typeof refreshAssetView==='function') refreshAssetView();
+    return d;
+  }catch(e){ return null; }
+}
+
 // busca a série de preço de um período específico (cacheada)
 async function fetchPriceSeries(tk, range){
   const key=tk+':'+range; if(PRICE_SERIES[key]) return PRICE_SERIES[key];
@@ -11517,6 +11581,20 @@ function illusNote(txt){ return `<div class="illus-note"><i class="fa-solid fa-c
 
 /* ── Estatísticas do ativo: expõe na Visão Geral TODO dado real disponível por classe
    (só valores reais; null/— é omitido). Agrega o que o brapi/CVM já trazem mas não apareciam. ── */
+/* ── Posições e setores de um ETF internacional (FMP) ── */
+function etfHoldingsHTML(a,f){
+  f=f||{}; const h=Array.isArray(f.holdings)?f.holdings:null, s=Array.isArray(f.sectors)?f.sectors:null;
+  if(!h && !s) return '';
+  const hRows = h ? h.map(x=>fRow(esc(x.asset||x.name||'—')+(x.name&&x.asset?` · <span style="color:var(--ink-3)">${esc(x.name)}</span>`:''), typeof x.weight==='number'?pc(x.weight,2)+'%':'—')).join('') : '';
+  const sRows = s ? s.map(x=>fRow(esc(x.sector||'—'), typeof x.weight==='number'?pc(x.weight,1)+'%':'—')).join('') : '';
+  return `${h?`<div class="card card-pad" style="margin-bottom:16px">
+    <div class="ds-title" style="margin:0 0 12px"><i class="fa-solid fa-list-ul" style="color:var(--brand)"></i> Principais posições${typeof f.holdingsCount==='number'?` <span style="font-size:11px;color:var(--ink-3);font-weight:500">de ${f.holdingsCount.toLocaleString('pt-BR')}</span>`:''}</div>
+    <div class="fgroup">${hRows}</div>
+  </div>`:''}${s?`<div class="card card-pad" style="margin-bottom:16px">
+    <div class="ds-title" style="margin:0 0 12px"><i class="fa-solid fa-chart-pie" style="color:var(--brand)"></i> Exposição setorial</div>
+    <div class="fgroup">${sRows}</div>
+  </div>`:''}`;
+}
 function keyStatsHTML(a,k,f){
   f=f||{}; const rows=[];
   const ok=(v)=> v!=null && v!=='' && v!=='—' && v!=='—%' && v!=='—x';
@@ -11538,6 +11616,8 @@ function keyStatsHTML(a,k,f){
     add('Taxa de adm.', f.txadm); add('Gestão', f.gestao); add('Tipo', f.tipo);
   } else if(k==='etfs'){
     add('Patrimônio', a.pat); add('Taxa de adm.', a.tx); add('Índice / Tema', a.seg);
+    add('Dividend Yield', (typeof a.dy==='number'&&a.dy>0)?pc(a.dy,2)+'%':null);
+    add('Nº de posições', f.holdingsCount);
   } else if(k==='cripto'){
     const supN=(v)=> typeof v==='number' && v>0 ? fmtBig(v)+' '+a.tk : null;
     if(typeof a.rank==='number') add('Ranking', '#'+a.rank);
@@ -11552,11 +11632,19 @@ function keyStatsHTML(a,k,f){
     if(typeof a.athPct==='number') add('Do topo (ATH)', (a.athPct>=0?'+':'')+pc(a.athPct,1)+'%');
     add('Mínima histórica', typeof a.atl==='number'?fmtPx({px:a.atl},k):null);
   } else if(k==='stocks'){
-    // DY/P-VP de ações EUA não têm fonte grátis confiável (Yahoo bloqueia; FMP não traz) →
-    // não exibimos para não passar dado curado como real. Mostramos só o que é REAL (FMP).
-    add('Valor de mercado', a.mkt?('$'+a.mkt):null); add('P/L', typeof a.pe==='number'?pc(a.pe,1)+'x':null);
+    // fundamentos REAIS via FMP (/api/usdetail) — só exibimos o que vem da fonte.
+    add('Valor de mercado', a.mkt?('$'+a.mkt):null);
+    add('P/L', typeof a.pe==='number'?pc(a.pe,1)+'x':null);
+    add('P/VP', typeof a.pvp==='number'?pc(a.pvp,2):null);
+    add('Dividend Yield', (typeof a.dy==='number'&&a.dy>0)?pc(a.dy,2)+'%':null);
+    add('ROE', typeof a.roe==='number'?pc(a.roe,1)+'%':null);
+    add('ROA', typeof f.roa==='number'?pc(f.roa,1)+'%':null);
+    add('Margem líquida', typeof f.npm==='number'?pc(f.npm,1)+'%':null);
+    add('Margem bruta', typeof f.mb==='number'?pc(f.mb,1)+'%':null);
     add('LPA', typeof f.lpa==='number'?('$'+pc(f.lpa,2)):null);
-    add('Setor', a.seg);
+    add('VPA', typeof f.vpa==='number'?('$'+pc(f.vpa,2)):null);
+    add('Nº de ações', f.shares);
+    add('Setor', f.setor||a.seg);
   }
   const _lv=(typeof ASSET_LIVE!=='undefined')?ASSET_LIVE[a.tk]:null;   // volume real do dia (brapi)
   if(_lv && typeof _lv.volume==='number' && _lv.volume>0) rows.push(['Volume (dia)', fmtBig(_lv.volume)]);
@@ -11596,6 +11684,7 @@ function tabGeral(tk,a,k,f){
     </div>
   </div>
   ${keyStatsHTML(a,k,f)}
+  ${ (k==='etfs' && a.usd) ? etfHoldingsHTML(a,f) : '' }
   ${ (k==='acoes'||k==='fiis') ? `<div class="dt-grid">${peersHTML(tk,a,k)}${ hasScore ? scoreBlockHTML(a) : newsHTML(tk) }</div>` : '' }
   `;
 }
@@ -12193,7 +12282,8 @@ function openAsset(tk){
   $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'});
   closeSidebar();
   loadAssetLive(tk);   // busca dados reais (brapi) e re-renderiza quando chegam
-  if(assetLookup(tk).k==='stocks') loadUsQuotes([tk]);   // Stocks EUA: cotação real via /api/us (brapi não cobre)
+  const _lk=assetLookup(tk);
+  if(isUsAsset(_lk)){ loadUsQuotes([tk]); loadUsDetail(tk); }   // EUA: cotação (/api/us) + detalhe (/api/usdetail)
 }
 function backFromAsset(){
   const v=prevView||'painel'; currentView=v;
@@ -12506,6 +12596,7 @@ try{
   loadUniverse();          // universo B3 (ações/FIIs/BDRs) via brapi
   loadUsUniverse();        // universo EUA (stocks + ETFs int.) via FMP — enche as contagens do hub
   loadCryptoMarkets();     // top-100 cripto via CoinGecko
+  loadB3EtfQuotes();       // confirma/precifica os ETFs B3 (brapi) — some os inexistentes
 }catch(e){
   console.error('Falha na inicialização do Lastro:', e);
   try{ const sp=document.getElementById('splash'); if(sp) sp.remove(); }catch(_){}
