@@ -6309,6 +6309,50 @@ async function loadUsQuotes(tickers){
     if(any && (currentView==='stocks'||currentView==='asset')){ if(currentView==='stocks') renderAssets('stocks'); else if(typeof refreshAssetView==='function') refreshAssetView(); }
   }catch(e){}
 }
+/* mercado de cripto REAL (CoinGecko via /api/crypto) — expande e enriquece a lista CRIPTO. */
+function cryptoEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.CRYPTO_ENDPOINT) || '/api/crypto'; }
+let _cryptoDone=false, _cryptoAt=0;
+async function loadCryptoMarkets(){
+  const now=Date.now();
+  if(_cryptoDone && now-_cryptoAt<120000) return;   // reusa por 2 min (cache curto, preços vivos)
+  _cryptoDone=true; _cryptoAt=now;
+  try{
+    const r=await fetch(`${cryptoEndpoint()}?n=100`);
+    if(!r.ok){ _cryptoDone=false; return; }
+    const d=await r.json(); const res=(d&&d.results)||[];
+    if(!res.length){ _cryptoDone=false; return; }
+    const byTk={}; CRIPTO.forEach(a=>{ byTk[a.tk]=a; });
+    let any=false;
+    res.forEach(c=>{
+      if(!c || !c.tk) return;
+      let a=byTk[c.tk];
+      if(!a){ a={ tk:c.tk, nm:c.nm||c.tk }; CRIPTO.push(a); byTk[c.tk]=a; }
+      // números reais (px em BRL, mkt formatado, variações e fundamentos on-chain)
+      if(typeof c.px==='number' && c.px>0) a.px=c.px;
+      if(typeof c.mktN==='number' && c.mktN>0){ a.mktN=c.mktN; a.mkt='R$ '+usMktStr(c.mktN); }
+      if(typeof c.rank==='number') a.rank=c.rank;
+      if(typeof c.vol==='number') a.vol=c.vol;
+      if(typeof c.high24==='number') a.high24=c.high24;
+      if(typeof c.low24==='number') a.low24=c.low24;
+      if(typeof c.v1h==='number') a.v1h=c.v1h;
+      if(typeof c.v24==='number') a.v24=c.v24;
+      if(typeof c.v7==='number') a.v7=c.v7;
+      if(typeof c.v30==='number') a.v30=c.v30;
+      if(typeof c.supply==='number') a.supply=c.supply;
+      if(typeof c.totalSupply==='number') a.totalSupply=c.totalSupply;
+      if(typeof c.maxSupply==='number') a.maxSupply=c.maxSupply;
+      if(typeof c.ath==='number') a.ath=c.ath;
+      if(typeof c.athPct==='number') a.athPct=c.athPct;
+      if(typeof c.atl==='number') a.atl=c.atl;
+      if(c.image && !a.img) a.img=c.image;
+      a.live=true; any=true;
+    });
+    // ordena por valor de mercado (maior primeiro) — lista sempre coerente com o ranking real
+    CRIPTO.sort((x,y)=>(y.mktN||0)-(x.mktN||0));
+    if(any && currentView==='cripto') renderAssets('cripto');
+    else if(any && currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView();
+  }catch(e){ _cryptoDone=false; }
+}
 function renderAssets(kind){
   const cfg = ASSET_CFG[kind], st = tableState[kind];
   let data = cfg.data().slice();
@@ -6353,6 +6397,7 @@ function renderAssets(kind){
   if(kind==='stocks') loadUsQuotes(pageData.map(a=>a.tk));   // cotações reais dos EUA (Yahoo/Stooq)
   if(kind==='fiis') loadFiiIndex();                          // P/VP real de FII (CVM) na listagem inteira
   if(kind==='etfs') loadEtfInfo();                           // patrimônio + taxa reais de ETF B3 (CVM cad_fi)
+  if(kind==='cripto') loadCryptoMarkets();                   // top-100 real + fundamentos (CoinGecko)
 }
 /* janela de números de página (1 … 4 5 6 … N) */
 function pageWindow(page, pages){
@@ -9963,7 +10008,7 @@ function logoSrc(tk,k){
 /* fonte secundária (se a primeira falhar) — favicon do Google p/ stocks US */
 function logoFallback(tk,k){
   if(k==='stocks'){ const d=STOCK_DOMAIN[tk]; return d?`https://www.google.com/s2/favicons?domain=${d}&sz=128`:''; }
-  if(k==='cripto') return `https://icons.brapi.dev/icons/${tk}.svg`;
+  if(k==='cripto'){ const lk=assetLookup(tk); const img=lk&&lk.a&&lk.a.img; return img||`https://icons.brapi.dev/icons/${tk}.svg`; }
   return '';
 }
 function logoErr(img, fb){
@@ -10697,7 +10742,16 @@ function metricsForDetail(a,k){
   if(k==='bdrs') return [['Cotação',brl(a.px)],['Paridade',a.par],['Dividend Yield',pc(a.dy,1)+'%',a.dy>0?'up':''],['Setor',a.seg]];
   if(k==='etfs') return [['Cotação',fmtPx(a,k)],['Patrimônio',a.pat],['Taxa de adm.',a.tx],['Índice/Tema',a.seg]];
   if(k==='stocks') return [['Cotação',usd(a.px)],['Valor de mercado','$'+a.mkt],['P/L',pc(a.pe,1)+'x',a.pe<30?'up':''],['Setor',a.seg]];
-  if(k==='cripto') return [['Cotação',fmtPx(a,k)],['Valor de mercado',a.mkt],['Variação 24h',(a.v24>=0?'+':'')+pc(a.v24,1)+'%',a.v24>=0?'up':'down'],['Variação 7d',(a.v7>=0?'+':'')+pc(a.v7,1)+'%',a.v7>=0?'up':'down']];
+  if(k==='cripto'){
+    const vc=(v)=> typeof v==='number' ? [(v>=0?'+':'')+pc(v,1)+'%', v>=0?'up':'down'] : null;
+    const out=[['Cotação',fmtPx(a,k)], ['Valor de mercado', a.mkt||'—']];
+    if(typeof a.rank==='number') out.push(['Ranking','#'+a.rank]);
+    const v24=vc(a.v24); if(v24) out.push(['Variação 24h',v24[0],v24[1]]);
+    const v7=vc(a.v7);   if(v7)  out.push(['Variação 7d',v7[0],v7[1]]);
+    const v30=vc(a.v30); if(v30) out.push(['Variação 30d',v30[0],v30[1]]);
+    if(typeof a.vol==='number' && a.vol>0) out.push(['Volume 24h','R$ '+usMktStr(a.vol)]);
+    return out;
+  }
   return [];
 }
 /* ══════════════════════════════════════════════════════════
@@ -11410,6 +11464,19 @@ function keyStatsHTML(a,k,f){
     add('Taxa de adm.', f.txadm); add('Gestão', f.gestao); add('Tipo', f.tipo);
   } else if(k==='etfs'){
     add('Patrimônio', a.pat); add('Taxa de adm.', a.tx); add('Índice / Tema', a.seg);
+  } else if(k==='cripto'){
+    const supN=(v)=> typeof v==='number' && v>0 ? fmtBig(v)+' '+a.tk : null;
+    if(typeof a.rank==='number') add('Ranking', '#'+a.rank);
+    add('Valor de mercado', a.mkt);
+    if(typeof a.vol==='number' && a.vol>0) add('Volume 24h', 'R$ '+usMktStr(a.vol));
+    const v1h=typeof a.v1h==='number'?(a.v1h>=0?'+':'')+pc(a.v1h,1)+'%':null; add('Variação 1h', v1h);
+    add('Máx. 24h', typeof a.high24==='number'?fmtPx({px:a.high24},k):null);
+    add('Mín. 24h', typeof a.low24==='number'?fmtPx({px:a.low24},k):null);
+    add('Em circulação', supN(a.supply));
+    add('Supply máximo', a.maxSupply?supN(a.maxSupply):(a.totalSupply?supN(a.totalSupply):null));
+    add('Máxima histórica', typeof a.ath==='number'?fmtPx({px:a.ath},k):null);
+    if(typeof a.athPct==='number') add('Do topo (ATH)', (a.athPct>=0?'+':'')+pc(a.athPct,1)+'%');
+    add('Mínima histórica', typeof a.atl==='number'?fmtPx({px:a.atl},k):null);
   } else if(k==='stocks'){
     // DY/P-VP de ações EUA não têm fonte grátis confiável (Yahoo bloqueia; FMP não traz) →
     // não exibimos para não passar dado curado como real. Mostramos só o que é REAL (FMP).
