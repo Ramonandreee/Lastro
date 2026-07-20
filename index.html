@@ -6356,6 +6356,7 @@ async function loadCryptoMarkets(){
     CRIPTO.sort((x,y)=>(y.mktN||0)-(x.mktN||0));
     if(any && currentView==='cripto') renderAssets('cripto');
     else if(any && currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView();
+    else if(any && currentView==='mercado') render('mercado', true);   // atualiza a contagem no hub
   }catch(e){ _cryptoDone=false; }
 }
 /* universo REAL dos EUA (FMP screener via /api/usuniverse) — enche Stocks e ETFs internacionais. */
@@ -6385,6 +6386,7 @@ async function loadUsUniverse(){
     if(nS+nE){
       console.log(`[Lastro] universo EUA: +${nS} stocks, +${nE} ETFs int.`);
       if(currentView==='stocks'||currentView==='etfsint') renderAssets(currentView);
+      else if(currentView==='mercado') render('mercado', true);   // atualiza a contagem no hub
     }
   }catch(e){ _usUniDone=false; }
 }
@@ -8390,21 +8392,27 @@ function viewMais(){
    VIEW: MERCADO (hub — destino da aba "Mercado" da tab bar)
    ══════════════════════════════════════════════════════════ */
 function viewMercado(){
-  const CLASSES=[
+  const NAT=[
     {k:'acoes',  ic:'fa-chart-column', nm:'Ações'},
     {k:'fiis',   ic:'fa-building',     nm:'FIIs'},
-    {k:'etfs',   ic:'fa-layer-group',  nm:'ETFs'},
+    {k:'etfs',   ic:'fa-layer-group',  nm:'ETFs (B3)'},
     {k:'cripto', ic:'fa-bitcoin', br:true, nm:'Cripto'},
-    {k:'stocks', ic:'fa-earth-americas', nm:'Internacional'},
   ];
-  const cards = CLASSES.map(c=>{
+  const INTL=[
+    {k:'stocks',  ic:'fa-flag-usa',    nm:'Stocks (EUA)'},
+    {k:'bdrs',    ic:'fa-certificate', nm:'BDRs'},
+    {k:'etfsint', ic:'fa-layer-group', nm:'ETFs internacionais'},
+  ];
+  const cardOf=c=>{
     const cfg=ASSET_CFG[c.k]; const n=(cfg&&cfg.data)?cfg.data().length:0;
     return `<button class="mkt-class" onclick="nav('${c.k}')">
       <span class="mc-ic"><i class="fa-${c.br?'brands':'solid'} ${c.ic}"></i></span>
       <span class="mc-nm">${c.nm}</span>
       <span class="mc-n">${n} ativo${n!==1?'s':''}</span>
     </button>`;
-  }).join('');
+  };
+  const cards = NAT.map(cardOf).join('');
+  const cardsIntl = INTL.map(cardOf).join('');
 
   const rec = getRecent().map(tk=>{ const l=assetLookup(tk); return l?{a:l.a,k:l.k}:null; }).filter(Boolean).slice(0,8);
   const recBlock = rec.length ? `
@@ -8427,6 +8435,8 @@ function viewMercado(){
   ${recBlock}
   <div class="mkt-sec-t">Explorar por classe</div>
   <div class="mkt-classes">${cards}</div>
+  <div class="mkt-sec-t">Internacional</div>
+  <div class="mkt-classes">${cardsIntl}</div>
   <div class="mkt-sec-t">Pulso do mercado</div>
   ${pulse}
   <div class="mkt-sec-t">Descobrir</div>
@@ -12485,7 +12495,9 @@ try{
   render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
   syncNavGroups();     // menu começa recolhido (só Mercado aberto)
   animateContent();
-  loadUniverse();
+  loadUniverse();          // universo B3 (ações/FIIs/BDRs) via brapi
+  loadUsUniverse();        // universo EUA (stocks + ETFs int.) via FMP — enche as contagens do hub
+  loadCryptoMarkets();     // top-100 cripto via CoinGecko
 }catch(e){
   console.error('Falha na inicialização do Lastro:', e);
   try{ const sp=document.getElementById('splash'); if(sp) sp.remove(); }catch(_){}
