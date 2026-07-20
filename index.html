@@ -6115,21 +6115,21 @@ const ASSET_CFG = {
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
       {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
-      {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
-      {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat}</td>`},
-      {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx}</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${a.px>0?brl(a.px):'—'}</td>`},
+      {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat||'—'}</td>`},
+      {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx||'—'}</td>`},
     ],
     ai:'Ex: BOVA11 ou IVVB11 para diversificar minha carteira?',
   },
   etfsint: {
     data:()=>ETFS.filter(a=>a.usd), icon:'fa-layer-group', label:'ETFs internacionais', unit:'ETFs', score:false, intl:true,
-    segs:['S&P 500','Nasdaq 100','Total Market US','Tecnologia US','Semicondutores','Crescimento US','Dividendos','Renda + Nasdaq','Renda + S&P','Renda Fixa US','Urânio'],
+    segs:['ETF','S&P 500','Nasdaq 100','Total Market US','Tecnologia US','Semicondutores','Crescimento US','Dividendos','Renda + Nasdaq','Renda + S&P','Renda Fixa US','Urânio'],
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
       {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
-      {h:'Cotação', f:a=>`<td class="mono">${usd(a.px)}</td>`},
-      {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat}</td>`},
-      {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx}</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${a.px>0?usd(a.px):'—'}</td>`},
+      {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat||'—'}</td>`},
+      {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx||'—'}</td>`},
     ],
     ai:'Ex: IVV ou VOO para investir no S&P 500 direto lá fora?',
   },
@@ -6139,10 +6139,10 @@ const ASSET_CFG = {
     sorts:[['var','Maior alta'],['px','Maior cotação'],['dy','Maior DY']],
     cols:[
       {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
-      {h:'Cotação', f:a=>`<td class="mono">${usd(a.px)}</td>`},
-      {h:'Valor mercado', f:a=>`<td class="mono muted">$${a.mkt}</td>`},
-      {h:'P/L', f:a=>`<td class="mono ${a.pe<30?'up':''}">${pc(a.pe,1)}x</td>`},
-      {h:'DY', f:a=>`<td class="mono ${a.dy>0?'up':'muted'}">${pc(a.dy,1)}%</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${a.px>0?usd(a.px):'—'}</td>`},
+      {h:'Valor mercado', f:a=>`<td class="mono muted">${a.mkt?('$'+a.mkt):'—'}</td>`},
+      {h:'P/L', f:a=>`<td class="mono ${a.pe<30?'up':''}">${typeof a.pe==='number'?pc(a.pe,1)+'x':'—'}</td>`},
+      {h:'DY', f:a=>`<td class="mono ${a.dy>0?'up':'muted'}">${typeof a.dy==='number'?pc(a.dy,1)+'%':'—'}</td>`},
     ],
     ai:'Ex: NVDA está cara pelo P/L atual? Compare com AMD.',
   },
@@ -10794,8 +10794,8 @@ function initDetailCharts(){ initAssetTabCharts(); }
 /* ── indicadores fundamentalistas ── */
 function metricsForDetail(a,k){
   if(k==='bdrs') return [['Cotação',brl(a.px)],['Paridade',a.par],['Dividend Yield',pc(a.dy,1)+'%',a.dy>0?'up':''],['Setor',a.seg]];
-  if(k==='etfs') return [['Cotação',fmtPx(a,k)],['Patrimônio',a.pat],['Taxa de adm.',a.tx],['Índice/Tema',a.seg]];
-  if(k==='stocks') return [['Cotação',usd(a.px)],['Valor de mercado','$'+a.mkt],['P/L',pc(a.pe,1)+'x',a.pe<30?'up':''],['Setor',a.seg]];
+  if(k==='etfs') return [['Cotação',fmtPx(a,k)],['Patrimônio',a.pat||'—'],['Taxa de adm.',a.tx||'—'],['Índice/Tema',a.seg]];
+  if(k==='stocks') return [['Cotação',usd(a.px)],['Valor de mercado',a.mkt?('$'+a.mkt):'—'],['P/L',typeof a.pe==='number'?pc(a.pe,1)+'x':'—',a.pe<30?'up':''],['Setor',a.seg]];
   if(k==='cripto'){
     const vc=(v)=> typeof v==='number' ? [(v>=0?'+':'')+pc(v,1)+'%', v>=0?'up':'down'] : null;
     const out=[['Cotação',fmtPx(a,k)], ['Valor de mercado', a.mkt||'—']];
@@ -11108,7 +11108,8 @@ function initHistChart(){
 
 function fundamentalsHTML(a,k,f){
   if(a._uni && !f){
-    return `<div class="card card-pad"><div style="font-size:13px;color:var(--ink-2);line-height:1.6"><i class="fa-solid fa-circle-info" style="color:var(--accent)"></i> Este ativo faz parte do <strong>universo completo da B3</strong>. Preço, variação e gráfico já estão ativos; os indicadores fundamentalistas detalhados (P/L, DY, ROE, balanço…) chegam ao conectar uma fonte de dados de fundamentos.</div></div>`;
+    const uni = a.usd ? 'universo completo dos EUA' : 'universo completo da B3';
+    return `<div class="card card-pad"><div style="font-size:13px;color:var(--ink-2);line-height:1.6"><i class="fa-solid fa-circle-info" style="color:var(--accent)"></i> Este ativo faz parte do <strong>${uni}</strong>. Preço, variação e gráfico já estão ativos; os indicadores fundamentalistas detalhados (P/L, DY, ROE, balanço…) chegam ao conectar uma fonte de dados de fundamentos.</div></div>`;
   }
   const grp=(t,cards)=>`<div class="fgroup-title">${t}</div><div class="ind-grid">${cards.filter(Boolean).join('')}</div>`;
   if(k==='acoes'){
@@ -11268,7 +11269,8 @@ function newsHTML(tk){
 
 function summaryCards(a,k,f){
   let cards=[];
-  if(a._uni) cards=[['Cotação',fmtPx(a,k)],['Variação hoje',(a.var>=0?'+':'')+pc(a.var)+'%',a.var>=0?'up':'down'],['Valor de mercado',a.mkt||'—'],['Setor',a.seg||'—'],['Classe',ASSET_CLASS[k].label]];
+  if(a._uni){ const capv = a.mkt ? ((a.usd?'$':'')+a.mkt) : (a.pat||'—');
+    cards=[['Cotação',fmtPx(a,k)],['Variação hoje',(a.var>=0?'+':'')+pc(a.var)+'%',a.var>=0?'up':'down'],[a.usd&&!a.mkt?'Patrimônio':'Valor de mercado',capv],['Setor',a.seg||'—'],['Classe',ASSET_CLASS[k].label]]; }
   else if(k==='acoes') cards=[['Valor de mercado',(f&&f.mkt)||a.mkt||'—'],['P/L',pc(a.pl,2)+'x'],['Dividend Yield',pc(a.dy,1)+'%','up'],['ROE',pc(a.roe,1)+'%'],['P/VP',pc(a.pvp,2)],['Valor de firma',f?f.ev:'—']];
   else if(k==='fiis') cards=[['Valor de mercado',(f&&f.mkt)||a.mkt||'—'],['P/VP',pc(a.pvp,2)],['Dividend Yield',pc(a.dy,1)+'%','up'],['Vacância',pc(a.vac,1)+'%',a.vac<5?'up':'down'],['Último rend.',brl(a.div),'up'],['Patrimônio',f?f.plf:'—']];
   else cards=metricsForDetail(a,k).slice(0,6);
