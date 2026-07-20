@@ -89,6 +89,16 @@ fica só no servidor, em `BRAPI_TOKEN` na Vercel):
   Ordem: **FMP** (se `FMP_KEY` no servidor — free tier, confiável, preço+P/L+market cap) →
   **Yahoo v7** (grátis, + P/VP e DY) → **Stooq** (fallback só de preço). Front: `loadUsQuotes`
   sobrepõe `a.px/a.var/a.pe/a.pvp/a.dy/a.mkt`. Tudo em USD.
+- **`api/usuniverse.js`** — **universo EUA** (FMP stock-screener): top ~300 stocks +
+  ~250 ETFs internacionais por valor de mercado (ticker, nome, setor, preço, market cap).
+  Front: `loadUsUniverse` mescla em `STOCKS` e `ETFS` (usd:true) via `mergeUsUniverse`;
+  `loadUsQuotes` completa preço/variação/P-L da página visível. Precisa de `FMP_KEY`.
+- **`api/crypto.js`** — **mercado cripto** (CoinGecko `/coins/markets`, BRL): top-100 por
+  valor de mercado com preço, market cap, volume 24h, supply, ATH/ATL, ranking e variações
+  1h/24h/7d/30d. Front: `loadCryptoMarkets` expande `CRIPTO` (14→100) e enriquece a página
+  do ativo (`metricsForDetail`/`keyStatsHTML` ramo cripto). Sem chave.
+- **ETFs B3 ao vivo:** `loadB3EtfQuotes` busca preço/variação REAIS dos ETFs da B3 via
+  `/api/quotes` (brapi) — o universo do brapi não cobre ETFs, então buscamos por ticker.
 
 **Fundamentos maximizados (brapi Pro):** `api/asset.js`/`api/fundamentals.js` derivam de
 dado real (DRE/balanço) também ROA, ROIC (aprox.), margens, PSR, EV/EBITDA, EV/EBIT,
@@ -99,7 +109,8 @@ ligados no front p/ ações e BDRs. **Env vars de servidor (Vercel):** `BRAPI_TO
 > **Nota:** os proxies da CVM/US **não são testáveis fora do Brasil / do ambiente de
 > deploy** (geobloqueio/política de rede). Todos **falham com segurança** (retornam null →
 > o front mantém o curado, sem regressão). Validar em produção nas URLs `/api/us?symbols=…`,
-> `/api/fii?index=1`, `/api/fundinfo?names=…`.
+> `/api/fii?index=1`, `/api/fundinfo?names=…`, `/api/usuniverse` (stocks+ETFs int.) e
+> `/api/crypto?n=100` (CoinGecko é alcançável e pode ser testado direto no navegador).
 
 **Página de ativo:** todas as abas + **Comparador** exibem dados reais, com fallback
 seguro para os dados curados se um proxy falhar. Cripto (CoinGecko) e notícias (coletor

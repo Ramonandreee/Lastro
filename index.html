@@ -4113,6 +4113,11 @@ const ETFS = [
   { tk:'TECK11', nm:'Trend Tech US',      seg:'Exterior',          px:19.40,  pat:'R$ 260M', tx:'0,30%', var:+1.62 },
   { tk:'WRLD11', nm:'Trend ETF Mundo',    seg:'Exterior',          px:22.80,  pat:'R$ 210M', tx:'0,30%', var:+0.74 },
   { tk:'GOVE11', nm:'It Now Governança',  seg:'Renda Variável BR', px:91.50,  pat:'R$ 190M', tx:'0,30%', var:+0.45 },
+  { tk:'PIBB11', nm:'iShares IBrX-50 (PIBB)', seg:'Renda Variável BR', px:0, pat:'—', tx:'0,06%', var:0 },
+  { tk:'XFIX11', nm:'It Now IFIX (FIIs)', seg:'Imobiliário BR', px:0, pat:'—', tx:'0,37%', var:0 },
+  { tk:'QBTC11', nm:'QR Bitcoin',         seg:'Criptoativos',   px:0, pat:'—', tx:'0,75%', var:0 },
+  { tk:'QETH11', nm:'QR Ethereum',        seg:'Criptoativos',   px:0, pat:'—', tx:'0,75%', var:0 },
+  { tk:'BITH11', nm:'Hashdex Bitcoin',    seg:'Criptoativos',   px:0, pat:'—', tx:'0,90%', var:0 },
   /* ── ETFs internacionais (listados nos EUA, em USD) ── */
   { tk:'IVV',  nm:'iShares Core S&P 500',        seg:'S&P 500',        px:612.40, pat:'$560B', tx:'0,03%', var:+0.62, usd:true },
   { tk:'VOO',  nm:'Vanguard S&P 500',            seg:'S&P 500',        px:565.10, pat:'$540B', tx:'0,03%', var:+0.61, usd:true },
@@ -6106,7 +6111,7 @@ const ASSET_CFG = {
   },
   etfs: {
     data:()=>ETFS.filter(a=>!a.usd), icon:'fa-layer-group', label:'ETFs', unit:'ETFs', score:false,
-    segs:['Renda Variável BR','Exterior','Small Caps BR','Dividendos BR','Criptoativos','Commodities','Financeiro BR','Renda Fixa'],
+    segs:['Renda Variável BR','Exterior','Small Caps BR','Dividendos BR','Criptoativos','Commodities','Financeiro BR','Renda Fixa','Imobiliário BR'],
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
       {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
@@ -6306,7 +6311,7 @@ async function loadUsQuotes(tickers){
       if(typeof q.mkt==='number' && q.mkt>0){ o.mkt=usMktStr(q.mkt); f.mktReal=true; }
       if(typeof q.lpa==='number') f.lpa=q.lpa;
     });
-    if(any && (currentView==='stocks'||currentView==='asset')){ if(currentView==='stocks') renderAssets('stocks'); else if(typeof refreshAssetView==='function') refreshAssetView(); }
+    if(any){ if(currentView==='stocks'||currentView==='etfsint') renderAssets(currentView); else if(currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView(); }
   }catch(e){}
 }
 /* mercado de cripto REAL (CoinGecko via /api/crypto) — expande e enriquece a lista CRIPTO. */
@@ -6353,6 +6358,55 @@ async function loadCryptoMarkets(){
     else if(any && currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView();
   }catch(e){ _cryptoDone=false; }
 }
+/* universo REAL dos EUA (FMP screener via /api/usuniverse) — enche Stocks e ETFs internacionais. */
+function usUniverseEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.USUNIVERSE_ENDPOINT) || '/api/usuniverse'; }
+const _US_TK=/^[A-Z]{1,5}$/;
+function mergeUsUniverse(arr, items, isEtf){
+  if(!Array.isArray(items)) return 0;
+  const have=new Set(arr.map(a=>a.tk)); let added=0;
+  items.forEach(it=>{
+    const tk=String(it.tk||'').toUpperCase();
+    if(!tk || have.has(tk) || !_US_TK.test(tk)) return;
+    have.add(tk);
+    const o={ tk, nm:it.nm||tk, seg:it.seg||(isEtf?'ETF':'Outros'), px:it.px||0, var:0, usd:true, _uni:true };
+    if(typeof it.mkt==='number' && it.mkt>0){ o.mktN=it.mkt; if(isEtf) o.pat='$'+usMktStr(it.mkt); else o.mkt=usMktStr(it.mkt); }
+    arr.push(o); added++;
+  });
+  return added;
+}
+let _usUniDone=false;
+async function loadUsUniverse(){
+  if(_usUniDone) return; _usUniDone=true;
+  try{
+    const r=await fetch(usUniverseEndpoint()); if(!r.ok){ _usUniDone=false; return; }
+    const d=await r.json();
+    const nS=mergeUsUniverse(STOCKS, d.stocks, false);
+    const nE=mergeUsUniverse(ETFS,   d.etfs,  true);
+    if(nS+nE){
+      console.log(`[Lastro] universo EUA: +${nS} stocks, +${nE} ETFs int.`);
+      if(currentView==='stocks'||currentView==='etfsint') renderAssets(currentView);
+    }
+  }catch(e){ _usUniDone=false; }
+}
+/* cotações REAIS (brapi) dos ETFs da B3 — o universo do brapi não cobre ETFs; buscamos direto. */
+let _b3EtfDone=false, _b3EtfAt=0;
+async function loadB3EtfQuotes(){
+  const now=Date.now(); if(_b3EtfDone && now-_b3EtfAt<60000) return;
+  _b3EtfDone=true; _b3EtfAt=now;
+  const tks=ETFS.filter(a=>!a.usd).map(a=>a.tk); if(!tks.length) return;
+  try{
+    const r=await fetch(`/api/quotes?symbols=${encodeURIComponent(tks.join(','))}`);
+    if(!r.ok){ _b3EtfDone=false; return; }
+    const d=await r.json(); const res=(d&&d.results)||[]; if(!res.length){ _b3EtfDone=false; return; }
+    const byTk={}; ETFS.forEach(a=>{ byTk[a.tk]=a; });
+    let any=false;
+    res.forEach(q=>{ const a=byTk[q.symbol]; if(!a) return;
+      if(typeof q.price==='number' && q.price>0){ a.px=q.price; a.live=true; any=true; }
+      if(typeof q.change==='number') a.var=q.change; });
+    if(any && currentView==='etfs') renderAssets('etfs');
+    else if(any && currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView();
+  }catch(e){ _b3EtfDone=false; }
+}
 function renderAssets(kind){
   const cfg = ASSET_CFG[kind], st = tableState[kind];
   let data = cfg.data().slice();
@@ -6394,9 +6448,9 @@ function renderAssets(kind){
   $('#dataTbl').innerHTML = `<thead>${thead}</thead>${body}`;
   const pg = $('#tblPager'); if(pg) pg.innerHTML = total ? pagerHTML(kind, st.page, pages, total, ps, start, pageData.length) : '';
   loadListFundamentals(kind, pageData.map(a=>a.tk));   // completa fundamentos reais das linhas visíveis
-  if(kind==='stocks') loadUsQuotes(pageData.map(a=>a.tk));   // cotações reais dos EUA (Yahoo/Stooq)
   if(kind==='fiis') loadFiiIndex();                          // P/VP real de FII (CVM) na listagem inteira
-  if(kind==='etfs') loadEtfInfo();                           // patrimônio + taxa reais de ETF B3 (CVM cad_fi)
+  if(kind==='etfs'){ loadEtfInfo(); loadB3EtfQuotes(); }      // patrimônio/taxa (CVM) + cotação real (brapi)
+  if(kind==='stocks'||kind==='etfsint'){ loadUsUniverse(); loadUsQuotes(pageData.map(a=>a.tk)); }  // universo EUA (FMP) + preço/variação (Yahoo/FMP)
   if(kind==='cripto') loadCryptoMarkets();                   // top-100 real + fundamentos (CoinGecko)
 }
 /* janela de números de página (1 … 4 5 6 … N) */
