@@ -17,7 +17,7 @@
 const FMP = 'https://financialmodelingprep.com/api/v3';
 
 const num = (v) => (typeof v === 'number' && isFinite(v) ? v : (isFinite(parseFloat(v)) ? parseFloat(v) : null));
-const pct = (v) => { const n = num(v); return n == null ? null : Math.round(n * 1000) / 10; };   // fração → %
+const pct = (v) => { const n = num(v); return n == null ? null : Math.round(n * 10000) / 100; };   // fração → % (2 casas)
 
 async function fetchJson(url, ms = 12000) {
   const ctrl = new AbortController();
@@ -71,7 +71,10 @@ export default async function handler(req, res) {
     out.fund = {
       pe: num(rt.peRatioTTM) ?? num(p.pe),
       pb: num(rt.priceToBookRatioTTM),
-      dy: pct(rt.dividendYielTTM ?? rt.dividendYieldTTM ?? rt.dividendYieldPercentageTTM),
+      // os campos *YieldTTM vêm como fração (0,0044) → pct(); *PercentageTTM já vem em % (0,44) → cru
+      dy: (num(rt.dividendYielTTM) != null || num(rt.dividendYieldTTM) != null)
+        ? pct(rt.dividendYielTTM ?? rt.dividendYieldTTM)
+        : num(rt.dividendYieldPercentageTTM),
       roe: pct(rt.returnOnEquityTTM),
       roa: pct(rt.returnOnAssetsTTM),
       npm: pct(rt.netProfitMarginTTM),

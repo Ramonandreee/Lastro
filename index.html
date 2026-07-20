@@ -11644,7 +11644,7 @@ function keyStatsHTML(a,k,f){
     add('LPA', typeof f.lpa==='number'?('$'+pc(f.lpa,2)):null);
     add('VPA', typeof f.vpa==='number'?('$'+pc(f.vpa,2)):null);
     add('Nº de ações', f.shares);
-    add('Setor', f.setor||a.seg);
+    add('Setor', esc(f.setor||a.seg||''));
   }
   const _lv=(typeof ASSET_LIVE!=='undefined')?ASSET_LIVE[a.tk]:null;   // volume real do dia (brapi)
   if(_lv && typeof _lv.volume==='number' && _lv.volume>0) rows.push(['Volume (dia)', fmtBig(_lv.volume)]);
