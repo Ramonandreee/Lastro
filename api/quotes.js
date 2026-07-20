@@ -38,7 +38,7 @@ async function fetchStockBatch(symbols, token) {
   const results = (d && d.results) || [];
   return results
     .filter((q) => q && typeof q.regularMarketPrice === 'number')
-    .map((q) => ({ symbol: q.symbol, price: q.regularMarketPrice, change: q.regularMarketChangePercent ?? null }));
+    .map((q) => ({ symbol: q.symbol, price: q.regularMarketPrice, change: q.regularMarketChangePercent ?? null, name: q.longName || q.shortName || null }));
 }
 
 // quebra um array em pedaços de tamanho `n`

@@ -4114,10 +4114,17 @@ const ETFS = [
   { tk:'WRLD11', nm:'Trend ETF Mundo',    seg:'Exterior',          px:22.80,  pat:'R$ 210M', tx:'0,30%', var:+0.74 },
   { tk:'GOVE11', nm:'It Now Governança',  seg:'Renda Variável BR', px:91.50,  pat:'R$ 190M', tx:'0,30%', var:+0.45 },
   { tk:'PIBB11', nm:'iShares IBrX-50 (PIBB)', seg:'Renda Variável BR', px:0, pat:'—', tx:'0,06%', var:0 },
-  { tk:'XFIX11', nm:'It Now IFIX (FIIs)', seg:'Imobiliário BR', px:0, pat:'—', tx:'0,37%', var:0 },
-  { tk:'QBTC11', nm:'QR Bitcoin',         seg:'Criptoativos',   px:0, pat:'—', tx:'0,75%', var:0 },
-  { tk:'QETH11', nm:'QR Ethereum',        seg:'Criptoativos',   px:0, pat:'—', tx:'0,75%', var:0 },
-  { tk:'BITH11', nm:'Hashdex Bitcoin',    seg:'Criptoativos',   px:0, pat:'—', tx:'0,90%', var:0 },
+  { tk:'BRAX11', nm:'iShares IBrX-100',    seg:'Renda Variável BR', px:0, pat:'—', tx:'0,20%', var:0 },
+  { tk:'XBOV11', nm:'Caixa Ibovespa',      seg:'Renda Variável BR', px:0, pat:'—', tx:'0,50%', var:0 },
+  { tk:'BBSD11', nm:'BB S&P Dividendos BR',seg:'Dividendos BR',     px:0, pat:'—', tx:'0,38%', var:0 },
+  { tk:'XFIX11', nm:'It Now IFIX (FIIs)',  seg:'Imobiliário BR',    px:0, pat:'—', tx:'0,37%', var:0 },
+  { tk:'IRFM11', nm:'It Now IRF-M (Pré)',  seg:'Renda Fixa',        px:0, pat:'—', tx:'0,25%', var:0 },
+  { tk:'LFTS11', nm:'It Now Tesouro Selic',seg:'Renda Fixa',        px:0, pat:'—', tx:'0,20%', var:0 },
+  { tk:'QBTC11', nm:'QR Bitcoin',          seg:'Criptoativos',      px:0, pat:'—', tx:'0,75%', var:0 },
+  { tk:'QETH11', nm:'QR Ethereum',         seg:'Criptoativos',      px:0, pat:'—', tx:'0,75%', var:0 },
+  { tk:'BITH11', nm:'Hashdex Bitcoin',     seg:'Criptoativos',      px:0, pat:'—', tx:'0,90%', var:0 },
+  { tk:'ETHE11', nm:'Hashdex Ethereum',    seg:'Criptoativos',      px:0, pat:'—', tx:'0,90%', var:0 },
+  { tk:'GURU11', nm:'Investo Wall St (EUA)',seg:'Exterior',         px:0, pat:'—', tx:'0,80%', var:0 },
   /* ── ETFs internacionais (listados nos EUA, em USD) ── */
   { tk:'IVV',  nm:'iShares Core S&P 500',        seg:'S&P 500',        px:612.40, pat:'$560B', tx:'0,03%', var:+0.62, usd:true },
   { tk:'VOO',  nm:'Vanguard S&P 500',            seg:'S&P 500',        px:565.10, pat:'$540B', tx:'0,03%', var:+0.61, usd:true },
@@ -6404,7 +6411,8 @@ async function loadB3EtfQuotes(){
     let any=false;
     res.forEach(q=>{ const a=byTk[q.symbol]; if(!a) return;
       if(typeof q.price==='number' && q.price>0){ a.px=q.price; a.live=true; any=true; }
-      if(typeof q.change==='number') a.var=q.change; });
+      if(typeof q.change==='number') a.var=q.change;
+      if(q.name && a._uni) a.nm=q.name; });   // nome oficial do brapi p/ ativos sem curadoria
     if(any && currentView==='etfs') renderAssets('etfs');
     else if(any && currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView();
   }catch(e){ _b3EtfDone=false; }
