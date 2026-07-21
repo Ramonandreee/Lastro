@@ -8887,7 +8887,8 @@ function renderHomeDashboard(p){
   // variação do dia (ponderada pelas posições)
   // Variação do dia SÓ com cotação REAL (a.live). Sem pregão/sem cotação ao vivo, fica 0 —
   // não fabrica "hoje" a partir do valor curado (evita mostrar variação com o mercado fechado).
-  const _dv=portfolioDayVar(); const dayVal=_dv.val, dayP=_dv.pct;   // fechamento anterior → atual (R$ e % na mesma base)
+  const _dv=portfolioDayVar(); const dayVal=_dv.val, dayP=_dv.pct;   // variação de mercado do dia (Performance Diária)
+  const _wk=portfolioWeekVar();   // resultado dos últimos 7 dias (coluna "Resultado semanal")
   // alocação por classe
   const CLS={acoes:['Ações','#0B2E5E'],fiis:['FIIs','#3F79D6'],etfs:['ETFs','#B8860B'],etfsint:['ETFs int.','#2f6f9e'],bdrs:['BDRs','#8b5cf6'],stocks:['Stocks','#0ea5e9'],cripto:['Cripto','#f59e0b']};
   const alloc={}; (p._byT||[]).forEach(g=>{ const lk=assetLookup(g.tk); const k=(lk&&lk.k)||'acoes'; alloc[k]=(alloc[k]||0)+g.val; });
@@ -8932,7 +8933,7 @@ function renderHomeDashboard(p){
       </div>
       <div class="whero-val priv-blur">${fmtHomeCur(p.atual)}</div>
       <div class="whero-chips">
-        <span class="whero-chip priv-blur ${dayP>=0?'up':'down'}"><i class="fa-solid fa-arrow-${dayP>=0?'up':'down'}"></i> ${dayP>=0?'+':'−'}${fmtHomeCur(Math.abs(dayVal))} hoje</span>
+        <span class="whero-chip priv-blur ${p.lucroProv>=0?'up':'down'}"><i class="fa-solid fa-arrow-${p.lucroProv>=0?'up':'down'}"></i> ${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))} hoje</span>
         <span class="whero-chip2 ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% total</span>
       </div>
       <div class="whero-graph">
@@ -8943,7 +8944,7 @@ function renderHomeDashboard(p){
         <canvas id="wSpark" role="img" aria-label="Evolução do patrimônio a partir das suas compras"></canvas>
         <div class="whero-foot">
           <div><span>Investido</span><b class="priv-blur">${fmtHomeCur(p.invest)}</b></div>
-          <div><span>Resultado</span><b class="priv-blur" style="color:${p.lucroProv>=0?'var(--up)':'var(--down)'}">${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))}</b></div>
+          <div><span>Resultado semanal</span><b class="priv-blur" style="color:${_wk.val>=0?'var(--up)':'var(--down)'}">${_wk.val>=0?'+':'−'}${fmtHomeCur(Math.abs(_wk.val))}</b></div>
           <div><span>Renda/mês</span><b class="priv-blur">${fmtHomeCur(p.renda)}</b></div>
         </div>
       </div>
@@ -9036,6 +9037,22 @@ function portfolioDayVar(){
     // base do dia = fechamento anterior; para o lote comprado HOJE, base = preço de compra (o
     // aporte não é lucro — conta só o movimento desde a compra). R$ e % saem da MESMA base.
     g.lots.forEach(l=>{ const b=(String(l.date||'').slice(0,10)>=today)?l.pm:prev;
+      val += l.cotas*(a.px-b)*rate; base += l.cotas*b*rate; }); });
+  return { val, pct: base? val/base*100 : 0, base };
+}
+/* resultado dos ÚLTIMOS 7 DIAS: cotação atual vs fechamento de 7 dias atrás (ou preço de compra,
+   se o aporte é mais novo que isso — aporte não é lucro). R$ e % na mesma base. */
+function portfolioWeekVar(){
+  const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[];
+  const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const wk=new Date(t0.getTime()-7*86400000); const p2=n=>String(n).padStart(2,'0');
+  const wkStr=`${wk.getFullYear()}-${p2(wk.getMonth()+1)}-${p2(wk.getDate())}`;
+  let val=0, base=0;
+  groups.forEach(g=>{ const a=g.f.a; if(!(a.live && a.px>0)) return; const rate=(g.cur==='usd')?usdBrlRate():1;
+    g.lots.forEach(l=>{ const ld=String(l.date||'').slice(0,10);
+      let b;
+      if(ld>wkStr) b=l.pm;                                   // comprado nos últimos 7 dias → base = compra
+      else { const c=closeOn(l.tk, wkStr); b=(c!=null)?c:l.pm; }   // senão, fechamento de ~7 dias atrás (ou custo, se faltar)
       val += l.cotas*(a.px-b)*rate; base += l.cotas*b*rate; }); });
   return { val, pct: base? val/base*100 : 0, base };
 }
