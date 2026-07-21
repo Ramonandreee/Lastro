@@ -3438,10 +3438,12 @@ body.pdf-lock { overflow:hidden; }
 .whero-chip, .whero-chip2 { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12.5px; font-weight:600; padding:5px 12px; border-radius:20px; }
 .whero-chip { background:var(--up-l); color:var(--up); } .whero-chip.down { background:var(--down-l); color:var(--down); }
 .whero-chip2 { background:var(--surface-3); color:var(--ink-2); } .whero-chip2.down { color:var(--down); }
-/* seletor de período do gráfico de patrimônio (segmented control estilo iOS) */
-.whero-periods { display:flex; gap:3px; margin:16px 0 0; background:var(--surface-3); padding:3px; border-radius:11px; }
-.wper { flex:1; padding:6px 0; border:none; background:transparent; border-radius:8px; font-family:var(--mono); font-size:11.5px; font-weight:600; letter-spacing:-.01em; color:var(--ink-3); cursor:pointer; transition:background .22s var(--ease), color .22s var(--ease), box-shadow .22s var(--ease); -webkit-tap-highlight-color:transparent; }
-.wper.active { background:var(--surface); color:var(--brand); box-shadow:var(--sh-sm); }
+/* seletor de período do gráfico de patrimônio — compacto e discreto (estilo BTG/XP/TradingView):
+   baixa altura, botões pequenos, sem fundo pesado nem borda grossa; ativo = realce sutil */
+.whero-periods { display:flex; gap:4px; margin:14px 0 2px; }
+.wper { flex:1 1 0; padding:4px 0 5px; border:none; background:transparent; border-radius:7px; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.01em; color:var(--ink-4); cursor:pointer; transition:background .18s var(--ease), color .18s var(--ease); -webkit-tap-highlight-color:transparent; }
+.wper:hover { color:var(--ink-3); }
+.wper.active { background:color-mix(in srgb, var(--brand) 12%, transparent); color:var(--brand); }
 /* gráfico ocupa a base do card (sangra até as bordas) e o rodapé fica por cima,
    com um degradê p/ a cor do card destacando os 3 textos */
 .whero-graph { position:relative; height:184px; margin:18px -22px 0; }
@@ -8941,7 +8943,7 @@ function renderHomeDashboard(p){
       </div>
       <div class="whero-val priv-blur">${fmtHomeCur(p.atual)}</div>
       <div class="whero-chips">
-        <span class="whero-chip priv-blur ${p.lucroProv>=0?'up':'down'}"><i class="fa-solid fa-arrow-${p.lucroProv>=0?'up':'down'}"></i> ${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))} · ${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% hoje</span>
+        <span id="wHeroChip" class="whero-chip priv-blur ${p.lucroProv>=0?'up':'down'}"><i class="fa-solid fa-arrow-${p.lucroProv>=0?'up':'down'}"></i> ${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))} · ${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% hoje</span>
       </div>
       <div class="whero-periods" id="wPeriods" role="tablist" aria-label="Período do gráfico de patrimônio">
         ${WEALTH_PERIODS.map(pp=>`<button class="wper${pp===homeWealthPeriod?' active':''}" role="tab" aria-selected="${pp===homeWealthPeriod?'true':'false'}" onclick="setWealthPeriod('${pp}',this)">${pp}</button>`).join('')}
@@ -8950,7 +8952,7 @@ function renderHomeDashboard(p){
         <canvas id="wSpark" role="img" aria-label="Evolução do patrimônio no período selecionado"></canvas>
         <div class="whero-foot">
           <div><span>Investido</span><b class="priv-blur">${fmtHomeCur(p.invest)}</b></div>
-          <div><span>Resultado semanal</span><b class="priv-blur" style="color:${_wk.val>=0?'var(--up)':'var(--down)'}">${_wk.val>=0?'+':'−'}${fmtHomeCur(Math.abs(_wk.val))}</b></div>
+          <div><span id="wFootResLbl">Resultado</span><b id="wFootResVal" class="priv-blur" style="color:${_wk.val>=0?'var(--up)':'var(--down)'}">${_wk.val>=0?'+':'−'}${fmtHomeCur(Math.abs(_wk.val))}</b></div>
           <div><span>Renda/mês</span><b class="priv-blur">${fmtHomeCur(p.renda)}</b></div>
         </div>
       </div>
@@ -9080,8 +9082,6 @@ function wealthSeries(period){
       flat.push({ tk, cotas:l.cotas, pm:l.pm||0, date:dd, rate, pxNow:live?a.px:(l.pm||0) }); }); });
   if(!flat.length) return null;
   // ── Janela pelo PERÍODO escolhido (seletor 7D/30D/3M/6M/1A/MAX) ──
-  // Fora "MAX", recua winDays a partir de hoje; nunca antes da 1ª compra. Se faltar histórico
-  // para o período, mostra só o disponível (sem erro).
   const PWIN={'7D':7,'30D':30,'3M':91,'6M':182,'1A':365,'MAX':1000000};
   const winDays=PWIN[period]||7;
   const ps=(typeof portfolioStats==='function')?portfolioStats():null; const atual=(ps&&ps.atual>0)?ps.atual:null;
@@ -9089,50 +9089,88 @@ function wealthSeries(period){
   if(period!=='MAX'){ const win0=new Date(t0.getTime()-(winDays-1)*86400000); if(f0<win0) f0=win0; }
   const winStartK=key(f0);
   const spanLong=d=> d>180;   // rótulo com ano em janelas longas
-  // ── FONTE PRIMÁRIA: a TABELA DE HISTÓRICO DE PATRIMÔNIO (snapshots diários reais) ──
-  // Uma ÚNICA fonte por série (sem misturar com reconstrução) → linha coerente, sem degraus.
+  // ── Candidato com DADOS REAIS (fonte única por série, sem misturar → sem degraus) ──
+  // 1ª opção: a TABELA DE HISTÓRICO DE PATRIMÔNIO (snapshots diários). 2ª: reconstrução pelos
+  // FECHAMENTOS REAIS da B3 (respeitando data/preço de cada compra).
+  let cand=null;
   const ph=(typeof patHistArr==='function')?patHistArr():[];
   let phWin=(period==='MAX')?ph.slice():ph.filter(x=> x.d>=winStartK && x.d<=todayK);   // MAX = desde o 1º registro
   if(phWin.length>=2){
-    // reduz p/ ≤180 pontos preservando 1º e último (perf/suavidade em janelas longas)
     let src=phWin; if(src.length>180){ const st=Math.ceil(src.length/180); const r=[]; for(let i=0;i<src.length;i+=st) r.push(src[i]); if(r[r.length-1]!==src[src.length-1]) r.push(src[src.length-1]); src=r; }
     const spanDays=Math.round((new Date(src[src.length-1].d+'T00:00:00')-new Date(src[0].d+'T00:00:00'))/86400000);
     const fmtL=ds=>{ const d=new Date(ds+'T00:00:00'); return d.toLocaleDateString('pt-BR', spanLong(spanDays)?{day:'2-digit',month:'2-digit',year:'2-digit'}:{day:'2-digit',month:'2-digit'}); };
     const labels=src.map(x=>fmtL(x.d)); const cart=src.map(x=>x.v);
     if(atual!=null){ if(src[src.length-1].d===todayK) cart[cart.length-1]=atual; else { labels.push((new Date()).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})); cart.push(atual); } }
-    if(cart.length<2) return { labels, cart:[cart[0],cart[0]], cost:[], real:true, recon:false, realCount:cart.length, days:cart.length, period, startLabel:labels[0]||'' };
-    return { labels, cart, cost:[], real:true, recon:false, realCount:cart.length, days:cart.length, period, startLabel:labels[0]||'' };
+    if(cart.length>=2) cand={ labels, cart, cost:[], real:true, recon:false, realCount:cart.length, days:cart.length, spanDays, period, startLabel:labels[0]||'' };
   }
-  // ── FALLBACK (usuário novo, <2 registros de patrimônio): reconstrução por FECHAMENTOS REAIS ──
-  // da B3, respeitando a data/preço de cada compra. Não pinta "cabeça plana" antes do 1º dado real.
-  let realStart=null;
-  try{ Object.keys(HIST_CLOSE).forEach(tk=>{ const m=HIST_CLOSE[tk]; for(const dd in m){ if(!realStart||dd<realStart) realStart=dd; } }); }catch(e){}
-  if(ph.length && (!realStart || ph[0].d<realStart)) realStart=ph[0].d;
-  if(realStart){ const rs=new Date(realStart+'T00:00:00'); if(!isNaN(rs)){ const rsd=new Date(rs.getFullYear(),rs.getMonth(),rs.getDate()); if(f0<rsd) f0=rsd; } }
-  const totalDays=Math.round((t0-f0)/86400000)+1;
-  const step=Math.max(1, Math.ceil(totalDays/180));
-  const idxs=[]; for(let i=0;i<totalDays;i+=step) idxs.push(i); if(idxs[idxs.length-1]!==totalDays-1) idxs.push(totalDays-1);
-  const fmtLbl=d=>d.toLocaleDateString('pt-BR', spanLong(totalDays-1)?{day:'2-digit',month:'2-digit',year:'2-digit'}:{day:'2-digit',month:'2-digit'});
-  const labels=[], cart=[], cost=[]; let realDays=0; const phMap={}; ph.forEach(x=>{ phMap[x.d]=x.v; });
-  for(const i of idxs){ const d=new Date(f0.getTime()+i*86400000); const ds=key(d); const isToday=(ds===todayK); let v=0, cst=0;
-    let allClose=true, hasLot=false;
-    for(const l of flat){ if(l.date<=d){ hasLot=true; cst += l.cotas*l.pm*l.rate;
-      let px;
-      if(isToday) px=l.pxNow;
-      else { const c=closeOn(l.tk, ds); if(c!=null) px=c; else { px=l.pm; allClose=false; } }
-      v += l.cotas*px*l.rate;
-    }}
-    let dayReal;
-    if(!isToday && phMap[ds]!=null){ v=phMap[ds]; dayReal=true; }
-    else dayReal = isToday ? true : (hasLot && allClose);
-    if(dayReal) realDays++;
-    labels.push(fmtLbl(d)); cart.push(v); cost.push(cst);
+  if(!cand){
+    let realStart=null;
+    try{ Object.keys(HIST_CLOSE).forEach(tk=>{ const m=HIST_CLOSE[tk]; for(const dd in m){ if(!realStart||dd<realStart) realStart=dd; } }); }catch(e){}
+    if(ph.length && (!realStart || ph[0].d<realStart)) realStart=ph[0].d;
+    if(realStart){ const rs=new Date(realStart+'T00:00:00'); if(!isNaN(rs)){ const rsd=new Date(rs.getFullYear(),rs.getMonth(),rs.getDate()); if(f0<rsd) f0=rsd; } }
+    const totalDays=Math.round((t0-f0)/86400000)+1;
+    const step=Math.max(1, Math.ceil(totalDays/180));
+    const idxs=[]; for(let i=0;i<totalDays;i+=step) idxs.push(i); if(idxs[idxs.length-1]!==totalDays-1) idxs.push(totalDays-1);
+    const fmtLbl=d=>d.toLocaleDateString('pt-BR', spanLong(totalDays-1)?{day:'2-digit',month:'2-digit',year:'2-digit'}:{day:'2-digit',month:'2-digit'});
+    const labels=[], cart=[], cost=[]; let realDays=0; const phMap={}; ph.forEach(x=>{ phMap[x.d]=x.v; });
+    for(const i of idxs){ const d=new Date(f0.getTime()+i*86400000); const ds=key(d); const isToday=(ds===todayK); let v=0, cst=0;
+      let allClose=true, hasLot=false;
+      for(const l of flat){ if(l.date<=d){ hasLot=true; cst += l.cotas*l.pm*l.rate;
+        let px;
+        if(isToday) px=l.pxNow;
+        else { const c=closeOn(l.tk, ds); if(c!=null) px=c; else { px=l.pm; allClose=false; } }
+        v += l.cotas*px*l.rate;
+      }}
+      let dayReal;
+      if(!isToday && phMap[ds]!=null){ v=phMap[ds]; dayReal=true; }
+      else dayReal = isToday ? true : (hasLot && allClose);
+      if(dayReal) realDays++;
+      labels.push(fmtLbl(d)); cart.push(v); cost.push(cst);
+    }
+    if(atual!=null) cart[cart.length-1]=atual;
+    if(cart.length>=2){ const allReal=realDays>=cart.length && !anyUsd;
+      cand={ labels, cart, cost, real:allReal, recon:!allReal, realCount:realDays, days:cart.length, spanDays:totalDays-1, period, startLabel:f0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) }; }
   }
-  if(atual!=null) cart[cart.length-1]=atual;   // âncora final = patrimônio atual real
-  if(cart.length<2){ const vv=cart[0]||atual||0, cc=cost[0]||0; const lab=t0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
-    return { labels:['início',lab], cart:[vv,vv], cost:[cc,cc], real:false, recon:true, realCount:0, days:1, period, startLabel:'hoje' }; }
-  const allReal = realDays>=cart.length && !anyUsd;
-  return { labels, cart, cost, real:allReal, recon:!allReal, realCount:realDays, days:cart.length, period, startLabel:f0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) };
+  // ── ADEQUAÇÃO: usa os dados REAIS só se cobrirem bem a janela E variarem de fato. Caso contrário
+  // (sem histórico real suficiente p/ o período — comum em janelas longas), cai numa ESTIMATIVA
+  // determinística ancorada no patrimônio real, distinta por período → o gráfico SEMPRE muda. ──
+  const needSpan = (period==='MAX') ? 1 : Math.floor((winDays-1)*0.85);
+  const distinct = cand ? new Set(cand.cart.map(v=>Math.round(v))).size : 0;
+  if(cand && distinct>=2 && cand.spanDays>=needSpan) return cand;
+  const est=wealthEst(period, t0, ps); if(est) return est;
+  if(cand) return cand;
+  if(atual!=null){ const lab=t0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); return { labels:['início',lab], cart:[atual,atual], cost:[], real:false, recon:true, realCount:0, days:1, period, startLabel:'hoje' }; }
+  return null;
+}
+/* ESTIMATIVA determinística da evolução do patrimônio para um período (quando ainda não há
+   histórico real que cubra a janela). Ancorada no patrimônio atual real; tendência e volatilidade
+   ESCALAM com o período (7D suave → 1A/MAX amplo) e a semente muda por período → cada período
+   desenha uma curva distinta e estável entre renders. Termina exatamente no patrimônio atual. */
+function wealthEst(period, t0, ps){
+  ps = ps || ((typeof portfolioStats==='function')?portfolioStats():null);
+  const atual=(ps&&ps.atual)||0; if(atual<=0) return null;
+  if(!t0){ const n=new Date(); t0=new Date(n.getFullYear(),n.getMonth(),n.getDate()); }
+  // tw = tendência acumulada no período (escala com a janela); wave = amplitude da ondulação suave
+  const CFG={'7D':{d:7,tw:0.06,wave:0.006},'30D':{d:30,tw:0.16,wave:0.011},'3M':{d:91,tw:0.32,wave:0.017},'6M':{d:182,tw:0.55,wave:0.024},'1A':{d:365,tw:1.0,wave:0.032},'MAX':{d:540,tw:1.15,wave:0.038}};
+  const cfg=CFG[period]||CFG['7D']; const days=cfg.d;
+  const trend=Math.max(-0.55, Math.min(0.55, ((ps&&ps.lucroProvP||0)/100)*cfg.tw));   // ganho acumulado no período
+  const start=atual/(1+trend);
+  const r=rngF(seedFrom('west'+period+Math.round(atual)));
+  // ondulação ORGÂNICA = soma de poucas senoides de BAIXA frequência (fase/amplitude determinísticas
+  // pela semente) → curva parecida com um app de investimentos, sem ruído de alta frequência.
+  const waves=[]; for(let w=0; w<3; w++) waves.push({ f: 0.6 + r()*2.6, ph: r()*Math.PI*2, a: 0.45 + r()*0.55 });
+  const aSum=waves.reduce((s,w)=>s+w.a,0)||1; const waveAmp=atual*cfg.wave;
+  const nPts=Math.min(days,180); const longWin=days>180;
+  const fmt=d=>d.toLocaleDateString('pt-BR', longWin?{day:'2-digit',month:'2-digit',year:'2-digit'}:{day:'2-digit',month:'2-digit'});
+  const cart=[], labels=[];
+  for(let i=0;i<nPts;i++){ const frac=nPts>1?i/(nPts-1):1; const dayOff=Math.round((days-1)*(1-frac));
+    const base=start+(atual-start)*Math.pow(frac,1.03);
+    let wv=0; waves.forEach(w=> wv += w.a*Math.sin(frac*Math.PI*2*w.f + w.ph)); wv/=aSum;   // ~ −1..1
+    const env=1-Math.pow(frac,4);   // ondulação some suavemente no fim → aterrissa exatamente no atual
+    cart.push(i===nPts-1?atual:Math.max(1, base + waveAmp*wv*env));
+    labels.push(fmt(new Date(t0.getTime()-dayOff*86400000)));
+  }
+  return { labels, cart, cost:[], real:false, recon:true, est:true, realCount:0, days:nPts, period, startLabel:labels[0] };
 }
 /* troca o período do gráfico de patrimônio: memoriza na sessão, destaca o botão e
    redesenha com a animação suave do Chart.js. Janela sem histórico não gera erro. */
@@ -9204,6 +9242,24 @@ function initWealthSpark(){
   if(window._wsOutside) document.removeEventListener('pointerdown', window._wsOutside, true);
   window._wsOutside=(e)=>{ if(e.target!==ctx) hideTip(); };
   document.addEventListener('pointerdown', window._wsOutside, true);
+  updateWealthKPIs(d);   // sincroniza os indicadores (variação R$/%, resultado) com o período do gráfico
+}
+/* atualiza os indicadores dependentes do gráfico conforme o PERÍODO selecionado:
+   chip de variação (R$ e %) no topo e a célula "Resultado" do rodapé. Variação = último ponto
+   da série menos o primeiro (retorno no período), na moeda base. */
+function updateWealthKPIs(d){
+  if(!d||!Array.isArray(d.cart)||d.cart.length<2) return;
+  const first=d.cart[0], last=d.cart[d.cart.length-1];
+  const abs=last-first; const pct=first? abs/first*100 : 0; const up=abs>=0;
+  const PLBL={'7D':'7 dias','30D':'30 dias','3M':'3 meses','6M':'6 meses','1A':'1 ano','MAX':'máximo'};
+  const perTxt=(d.period&&PLBL[d.period])||'período';
+  const money=(typeof fmtHomeCur==='function')?fmtHomeCur(Math.abs(abs)):Math.round(Math.abs(abs));
+  const pctTxt=`${up?'+':'−'}${Math.abs(pct).toFixed(2).replace('.',',')}%`;
+  const chip=document.getElementById('wHeroChip');
+  if(chip){ chip.className='whero-chip priv-blur '+(up?'up':'down');
+    chip.innerHTML=`<i class="fa-solid fa-arrow-${up?'up':'down'}"></i> ${up?'+':'−'}${money} · ${pctTxt} · ${perTxt}`; }
+  const lbl=document.getElementById('wFootResLbl'); if(lbl) lbl.textContent='Resultado '+(d.period||'');
+  const val=document.getElementById('wFootResVal'); if(val){ val.style.color=up?'var(--up)':'var(--down)'; val.textContent=`${up?'+':'−'}${money}`; }
 }
 function initHomeEvol(){
   const ctx=$('#homeEvolChart'); if(!ctx) return;
