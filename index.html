@@ -6336,14 +6336,14 @@ async function loadUsQuotes(tickers){
   }catch(e){}
 }
 /* mercado de cripto REAL (CoinGecko via /api/crypto) — expande e enriquece a lista CRIPTO. */
-function cryptoEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.CRYPTO_ENDPOINT) || '/api/crypto'; }
+function cryptoEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.CRYPTO_ENDPOINT) || '/api/market?fn=crypto'; }
 let _cryptoDone=false, _cryptoAt=0;
 async function loadCryptoMarkets(){
   const now=Date.now();
   if(_cryptoDone && now-_cryptoAt<120000) return;   // reusa por 2 min (cache curto, preços vivos)
   _cryptoDone=true; _cryptoAt=now;
   try{
-    const r=await fetch(`${cryptoEndpoint()}?n=100`);
+    const r=await fetch(`${cryptoEndpoint()}&n=100`);
     if(!r.ok){ _cryptoDone=false; return; }
     const d=await r.json(); const res=(d&&d.results)||[];
     if(!res.length){ _cryptoDone=false; return; }
@@ -6381,7 +6381,7 @@ async function loadCryptoMarkets(){
   }catch(e){ _cryptoDone=false; }
 }
 /* universo REAL dos EUA (FMP screener via /api/usuniverse) — enche Stocks e ETFs internacionais. */
-function usUniverseEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.USUNIVERSE_ENDPOINT) || '/api/usuniverse'; }
+function usUniverseEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.USUNIVERSE_ENDPOINT) || '/api/market?fn=usuniverse'; }
 const _US_TK=/^[A-Z]{1,5}$/;
 function mergeUsUniverse(arr, items, isEtf){
   if(!Array.isArray(items)) return 0;
@@ -9018,7 +9018,7 @@ async function loadPortfolioHistory(force){
   if(b3.length) qs.set('symbols', b3.join(',')); if(us.length) qs.set('us', us.join(',')); if(cr.length) qs.set('crypto', cr.join(','));
   qs.set('days','40'); if(!qs.has('symbols')&&!qs.has('us')&&!qs.has('crypto')) return;
   try{
-    const r=await fetch(`/api/history?${qs.toString()}`); if(!r.ok){ _histAt=0; return; }
+    const r=await fetch(`/api/market?fn=history&${qs.toString()}`); if(!r.ok){ _histAt=0; return; }
     const d=await r.json(); const res=(d&&d.results)||{}; let any=false;
     Object.keys(res).forEach(tk=>{ const ser=res[tk]; if(!Array.isArray(ser)||!ser.length) return; const m=HIST_CLOSE[tk]=HIST_CLOSE[tk]||{}; ser.forEach(x=>{ if(x&&x.d&&typeof x.c==='number'&&x.c>0) m[x.d]=x.c; }); any=true; });
     if(any){ histSaveClose(); if(currentView==='painel'||currentView==='carteira') render(currentView,true); }
@@ -10815,7 +10815,7 @@ async function loadAssetLive(tk){
 /* ── Detalhe REAL de ativos dos EUA (FMP via /api/usdetail): perfil, fundamentos,
    histórico de preço, dividendos e — para ETFs — taxa/AUM/posições. ── */
 const US_DETAIL={};
-function usDetailEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.USDETAIL_ENDPOINT) || '/api/usdetail'; }
+function usDetailEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.USDETAIL_ENDPOINT) || '/api/market?fn=usdetail'; }
 function isUsAsset(lk){ return lk && (lk.k==='stocks' || (lk.k==='etfs' && lk.a.usd)); }
 function applyUsDetail(tk,d){
   const lk=assetLookup(tk); if(!lk||!d||d.error||d.note) return;
@@ -10855,7 +10855,7 @@ async function loadUsDetail(tk){
   const cached=US_DETAIL[tk];
   if(cached && cached._ts && Date.now()-cached._ts<600000){ applyUsDetail(tk,cached); return cached; }
   try{
-    const r=await fetch(`${usDetailEndpoint()}?symbol=${encodeURIComponent(tk)}${isEtf?'&kind=etf':''}`);
+    const r=await fetch(`${usDetailEndpoint()}&symbol=${encodeURIComponent(tk)}${isEtf?'&kind=etf':''}`);
     if(!r.ok) return null;
     const d=await r.json();
     if(!d || d.error || d.note) return null;
