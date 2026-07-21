@@ -8933,7 +8933,7 @@ function renderHomeDashboard(p){
       </div>
       <div class="whero-val priv-blur">${fmtHomeCur(p.atual)}</div>
       <div class="whero-chips">
-        <span class="whero-chip priv-blur ${p.lucroProv>=0?'up':'down'}"><i class="fa-solid fa-arrow-${p.lucroProv>=0?'up':'down'}"></i> ${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))} hoje</span>
+        <span class="whero-chip priv-blur ${dayP>=0?'up':'down'}"><i class="fa-solid fa-arrow-${dayP>=0?'up':'down'}"></i> ${dayP>=0?'+':'−'}${fmtHomeCur(Math.abs(dayVal))} · ${dayP>=0?'+':''}${pc(dayP,2)}% hoje</span>
         <span class="whero-chip2 ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% total</span>
       </div>
       <div class="whero-graph">
