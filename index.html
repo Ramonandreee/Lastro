@@ -9031,7 +9031,9 @@ function portfolioDayVar(){
   groups.forEach(g=>{ const a=g.f.a; if(!(a.live && a.px>0)) return;
     const v=(g.f.k==='cripto')?(typeof a.v24==='number'?a.v24:null):(typeof a.var==='number'?a.var:null); if(v==null) return;   // cripto: variação 24h
     const rate=(g.cur==='usd')?usdBrlRate():1; const prev=a.px/(1+v/100);   // fechamento anterior real (derivado da variação do feed)
-    g.lots.forEach(l=>{ const isToday=String(l.date||'').slice(0,10)>=today; const b=isToday?l.pm:prev;   // aporte de hoje: base = preço de compra
+    // base do dia = fechamento anterior; para o lote comprado HOJE, base = preço de compra (o
+    // aporte não é lucro — conta só o movimento desde a compra). R$ e % saem da MESMA base.
+    g.lots.forEach(l=>{ const b=(String(l.date||'').slice(0,10)>=today)?l.pm:prev;
       val += l.cotas*(a.px-b)*rate; base += l.cotas*b*rate; }); });
   return { val, pct: base? val/base*100 : 0, base };
 }
@@ -9051,28 +9053,30 @@ function wealthSeries(){
       const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate()); if(dd<first) first=dd;
       flat.push({ tk, cotas:l.cotas, pm:l.pm||0, date:dd, rate, pxNow:live?a.px:(l.pm||0) }); }); });
   if(!flat.length) return null;
+  // começa na PRIMEIRA compra — não pinta dias em que a carteira não existia (item 4).
   let f0=new Date(first.getFullYear(),first.getMonth(),first.getDate());
-  const minStart=new Date(t0.getTime()-6*86400000); if(f0>minStart) f0=minStart;   // sempre mostra ao menos ~7 dias
   const N=Math.min(Math.round((t0-f0)/86400000)+1, 92);
-  const realMap={}; patHistArr().forEach(x=>{ realMap[x.d]=x.v; });   // snapshots exatos sobrepõem
+  // Reconstrução PURA a partir das posições ATUAIS × fechamento real de cada dia. NÃO usamos os
+  // snapshots diários (patHist) aqui: eles guardam o patrimônio de uma COMPOSIÇÃO antiga e, se a
+  // carteira mudou, injetariam valores de outra carteira nos dias passados (o bug do "desde 14/07").
   const labels=[], cart=[], cost=[]; let realDays=0;
-  for(let i=0;i<N;i++){ const d=new Date(f0.getTime()+i*86400000); const ds=key(d); let v=0, cst=0, dayReal=false;
-    for(const l of flat){ if(l.date<=d) cst += l.cotas*l.pm*l.rate; }   // custo investido ATÉ esse dia (p/ retorno-sobre-custo, neutro a aporte)
-    if(ds!==todayK && realMap[ds]!=null){ v=realMap[ds]; dayReal=true; }
-    else {
-      let allClose=true, hasLot=false;
-      for(const l of flat){ if(l.date<=d){ hasLot=true;
-        let px;
-        if(ds===todayK) px=l.pxNow;                                   // hoje: cotação atual
-        else { const c=closeOn(l.tk, ds); if(c!=null) px=c; else { px=l.pm; allClose=false; } }
-        v += l.cotas*px*l.rate;
-      }}
-      dayReal = (ds===todayK) ? true : (hasLot && allClose);
-    }
+  for(let i=0;i<N;i++){ const d=new Date(f0.getTime()+i*86400000); const ds=key(d); let v=0, cst=0;
+    let allClose=true, hasLot=false;
+    for(const l of flat){ if(l.date<=d){ hasLot=true; cst += l.cotas*l.pm*l.rate;   // custo investido até esse dia
+      let px;
+      if(ds===todayK) px=l.pxNow;                                     // hoje: cotação atual
+      else { const c=closeOn(l.tk, ds); if(c!=null) px=c; else { px=l.pm; allClose=false; } }
+      v += l.cotas*px*l.rate;
+    }}
+    const dayReal = (ds===todayK) ? true : (hasLot && allClose);
     if(dayReal) realDays++;
     labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})); cart.push(v); cost.push(cst);
   }
   const ps=(typeof portfolioStats==='function')?portfolioStats():null; if(ps&&ps.atual>0) cart[cart.length-1]=ps.atual;   // âncora final = patrimônio atual real
+  // posição nova (comprada hoje): ainda não há evolução → linha PLANA no valor atual (nada de
+  // dias-zero antes da compra nem curva inventada). A evolução começa a partir de amanhã.
+  if(cart.length<2){ const vv=cart[0]||(ps&&ps.atual)||0, cc=cost[0]||0; const lab=t0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    return { labels:['início',lab], cart:[vv,vv], cost:[cc,cc], real:false, recon:true, realCount:0, days:1, startLabel:'hoje' }; }
   // "histórico real" só quando todo dia tem fechamento real E não há câmbio congelado (dolarizados
   // usam a taxa de hoje em dias passados → rotulamos como reconstrução "desde {data}", não "real").
   const allReal = realDays>=N && !anyUsd;
