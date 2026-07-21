@@ -1,0 +1,21 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Sem dependências: usa o runner nativo (node:test) + node:assert.
+      - name: Testes de unidade (backend)
+        run: node --test test/*.mjs
+      # Validação de sintaxe das Serverless Functions e libs.
+      - name: node --check (api + lib)
+        run: for f in api/*.js lib/*.js; do node --check "$f"; done

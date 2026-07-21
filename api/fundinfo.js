@@ -17,12 +17,12 @@ import { withObs } from "../lib/log.js";
  */
 const CAD_URL = 'https://dados.cvm.gov.br/dados/FI/CAD/DADOS/cad_fi.csv';
 
-function normalize(s) {
+export function normalize(s) {
   return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 const onlyDigits = (s) => String(s || '').replace(/\D/g, '');
-function parseNum(s) {
+export function parseNum(s) {
   let t = String(s == null ? '' : s).trim();
   if (!t) return null;
   const hasComma = t.includes(','), hasDot = t.includes('.');
@@ -32,7 +32,7 @@ function parseNum(s) {
   return isFinite(n) ? n : null;
 }
 const STOP = new Set(['fii', 'fdo', 'fundo', 'fundos', 'inv', 'invest', 'investimento', 'imob', 'imobiliario', 'imobiliaria', 'de', 'do', 'da', 'dos', 'das', 'the', 'and', 'em', 'acoes', 'indice', 'fic', 'ie']);
-function tokens(nm) { return normalize(nm).split(' ').filter((t) => t.length >= 3 && !STOP.has(t)); }
+export function tokens(nm) { return normalize(nm).split(' ').filter((t) => t.length >= 3 && !STOP.has(t)); }
 
 async function fetchText(url, ms = 25000) {
   const ctrl = new AbortController();
@@ -91,7 +91,7 @@ function parseFundos(text) {
 }
 
 // match conservador: todos os tokens do pedido no nome do fundo + token distintivo (≥4) + unicidade.
-function matchOne(fundos, wantName) {
+export function matchOne(fundos, wantName) {
   const wt = tokens(wantName);
   if (!wt.length || !wt.some((t) => t.length >= 4)) return null;
   const wset = wt;

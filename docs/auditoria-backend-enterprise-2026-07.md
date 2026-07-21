@@ -95,9 +95,10 @@ Impacto técnico: bypass de paywall. Impacto no cliente: injusto com pagantes; p
 Evidência: `portfolioByTicker`/`portfolioStats` (`g.custo += c.cotas*c.pm`, `g.val = g.cotas*px*rate`, somatórios de lucro/proventos) usam `Number`. Conversões USD→BRL multiplicam floats. Somar centenas de posições em float acumula erro de arredondamento em **dinheiro**.
 Impacto: divergência de centavos em patrimônio/resultado/IR; inaceitável para fintech. Impacto no cliente: perda de confiança quando a conta "não fecha".
 
-**C3 — Ausência total de testes automatizados.**
-Evidência: nenhum arquivo de teste no repositório; a única "validação" é a checagem manual de chaves CSS/sintaxe JS (CLAUDE.md). Regras financeiras (variação do dia, reconstrução histórica, preço médio, proventos) mudaram várias vezes sem cobertura.
+**C3 — Ausência total de testes automatizados.** *(parcialmente endereçado — ver §5)*
+Evidência: (à época) nenhum arquivo de teste; a única "validação" era a checagem manual de chaves CSS/sintaxe JS. Regras financeiras (variação do dia, reconstrução histórica, preço médio, proventos) mudaram várias vezes sem cobertura.
 Impacto: regressões silenciosas em dinheiro. Impacto no cliente: bugs de saldo/rentabilidade chegando à produção.
+**Status:** criada suíte de unidade do backend (`test/*.mjs`, runner nativo, 14 testes) + CI (`.github/workflows/test.yml`). **Lacuna remanescente:** a matemática de carteira vive no `index.html` (não importável) — precisa ser extraída para um módulo puro para ser coberta.
 
 ### 🟠 Alto
 
@@ -164,6 +165,10 @@ Impacto: IA/resumo do dia falham silenciosamente. Impacto no cliente: recurso PR
 ## 5. Correções implementadas nesta auditoria
 
 **Sanitização de erros (M1/B1)** — remoção de detalhes internos (mensagens de exceção e URLs) das respostas de erro ao cliente, mantendo o log server-side. Baixíssimo risco (o front já trata erro como fail-safe e ignora o corpo). Arquivos: `api/universe.js`, `api/quotes.js`, `api/documents.js`.
+
+**Observabilidade (A2/B3)** — `lib/log.js` (logger JSON estruturado + `withObs()`); health/readiness em `/api/market?fn=health`; `withObs()` aplicado nos 12 endpoints (request-id `x-request-id` + log `done/erro` com `ep/status/ms`).
+
+**Testes de unidade (C3, parcial)** — `test/*.mjs` com o runner nativo (`node:test`, sem dependências): 14 testes cobrindo o matcher/parse da CVM (`matchOne`/`parseNum` — correção de dado financeiro), datas/dedupe do histórico e o mapeamento de mercado (`pct`/`mapOne`). CI em `.github/workflows/test.yml` (roda testes + `node --check` a cada push/PR). Funções puras exportadas de `api/fundinfo.js`, `lib/history.js`, `lib/crypto.js`, `lib/usdetail.js`.
 
 > As demais correções (C1–C3, A1–A5) são mudanças estruturais que **exigem decisão de produto e implementação faseada** (billing, módulo monetário, suíte de testes, KV, observabilidade). Alterá-las às cegas num app financeiro em produção seria arriscado — estão no plano de evolução (§7).
 
