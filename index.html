@@ -5986,8 +5986,7 @@ function viewPainel(){
   // o painel mostra os estados vazios/zerados (dados fictícios vivem só no modo dev).
   const p = portfolioStats();
   // variação real do dia da carteira (ponderada pelas posições) — só com cotação REAL (a.live)
-  let _patDayVal=0; (p._byT||[]).forEach(g=>{ const a=g.f&&g.f.a; const v=(a&&a.live&&typeof a.var==='number')?a.var:0; _patDayVal += g.val*v/100; });
-  const patDayP = p.atual ? _patDayVal/p.atual*100 : 0;
+  const _pdv=portfolioDayVar(); const _patDayVal=_pdv.val, patDayP=_pdv.pct;   // fechamento anterior → atual
   // faixa de mercado: 4 indicadores que NÃO aparecem na Performance Diária
   const HOME_MKT=['Dólar','SELIC','IPCA','Bitcoin'];
   const mstrip = HOME_MKT.map(nm=>MARKET.find(m=>m.nm===nm)).filter(Boolean).map((m,i)=>{
@@ -8591,6 +8590,7 @@ function afterRender(v, soft){
   if((v==='painel'||v==='carteira') && !soft){
     const us=[...new Set(CARTEIRA.map(c=>assetLookup(c.tk)).filter(lk=>isUsAsset(lk)).map(lk=>lk.a.tk))];
     if(us.length) loadUsQuotes(us);
+    if(typeof loadPortfolioHistory==='function') loadPortfolioHistory();   // fechamentos reais p/ reconstruir a evolução
   }
   if(v==='carteira'){ initAlloc(); initPatrEvol(); initSalary(); if(!soft) diagnose(); }
   if(v==='proventos'){ initProventosCharts(); }
@@ -8885,8 +8885,7 @@ function renderHomeDashboard(p){
   // variação do dia (ponderada pelas posições)
   // Variação do dia SÓ com cotação REAL (a.live). Sem pregão/sem cotação ao vivo, fica 0 —
   // não fabrica "hoje" a partir do valor curado (evita mostrar variação com o mercado fechado).
-  let dayVal=0; (p._byT||[]).forEach(g=>{ const a=g.f&&g.f.a; const v=(a&&a.live&&typeof a.var==='number')?a.var:0; dayVal+=g.val*v/100; });
-  const dayP=p.atual?dayVal/p.atual*100:0;
+  const _dv=portfolioDayVar(); const dayVal=_dv.val, dayP=_dv.pct;   // fechamento anterior → atual (R$ e % na mesma base)
   // alocação por classe
   const CLS={acoes:['Ações','#0B2E5E'],fiis:['FIIs','#3F79D6'],etfs:['ETFs','#B8860B'],etfsint:['ETFs int.','#2f6f9e'],bdrs:['BDRs','#8b5cf6'],stocks:['Stocks','#0ea5e9'],cripto:['Cripto','#f59e0b']};
   const alloc={}; (p._byT||[]).forEach(g=>{ const lk=assetLookup(g.tk); const k=(lk&&lk.k)||'acoes'; alloc[k]=(alloc[k]||0)+g.val; });
@@ -8997,44 +8996,82 @@ function wealthReal(days){
 }
 /* quantos dias REAIS de histórico há na janela (p/ o selo do card) */
 function wealthDays(days){ const a=patHistArr(); const t=new Date(); const cut=_patDay(new Date(t.getFullYear(),t.getMonth(),t.getDate()-((days||7)-1))); return a.filter(x=>x.d>=cut).length; }
-/* série p/ o gráfico: SEMPRE histórico REAL (nada de estimativa). Com ≥2 dias, curva real;
-   com só o dia de hoje, linha PLANA no valor atual — o gráfico começa a se mover no dia seguinte. */
+/* ── Fechamentos diários REAIS (cache local) p/ reconstruir a evolução da carteira ──
+   HIST_CLOSE[tk] = { 'YYYY-MM-DD': fechamento }. Alimentado por /api/history (brapi/FMP/
+   CoinGecko) e persistido em localStorage — cálculo incremental, atualiza só quando muda. */
+const HIST_CLOSE = {};
+(function(){ try{ const o=JSON.parse(localStorage.getItem('lastro_hist_close')||'{}'); if(o&&typeof o==='object') Object.keys(o).forEach(k=>{ HIST_CLOSE[k]=o[k]; }); }catch(e){} })();
+function histSaveClose(){ try{ localStorage.setItem('lastro_hist_close', JSON.stringify(HIST_CLOSE)); }catch(e){} }
+/* fechamento de tk EM/ANTES de um dia (carrega o último conhecido — fim de semana/feriado = mesmo valor) */
+function closeOn(tk, dayStr){ const m=HIST_CLOSE[tk]; if(!m) return null; let bestD='', best=null; for(const d in m){ if(d<=dayStr && d>bestD){ bestD=d; best=m[d]; } } return best; }
+let _histKey='', _histAt=0;
+async function loadPortfolioHistory(force){
+  if(!CARTEIRA.length) return;
+  const tks=[...new Set(CARTEIRA.map(c=>c.tk))]; const key=tks.slice().sort().join(',');
+  const now=Date.now(); if(!force && key===_histKey && now-_histAt<3600000) return;   // refetch só se mudou ou passou 1h
+  _histKey=key; _histAt=now;
+  const b3=[], us=[], cr=[];
+  tks.forEach(tk=>{ const lk=assetLookup(tk); if(!lk) return; if(lk.k==='cripto') cr.push(tk); else if(isUsAsset(lk)) us.push(tk); else b3.push(tk); });
+  const qs=new URLSearchParams();
+  if(b3.length) qs.set('symbols', b3.join(',')); if(us.length) qs.set('us', us.join(',')); if(cr.length) qs.set('crypto', cr.join(','));
+  qs.set('days','40'); if(!qs.has('symbols')&&!qs.has('us')&&!qs.has('crypto')) return;
+  try{
+    const r=await fetch(`/api/history?${qs.toString()}`); if(!r.ok){ _histAt=0; return; }
+    const d=await r.json(); const res=(d&&d.results)||{}; let any=false;
+    Object.keys(res).forEach(tk=>{ const ser=res[tk]; if(!Array.isArray(ser)||!ser.length) return; const m=HIST_CLOSE[tk]=HIST_CLOSE[tk]||{}; ser.forEach(x=>{ if(x&&x.d&&typeof x.c==='number'&&x.c>0) m[x.d]=x.c; }); any=true; });
+    if(any){ histSaveClose(); if(currentView==='painel'||currentView==='carteira') render(currentView,true); }
+  }catch(e){ _histAt=0; }
+}
+/* variação do DIA da carteira: fechamento anterior → cotação atual, R$ e % na MESMA base.
+   Aporte de hoje usa o preço de compra como base (o aporte não é lucro). Só ativos com cotação
+   REAL (a.live) entram; sem cotação ao vivo, contribui 0 (nunca variação fictícia). */
+function portfolioDayVar(){
+  const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[]; const today=_patDay();
+  let val=0, base=0;
+  groups.forEach(g=>{ const a=g.f.a; if(!(a.live && a.px>0)) return;
+    const v=(g.f.k==='cripto')?(typeof a.v24==='number'?a.v24:null):(typeof a.var==='number'?a.var:null); if(v==null) return;   // cripto: variação 24h
+    const rate=(g.cur==='usd')?usdBrlRate():1; const prev=a.px/(1+v/100);   // fechamento anterior real (derivado da variação do feed)
+    g.lots.forEach(l=>{ const isToday=String(l.date||'').slice(0,10)>=today; const b=isToday?l.pm:prev;   // aporte de hoje: base = preço de compra
+      val += l.cotas*(a.px-b)*rate; base += l.cotas*b*rate; }); });
+  return { val, pct: base? val/base*100 : 0, base };
+}
+/* série da evolução do patrimônio: RECONSTRUÍDA a partir dos FECHAMENTOS REAIS de cada dia,
+   respeitando a data de cada aporte. Sem interpolação/RNG. Cada ponto = Σ(cotas×fechamento do
+   dia)×câmbio, contando só os aportes já feitos até aquela data. Onde ainda falta o fechamento
+   real, usa o snapshot do dia (se houver) ou o custo do lote (linha plana) — nunca o valor atual. */
 function wealthSeries(){
-  // Evolução do patrimônio a partir das SUAS COMPRAS: usa a data e o preço de compra (pm) de
-  // cada aporte + o preço atual, ancorando o início no custo e o fim no patrimônio real.
-  // Dias com snapshot real são sobrepostos (valor exato). O caminho entre é interpolado
-  // (do preço pago até o atual) — vira histórico real conforme o app é aberto dia a dia.
   const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[]; if(!groups.length) return null;
-  const lots=[];
-  groups.forEach(g=>{ const px=(g.f&&g.f.a&&g.f.a.px)||0; const rate=(g.cur==='usd')?usdBrlRate():1; const seed=seedFrom(g.tk);
-    (g.lots||[]).forEach(l=>{ let d=l.date?new Date(l.date+'T00:00:00'):null; if(!d||isNaN(d)) d=new Date();
-      lots.push({ cotas:l.cotas, pm:l.pm||0, px, rate, date:d, seed }); }); });
-  if(!lots.length) return null;
   const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  let first=lots.reduce((m,l)=> l.date<m?l.date:m, lots[0].date);
-  let f0=new Date(first.getFullYear(),first.getMonth(),first.getDate());
-  if(f0>=t0) f0=new Date(t0.getTime()-6*86400000);        // aporte de hoje → mostra ~1 semana
-  const spanDays=Math.max(1, Math.round((t0-f0)/86400000));
-  const N=Math.max(7, Math.min(30, spanDays+1));
-  const realMap={}; patHistArr().forEach(x=>{ realMap[x.d]=x.v; });
   const p2=n=>String(n).padStart(2,'0'); const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+  const todayK=key(t0);
+  const flat=[]; let first=t0;
+  groups.forEach(g=>{ const a=g.f.a, tk=g.tk, rate=(g.cur==='usd')?usdBrlRate():1; const live=!!(a.live&&a.px>0);
+    (g.lots||[]).forEach(l=>{ let d=l.date?new Date(l.date+'T00:00:00'):t0; if(isNaN(d)) d=t0;
+      const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate()); if(dd<first) first=dd;
+      flat.push({ tk, cotas:l.cotas, pm:l.pm||0, date:dd, rate, pxNow:live?a.px:(l.pm||0) }); }); });
+  if(!flat.length) return null;
+  let f0=new Date(first.getFullYear(),first.getMonth(),first.getDate());
+  const minStart=new Date(t0.getTime()-6*86400000); if(f0>minStart) f0=minStart;   // sempre mostra ao menos ~7 dias
+  const N=Math.min(Math.round((t0-f0)/86400000)+1, 92);
+  const realMap={}; patHistArr().forEach(x=>{ realMap[x.d]=x.v; });   // snapshots exatos sobrepõem
   const labels=[], cart=[]; let realDays=0;
-  for(let i=0;i<N;i++){ const frac=i/(N-1); const d=new Date(f0.getTime()+(t0.getTime()-f0.getTime())*frac);
-    const dk=key(d); let v;
-    if(realMap[dk]!=null){ v=realMap[dk]; realDays++; }
-    else { v=0;
-      for(const l of lots){ if(l.date<=d){
-        const denom=Math.max(86400000, t0.getTime()-l.date.getTime());
-        let f=(d.getTime()-l.date.getTime())/denom; f=Math.max(0,Math.min(1,f));
-        let price=l.pm+(l.px-l.pm)*f;                       // do preço pago até o atual
-        if(i>0 && i<N-1){ const rr=rngF(l.seed+i*131)(); price*=(1+(rr-0.5)*0.01); }   // textura leve (±0,5%)
-        v+=l.cotas*price*l.rate;
+  for(let i=0;i<N;i++){ const d=new Date(f0.getTime()+i*86400000); const ds=key(d); let v=0, dayReal=false;
+    if(ds!==todayK && realMap[ds]!=null){ v=realMap[ds]; dayReal=true; }
+    else {
+      let allClose=true, hasLot=false;
+      for(const l of flat){ if(l.date<=d){ hasLot=true;
+        let px;
+        if(ds===todayK) px=l.pxNow;                                   // hoje: cotação atual
+        else { const c=closeOn(l.tk, ds); if(c!=null) px=c; else { px=l.pm; allClose=false; } }
+        v += l.cotas*px*l.rate;
       }}
+      dayReal = (ds===todayK) ? true : (hasLot && allClose);
     }
+    if(dayReal) realDays++;
     labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})); cart.push(v);
   }
-  const ps=(typeof portfolioStats==='function')?portfolioStats():null; if(ps&&ps.atual>0) cart[cart.length-1]=ps.atual;   // fecha no patrimônio real
-  const allReal=realDays>=N;
+  const ps=(typeof portfolioStats==='function')?portfolioStats():null; if(ps&&ps.atual>0) cart[cart.length-1]=ps.atual;   // âncora final = patrimônio atual real
+  const allReal = realDays>=N;
   return { labels, cart, real:allReal, recon:!allReal, realCount:realDays, days:N, startLabel:f0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) };
 }
 /* Reconstrução ilustrativa da evolução do patrimônio em 7 dias (quando ainda não há
@@ -12611,6 +12648,7 @@ try{
   loadUsUniverse();        // universo EUA (stocks + ETFs int.) via FMP — enche as contagens do hub
   loadCryptoMarkets();     // top-100 cripto via CoinGecko
   loadB3EtfQuotes();       // confirma/precifica os ETFs B3 (brapi) — some os inexistentes
+  if(isAuthed() && CARTEIRA.length) loadPortfolioHistory();   // fechamentos reais p/ reconstruir a evolução da carteira
 }catch(e){
   console.error('Falha na inicialização do Lastro:', e);
   try{ const sp=document.getElementById('splash'); if(sp) sp.remove(); }catch(_){}
