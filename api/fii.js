@@ -1,3 +1,4 @@
+import { withObs } from "../lib/log.js";
 /**
  * Dados REAIS de FII via CVM (Informe Mensal FII — dados abertos) — Lastro.
  * ────────────────────────────────────────────────────────────────────
@@ -254,7 +255,7 @@ async function handleIndex(res) {
   return res.status(200).json({ funds, count: funds.length, source: 'cvm' });
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const q = req.query || {};
   if (q.index) {
     try { return await handleIndex(res); }
@@ -334,3 +335,5 @@ export default async function handler(req, res) {
     return res.status(502).json({ error: 'falha ao consultar CVM (informe FII)', detail: String((e && e.message) || e), vp: null, pvp: null });
   }
 }
+
+export default withObs("fii", handler);

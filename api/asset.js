@@ -1,3 +1,4 @@
+import { withObs } from "../lib/log.js";
 /**
  * Proxy de ativo COMPLETO (brapi.dev Pro) — Lastro.
  * ────────────────────────────────────────────────────────────────────
@@ -251,7 +252,7 @@ async function fetchModule(ticker, token, mod) {
   return { mod, obj: obj || null, ok: !!obj };
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const token = process.env.BRAPI_TOKEN || '';
   const q = req.query || {};
   const ticker = String(q.ticker || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
@@ -320,3 +321,5 @@ export default async function handler(req, res) {
     return res.status(502).json({ error: 'falha ao consultar brapi', detail: String((e && e.message) || e) });
   }
 }
+
+export default withObs("asset", handler);

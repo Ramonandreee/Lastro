@@ -1,3 +1,4 @@
+import { withObs } from "../lib/log.js";
 /**
  * Cadastro de fundos da CVM (cad_fi) — taxa de administração + patrimônio líquido REAIS.
  * ────────────────────────────────────────────────────────────────────
@@ -101,7 +102,7 @@ function matchOne(fundos, wantName) {
   return count === 1 ? hit : null;
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const q = req.query || {};
   const namesParam = String(q.names || q.name || '').trim();
   if (!namesParam) return res.status(400).json({ error: 'informe name (ou names separados por |)' });
@@ -123,3 +124,5 @@ export default async function handler(req, res) {
     return res.status(200).json({ results: [], error: String((e && e.message) || e) });
   }
 }
+
+export default withObs("fundinfo", handler);

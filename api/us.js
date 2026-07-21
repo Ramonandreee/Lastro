@@ -1,3 +1,4 @@
+import { withObs } from "../lib/log.js";
 /**
  * Cotações REAIS de ações dos EUA — Lastro.
  * ────────────────────────────────────────────────────────────────────
@@ -100,7 +101,7 @@ async function fmpQuotes(symbols, key) {
   })).filter((x) => x.price != null);
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const parse = (s) => String(s || '').split(',').map((x) => x.trim().toUpperCase()).filter(Boolean);
   const symbols = [...new Set(parse((req.query || {}).symbols))].slice(0, 50);
   if (!symbols.length) return res.status(200).json({ results: [] });
@@ -122,3 +123,5 @@ export default async function handler(req, res) {
     return res.status(200).json({ results: [], error: String((e && e.message) || e) });
   }
 }
+
+export default withObs("us", handler);

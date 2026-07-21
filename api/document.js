@@ -1,3 +1,4 @@
+import { withObs } from "../lib/log.js";
 /**
  * Abre um documento da CVM como ARQUIVO (PDF inline) — Lastro.
  * ────────────────────────────────────────────────────────────────────
@@ -48,7 +49,7 @@ function unzipFind(buf, test) {
   return null;
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const u = String((req.query || {}).u || '');
   if (!/^https:\/\/www\.rad\.cvm\.gov\.br\//i.test(u)) {
     return res.status(400).json({ error: 'URL inválida' });
@@ -85,3 +86,5 @@ export default async function handler(req, res) {
     clearTimeout(timer);
   }
 }
+
+export default withObs("document", handler);

@@ -1,3 +1,4 @@
+import { withObs } from "../lib/log.js";
 /**
  * Proxy de cotações (brapi.dev) — Lastro.
  * ────────────────────────────────────────────────────────────────────
@@ -88,7 +89,7 @@ async function mapLimit(items, limit, fn) {
   return out.filter(Boolean);
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const token = process.env.BRAPI_TOKEN || '';
   const q = req.query || {};
   const parse = (s) => String(s || '').split(',').map((x) => x.trim()).filter(Boolean);
@@ -112,3 +113,5 @@ export default async function handler(req, res) {
     return res.status(502).json({ error: 'falha ao consultar brapi' });
   }
 }
+
+export default withObs("quotes", handler);

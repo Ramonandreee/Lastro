@@ -1,3 +1,4 @@
+import { withObs } from "../lib/log.js";
 /**
  * Configuração pública do front, servida a partir das variáveis de ambiente
  * da Vercel — assim nenhuma chave fica versionada no repositório.
@@ -12,7 +13,7 @@
  * Configure no painel da Vercel (Project Settings → Environment Variables):
  *   SUPABASE_URL, SUPABASE_ANON_KEY  (e opcionalmente REFRESH_MS, NEWS_REFRESH_MS)
  */
-export default function handler(req, res) {
+function handler(req, res) {
   const cfg = {
     AI_ENDPOINT: process.env.AI_ENDPOINT || '/api/ai',
     QUOTES_ENDPOINT: process.env.QUOTES_ENDPOINT || '/api/quotes',
@@ -30,3 +31,5 @@ export default function handler(req, res) {
     `window.LASTRO_CONFIG = Object.assign(window.LASTRO_CONFIG || {}, ${JSON.stringify(cfg)});`
   );
 }
+
+export default withObs("config", handler);

@@ -1,3 +1,4 @@
+import { withObs } from "../lib/log.js";
 /**
  * Documentos oficiais do ativo (CVM — dados abertos) — Lastro.
  * ────────────────────────────────────────────────────────────────────
@@ -101,7 +102,7 @@ function colIndex(header, ...names) {
   return -1;
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const q = req.query || {};
   const ticker = String(q.ticker || '').trim().toUpperCase();
   const wantName = normalize(q.name);
@@ -162,7 +163,10 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, s-maxage=7200, stale-while-revalidate=43200');
     return res.status(200).json({ ticker, count: out.length, docs: out });
   } catch (e) {
+    console.error('[documents] erro', String((e && e.message) || e));   // detalhe no log, não ao cliente
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(502).json({ error: 'falha ao consultar CVM', detail: String((e && e.message) || e), docs: [] });
+    return res.status(502).json({ error: 'falha ao consultar CVM', docs: [] });
   }
 }
+
+export default withObs("documents", handler);

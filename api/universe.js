@@ -1,3 +1,4 @@
+import { withObs } from "../lib/log.js";
 /**
  * Universo completo de ativos (brapi.dev /quote/list).
  * ────────────────────────────────────────────────────────────────────
@@ -44,7 +45,7 @@ async function list(type, token) {
   })).filter(x => x.tk);
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const token = process.env.BRAPI_TOKEN || '';
   if (!token) {
     res.setHeader('Cache-Control', 'no-store');
@@ -61,3 +62,5 @@ export default async function handler(req, res) {
     return res.status(502).json({ error: 'falha ao consultar brapi list' });
   }
 }
+
+export default withObs("universe", handler);

@@ -186,7 +186,8 @@ Impacto: IA/resumo do dia falham silenciosamente. Impacto no cliente: recurso PR
 
 **Curto prazo (1–2 semanas)** — baixo risco, alto valor
 - [x] Sanitizar erros (§5).
-- [x] `/api/health` (readiness + upstreams configurados) via dispatcher `/api/market?fn=health` (sem criar função nova — respeita o teto de 12) + logger JSON com `request-id` (`lib/log.js`, aplicado como referência em `api/market.js`). **Rollout pendente:** replicar o logger nos demais 11 proxies.
+- [x] `/api/health` (readiness + upstreams configurados) via dispatcher `/api/market?fn=health` (sem criar função nova — respeita o teto de 12).
+- [x] Logger JSON estruturado com `request-id` (`lib/log.js`): `withObs()` aplicado em **TODOS os 12 endpoints** (`api/market.js` + os 11 proxies) → header `x-request-id` + log `done/erro` com `ep/status/ms` uniformes.
 - [ ] Rate limit durável (Vercel KV) nos proxies mais custosos (`quotes`, `universe`, `us`, `market`, `ai`).
 - [ ] Atualizar modelos de IA (`ai.js`, `fetch-news.mjs`) e validar disponibilidade.
 - [ ] Consentimento LGPD + política de privacidade no cadastro.
@@ -280,11 +281,11 @@ Impacto: IA/resumo do dia falham silenciosamente. Impacto no cliente: recurso PR
 
 | Item | Estado |
 |---|---|
-| Logs estruturados | ⚠️ (JSON via `lib/log.js` em `api/market.js`; rollout p/ os demais pendente) |
-| Correlation IDs | ⚠️ (`x-request-id` + `rid` no `market`; rollout pendente) |
-| Métricas | ❌ |
+| Logs estruturados | ✅ (JSON via `lib/log.js` `withObs()` nos 12 endpoints) |
+| Correlation IDs | ✅ (`x-request-id` + `rid` em todos os endpoints) |
+| Métricas | ⚠️ (latência/status por request no log; sem agregador ainda) |
 | Tracing | ❌ |
-| Health/readiness/liveness | ⚠️→✅ (`/api/market?fn=health` com upstreams) |
+| Health/readiness/liveness | ✅ (`/api/market?fn=health` com upstreams) |
 | Dashboards/alertas | ⚠️ (só painel Vercel básico) |
 
 ## 14. Riscos remanescentes e mitigação

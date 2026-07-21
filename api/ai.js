@@ -1,3 +1,4 @@
+import { withObs } from "../lib/log.js";
 /**
  * Proxy serverless da Inteligência Lastro (Vercel).
  * Mantém a chave da Anthropic no servidor — nunca exposta ao navegador.
@@ -39,7 +40,7 @@ async function verifyUser(token) {
   } catch (e) { return null; }
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const origin = applyCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
@@ -90,3 +91,5 @@ export default async function handler(req, res) {
     clearTimeout(to);
   }
 }
+
+export default withObs("ai", handler);
