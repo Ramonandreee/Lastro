@@ -8936,10 +8936,6 @@ function renderHomeDashboard(p){
         <span class="whero-chip priv-blur ${p.lucroProv>=0?'up':'down'}"><i class="fa-solid fa-arrow-${p.lucroProv>=0?'up':'down'}"></i> ${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))} · ${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% hoje</span>
       </div>
       <div class="whero-graph">
-        ${(function(){ const w=(typeof wealthSeries==='function')?wealthSeries():null; if(!w) return '';
-          return w.real
-          ? `<span class="whero-est" style="background:var(--up-l);color:var(--up);border-color:transparent"><i class="fa-solid fa-circle-check"></i> histórico real</span>`
-          : `<span class="whero-est"><i class="fa-solid fa-flask"></i> desde ${w.startLabel}</span>`; })()}
         <canvas id="wSpark" role="img" aria-label="Evolução do patrimônio a partir das suas compras"></canvas>
         <div class="whero-foot">
           <div><span>Investido</span><b class="priv-blur">${fmtHomeCur(p.invest)}</b></div>
@@ -9124,7 +9120,6 @@ function initWealthSpark(){
   if(typeof HAS_CHART!=='undefined' && !HAS_CHART) return;
   if(typeof Chart==='undefined') return;
   const d=wealthSeries(); if(!d||!d.cart||d.cart.length<2) return;
-  const pfx=d.recon?'~':'';   // caminho interpolado entre pontos reais → prefixo "~" no tooltip
   if(charts.wspark) charts.wspark.destroy();
   const pts=d.cart, lbs=d.labels;
   // % de cada ponto = RETORNO SOBRE O CUSTO investido até aquele dia ((valor−custo)/custo).
@@ -9144,10 +9139,9 @@ function initWealthSpark(){
     options:{ responsive:true, maintainAspectRatio:false, layout:{padding:0}, interaction:{mode:'index',intersect:false},
       plugins:{ legend:{display:false}, tooltip:{ padding:9, cornerRadius:8, displayColors:false, animation:{duration:120}, callbacks:{
         title:c=>c[0].label||'',
-        // normal: valor em R$ + variação % do dia; privacidade: só a variação %
-        label:c=>{ const p=pcts[c.dataIndex]||0; const pctStr=`${pfx}${p>=0?'+':'−'}${Math.abs(p).toFixed(2).replace('.',',')}%`;
-          // histórico real → valor/percentual exatos; estimativa → prefixo "~"
-          return (typeof privOn==='function'&&privOn()) ? pctStr : [pfx+brl0(c.parsed.y), pctStr]; }
+        // normal: valor na moeda base (R$/US$, segue o toggle) + variação %; privacidade: só a %
+        label:c=>{ const p=pcts[c.dataIndex]||0; const pctStr=`${p>=0?'+':'−'}${Math.abs(p).toFixed(2).replace('.',',')}%`;
+          return (typeof privOn==='function'&&privOn()) ? pctStr : [fmtHomeCur(c.parsed.y), pctStr]; }
       } } },
       scales:{ x:{ display:false }, y:{ display:false, min:yMin, max:yMax } } } });
   // regra p/ QUALQUER modo: ao tocar fora do gráfico o tooltip some na hora;
