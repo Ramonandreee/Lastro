@@ -3438,6 +3438,10 @@ body.pdf-lock { overflow:hidden; }
 .whero-chip, .whero-chip2 { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12.5px; font-weight:600; padding:5px 12px; border-radius:20px; }
 .whero-chip { background:var(--up-l); color:var(--up); } .whero-chip.down { background:var(--down-l); color:var(--down); }
 .whero-chip2 { background:var(--surface-3); color:var(--ink-2); } .whero-chip2.down { color:var(--down); }
+/* seletor de período do gráfico de patrimônio (segmented control estilo iOS) */
+.whero-periods { display:flex; gap:3px; margin:16px 0 0; background:var(--surface-3); padding:3px; border-radius:11px; }
+.wper { flex:1; padding:6px 0; border:none; background:transparent; border-radius:8px; font-family:var(--mono); font-size:11.5px; font-weight:600; letter-spacing:-.01em; color:var(--ink-3); cursor:pointer; transition:background .22s var(--ease), color .22s var(--ease), box-shadow .22s var(--ease); -webkit-tap-highlight-color:transparent; }
+.wper.active { background:var(--surface); color:var(--brand); box-shadow:var(--sh-sm); }
 /* gráfico ocupa a base do card (sangra até as bordas) e o rodapé fica por cima,
    com um degradê p/ a cor do card destacando os 3 textos */
 .whero-graph { position:relative; height:184px; margin:18px -22px 0; }
@@ -8671,6 +8675,10 @@ function cssVar(n){ return getComputedStyle(document.documentElement).getPropert
 /* timeframes da Home: rótulo → nº de candles (mais candles = mais contexto) */
 const HOME_TF = [['1D',30],['5D',40],['1M',24],['6M',28],['1A',52],['5A',60],['Máx',120]];
 let homeChartPeriod='1M', homeChartType='candle';
+/* período do gráfico de PATRIMÔNIO (card "Patrimônio total"): 7D/30D/3M/6M/1A/MAX.
+   Padrão 7D; memoriza a última escolha do usuário na sessão (sessionStorage). */
+const WEALTH_PERIODS=['7D','30D','3M','6M','1A','MAX'];
+let homeWealthPeriod=(function(){ try{ const v=sessionStorage.getItem('lastro_wperiod'); return WEALTH_PERIODS.includes(v)?v:'7D'; }catch(e){ return '7D'; } })();
 /* ativos disponíveis no gráfico principal (índices + tickers) */
 const HOME_ASSETS = [
   {k:'SP500', nm:'S&P 500', base:5430}, {k:'NASDAQ', nm:'Nasdaq', base:20485},
@@ -8935,8 +8943,11 @@ function renderHomeDashboard(p){
       <div class="whero-chips">
         <span class="whero-chip priv-blur ${p.lucroProv>=0?'up':'down'}"><i class="fa-solid fa-arrow-${p.lucroProv>=0?'up':'down'}"></i> ${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))} · ${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% hoje</span>
       </div>
+      <div class="whero-periods" id="wPeriods" role="tablist" aria-label="Período do gráfico de patrimônio">
+        ${WEALTH_PERIODS.map(pp=>`<button class="wper${pp===homeWealthPeriod?' active':''}" role="tab" aria-selected="${pp===homeWealthPeriod?'true':'false'}" onclick="setWealthPeriod('${pp}',this)">${pp}</button>`).join('')}
+      </div>
       <div class="whero-graph">
-        <canvas id="wSpark" role="img" aria-label="Evolução do patrimônio a partir das suas compras"></canvas>
+        <canvas id="wSpark" role="img" aria-label="Evolução do patrimônio no período selecionado"></canvas>
         <div class="whero-foot">
           <div><span>Investido</span><b class="priv-blur">${fmtHomeCur(p.invest)}</b></div>
           <div><span>Resultado semanal</span><b class="priv-blur" style="color:${_wk.val>=0?'var(--up)':'var(--down)'}">${_wk.val>=0?'+':'−'}${fmtHomeCur(Math.abs(_wk.val))}</b></div>
@@ -9055,7 +9066,8 @@ function portfolioWeekVar(){
    respeitando a data de cada aporte. Sem interpolação/RNG. Cada ponto = Σ(cotas×fechamento do
    dia)×câmbio, contando só os aportes já feitos até aquela data. Onde ainda falta o fechamento
    real, usa o snapshot do dia (se houver) ou o custo do lote (linha plana) — nunca o valor atual. */
-function wealthSeries(){
+function wealthSeries(period){
+  period = WEALTH_PERIODS.includes(period) ? period : (WEALTH_PERIODS.includes(homeWealthPeriod)?homeWealthPeriod:'7D');
   const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[]; if(!groups.length) return null;
   const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const p2=n=>String(n).padStart(2,'0'); const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
@@ -9067,38 +9079,69 @@ function wealthSeries(){
       const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate()); if(dd<first) first=dd;
       flat.push({ tk, cotas:l.cotas, pm:l.pm||0, date:dd, rate, pxNow:live?a.px:(l.pm||0) }); }); });
   if(!flat.length) return null;
-  // começa na PRIMEIRA compra — não pinta dias em que a carteira não existia (item 4).
+  // ── Janela pelo PERÍODO escolhido (seletor 7D/30D/3M/6M/1A/MAX) ──
+  // Fora "MAX", recua winDays a partir de hoje; nunca antes da 1ª compra. Se faltar histórico
+  // para o período, mostra só o disponível (sem erro).
+  const PWIN={'7D':7,'30D':30,'3M':91,'6M':182,'1A':365,'MAX':1000000};
+  const winDays=PWIN[period]||7;
+  const ps=(typeof portfolioStats==='function')?portfolioStats():null; const atual=(ps&&ps.atual>0)?ps.atual:null;
   let f0=new Date(first.getFullYear(),first.getMonth(),first.getDate());
-  // Janela dos ÚLTIMOS 7 DIAS (spec): se a carteira for mais antiga, começa 7 dias atrás e termina
-  // hoje (7 pontos); se for mais nova que 7 dias, mostra só os dias disponíveis desde a 1ª compra.
-  const win0=new Date(t0.getTime()-6*86400000);
-  if(f0<win0) f0=win0;
-  const N=Math.min(Math.round((t0-f0)/86400000)+1, 92);
-  // Reconstrução PURA a partir das posições ATUAIS × fechamento real de cada dia. NÃO usamos os
-  // snapshots diários (patHist) aqui: eles guardam o patrimônio de uma COMPOSIÇÃO antiga e, se a
-  // carteira mudou, injetariam valores de outra carteira nos dias passados (o bug do "desde 14/07").
-  const labels=[], cart=[], cost=[]; let realDays=0;
-  for(let i=0;i<N;i++){ const d=new Date(f0.getTime()+i*86400000); const ds=key(d); let v=0, cst=0;
+  if(period!=='MAX'){ const win0=new Date(t0.getTime()-(winDays-1)*86400000); if(f0<win0) f0=win0; }
+  const winStartK=key(f0);
+  const spanLong=d=> d>180;   // rótulo com ano em janelas longas
+  // ── FONTE PRIMÁRIA: a TABELA DE HISTÓRICO DE PATRIMÔNIO (snapshots diários reais) ──
+  // Uma ÚNICA fonte por série (sem misturar com reconstrução) → linha coerente, sem degraus.
+  const ph=(typeof patHistArr==='function')?patHistArr():[];
+  let phWin=(period==='MAX')?ph.slice():ph.filter(x=> x.d>=winStartK && x.d<=todayK);   // MAX = desde o 1º registro
+  if(phWin.length>=2){
+    // reduz p/ ≤180 pontos preservando 1º e último (perf/suavidade em janelas longas)
+    let src=phWin; if(src.length>180){ const st=Math.ceil(src.length/180); const r=[]; for(let i=0;i<src.length;i+=st) r.push(src[i]); if(r[r.length-1]!==src[src.length-1]) r.push(src[src.length-1]); src=r; }
+    const spanDays=Math.round((new Date(src[src.length-1].d+'T00:00:00')-new Date(src[0].d+'T00:00:00'))/86400000);
+    const fmtL=ds=>{ const d=new Date(ds+'T00:00:00'); return d.toLocaleDateString('pt-BR', spanLong(spanDays)?{day:'2-digit',month:'2-digit',year:'2-digit'}:{day:'2-digit',month:'2-digit'}); };
+    const labels=src.map(x=>fmtL(x.d)); const cart=src.map(x=>x.v);
+    if(atual!=null){ if(src[src.length-1].d===todayK) cart[cart.length-1]=atual; else { labels.push((new Date()).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})); cart.push(atual); } }
+    if(cart.length<2) return { labels, cart:[cart[0],cart[0]], cost:[], real:true, recon:false, realCount:cart.length, days:cart.length, period, startLabel:labels[0]||'' };
+    return { labels, cart, cost:[], real:true, recon:false, realCount:cart.length, days:cart.length, period, startLabel:labels[0]||'' };
+  }
+  // ── FALLBACK (usuário novo, <2 registros de patrimônio): reconstrução por FECHAMENTOS REAIS ──
+  // da B3, respeitando a data/preço de cada compra. Não pinta "cabeça plana" antes do 1º dado real.
+  let realStart=null;
+  try{ Object.keys(HIST_CLOSE).forEach(tk=>{ const m=HIST_CLOSE[tk]; for(const dd in m){ if(!realStart||dd<realStart) realStart=dd; } }); }catch(e){}
+  if(ph.length && (!realStart || ph[0].d<realStart)) realStart=ph[0].d;
+  if(realStart){ const rs=new Date(realStart+'T00:00:00'); if(!isNaN(rs)){ const rsd=new Date(rs.getFullYear(),rs.getMonth(),rs.getDate()); if(f0<rsd) f0=rsd; } }
+  const totalDays=Math.round((t0-f0)/86400000)+1;
+  const step=Math.max(1, Math.ceil(totalDays/180));
+  const idxs=[]; for(let i=0;i<totalDays;i+=step) idxs.push(i); if(idxs[idxs.length-1]!==totalDays-1) idxs.push(totalDays-1);
+  const fmtLbl=d=>d.toLocaleDateString('pt-BR', spanLong(totalDays-1)?{day:'2-digit',month:'2-digit',year:'2-digit'}:{day:'2-digit',month:'2-digit'});
+  const labels=[], cart=[], cost=[]; let realDays=0; const phMap={}; ph.forEach(x=>{ phMap[x.d]=x.v; });
+  for(const i of idxs){ const d=new Date(f0.getTime()+i*86400000); const ds=key(d); const isToday=(ds===todayK); let v=0, cst=0;
     let allClose=true, hasLot=false;
-    for(const l of flat){ if(l.date<=d){ hasLot=true; cst += l.cotas*l.pm*l.rate;   // custo investido até esse dia
+    for(const l of flat){ if(l.date<=d){ hasLot=true; cst += l.cotas*l.pm*l.rate;
       let px;
-      if(ds===todayK) px=l.pxNow;                                     // hoje: cotação atual
+      if(isToday) px=l.pxNow;
       else { const c=closeOn(l.tk, ds); if(c!=null) px=c; else { px=l.pm; allClose=false; } }
       v += l.cotas*px*l.rate;
     }}
-    const dayReal = (ds===todayK) ? true : (hasLot && allClose);
+    let dayReal;
+    if(!isToday && phMap[ds]!=null){ v=phMap[ds]; dayReal=true; }
+    else dayReal = isToday ? true : (hasLot && allClose);
     if(dayReal) realDays++;
-    labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})); cart.push(v); cost.push(cst);
+    labels.push(fmtLbl(d)); cart.push(v); cost.push(cst);
   }
-  const ps=(typeof portfolioStats==='function')?portfolioStats():null; if(ps&&ps.atual>0) cart[cart.length-1]=ps.atual;   // âncora final = patrimônio atual real
-  // posição nova (comprada hoje): ainda não há evolução → linha PLANA no valor atual (nada de
-  // dias-zero antes da compra nem curva inventada). A evolução começa a partir de amanhã.
-  if(cart.length<2){ const vv=cart[0]||(ps&&ps.atual)||0, cc=cost[0]||0; const lab=t0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
-    return { labels:['início',lab], cart:[vv,vv], cost:[cc,cc], real:false, recon:true, realCount:0, days:1, startLabel:'hoje' }; }
-  // "histórico real" só quando todo dia tem fechamento real E não há câmbio congelado (dolarizados
-  // usam a taxa de hoje em dias passados → rotulamos como reconstrução "desde {data}", não "real").
-  const allReal = realDays>=N && !anyUsd;
-  return { labels, cart, cost, real:allReal, recon:!allReal, realCount:realDays, days:N, startLabel:f0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) };
+  if(atual!=null) cart[cart.length-1]=atual;   // âncora final = patrimônio atual real
+  if(cart.length<2){ const vv=cart[0]||atual||0, cc=cost[0]||0; const lab=t0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    return { labels:['início',lab], cart:[vv,vv], cost:[cc,cc], real:false, recon:true, realCount:0, days:1, period, startLabel:'hoje' }; }
+  const allReal = realDays>=cart.length && !anyUsd;
+  return { labels, cart, cost, real:allReal, recon:!allReal, realCount:realDays, days:cart.length, period, startLabel:f0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) };
+}
+/* troca o período do gráfico de patrimônio: memoriza na sessão, destaca o botão e
+   redesenha com a animação suave do Chart.js. Janela sem histórico não gera erro. */
+function setWealthPeriod(per, el){
+  if(!WEALTH_PERIODS.includes(per) || per===homeWealthPeriod) return;
+  homeWealthPeriod=per; try{ sessionStorage.setItem('lastro_wperiod', per); }catch(e){}
+  const box=el?el.parentElement:document.getElementById('wPeriods');
+  if(box) box.querySelectorAll('.wper').forEach(b=>{ const on=(el?b===el:b.textContent.trim()===per); b.classList.toggle('active',on); b.setAttribute('aria-selected', on?'true':'false'); });
+  if(typeof initWealthSpark==='function') initWealthSpark();
 }
 /* Reconstrução ilustrativa da evolução do patrimônio em 7 dias (quando ainda não há
    histórico real): tendência semanal suave (fatia do resultado) + oscilação diária
@@ -9126,9 +9169,10 @@ function initWealthSpark(){
   const d=wealthSeries(); if(!d||!d.cart||d.cart.length<2) return;
   if(charts.wspark) charts.wspark.destroy();
   const pts=d.cart, lbs=d.labels;
-  // % de cada ponto = RETORNO SOBRE O CUSTO investido até aquele dia ((valor−custo)/custo).
-  // Neutro a aportes: no dia do aporte valor e custo sobem juntos → o % não pula (item 6).
-  const cost=d.cost||[]; const pcts=pts.map((v,i)=>{ const c=cost[i]||0; return c>0? (v-c)/c*100 : 0; });
+  // % de cada ponto: na reconstrução, RETORNO SOBRE O CUSTO investido até o dia ((valor−custo)/custo,
+  // neutro a aportes). No histórico real de patrimônio (sem custo por dia), RETORNO NO PERÍODO
+  // (variação sobre o 1º ponto da janela) — o padrão dos apps de investimento.
+  const cost=d.cost||[]; const base0=pts[0]||0; const pcts=pts.map((v,i)=>{ const c=cost[i]||0; return c>0? (v-c)/c*100 : (base0>0? (v-base0)/base0*100 : 0); });
   // mantém a linha na METADE SUPERIOR do card; abaixo dela fica só a sombra degradê
   // (a faixa dos textos Investido/DY/Renda). min/max do eixo empurram a série p/ cima.
   const mn=Math.min(...pts), mx=Math.max(...pts); let rng=mx-mn; if(rng<=0) rng=Math.max(1, Math.abs(mx)*0.008);
