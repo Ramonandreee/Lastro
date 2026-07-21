@@ -3697,10 +3697,22 @@ button.mp-cell { cursor:pointer; font-family:inherit; }
 </style>
 
 <script src="/vendor/chart.umd.js"></script>
+<script src="/vendor/money.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════
    LASTRO — DADOS
    ══════════════════════════════════════════════════════════ */
+
+// Rede de segurança: se /vendor/money.js não carregar (404/cache/bloqueio), a
+// matemática de carteira (em CENTAVOS) ainda funciona com esta implementação mínima
+// idêntica — a carteira nunca quebra por falta do vendor.
+window.LastroMoney = window.LastroMoney || (function(){
+  const r = x => !isFinite(x) ? 0 : (x < 0 ? -Math.round(-x) : Math.round(x));
+  const tc = v => { const n = Number(v); return isFinite(n) ? r(n*100) : 0; };
+  return { roundCents:r, toCents:tc, fromCents:c=>r(c)/100,
+    positionCents:(q,p)=>r(Number(q)*Number(p)*100), sumCents:l=>{ let s=0; for(const c of l) s+=r(c); return s; },
+    convertCents:(c,rt)=>r(r(c)*Number(rt)), pctCents:(d,b)=>{ const bb=r(b); return bb ? r(d)/bb*100 : 0; } };
+})();
 
 // Score Lastro: composto transparente 0-100 — MESMA fórmula para dado curado e ao vivo
 // (DY sustentável 35% · P/VP 30% · Solidez 20% · Consistência 15%; teto 100).
@@ -3942,30 +3954,40 @@ function upcomingProventos(){
   return out.sort((a,b)=>a.date-b.date).slice(0,6);
 }
 function portfolioByTicker(lots){
+  const M=window.LastroMoney;
   const map=new Map();
   (lots||CARTEIRA).forEach(c=>{ const f=assetLookup(c.tk); if(!f) return;
-    if(!map.has(c.tk)) map.set(c.tk,{tk:c.tk,f,lots:[],cotas:0,custo:0});
-    const g=map.get(c.tk); g.lots.push(c); g.cotas+=c.cotas; g.custo+=c.cotas*c.pm; });
+    if(!map.has(c.tk)) map.set(c.tk,{tk:c.tk,f,lots:[],cotas:0,custoNat:0});
+    const g=map.get(c.tk); g.lots.push(c); g.cotas+=c.cotas; g.custoNat+=c.cotas*c.pm; });   // custo nativo (reais)
   const out=[];
   map.forEach(g=>{ const a=g.f.a,k=g.f.k;
     // ativos dolarizados: pm/cotação ficam em $(nativo); patrimônio é convertido p/ BRL
     g.cur = ((ASSET_CLASS[k]&&ASSET_CLASS[k].cur==='usd')||a.usd) ? 'usd':'brl';
     const rate = g.cur==='usd' ? usdBrlRate() : 1;
-    g.pm = g.cotas ? g.custo/g.cotas : 0;          // preço médio nativo ($p/ stocks)
+    g.pm = g.cotas ? g.custoNat/g.cotas : 0;          // preço médio nativo ($ p/ stocks)
     // avalia pela COTAÇÃO REAL (a.live). Sem cotação ao vivo confiável, avalia AO CUSTO —
     // nunca mostra lucro/prejuízo fictício contra um preço-semente. Vira real quando a
     // cotação chega (o refresh re-renderiza). É o que o usuário espera ao acabar de comprar.
     g.priceLive = !!(a.live && a.px>0);
-    const pxEff = g.priceLive ? a.px : g.pm;
-    g.custoNat = g.custo; g.valNat = g.cotas*pxEff;
-    g.custo = g.custoNat*rate; g.val = g.valNat*rate;   // BRL p/ somar no patrimônio
-    g.lucro=g.val-g.custo; g.lp=g.custo?g.lucro/g.custo*100:0;
-    g.pays=groupPayments(g); g.prov=g.pays.reduce((s,p)=>s+p.valor,0)*rate;
-    g.lucroProv=g.lucro+g.prov; g.lpProv=g.custo?g.lucroProv/g.custo*100:0;
+    const valNat = g.priceLive ? g.cotas*a.px : g.custoNat;   // valor nativo (reais); sem cotação = ao custo
+    // Cada posição é fechada em CENTAVOS INTEIROS na moeda BRL, arredondando UMA vez (na conversão) —
+    // idêntico ao valor exibido antes. A soma ENTRE posições (portfolioStats) é feita em inteiros →
+    // elimina o drift de ponto flutuante sem introduzir divergência de câmbio.
+    g.custoCents = M.toCents(g.custoNat*rate);
+    g.valCents   = g.priceLive ? M.positionCents(g.cotas, a.px*rate) : g.custoCents;
+    g.valNat = valNat;
+    g.custo = M.fromCents(g.custoCents); g.val = M.fromCents(g.valCents);
+    g.lucroCents = g.valCents - g.custoCents;
+    g.lucro = M.fromCents(g.lucroCents); g.lp = g.custoCents ? M.pctCents(g.lucroCents, g.custoCents) : 0;
+    g.pays=groupPayments(g);
+    g.provCents = M.toCents(g.pays.reduce((s,p)=>s+p.valor,0)*rate);
+    g.prov = M.fromCents(g.provCents);
+    g.lucroProvCents = g.lucroCents + g.provCents;
+    g.lucroProv = M.fromCents(g.lucroProvCents); g.lpProv = g.custoCents ? M.pctCents(g.lucroProvCents, g.custoCents) : 0;
     g.mensal=(k==='fiis'&&typeof a.div==='number')?g.cotas*a.div*rate:(typeof a.dy==='number'?g.val*(a.dy/100)/12:0);
     g.lots.sort((x,y)=> (y.date||'').localeCompare(x.date||''));
     out.push(g); });
-  return out.sort((x,y)=>y.val-x.val);
+  return out.sort((x,y)=>y.valCents-x.valCents);
 }
 function fmtDateBR(iso){ if(!iso) return '—'; const s=String(iso); const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); const d = m ? new Date(+m[1], +m[2]-1, +m[3]) : new Date(s); if(isNaN(d)) return '—'; const p=x=>String(x).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`; }
 function toggleLots(tk){ const r=document.getElementById('lots-'+tk); if(r){ r.hidden=!r.hidden; const row=document.querySelector(`.pos-row[data-tk="${tk}"] .lot-caret`); if(row) row.classList.toggle('open', !r.hidden); } }
@@ -4333,13 +4355,17 @@ function toast(msg){
 
 /* portfolio computed */
 function portfolioStats(lots){
+  const M=window.LastroMoney;
   const byT = portfolioByTicker(lots);
-  let invest=0, atual=0, renda=0, dyNum=0, prov=0;
-  byT.forEach(g=>{ invest+=g.custo; atual+=g.val; renda+=g.mensal; dyNum+=(g.f.a.dy||0)*g.val; prov+=g.prov; });
+  // soma em CENTAVOS INTEIROS (exata) e converte uma vez — sem drift acumulado
+  let investCents=0, atualCents=0, provCents=0, renda=0, dyNum=0;
+  byT.forEach(g=>{ investCents+=g.custoCents; atualCents+=g.valCents; provCents+=g.provCents; renda+=g.mensal; dyNum+=(g.f.a.dy||0)*g.val; });
+  const invest=M.fromCents(investCents), atual=M.fromCents(atualCents), prov=M.fromCents(provCents);
   const dyMed = atual ? dyNum/atual : 0;
+  const lucroCents = atualCents-investCents, lucroProvCents = lucroCents+provCents;
   return { invest, atual, renda, dyMed, prov,
-    lucro: atual-invest, lucroP: invest ? (atual-invest)/invest*100 : 0,
-    lucroProv: (atual-invest)+prov, lucroProvP: invest ? ((atual-invest)+prov)/invest*100 : 0,
+    lucro: M.fromCents(lucroCents), lucroP: investCents ? M.pctCents(lucroCents, investCents) : 0,
+    lucroProv: M.fromCents(lucroProvCents), lucroProvP: investCents ? M.pctCents(lucroProvCents, investCents) : 0,
     nAtivos: byT.length, _byT: byT };
 }
 /* peso (%) de um ativo no patrimônio — aceita um grupo agregado ou um lote */

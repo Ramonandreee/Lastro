@@ -91,9 +91,9 @@ Nenhum problema **destrutivo** foi encontrado; os riscos são de **receita, prec
 Evidência: `index.html` (`isPro()`, `refreshPlanUI`, `setPlan`) decide PRO localmente; `loadCloudState` **não** lê `d.plan` do blob ("*Fonte de verdade do plano = billing server-side (a implementar). Deny-by-default.*"). O único recurso PRO com barreira de servidor é `/api/ai` (exige JWT, não plano). Ou seja, **qualquer usuário vira PRO** editando `localStorage`/JS.
 Impacto técnico: bypass de paywall. Impacto no cliente: injusto com pagantes; perda de receita para o negócio.
 
-**C2 — Cálculos financeiros em ponto flutuante (float64).**
-Evidência: `portfolioByTicker`/`portfolioStats` (`g.custo += c.cotas*c.pm`, `g.val = g.cotas*px*rate`, somatórios de lucro/proventos) usam `Number`. Conversões USD→BRL multiplicam floats. Somar centenas de posições em float acumula erro de arredondamento em **dinheiro**.
-Impacto: divergência de centavos em patrimônio/resultado/IR; inaceitável para fintech. Impacto no cliente: perda de confiança quando a conta "não fecha".
+**C2 — Cálculos financeiros em ponto flutuante (float64).** *(corrigido — ver §5)*
+Evidência (à época): `portfolioByTicker`/`portfolioStats` somavam posições em `Number`; centenas de posições acumulavam erro de arredondamento em **dinheiro**.
+**Status:** `vendor/money.js` (centavos inteiros, sem dependência) + migração de `portfolioByTicker`/`portfolioStats` — cada posição fecha em centavos (arredonda 1x na conversão BRL) e o agregado soma **inteiros** (exato, sem drift). Equivalência old×new verificada como **exata** (0 divergências em 200 mil casos, inclusive câmbio US$). **Lacuna:** `wealthSeries`/gráfico ainda em float (funções co-editadas pelos donos — etapa separada).
 
 **C3 — Ausência total de testes automatizados.** *(parcialmente endereçado — ver §5)*
 Evidência: (à época) nenhum arquivo de teste; a única "validação" era a checagem manual de chaves CSS/sintaxe JS. Regras financeiras (variação do dia, reconstrução histórica, preço médio, proventos) mudaram várias vezes sem cobertura.
