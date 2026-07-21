@@ -148,7 +148,7 @@ async function handler(req, res) {
     return res.status(200).json({ results });
   } catch (e) {
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(502).json({ error: 'falha ao consultar fundamentos brapi', detail: String((e && e.message) || e) });
+    return res.status(502).json({ error: 'falha ao consultar fundamentos brapi' });
   }
 }
 

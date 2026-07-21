@@ -259,7 +259,7 @@ async function handler(req, res) {
   const q = req.query || {};
   if (q.index) {
     try { return await handleIndex(res); }
-    catch (e) { res.setHeader('Cache-Control', 'no-store'); return res.status(200).json({ funds: [], error: String((e && e.message) || e) }); }
+    catch (e) { res.setHeader('Cache-Control', 'no-store'); return res.status(200).json({ funds: [] }); }
   }
   const ticker = String(q.ticker || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   const wantName = normalize(q.name);
@@ -332,7 +332,7 @@ async function handler(req, res) {
     });
   } catch (e) {
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(502).json({ error: 'falha ao consultar CVM (informe FII)', detail: String((e && e.message) || e), vp: null, pvp: null });
+    return res.status(502).json({ error: 'falha ao consultar CVM (informe FII)', vp: null, pvp: null });
   }
 }
 

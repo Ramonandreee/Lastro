@@ -121,7 +121,7 @@ async function handler(req, res) {
     return res.status(200).json({ results, dataSource: 'cvm' });
   } catch (e) {
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ results: [], error: String((e && e.message) || e) });
+    return res.status(200).json({ results: [] });
   }
 }
 

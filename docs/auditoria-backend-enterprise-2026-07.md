@@ -164,7 +164,7 @@ Impacto: IA/resumo do dia falham silenciosamente. Impacto no cliente: recurso PR
 
 ## 5. Correções implementadas nesta auditoria
 
-**Sanitização de erros (M1/B1)** — remoção de detalhes internos (mensagens de exceção e URLs) das respostas de erro ao cliente, mantendo o log server-side. Baixíssimo risco (o front já trata erro como fail-safe e ignora o corpo). Arquivos: `api/universe.js`, `api/quotes.js`, `api/documents.js`.
+**Sanitização de erros (M1/B1) — 100% dos endpoints** — remoção de detalhes internos (mensagens de exceção e URLs) das respostas de erro ao cliente. Baixíssimo risco (o front já trata erro como fail-safe e ignora o corpo). Arquivos: `universe`, `quotes`, `documents`, `asset`, `fii`, `fundamentals`, `fundinfo`, `us` + `lib/{crypto,history,usdetail,usuniverse}`.
 
 **Observabilidade (A2/B3)** — `lib/log.js` (logger JSON estruturado + `withObs()`); health/readiness em `/api/market?fn=health`; `withObs()` aplicado nos 12 endpoints (request-id `x-request-id` + log `done/erro` com `ep/status/ms`).
 
@@ -230,7 +230,7 @@ Impacto: IA/resumo do dia falham silenciosamente. Impacto no cliente: recurso PR
 | Path traversal / cmd injection | ✅ | Sem FS/exec com input do usuário |
 | CORS | ⚠️ | Só `ai.js` (M6) |
 | Logs sem dados sensíveis | ✅ | Sem PII em logs |
-| Vazamento de erro | ⚠️→✅ | `detail`/`diag` (M1) — corrigido |
+| Vazamento de erro | ✅ | `detail`/`diag` removidos de TODOS os endpoints (M1) |
 
 ## 9. Checklist de LGPD
 
