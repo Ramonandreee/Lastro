@@ -9045,7 +9045,8 @@ function wealthSeries(){
   const p2=n=>String(n).padStart(2,'0'); const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
   const todayK=key(t0);
   const flat=[]; let first=t0;
-  groups.forEach(g=>{ const a=g.f.a, tk=g.tk, rate=(g.cur==='usd')?usdBrlRate():1; const live=!!(a.live&&a.px>0);
+  let anyUsd=false;
+  groups.forEach(g=>{ const a=g.f.a, tk=g.tk, usd=(g.cur==='usd'); const rate=usd?usdBrlRate():1; const live=!!(a.live&&a.px>0); if(usd) anyUsd=true;
     (g.lots||[]).forEach(l=>{ let d=l.date?new Date(l.date+'T00:00:00'):t0; if(isNaN(d)) d=t0;
       const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate()); if(dd<first) first=dd;
       flat.push({ tk, cotas:l.cotas, pm:l.pm||0, date:dd, rate, pxNow:live?a.px:(l.pm||0) }); }); });
@@ -9054,8 +9055,9 @@ function wealthSeries(){
   const minStart=new Date(t0.getTime()-6*86400000); if(f0>minStart) f0=minStart;   // sempre mostra ao menos ~7 dias
   const N=Math.min(Math.round((t0-f0)/86400000)+1, 92);
   const realMap={}; patHistArr().forEach(x=>{ realMap[x.d]=x.v; });   // snapshots exatos sobrepõem
-  const labels=[], cart=[]; let realDays=0;
-  for(let i=0;i<N;i++){ const d=new Date(f0.getTime()+i*86400000); const ds=key(d); let v=0, dayReal=false;
+  const labels=[], cart=[], cost=[]; let realDays=0;
+  for(let i=0;i<N;i++){ const d=new Date(f0.getTime()+i*86400000); const ds=key(d); let v=0, cst=0, dayReal=false;
+    for(const l of flat){ if(l.date<=d) cst += l.cotas*l.pm*l.rate; }   // custo investido ATÉ esse dia (p/ retorno-sobre-custo, neutro a aporte)
     if(ds!==todayK && realMap[ds]!=null){ v=realMap[ds]; dayReal=true; }
     else {
       let allClose=true, hasLot=false;
@@ -9068,11 +9070,13 @@ function wealthSeries(){
       dayReal = (ds===todayK) ? true : (hasLot && allClose);
     }
     if(dayReal) realDays++;
-    labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})); cart.push(v);
+    labels.push(d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})); cart.push(v); cost.push(cst);
   }
   const ps=(typeof portfolioStats==='function')?portfolioStats():null; if(ps&&ps.atual>0) cart[cart.length-1]=ps.atual;   // âncora final = patrimônio atual real
-  const allReal = realDays>=N;
-  return { labels, cart, real:allReal, recon:!allReal, realCount:realDays, days:N, startLabel:f0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) };
+  // "histórico real" só quando todo dia tem fechamento real E não há câmbio congelado (dolarizados
+  // usam a taxa de hoje em dias passados → rotulamos como reconstrução "desde {data}", não "real").
+  const allReal = realDays>=N && !anyUsd;
+  return { labels, cart, cost, real:allReal, recon:!allReal, realCount:realDays, days:N, startLabel:f0.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) };
 }
 /* Reconstrução ilustrativa da evolução do patrimônio em 7 dias (quando ainda não há
    histórico real): tendência semanal suave (fatia do resultado) + oscilação diária
@@ -9101,8 +9105,9 @@ function initWealthSpark(){
   const pfx=d.recon?'~':'';   // caminho interpolado entre pontos reais → prefixo "~" no tooltip
   if(charts.wspark) charts.wspark.destroy();
   const pts=d.cart, lbs=d.labels;
-  // % acumulada de cada ponto no período (p/ o tooltip quando a privacidade está ligada)
-  const base0=pts[0]||0; const pcts=pts.map(v=> base0? (v/base0-1)*100 : 0);
+  // % de cada ponto = RETORNO SOBRE O CUSTO investido até aquele dia ((valor−custo)/custo).
+  // Neutro a aportes: no dia do aporte valor e custo sobem juntos → o % não pula (item 6).
+  const cost=d.cost||[]; const pcts=pts.map((v,i)=>{ const c=cost[i]||0; return c>0? (v-c)/c*100 : 0; });
   // mantém a linha na METADE SUPERIOR do card; abaixo dela fica só a sombra degradê
   // (a faixa dos textos Investido/DY/Renda). min/max do eixo empurram a série p/ cima.
   const mn=Math.min(...pts), mx=Math.max(...pts); let rng=mx-mn; if(rng<=0) rng=Math.max(1, Math.abs(mx)*0.008);
