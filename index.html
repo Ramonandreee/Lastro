@@ -3946,7 +3946,12 @@ function portfolioByTicker(lots){
     g.cur = ((ASSET_CLASS[k]&&ASSET_CLASS[k].cur==='usd')||a.usd) ? 'usd':'brl';
     const rate = g.cur==='usd' ? usdBrlRate() : 1;
     g.pm = g.cotas ? g.custo/g.cotas : 0;          // preço médio nativo ($p/ stocks)
-    g.custoNat = g.custo; g.valNat = g.cotas*(a.px||0);
+    // avalia pela COTAÇÃO REAL (a.live). Sem cotação ao vivo confiável, avalia AO CUSTO —
+    // nunca mostra lucro/prejuízo fictício contra um preço-semente. Vira real quando a
+    // cotação chega (o refresh re-renderiza). É o que o usuário espera ao acabar de comprar.
+    g.priceLive = !!(a.live && a.px>0);
+    const pxEff = g.priceLive ? a.px : g.pm;
+    g.custoNat = g.custo; g.valNat = g.cotas*pxEff;
     g.custo = g.custoNat*rate; g.val = g.valNat*rate;   // BRL p/ somar no patrimônio
     g.lucro=g.val-g.custo; g.lp=g.custo?g.lucro/g.custo*100:0;
     g.pays=groupPayments(g); g.prov=g.pays.reduce((s,p)=>s+p.valor,0)*rate;
@@ -6328,7 +6333,7 @@ async function loadUsQuotes(tickers){
       if(typeof q.mkt==='number' && q.mkt>0){ o.mkt=usMktStr(q.mkt); f.mktReal=true; }
       if(typeof q.lpa==='number') f.lpa=q.lpa;
     });
-    if(any){ if(currentView==='stocks'||currentView==='etfsint') renderAssets(currentView); else if(currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView(); }
+    if(any){ if(currentView==='stocks'||currentView==='etfsint') renderAssets(currentView); else if(currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView(); else if(currentView==='carteira'||currentView==='painel') render(currentView, true); }
   }catch(e){}
 }
 /* mercado de cripto REAL (CoinGecko via /api/crypto) — expande e enriquece a lista CRIPTO. */
@@ -6510,11 +6515,14 @@ function tblFilter(kind, key, val){
    ══════════════════════════════════════════════════════════ */
 /* cartão de posição (estilo app financeiro) */
 function posCard(g){
-  const a=g.f.a, k=g.f.k; const vv=(k==='cripto'?a.v24:a.var)??0;
+  const a=g.f.a, k=g.f.k;
+  const live=!!(a.live && a.px>0);                 // sem cotação real → avalia ao custo
+  const vv=live?((k==='cripto'?a.v24:a.var)??0):0; // variação só com cotação ao vivo
+  const pxEff=live?a.px:g.pm;
   const _rate=g.cur==='usd'?usdBrlRate():1;
   const pmProv=g.cotas?(((g.custoNat!=null?g.custoNat:g.custo)-g.prov/_rate)/g.cotas):0;
   const lotsHtml = g.lots.map(l=>{
-    const lcusto=l.cotas*l.pm, lval=l.cotas*(a.px||0), llp=lcusto?(lval-lcusto)/lcusto*100:0;
+    const lcusto=l.cotas*l.pm, lval=l.cotas*pxEff, llp=lcusto?(lval-lcusto)/lcusto*100:0;
     return `<div class="lot-line">
       <span class="lot-dt"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(l.date)}</span>
       <span class="lot-q">${l.cotas} cota${l.cotas!==1?'s':''}</span>
@@ -6528,7 +6536,7 @@ function posCard(g){
     <div class="pc-head" onclick="quickView('${g.tk}')">
       ${assetLogo(g.tk,k,'md')}
       <div class="pc-id"><div class="pc-nm">${esc(a.nm||g.tk)}</div><div class="pc-tk">${g.tk}${g.lots.length>1?` · ${g.lots.length} aportes`:''}</div></div>
-      <div class="pc-px"><div class="pc-cot mono">${fmtPx(a,k)}</div><div class="pc-var mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</div></div>
+      <div class="pc-px"><div class="pc-cot mono">${fmtPx({px:pxEff,usd:a.usd},k)}</div><div class="pc-var mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</div></div>
     </div>
     <div class="pc-rows">
       ${row('Categoria', ASSET_CLASS[k].label)}
@@ -8578,6 +8586,11 @@ function afterRender(v, soft){
   // telas sem ativos brapi só ajustam o selo p/ "Demonstração" (refreshQuotes trata).
   // soft=true vem do próprio softRefreshView pós-cotação → não rebuscar (evita loop)
   if(!soft){ refreshQuotes(); }
+  // cotação REAL dos ativos EUA da carteira (brapi não cobre) — Home e Carteira usam /api/us
+  if((v==='painel'||v==='carteira') && !soft){
+    const us=[...new Set(CARTEIRA.map(c=>assetLookup(c.tk)).filter(lk=>isUsAsset(lk)).map(lk=>lk.a.tk))];
+    if(us.length) loadUsQuotes(us);
+  }
   if(v==='carteira'){ initAlloc(); initPatrEvol(); initSalary(); if(!soft) diagnose(); }
   if(v==='proventos'){ initProventosCharts(); }
   if(v==='aporte'){ runAporte(); }
@@ -12435,8 +12448,8 @@ function screenSymbols(){
     case 'bdrs':  add(BDRS); break;
     case 'etfs':  ETFS.forEach(a=>{ if(!a.usd) b3.add(a.tk); }); break;
     case 'cripto': CRIPTO.forEach(c=> crypto.add(c.tk)); break;
-    case 'painel': CARTEIRA.forEach(c=> b3.add(c.tk)); ['BOVA11','IVVB11','SMAL11','DIVO11'].forEach(t=>b3.add(t)); break;   // + benchmarks ao vivo (Performance Diária)
-    case 'carteira': CARTEIRA.forEach(c=> b3.add(c.tk)); break;
+    case 'painel': CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(f&&f.k==='cripto') crypto.add(c.tk); else if(f&&!isUsAsset(f)) b3.add(c.tk); }); ['BOVA11','IVVB11','SMAL11','DIVO11'].forEach(t=>b3.add(t)); break;   // + benchmarks ao vivo (Performance Diária)
+    case 'carteira': CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(f&&f.k==='cripto') crypto.add(c.tk); else if(f&&!isUsAsset(f)) b3.add(c.tk); }); break;
     case 'noticias': ACOES.filter(isLiquidStock).forEach(a=> b3.add(a.tk)); break;   // "Em alta agora" ao vivo
     case 'watchlist': watchlist().forEach(tk=>{ const f=assetLookup(tk); if(f){ if(f.k==='cripto') crypto.add(tk); else if(f.k!=='stocks') b3.add(tk); } }); break;
     case 'asset': {
