@@ -6522,7 +6522,8 @@ function posCard(g){
   const _rate=g.cur==='usd'?usdBrlRate():1;
   const pmProv=g.cotas?(((g.custoNat!=null?g.custoNat:g.custo)-g.prov/_rate)/g.cotas):0;
   const lotsHtml = g.lots.map(l=>{
-    const lcusto=l.cotas*l.pm, lval=l.cotas*pxEff, llp=lcusto?(lval-lcusto)/lcusto*100:0;
+    // sem cotação ao vivo, cada lote vale o SEU próprio custo (llp=0) — nunca o pm agregado
+    const lpx=live?a.px:l.pm; const lcusto=l.cotas*l.pm, lval=l.cotas*lpx, llp=lcusto?(lval-lcusto)/lcusto*100:0;
     return `<div class="lot-line">
       <span class="lot-dt"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(l.date)}</span>
       <span class="lot-q">${l.cotas} cota${l.cotas!==1?'s':''}</span>
@@ -10436,7 +10437,7 @@ function exportCarteiraCSV(opts){
   const head=['Ativo','Nome','Classe','Quantidade','Preço médio (R$)','Cotação atual','Valor investido','Valor atual','Resultado (R$)','Resultado (%)','Proventos recebidos (R$)'];
   const rows=groups.map(g=>[
     g.tk, g.f.a.nm||'', (ASSET_CLASS[g.f.k]?ASSET_CLASS[g.f.k].label:g.f.k),
-    csvNum(g.cotas), csvNum(g.pm), csvNum(g.f.a.px||0), csvNum(g.custo), csvNum(g.val),
+    csvNum(g.cotas), csvNum(g.pm), csvNum(g.priceLive?(g.f.a.px||0):g.pm), csvNum(g.custo), csvNum(g.val),
     csvNum(g.lucro), csvNum(g.lp), csvNum(g.prov)
   ]);
   const lines=[head, ...rows].map(r=>r.map(csvCell).join(';'));
