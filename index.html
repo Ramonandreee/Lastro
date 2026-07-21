@@ -9069,6 +9069,10 @@ function wealthSeries(){
   if(!flat.length) return null;
   // começa na PRIMEIRA compra — não pinta dias em que a carteira não existia (item 4).
   let f0=new Date(first.getFullYear(),first.getMonth(),first.getDate());
+  // Janela dos ÚLTIMOS 7 DIAS (spec): se a carteira for mais antiga, começa 7 dias atrás e termina
+  // hoje (7 pontos); se for mais nova que 7 dias, mostra só os dias disponíveis desde a 1ª compra.
+  const win0=new Date(t0.getTime()-6*86400000);
+  if(f0<win0) f0=win0;
   const N=Math.min(Math.round((t0-f0)/86400000)+1, 92);
   // Reconstrução PURA a partir das posições ATUAIS × fechamento real de cada dia. NÃO usamos os
   // snapshots diários (patHist) aqui: eles guardam o patrimônio de uma COMPOSIÇÃO antiga e, se a
