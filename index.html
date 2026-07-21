@@ -8811,14 +8811,16 @@ function initAlloc(){
   });
 }
 
-/* ── Moeda base da visão inicial (BRL ⇄ USD) ── */
-let _homeCur='BRL';
+/* ── Moeda base da visão inicial (BRL ⇄ USD) — padrão R$, e LEMBRA a escolha do usuário
+   (evita o Início aparecer em dólar sem querer numa carteira brasileira). ── */
+let _homeCur = (()=>{ try{ return localStorage.getItem('lastro_home_cur')==='USD'?'USD':'BRL'; }catch(e){ return 'BRL'; } })();
 function fmtHomeCur(v){
   if(_homeCur==='USD'){ const r=(typeof usdBrlRate==='function'?usdBrlRate():0)||5.18; return '$'+((v||0)/r).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   return brl(v);
 }
 function toggleHomeCur(){
   _homeCur = _homeCur==='BRL'?'USD':'BRL';
+  try{ localStorage.setItem('lastro_home_cur', _homeCur); }catch(e){}
   const host=document.querySelector('#content .wdash');
   if(host){ host.outerHTML=renderHomeDashboard(portfolioStats()); if(CARTEIRA.length) initWealthSpark(); if(typeof applyPriv==='function') applyPriv(); }
 }
