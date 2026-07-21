@@ -107,7 +107,8 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=1800');
     return res.status(200).json({ results, crypto, ...(token ? {} : { note: 'BRAPI_TOKEN ausente: B3 indisponível' }) });
   } catch (e) {
+    console.error('[quotes] erro', String((e && e.message) || e));   // detalhe no log, não ao cliente
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(502).json({ error: 'falha ao consultar brapi', detail: String((e && e.message) || e) });
+    return res.status(502).json({ error: 'falha ao consultar brapi' });
   }
 }

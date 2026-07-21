@@ -56,7 +56,8 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=3600');
     return res.status(200).json({ stocks, funds, bdrs });
   } catch (e) {
+    console.error('[universe] erro', String((e && e.message) || e));   // detalhe fica no log, não vai ao cliente
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(502).json({ error: 'falha ao consultar brapi list', detail: String((e && e.message) || e) });
+    return res.status(502).json({ error: 'falha ao consultar brapi list' });
   }
 }

@@ -116,15 +116,9 @@ export default async function handler(req, res) {
     const year = new Date().getFullYear();
     const [cur, prev] = await Promise.all([fetchCsv(year), fetchCsv(year - 1)]);
     if (!cur.text && !prev.text) {
+      console.error('[documents] CVM indisponível', year, cur.status, prev.status, cur.err || prev.err || '');   // diag no log
       res.setHeader('Cache-Control', 'no-store');
-      return res.status(502).json({
-        error: 'CVM indisponível',
-        diag: [
-          { year, status: cur.status, url: cur.url, err: cur.err || null },
-          { year: year - 1, status: prev.status, url: prev.url, err: prev.err || null },
-        ],
-        docs: [],
-      });
+      return res.status(502).json({ error: 'CVM indisponível', docs: [] });
     }
 
     const docs = [];
