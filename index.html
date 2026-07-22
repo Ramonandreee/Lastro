@@ -4344,7 +4344,6 @@ const PAGES = {
   acompanhar:   { t:'Acompanhar',            s:'Watchlist e alertas de preço em um só lugar' },
   watchlist:    { t:'Watchlist',             s:'Ativos que você acompanha de perto' },
   comparador:   { t:'Comparador',            s:'Compare ativos lado a lado pelos fundamentos' },
-  screener:     { t:'Rastreador',            s:'Filtre ativos por critérios fundamentalistas' },
   alertas:      { t:'Alertas de Preço',      s:'Seja avisado quando um ativo atingir o preço-alvo' },
   agenda:       { t:'Agenda de Dividendos',  s:'Calendário de proventos dos seus ativos e do mercado' },
   recomendadas: { t:'Carteiras Recomendadas',s:'Estratégias montadas pela inteligência Lastro' },
@@ -4388,7 +4387,6 @@ const PREMIUM_FEATURES = {
   aporte:    { name:'Aporte Inteligente', icon:'fa-scale-balanced', desc:'O Lastro calcula onde investir o próximo aporte para equilibrar sua carteira, em cotas inteiras.', why:'Pare de adivinhar o que comprar — receba a alocação ideal a cada mês.' },
   fire:      { name:'Independência Financeira', icon:'fa-fire', desc:'Descubra quanto falta para viver dos seus dividendos, com número mágico e data projetada de liberdade.', why:'Visualize sua meta de liberdade financeira e o caminho real até ela.' },
   ir:        { name:'Imposto de Renda', icon:'fa-file-invoice-dollar', desc:'Bens e Direitos prontos para a declaração, rendimentos isentos do ano e cálculo de DARF sobre vendas.', why:'Economize horas na declaração e evite erros que custam caro.' },
-  screener:  { name:'Rastreador de Ativos', icon:'fa-filter', desc:'Filtre todo o universo da B3 por DY, P/VP, Score e mais — sob medida para a sua estratégia.', why:'Encontre as melhores oportunidades em segundos, sem garimpar manualmente.' },
   alertas:   { name:'Alertas de Preço', icon:'fa-bell', desc:'Seja avisado assim que um ativo atingir o preço-alvo, com cotações ao vivo da B3 e cripto.', why:'Nunca mais perca o momento certo de comprar ou vender.' },
   score:     { name:'Score Lastro Completo', icon:'fa-award', desc:'Ranking proprietário de qualidade de todos os ativos, com critérios fundamentalistas.', why:'Compare a qualidade dos ativos de forma objetiva e rápida.' },
   comparador:{ name:'Comparador Completo', icon:'fa-code-compare', desc:'Compare até 4 ativos lado a lado pelos principais fundamentos e pelo Score Lastro.', why:'Decida entre vários ativos com tudo na mesma tela.' },
@@ -4434,7 +4432,7 @@ function proGate(key){ if(isPro()) return true; openPremiumModal(key); return fa
 function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias Premium grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
 function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
 function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
-const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox','stress'];
+const PREMIUM_VIEWS = ['proventos','aporte','ir','alertas','score','backtest','raiox','stress'];
 function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
@@ -5722,6 +5720,7 @@ function nav(v, el, noHist){
   closeSidebar();                                                              // fecha o menu já ao tocar (mesmo se algo abaixo falhar)
   if(v==='admin' && !isOwner()) v='painel';
   if(v==='screener'){ v='acoes'; if(isPro()) tableState.acoes.fopen=true; }   // Rastreador incorporado às listagens
+  if(v==='fire'){ simTab='fire'; v='simulador'; }                             // FIRE virou aba do Simulador (deep-link preservado)
   if(!noHist && currentView && currentView!==v) navStack.push(currentView);
   if(navStack.length>30) navStack.shift();
   currentView = v;
@@ -5785,8 +5784,8 @@ function syncNavGroups(){
 /* ── Tab bar inferior (mobile): acende a aba da SEÇÃO da tela atual ── */
 const VIEW_TAB = {
   painel:'painel',
-  mercado:'mercado', acoes:'mercado', fiis:'mercado', etfs:'mercado', etfsint:'mercado', bdrs:'mercado', stocks:'mercado', cripto:'mercado', score:'mercado', agenda:'mercado', screener:'mercado',
-  carteira:'carteira', proventos:'carteira', aporte:'carteira', fire:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira',
+  mercado:'mercado', acoes:'mercado', fiis:'mercado', etfs:'mercado', etfsint:'mercado', bdrs:'mercado', stocks:'mercado', cripto:'mercado', score:'mercado', agenda:'mercado',
+  carteira:'carteira', proventos:'carteira', aporte:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira',
   noticias:'noticias',
   mais:'mais', simulador:'mais', comparador:'mais', recomendadas:'mais', recdetail:'mais', planos:'mais', indicar:'mais', assinatura:'mais', admin:'mais'
 };
@@ -5808,12 +5807,10 @@ function render(v, soft){
   else if(v==='carteira')    c.innerHTML = viewCarteira();
   else if(v==='proventos')   c.innerHTML = viewProventos();
   else if(v==='aporte')      c.innerHTML = viewAporte();
-  else if(v==='fire')        c.innerHTML = viewFire();
   else if(v==='ir')          c.innerHTML = viewIR();
   else if(v==='acompanhar')  c.innerHTML = viewAcompanhar();
   else if(v==='watchlist')   c.innerHTML = viewWatchlist();
   else if(v==='comparador')  c.innerHTML = viewComparador();
-  else if(v==='screener')    c.innerHTML = viewScreener();
   else if(v==='alertas')     c.innerHTML = viewAlertas();
   else if(v==='agenda')      c.innerHTML = viewAgenda();
   else if(v==='recomendadas')c.innerHTML = viewRecomendadas();
@@ -7446,9 +7443,9 @@ function renderAdminHist(){
 let simTab='renda';
 function setSimTab(t){ simTab=t; render('simulador'); animateContent(); }
 function viewSimulador(){
-  const tabs=[['renda','Viver de renda','fa-hand-holding-dollar'],['juros','Juros compostos','fa-chart-line'],['meta','Aposentadoria','fa-piggy-bank']];
+  const tabs=[['renda','Viver de renda','fa-hand-holding-dollar'],['juros','Juros compostos','fa-chart-line'],['meta','Aposentadoria','fa-piggy-bank'],['fire','Independência','fa-fire']];
   const bar=`<div class="stabs"><div class="stabs-inner">${tabs.map(([k,l,ic])=>`<button class="atab ${simTab===k?'on':''}" onclick="setSimTab('${k}')"><i class="fa-solid ${ic}"></i> ${l}</button>`).join('')}</div></div>`;
-  const body = simTab==='juros'? simJurosHTML() : simTab==='meta'? simMetaHTML() : simRendaHTML();
+  const body = simTab==='juros'? simJurosHTML() : simTab==='meta'? simMetaHTML() : simTab==='fire'? simFireHTML() : simRendaHTML();
   return bar+body;
 }
 function simRendaHTML(){
@@ -7666,7 +7663,7 @@ function fireCalc(despesa, aporte){
   if(totalM%12!==0){ serie.push(pp); labels.push(reached?'Liberdade':Math.ceil(totalM/12)+'a'); }
   return { atual, renda, magico, cobertura, dy, months:m, reached, serie, labels };
 }
-function viewFire(){
+function simFireHTML(){
   const p=portfolioStats();
   if(!p.nAtivos){
     return `<div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-fire"></i></span> Independência Financeira</div></div>
@@ -7674,6 +7671,8 @@ function viewFire(){
   }
   const desp=getDespesa(), ap=getFireAporte();
   return `
+  <div class="sec-title">Quanto falta para você viver de renda?</div>
+  <div class="sec-desc">Usa os números reais da sua carteira — patrimônio e renda passiva — para projetar o caminho até a independência financeira, reinvestindo os proventos ao DY médio da carteira.</div>
   <div class="sim-grid">
     <div class="card card-pad">
       <div class="sim-control"><div class="lbl"><span class="n">Custo de vida mensal</span><span class="v" id="fireDespV">${brl0(desp)}</span></div><input type="range" id="fireDesp" min="1000" max="40000" step="500" value="${desp}" oninput="runFire()"></div>
@@ -7944,129 +7943,8 @@ function initComparador(){
     ${loading?'<div style="font-size:12px;color:var(--ink-3);margin-top:14px"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando fundamentos reais…</div>':'<div style="font-size:12px;color:var(--ink-3);margin-top:14px"><i class="fa-solid fa-circle-info"></i> Destaque em verde indica o melhor valor de cada indicador entre os ativos comparados.</div>'}`;
 }
 
-/* ══════════════════════════════════════════════════════════
-   VIEW: SCREENER / RASTREADOR
-   ══════════════════════════════════════════════════════════ */
-let scrState = { universe:'fiis', dyMin:0, pvpMax:3, scoreMin:0, plMax:40, roeMin:0, liqMin:0, seg:'' };
-function viewScreener(){
-  if(!isPro()){
-    return `<div class="card premium-gate">${premiumPresentation('screener')}</div>`;
-  }
-  const ac = scrState.universe==='acoes';
-  return `
-  <div class="sec-title">Rastreador de ativos</div>
-  <div class="sec-desc">Defina critérios fundamentalistas e encontre ativos que se encaixam na sua estratégia. Comece por um preset e refine os filtros.</div>
-  <div class="sim-grid">
-    <div class="card card-pad">
-      <div class="sim-control">
-        <div class="lbl"><span class="n">Universo</span></div>
-        <div class="segmented" style="display:flex;width:100%">
-          <button class="${ac?'':'active'}" id="su0" onclick="setUniv('fiis',this)" style="flex:1">FIIs</button>
-          <button class="${ac?'active':''}" id="su1" onclick="setUniv('acoes',this)" style="flex:1">Ações</button>
-        </div>
-      </div>
-      <div class="sim-control">
-        <div class="lbl"><span class="n">Presets</span></div>
-        <div class="scr-presets">
-          <button onclick="scrPreset('dividendos')"><i class="fa-solid fa-coins"></i> Dividendos</button>
-          <button onclick="scrPreset('valor')"><i class="fa-solid fa-tag"></i> Valor</button>
-          <button onclick="scrPreset('qualidade')"><i class="fa-solid fa-award"></i> Qualidade</button>
-          <button onclick="scrPreset('barganha')"><i class="fa-solid fa-magnifying-glass-dollar"></i> Barganha</button>
-        </div>
-      </div>
-      <div class="sim-control">
-        <div class="lbl"><span class="n">Setor</span></div>
-        <select id="scrSeg" class="sel" style="width:100%" onchange="scrUpd()">${scrSegOptions()}</select>
-      </div>
-      <div class="sim-control">
-        <div class="lbl"><span class="n">DY mínimo</span><span class="v" id="scrDyV">${pc(scrState.dyMin,1)}%</span></div>
-        <input type="range" id="scrDy" min="0" max="15" step="0.5" value="${scrState.dyMin}" oninput="scrUpd()">
-      </div>
-      <div class="sim-control">
-        <div class="lbl"><span class="n">Score Lastro mínimo</span><span class="v" id="scrScV">${scrState.scoreMin}</span></div>
-        <input type="range" id="scrSc" min="0" max="95" step="5" value="${scrState.scoreMin}" oninput="scrUpd()">
-      </div>
-      <div class="sim-control">
-        <div class="lbl"><span class="n">P/VP máximo</span><span class="v" id="scrPvpV">${pc(scrState.pvpMax,2)}</span></div>
-        <input type="range" id="scrPvp" min="0.5" max="3" step="0.05" value="${scrState.pvpMax}" oninput="scrUpd()">
-      </div>
-      <div class="sim-control" style="${ac?'':'display:none'}">
-        <div class="lbl"><span class="n">P/L máximo</span><span class="v" id="scrPlV">${scrState.plMax}</span></div>
-        <input type="range" id="scrPl" min="3" max="40" step="1" value="${scrState.plMax}" oninput="scrUpd()">
-      </div>
-      <div class="sim-control" style="${ac?'':'display:none'}">
-        <div class="lbl"><span class="n">ROE mínimo</span><span class="v" id="scrRoeV">${scrState.roeMin}%</span></div>
-        <input type="range" id="scrRoe" min="0" max="30" step="1" value="${scrState.roeMin}" oninput="scrUpd()">
-      </div>
-      <div class="sim-control" style="margin-bottom:0">
-        <div class="lbl"><span class="n">Liquidez mínima</span><span class="v" id="scrLiqV">${scrState.liqMin} mi</span></div>
-        <input type="range" id="scrLiq" min="0" max="50" step="1" value="${scrState.liqMin}" oninput="scrUpd()">
-      </div>
-      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:14px" onclick="scrReset()"><i class="fa-solid fa-rotate-left"></i> Limpar filtros</button>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-filter"></i></span> Resultados <span class="card-sub" id="scrCount" style="margin-left:6px"></span></div></div>
-      <div class="tbl-wrap"><table class="tbl" id="scrTbl"></table></div>
-    </div>
-  </div>`;
-}
-function scrSegOptions(){
-  const src = scrState.universe==='fiis'?FIIS:ACOES;
-  const segs=[...new Set(src.map(a=>a.seg).filter(Boolean))].sort();
-  return `<option value="">Todos os setores</option>`+segs.map(s=>`<option value="${esc(s)}" ${scrState.seg===s?'selected':''}>${esc(s)}</option>`).join('');
-}
-function scrPreset(name){
-  const ac=scrState.universe==='acoes';
-  const P={ dividendos:{dyMin:8,scoreMin:60,pvpMax:3,plMax:40,roeMin:0,liqMin:5},
-            valor:{dyMin:0,scoreMin:50,pvpMax:ac?3:1,plMax:10,roeMin:0,liqMin:5},
-            qualidade:{dyMin:0,scoreMin:80,pvpMax:3,plMax:40,roeMin:ac?15:0,liqMin:0},
-            barganha:{dyMin:6,scoreMin:70,pvpMax:ac?3:0.98,plMax:9,roeMin:0,liqMin:5} }[name];
-  if(!P) return;
-  Object.assign(scrState, P, {seg:''});
-  render('screener');
-}
-function scrReset(){ scrState={ universe:scrState.universe, dyMin:0, pvpMax:3, scoreMin:0, plMax:40, roeMin:0, liqMin:0, seg:'' }; render('screener'); }
-function setUniv(u,btn){ if(scrState.universe===u) return; scrState.universe=u; scrState.seg=''; render('screener'); }
-function scrUpd(){
-  scrState.dyMin=+$('#scrDy').value; scrState.pvpMax=+$('#scrPvp').value; scrState.scoreMin=+$('#scrSc').value;
-  scrState.seg=$('#scrSeg')?$('#scrSeg').value:'';
-  scrState.liqMin=$('#scrLiq')?+$('#scrLiq').value:0;
-  if($('#scrPl')) scrState.plMax=+$('#scrPl').value;
-  if($('#scrRoe')) scrState.roeMin=+$('#scrRoe').value;
-  $('#scrDyV').textContent=pc(scrState.dyMin,1)+'%'; $('#scrPvpV').textContent=pc(scrState.pvpMax,2); $('#scrScV').textContent=scrState.scoreMin;
-  if($('#scrPlV')) $('#scrPlV').textContent=scrState.plMax;
-  if($('#scrRoeV')) $('#scrRoeV').textContent=scrState.roeMin+'%';
-  if($('#scrLiqV')) $('#scrLiqV').textContent=scrState.liqMin+' mi';
-  runScreener();
-}
-function runScreener(){
-  const ac = scrState.universe==='acoes';
-  const src = ac?ACOES:FIIS;
-  const s=scrState;
-  const res = src.filter(a=>
-       (a.dy||0)>=s.dyMin
-    && (typeof a.pvp!=='number' || a.pvp<=s.pvpMax)
-    && (a.score||0)>=s.scoreMin
-    && (a.liq||0)>=s.liqMin
-    && (!s.seg || a.seg===s.seg)
-    && (!ac || (typeof a.pl!=='number' || a.pl<=s.plMax))
-    && (!ac || (a.roe||0)>=s.roeMin)
-  ).sort((a,b)=>(b.score||0)-(a.score||0));
-  const tbl=$('#scrTbl'); if(!tbl) return;
-  const k = ac?'acoes':'fiis';
-  const head = ac
-    ? `<tr><th class="cell-left">Ativo</th><th>Score</th><th>Cotação</th><th>DY</th><th>P/L</th><th>ROE</th></tr>`
-    : `<tr><th class="cell-left">Ativo</th><th>Score</th><th>Cotação</th><th>DY</th><th>P/VP</th><th>Liq.</th></tr>`;
-  const cols = ac
-    ? a=>`${scoreCell(a)}<td class="mono">${brl(a.px)}</td><td class="mono up">${pc(a.dy,1)}%</td><td class="mono">${typeof a.pl==='number'?pc(a.pl,1)+'x':'—'}</td><td class="mono ${(a.roe||0)>=15?'up':''}">${typeof a.roe==='number'?pc(a.roe,1)+'%':'—'}</td>`
-    : a=>`${scoreCell(a)}<td class="mono">${brl(a.px)}</td><td class="mono up">${pc(a.dy,1)}%</td><td class="mono ${a.pvp<1?'up':''}">${pc(a.pvp,2)}</td><td class="mono">${a.liq||0} mi</td>`;
-  const rows = res.length? res.map(a=>`<tr onclick="quickView('${a.tk}')">
-    <td class="cell-left"><div class="td-asset">${assetLogo(a.tk,k,'sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${esc(a.nm||'')}</div></div></div></td>
-    ${cols(a)}</tr>`).join('')
-    : `<tr><td colspan="6"><div class="search-empty">Nenhum ativo atende a todos os critérios. Relaxe os filtros.</div></td></tr>`;
-  tbl.innerHTML=`<thead>${head}</thead><tbody>${rows}</tbody>`;
-  const c=$('#scrCount'); if(c) c.textContent=`· ${res.length} encontrados`;
-}
+/* Rastreador (screener) standalone aposentado — filtros incorporados às listagens de Ações/FIIs.
+   nav('screener') redireciona para 'acoes' (ver função nav). */
 
 /* ══════════════════════════════════════════════════════════
    VIEW: AGENDA DE DIVIDENDOS
@@ -8313,7 +8191,6 @@ function viewMais(){
       ['proventos','fa-coins','Meus Proventos',1],
       ['acompanhar','fa-star','Acompanhar',0],
       ['aporte','fa-scale-balanced','Aporte Inteligente',1],
-      ['fire','fa-fire','Independência Financeira',1],
       ['ir','fa-file-invoice-dollar','Imposto de Renda',1],
       ['agenda','fa-calendar-day','Agenda de Dividendos',0],
     ]},
@@ -8512,8 +8389,9 @@ function afterRender(v, soft){
   if(typeof applyPriv==='function') applyPriv();   // reaplica máscara de privacidade nos valores recém-renderizados
   document.body.classList.toggle('view-inicio', v==='painel');
   // identidade Premium: ribbon discreto no topo das páginas Premium
-  document.body.classList.toggle('premium-view', PREMIUM_VIEWS.includes(v));
-  if(PREMIUM_VIEWS.includes(v)){ const c=$('#content'); if(c && !c.querySelector(':scope > .premium-ribbon')) c.insertAdjacentHTML('afterbegin', premiumRibbon()); }
+  const isPremiumV = PREMIUM_VIEWS.includes(v) || (v==='simulador' && simTab==='fire');   // aba FIRE do Simulador mantém identidade Pro
+  document.body.classList.toggle('premium-view', isPremiumV);
+  if(isPremiumV){ const c=$('#content'); if(c && !c.querySelector(':scope > .premium-ribbon')) c.insertAdjacentHTML('afterbegin', premiumRibbon()); }
   if(newsTimer){ clearInterval(newsTimer); newsTimer = null; }   // pausa o feed ao sair de Notícias
   if(v==='painel'){
     const p = portfolioStats();
@@ -8538,11 +8416,9 @@ function afterRender(v, soft){
   if(v==='carteira'){ initAlloc(); initPatrEvol(); initSalary(); if(!soft){ diagnose(); if(typeof loadBacktestHistory==='function') loadBacktestHistory(); } }
   if(v==='proventos'){ initProventosCharts(); }
   if(v==='aporte'){ runAporte(); }
-  if(v==='fire'){ runFire(); }
   if(v==='backtest'){ initBacktest(); if(!soft && typeof loadBacktestHistory==='function') loadBacktestHistory(); }
   if(v==='raiox'){ initRaioX(); }
   if(v==='comparador'){ initComparador(); }
-  if(v==='screener'){ runScreener(); }
   if(v==='noticias'){
     loadNewsFeed();
     // auto-refresh do feed enquanto a aba estiver aberta (Supabase)
@@ -9848,7 +9724,7 @@ function runSimMeta(){
       plugins:{ legend:{ display:true, position:'top', align:'end', labels:{ color:cssVar('--ink-2'), font:{size:11}, usePointStyle:true, pointStyleWidth:9, boxHeight:7 } }, tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+brl0(c.parsed.y), title:items=>'Ano '+items[0].label } } },
       scales:{ x:{ grid:{display:false}, ticks:{color:cssVar('--ink-3'),font:{size:10}}, border:{display:false} }, y:{ grid:{color:cssVar('--line')}, ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'}, border:{display:false} } } } });
 }
-function initSimActive(){ if(simTab==='juros') runSimJuros(); else if(simTab==='meta') runSimMeta(); else runSim(); }
+function initSimActive(){ if(simTab==='juros') runSimJuros(); else if(simTab==='meta') runSimMeta(); else if(simTab==='fire') runFire(); else runSim(); }
 function brl0(n){ return 'R$ '+Math.round(n).toLocaleString('pt-BR'); }
 
 /* diagnóstico determinístico da carteira (instantâneo, gratuito) */
