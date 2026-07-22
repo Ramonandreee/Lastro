@@ -3649,6 +3649,7 @@ button.mp-cell { cursor:pointer; font-family:inherit; }
 
 <script src="/vendor/chart.umd.js"></script>
 <script src="/vendor/money.js"></script>
+<script src="/vendor/movs.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════
    LASTRO — DADOS
@@ -3803,6 +3804,46 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 function normLots(){ if(!Array.isArray(CARTEIRA)){ CARTEIRA=[]; return; } let ch=false; CARTEIRA.forEach(c=>{ if(!c.id){ c.id=uid(); ch=true; } }); if(ch) savePortfolio(); }
 function uniqueTickers(){ return [...new Set(CARTEIRA.map(c=>c.tk))]; }
 function validDate(date){ if(!date) return false; const d=new Date(date); if(isNaN(d)) return false; return d.getTime() <= Date.now()+864e5; }
+
+/* ══════════════════════════════════════════════════════════
+   LIVRO DE MOVIMENTAÇÕES (MOVS) — Fase 1 (plumbing)
+   MOVS é a fonte de verdade dos eventos; CARTEIRA vira PROJEÇÃO derivada
+   (rebuildLots). Todo cálculo em CENTAVOS via LastroMoney. Se o vendor
+   /vendor/movs.js não carregar, TUDO cai no comportamento legado com CARTEIRA
+   (guardado por hasMovs()) — a carteira nunca quebra por falta do vendor.
+   ══════════════════════════════════════════════════════════ */
+let MOVS = [];
+function hasMovs(){ return typeof window.LastroMovs!=='undefined' && !!window.LastroMovs; }
+/* livro ATIVO: vendor presente e fora do modo demo/dev (onde a carteira é efêmera e não migra) */
+function movsActive(){ return hasMovs() && !(typeof demoMode!=='undefined'&&demoMode) && !(typeof testModeOn==='function'&&testModeOn()); }
+/* lê e valida MOVS do localStorage (nunca lança) */
+function movsArr(){ try{ const s=JSON.parse(localStorage.getItem('lastro_movs')); if(Array.isArray(s)) return s.filter(m=>m&&m.type); }catch(e){} return []; }
+/* grava MOVS (cap generoso) e reflete em memória; não grava em demo/modo dev */
+function movsSave(a){ MOVS=Array.isArray(a)?a.slice(-5000):[]; if(demoMode||(typeof testModeOn==='function'&&testModeOn())) return; try{ localStorage.setItem('lastro_movs', JSON.stringify(MOVS)); }catch(e){} }
+/* câmbio p/ o redutor: USD→BRL pelo fechamento do dia (ou câmbio atual); BRL=1 */
+function movsFx(){ return (cur,date)=> cur==='usd' ? ((typeof closeOn==='function'&&closeOn('USDBRL',String(date||'').slice(0,10)))||(typeof usdBrlRate==='function'?usdBrlRate():1)) : 1; }
+/* estado derivado (posições+caixa+realizado) numa data D (default: tudo/hoje) */
+function movsState(D){ if(!hasMovs()) return null; try{ return window.LastroMovs.deriveState(MOVS, D||null, {fx:movsFx()}); }catch(e){ return null; } }
+/* atualiza a projeção CARTEIRA a partir de MOVS (mesmo formato [{id,tk,cotas,pm,date}]) */
+function rebuildCarteira(){ if(!hasMovs()) return; try{ CARTEIRA = window.LastroMovs.rebuildLots(MOVS)||[]; }catch(e){} }
+/* saldo em CAIXA (BRL, reais) na data D — Fase 1 só-compra ⇒ 0 */
+function portfolioCaixa(D){ const st=movsState(D); return st? window.LastroMoney.fromCents(st.caixaCents) : 0; }
+/* migração idempotente (roda 1x no boot): sem lastro_movs, gera de CARTEIRA (cada lote → compra),
+   preservando o id (estabilidade de sync). Depois deriva CARTEIRA=rebuildLots(MOVS) (mesmos lotes). */
+function migrateMovsIfNeeded(){
+  if(!hasMovs()) return;
+  if(demoMode||(typeof testModeOn==='function'&&testModeOn())){ MOVS=[]; return; }   // demo/dev: não persiste
+  let raw=null; try{ raw=localStorage.getItem('lastro_movs'); }catch(e){}
+  if(raw!=null){ MOVS=movsArr(); rebuildCarteira(); return; }   // já migrado: só carrega e projeta
+  const gen=(Array.isArray(CARTEIRA)?CARTEIRA:[]).map(lot=>({ id:lot.id||uid(), type:'compra', tk:lot.tk, cotas:lot.cotas, preco:lot.pm, date:lot.date||todayISO(), cur:curOf(lot.tk) }));
+  movsSave(gen); rebuildCarteira();
+}
+/* mutações do livro — gravam lastro_movs, refazem a projeção CARTEIRA e sincronizam (igual savePortfolio) */
+function _movsAfterMutate(){ rebuildCarteira(); try{ if(!(demoMode||(typeof testModeOn==='function'&&testModeOn()))) localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} if(typeof recordPatSnapshot==='function') recordPatSnapshot(); if(typeof saveCloudState==='function') saveCloudState(); }
+function addMov(mov){ if(!hasMovs()||!mov||!mov.type) return { ok:false, msg:'Movimento inválido' }; if(!mov.id) mov.id=uid(); MOVS.push(mov); movsSave(MOVS); _movsAfterMutate(); return { ok:true, id:mov.id }; }
+function editMov(id, patch){ if(!hasMovs()) return { ok:false }; const m=MOVS.find(x=>x.id===id); if(!m) return { ok:false, msg:'Movimento não encontrado' }; Object.assign(m, patch||{}); movsSave(MOVS); _movsAfterMutate(); return { ok:true }; }
+function removeMov(id){ if(!hasMovs()) return { ok:false }; MOVS=MOVS.filter(x=>x.id!==id); movsSave(MOVS); _movsAfterMutate(); return { ok:true }; }
+
 /* cada aporte é um lote (lot) com data própria — preço médio é ponderado */
 function addPosition(tk, cotas, pm, date){
   tk=String(tk||'').toUpperCase().trim(); cotas=+cotas; pm=+pm;
@@ -3813,6 +3854,8 @@ function addPosition(tk, cotas, pm, date){
   if(!has && !isPro() && uniqueTickers().length >= PLAN_LIMITS.carteira){
     return { ok:false, premium:true, msg:`O plano Gratuito permite até ${PLAN_LIMITS.carteira} ativos. Faça upgrade para carteira ilimitada.` };
   }
+  // "aporte" na UI = movimento de COMPRA no livro. Wrapper fino sobre addMov (preserva id).
+  if(movsActive()){ addMov({ id:uid(), type:'compra', tk, cotas, preco:pm, date, cur:curOf(tk) }); return { ok:true }; }
   CARTEIRA.push({ id:uid(), tk, cotas, pm, date });
   savePortfolio();
   return { ok:true };
@@ -3821,10 +3864,11 @@ function editLot(id, cotas, pm, date){
   const l=CARTEIRA.find(c=>c.id===id); if(!l) return { ok:false, msg:'Aporte não encontrado' };
   cotas=+cotas; pm=+pm; if(!(cotas>0)||!(pm>0)) return { ok:false, msg:'Valores inválidos' };
   if(!validDate(date)) return { ok:false, msg:'Informe a data do aporte (não futura)' };
+  if(movsActive()){ const r=editMov(id, { cotas, preco:pm, date }); if(r.ok) return { ok:true }; }
   l.cotas=cotas; l.pm=pm; l.date=date; savePortfolio(); return { ok:true };
 }
-function removeLot(id){ CARTEIRA=CARTEIRA.filter(c=>c.id!==id); savePortfolio(); toast('Aporte removido'); if(currentView==='carteira') render('carteira'); }
-function removePosition(tk){ CARTEIRA = CARTEIRA.filter(c=>c.tk!==tk); savePortfolio(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); }
+function removeLot(id){ if(movsActive()){ const r=removeMov(id); if(r.ok){ toast('Aporte removido'); if(currentView==='carteira') render('carteira'); return; } } CARTEIRA=CARTEIRA.filter(c=>c.id!==id); savePortfolio(); toast('Aporte removido'); if(currentView==='carteira') render('carteira'); }
+function removePosition(tk){ if(movsActive()){ MOVS=MOVS.filter(m=>m.tk!==tk); movsSave(MOVS); _movsAfterMutate(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); return; } CARTEIRA = CARTEIRA.filter(c=>c.tk!==tk); savePortfolio(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); }
 /* provento-base mensal por cota (FIIs: rendimento real; ações: DY/12 estimado) */
 function provPerCota(k,a){ return (k==='fiis' && typeof a.div==='number') ? a.div : (typeof a.dy==='number' && a.px ? a.px*(a.dy/100)/12 : 0); }
 /* dia de pagamento estável por ativo (cada fundo paga sempre por volta do mesmo dia) */
@@ -4314,10 +4358,19 @@ function portfolioStats(lots){
   // soma em CENTAVOS INTEIROS (exata) e converte uma vez — sem drift acumulado
   let investCents=0, atualCents=0, provCents=0, renda=0, dyNum=0;
   byT.forEach(g=>{ investCents+=g.custoCents; atualCents+=g.valCents; provCents+=g.provCents; renda+=g.mensal; dyNum+=(g.f.a.dy||0)*g.val; });
-  const invest=M.fromCents(investCents), atual=M.fromCents(atualCents), prov=M.fromCents(provCents);
-  const dyMed = atual ? dyNum/atual : 0;
-  const lucroCents = atualCents-investCents, lucroProvCents = lucroCents+provCents;
-  return { invest, atual, renda, dyMed, prov,
+  // valor SÓ das posições (base de lucro/DY — inalterado); o caixa entra depois no patrimônio total.
+  const posAtualCents=atualCents;
+  const lucroCents = posAtualCents-investCents, lucroProvCents = lucroCents+provCents;
+  const posAtual=M.fromCents(posAtualCents);
+  const dyMed = posAtual ? dyNum/posAtual : 0;
+  // CAIXA do livro (Fase 1 só-compra ⇒ 0). Só entra no total quando NÃO recebemos lots custom
+  // (senão o caixa global contaminaria uma projeção pontual passada a portfolioStats(lots)).
+  let caixaCents=0;
+  const _noMovs=(typeof demoMode!=='undefined'&&demoMode)||(typeof testModeOn==='function'&&testModeOn());
+  if(!lots && !_noMovs && typeof MOVS!=='undefined' && MOVS.length){ const st=(typeof movsState==='function')?movsState():null; if(st&&isFinite(st.caixaCents)) caixaCents=st.caixaCents; }
+  const atualCentsTot=posAtualCents+caixaCents;
+  const invest=M.fromCents(investCents), atual=M.fromCents(atualCentsTot), prov=M.fromCents(provCents);
+  return { invest, atual, renda, dyMed, prov, caixa:M.fromCents(caixaCents),
     lucro: M.fromCents(lucroCents), lucroP: investCents ? M.pctCents(lucroCents, investCents) : 0,
     lucroProv: M.fromCents(lucroProvCents), lucroProvP: investCents ? M.pctCents(lucroProvCents, investCents) : 0,
     nAtivos: byT.length, _byT: byT };
@@ -5022,11 +5075,11 @@ function _doLogout(){
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
-  ['lastro_carteira','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts','lastro_dirty'].forEach(k=>localStorage.removeItem(k));
+  ['lastro_carteira','lastro_movs','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts','lastro_dirty'].forEach(k=>localStorage.removeItem(k));
   _stateTs = 0; clearDirty(); setSync('idle','');   // zera o relógio de sync — o próximo login adota o estado da nuvem
   try{ sessionStorage.removeItem('lastro_unlocked'); }catch(e){}   // ao sair, o próximo acesso pede biometria de novo
   localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
-  CARTEIRA = []; localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
+  CARTEIRA = []; MOVS = []; localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
   refreshPlanUI(); updateAuthUI(); applyPriv();
   closeAuth(); closeAcctMenu();
   toast('Você saiu da conta');
@@ -5096,9 +5149,22 @@ async function loadCloudState(){
     // migração (nuvem e local sem carimbo): não deixe uma nuvem VAZIA apagar dados reais locais
     const migrating = (cts===0 && _stateTs===0);
     const wipes = (arr, localLen) => migrating && Array.isArray(arr) && arr.length===0 && localLen>0;
+    let _movsPushBack=false;
     _applyingCloud = true;
     try{
       if(Array.isArray(d.carteira) && !wipes(d.carteira, CARTEIRA.length)){ CARTEIRA=d.carteira; normLots(); try{ localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} if(typeof recordPatSnapshot==='function') recordPatSnapshot(); }
+      // MOVS (fonte de verdade dos eventos) — reconciliado por ts junto do blob (last-write-wins).
+      // Blindagens: movs VAZIO da nuvem nunca apaga movs local com eventos; nuvem legada (só carteira,
+      // sem movs) porém mais nova ⇒ regenera MOVS da carteira adotada (projeção→fonte). MANTÉM carteira
+      // no payload p/ compat com aparelho legado.
+      if(hasMovs()){
+        const cloudMovs = Array.isArray(d.movs) ? d.movs.filter(m=>m&&m.type) : null;
+        const movsWipe = Array.isArray(d.movs) && d.movs.length===0 && Array.isArray(MOVS) && MOVS.length>0;
+        if(movsWipe){ rebuildCarteira(); _movsPushBack=true;   // mantém o local rico; carteira reflete MOVS local
+        } else if(cloudMovs && cloudMovs.length && !wipes(cloudMovs, MOVS.length)){ MOVS=cloudMovs; rebuildCarteira();
+        } else if(Array.isArray(d.carteira) && !wipes(d.carteira, CARTEIRA.length)){ MOVS=(CARTEIRA||[]).map(lot=>({ id:lot.id||uid(), type:'compra', tk:lot.tk, cotas:lot.cotas, preco:lot.pm, date:lot.date||todayISO(), cur:curOf(lot.tk) })); }
+        try{ localStorage.setItem('lastro_movs', JSON.stringify(MOVS)); localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){}
+      }
       if(Array.isArray(d.watch) && !wipes(d.watch, (watchlist()||[]).length)) localStorage.setItem('lastro_watch', JSON.stringify(d.watch));
       if(Array.isArray(d.alerts) && !wipes(d.alerts, (getAlerts()||[]).length)) localStorage.setItem('lastro_alerts', JSON.stringify(d.alerts));
       // ENTITLEMENT: plano/assinatura (d.plan/d.sub) NÃO são lidos do user_state — o blob é gravável
@@ -5121,13 +5187,14 @@ async function loadCloudState(){
     } finally { _applyingCloud=false; }
     // adota o carimbo da nuvem para não re-empurrar (se ela não tinha ts, estabelece um agora)
     _stateTs = cts || Date.now(); try{ localStorage.setItem('lastro_state_ts', String(_stateTs)); }catch(e){}
+    if(_movsPushBack){ try{ saveCloudState(); }catch(e){} }   // nuvem tentou zerar movs local → reempurra o local rico
     refreshPlanUI();
     render(currentView);   // reflete preferências (tema/visualização) imediatamente
   }catch(e){}
 }
 let _cloudT;
 /* plano/assinatura NÃO entram no payload da nuvem (entitlement não vive no blob editável do usuário) */
-function cloudPayload(){ return { ts:_stateTs, carteira:CARTEIRA, watch:watchlist(), alerts:getAlerts(), theme:getThemePref(), profile:getProfile(), patHist:patHistArr(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } }; }
+function cloudPayload(){ return { ts:_stateTs, schema:2, carteira:CARTEIRA, movs:MOVS, watch:watchlist(), alerts:getAlerts(), theme:getThemePref(), profile:getProfile(), patHist:patHistArr(), prefs:{ pgsize:assetPageSize(), chartType:homeChartType, chartPeriod:homeChartPeriod, priv:localStorage.getItem('lastro_priv'), despesa:getDespesa(), fireAporte:getFireAporte(), rendaMeta:getRendaMeta(), trialStart:trialStartTs() } }; }
 /* grava direto na tabela (fallback, quando a função save_state ainda não foi criada no banco) */
 function _postCloudDirect(s,c,keepalive){
   return sbFetch(`${c.SUPABASE_URL}/rest/v1/user_state?on_conflict=user_id`, {method:'POST', headers:{'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify({user_id:s.user.id, data:cloudPayload(), updated_at:new Date().toISOString()}), keepalive:!!keepalive});
@@ -8912,12 +8979,17 @@ function wealthSeries(period){
   const p2=n=>String(n).padStart(2,'0'); const key=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
   const todayK=key(t0);
   // lotes achatados: cada compra conta SÓ a partir da sua data (date<=D); guarda moeda e px atual real.
-  const flat=[]; let first=t0;
+  const flat=[]; let first=t0; const liveByTk={};
   groups.forEach(g=>{ const a=g.f.a, tk=g.tk, usd=(g.cur==='usd'); const live=!!(a.live&&a.px>0);
+    liveByTk[tk]={ px:live?a.px:null };   // cotação AO VIVO por ticker (só p/ o ponto de hoje)
     (g.lots||[]).forEach(l=>{ let d=l.date?new Date(l.date+'T00:00:00'):t0; if(isNaN(d)) d=t0;
       const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate()); if(dd<first) first=dd;
       flat.push({ tk, cotas:l.cotas, usd, date:dd, pxNow:live?a.px:null }); }); });
   if(!flat.length) return null;
+  // fonte de lotes por dia = deriveState(MOVS,D).posByTk (líquido de venda) + caixa. Fora do modo
+  // demo/dev (onde a carteira é efêmera e MOVS não reflete os lotes de teste) e só quando há MOVS.
+  const useMovs = hasMovs() && Array.isArray(MOVS) && MOVS.length>0
+    && !(typeof demoMode!=='undefined'&&demoMode) && !(typeof testModeOn==='function'&&testModeOn());
   const ps=(typeof portfolioStats==='function')?portfolioStats():null; const atual=(ps&&ps.atual>0)?ps.atual:null;
   // ── Janela pelo PERÍODO escolhido (seletor 7D/30D/3M/6M/1A/MAX). MAX = desde o 1º aporte. ──
   const PWIN={'7D':7,'30D':30,'3M':91,'6M':182,'1A':365,'MAX':1000000};
@@ -8940,12 +9012,26 @@ function wealthSeries(period){
     if(!isToday && phMap[ds]!=null){ labels.push(fmtLbl(d)); cart.push(phMap[ds]); usedSnap=true; continue; }
     // fonte 2 — reconstrução por FECHAMENTOS reais; em CENTAVOS (arredonda 1x por posição, soma inteira)
     let valCents=0, hasLot=false, allReal=true;
-    for(const l of flat){ if(l.date<=d){ hasLot=true;
-      const fx = l.usd ? ((typeof closeOn==='function'&&closeOn('USDBRL',ds))||usdRate) : 1;
-      const px = (isToday && l.pxNow!=null) ? l.pxNow : ((typeof closeOn==='function')?closeOn(l.tk,ds):null);
-      if(px==null){ allReal=false; break; }   // falta fechamento real → dia NÃO é real
-      valCents += M.positionCents(l.cotas, px*fx);
-    }}
+    const stDay = useMovs ? movsState(ds) : null;   // posições LÍQUIDAS de venda + caixa naquele dia
+    if(stDay){
+      const pb=stDay.posByTk;
+      for(const tk in pb){ const pos=pb[tk]; if(!(pos.cotas>1e-9)) continue; hasLot=true;
+        const usd=(pos.cur==='usd'); const lv=liveByTk[tk];
+        const fx = usd ? ((typeof closeOn==='function'&&closeOn('USDBRL',ds))||usdRate) : 1;
+        const px = (isToday && lv && lv.px!=null) ? lv.px : ((typeof closeOn==='function')?closeOn(tk,ds):null);
+        if(px==null){ allReal=false; break; }   // falta fechamento real → dia NÃO é real
+        // valoriza POR LOTE (mesmo arredondamento por-lote do legado ⇒ série idêntica p/ só-compra)
+        pos.lots.forEach(l=>{ valCents += M.positionCents(l.cotas, px*fx); });
+      }
+      if(hasLot && allReal) valCents += stDay.caixaCents;   // + caixa do dia (Fase 1 só-compra ⇒ 0)
+    } else {
+      for(const l of flat){ if(l.date<=d){ hasLot=true;
+        const fx = l.usd ? ((typeof closeOn==='function'&&closeOn('USDBRL',ds))||usdRate) : 1;
+        const px = (isToday && l.pxNow!=null) ? l.pxNow : ((typeof closeOn==='function')?closeOn(l.tk,ds):null);
+        if(px==null){ allReal=false; break; }   // falta fechamento real → dia NÃO é real
+        valCents += M.positionCents(l.cotas, px*fx);
+      }}
+    }
     if(!hasLot || !allReal) continue;   // dia sem cobertura real → descartado (nunca plota custo/pm)
     let v=M.fromCents(valCents);
     if(isToday && atual!=null) v=atual;   // último ponto = patrimônio atual REAL
@@ -10185,8 +10271,12 @@ function parseCarteiraCSV(text){
     // respeita o limite do plano gratuito (mesma regra do addPosition)
     if(!prem && !CARTEIRA.some(c2=>c2.tk===tk) && uniqueTickers().length>=limit){ blocked++; continue; }
     let date=normDateBR(c[iDt]||''); if(!validDate(date)) date=new Date().toISOString().slice(0,10);
-    CARTEIRA.push({ id:uid(), tk, cotas, pm, date }); n++;
+    // importação de aporte = movimento de COMPRA no livro (projeta CARTEIRA); legado se o livro não estiver ativo
+    if(movsActive()){ MOVS.push({ id:uid(), type:'compra', tk, cotas, preco:pm, date, cur:curOf(tk) }); }
+    else { CARTEIRA.push({ id:uid(), tk, cotas, pm, date }); }
+    n++;
   }
+  if(movsActive() && n){ movsSave(MOVS); _movsAfterMutate(); }
   return { added:n, blocked };
 }
 function importCarteiraCSV(){
@@ -10233,7 +10323,7 @@ function genTestAlerts(){
   return list;
 }
 /* TODOS os dados do usuário que o modo dev pode tocar — guardados/restaurados por inteiro */
-const DEV_DATA_KEYS = ['lastro_carteira','lastro_watch','lastro_alerts','lastro_sub','lastro_plan','lastro_profile','lastro_priv','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_pat_hist','lastro_state_ts'];
+const DEV_DATA_KEYS = ['lastro_carteira','lastro_movs','lastro_watch','lastro_alerts','lastro_sub','lastro_plan','lastro_profile','lastro_priv','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_pat_hist','lastro_state_ts'];
 function toggleTestMode(){
   closeAcctMenu();
   if(!testModeOn()){
@@ -10255,6 +10345,7 @@ function toggleTestMode(){
       localStorage.removeItem('lastro_dev_bkp');
       // recarrega o estado em memória a partir do que foi restaurado
       try{ CARTEIRA = loadPortfolio(); normLots(); }catch(e){ CARTEIRA=[]; }
+      try{ MOVS = movsArr(); rebuildCarteira(); }catch(e){ MOVS=[]; }   // livro real volta ao estado guardado
       try{ _stateTs = +localStorage.getItem('lastro_state_ts')||0; }catch(e){}   // relógio de sync volta ao valor real
       if(typeof flushCloudState==='function') flushCloudState(false, true);   // fora do modo dev: re-sincroniza os dados reais (força)
       toast('Modo desenvolvedor OFF — todos os seus dados reais foram restaurados ✓');
@@ -12241,6 +12332,7 @@ try{
   applyTheme(false);   // sincroniza ícone/rótulo do tema (data-theme já aplicado no <head>)
   applyPriv();         // privacidade dos valores
   normLots();          // garante id em cada aporte (migração de carteiras antigas)
+  migrateMovsIfNeeded();   // Livro de Movimentações: migra CARTEIRA→MOVS (1x) e projeta CARTEIRA=rebuildLots
   if(isAuthed()) ensureTrial();   // garante o teste PRO de 7 dias para contas existentes
   refreshPlanUI();
   updateAuthUI();
