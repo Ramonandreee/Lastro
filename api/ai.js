@@ -40,6 +40,40 @@ async function verifyUser(token) {
   } catch (e) { return null; }
 }
 
+// Rate limit DURÁVEL via Supabase (RPC rl_check, compartilhado entre instâncias).
+// Retorna: true = dentro do limite, false = estourou, null = indisponível (cai no fallback).
+async function rlCheckDurable(token, scope, limit, windowSecs) {
+  const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
+  if (!url || !anon || !token) return null;
+  try {
+    const r = await fetch(`${url}/rest/v1/rpc/rl_check`, {
+      method: 'POST',
+      headers: { apikey: anon, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_scope: scope, p_limit: limit, p_window: windowSecs }),
+    });
+    if (!r.ok) return null;                       // RPC ausente (migração não aplicada) → fallback
+    const ok = await r.json();
+    return typeof ok === 'boolean' ? ok : null;
+  } catch { return null; }
+}
+
+// Plano EFETIVO do usuário via Supabase (my_plan). Retorna 'free'|'premium'|'pro' ou null
+// (RPC ausente = migração não aplicada → sem gate de plano, comportamento atual).
+async function getPlan(token) {
+  const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
+  if (!url || !anon || !token) return null;
+  try {
+    const r = await fetch(`${url}/rest/v1/rpc/my_plan`, {
+      method: 'POST',
+      headers: { apikey: anon, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    if (!r.ok) return null;
+    const p = await r.json();
+    return typeof p === 'string' ? p : null;
+  } catch { return null; }
+}
+
 async function handler(req, res) {
   const origin = applyCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -54,11 +88,28 @@ async function handler(req, res) {
   const user = await verifyUser(token);
   if (!user) return res.status(401).json({ error: 'Faça login para usar a Inteligência Lastro' });
 
-  // 3) rate-limit best-effort: 30 req / 5 min por usuário
-  const now = Date.now(), win = 5 * 60 * 1000, lim = 30;
-  const arr = (hits.get(user.id) || []).filter(t => now - t < win);
-  if (arr.length >= lim) { res.setHeader('Retry-After', '60'); return res.status(429).json({ error: 'Muitas solicitações. Tente novamente em instantes.' }); }
-  arr.push(now); hits.set(user.id, arr);
+  // 3) rate-limit: 30 req / 5 min por usuário — DURÁVEL (Supabase rl_check), compartilhado entre
+  //    instâncias; se a RPC não estiver aplicada, cai no limitador em memória (best-effort).
+  const RL_LIMIT = 30, RL_WIN_S = 300;
+  const durable = await rlCheckDurable(token, 'ai', RL_LIMIT, RL_WIN_S);
+  if (durable === false) { res.setHeader('Retry-After', '60'); return res.status(429).json({ error: 'Muitas solicitações. Tente novamente em instantes.' }); }
+  if (durable === null) {
+    const now = Date.now(), win = RL_WIN_S * 1000;
+    const arr = (hits.get(user.id) || []).filter(t => now - t < win);
+    if (arr.length >= RL_LIMIT) { res.setHeader('Retry-After', '60'); return res.status(429).json({ error: 'Muitas solicitações. Tente novamente em instantes.' }); }
+    arr.push(now); hits.set(user.id, arr);
+  }
+
+  // 3b) ENTITLEMENT server-side: usuário FREE tem cota diária de IA (enforçada no servidor,
+  //     não contornável pelo cliente); PRO/Premium ilimitado. Se a migração de plano não
+  //     estiver aplicada (my_plan ausente → null), não aplica o gate (comportamento atual).
+  const plan = await getPlan(token);
+  if (plan === 'free') {
+    const _n = parseInt(process.env.AI_FREE_DAY, 10);           // 0 é respeitado; só cai no default se não-numérico
+    const FREE_DAY = Number.isFinite(_n) ? _n : 15;
+    const dayOk = await rlCheckDurable(token, 'ai_free_day', FREE_DAY, 86400);
+    if (dayOk === false) { res.setHeader('Retry-After', '3600'); return res.status(429).json({ error: 'Limite diário de IA do plano Gratuito atingido. Faça upgrade para uso ilimitado.', upgrade: true }); }
+  }
 
   // 4) valida e limita o corpo (nada é repassado verbatim)
   const b = req.body || {};

@@ -87,9 +87,9 @@ Nenhum problema **destrutivo** foi encontrado; os riscos são de **receita, prec
 
 ### 🔴 Crítico
 
-**C1 — Entitlement (plano PRO) apenas no cliente.**
-Evidência: `index.html` (`isPro()`, `refreshPlanUI`, `setPlan`) decide PRO localmente; `loadCloudState` **não** lê `d.plan` do blob ("*Fonte de verdade do plano = billing server-side (a implementar). Deny-by-default.*"). O único recurso PRO com barreira de servidor é `/api/ai` (exige JWT, não plano). Ou seja, **qualquer usuário vira PRO** editando `localStorage`/JS.
-Impacto técnico: bypass de paywall. Impacto no cliente: injusto com pagantes; perda de receita para o negócio.
+**C1 — Entitlement (plano PRO) apenas no cliente.** *(fundação server-side entregue — ver §5)*
+Evidência: `index.html` (`isPro()`, `refreshPlanUI`, `setPlan`) decide PRO localmente; o único recurso PRO com barreira de servidor era `/api/ai` (só JWT). Qualquer usuário vira PRO editando `localStorage`/JS.
+**Status:** `backend/supabase/entitlement.sql` cria a **fonte de verdade server-side** (`subscriptions` com RLS de leitura-própria/escrita-negada; RPCs `my_plan()` e `start_trial()`); `/api/ai` passa a enforçar **cota diária de IA para FREE** no servidor (não contornável), PRO ilimitado. **Retrocompatível/inerte** até a migração ser aplicada. **Lacuna:** os demais recursos PRO client-only (Raio-X, Backtest…) só ficam realmente protegidos ao migrarem sua lógica para o servidor — próxima etapa.
 
 **C2 — Cálculos financeiros em ponto flutuante (float64).** *(corrigido — ver §5)*
 Evidência (à época): `portfolioByTicker`/`portfolioStats` somavam posições em `Number`; centenas de posições acumulavam erro de arredondamento em **dinheiro**.
@@ -102,9 +102,9 @@ Impacto: regressões silenciosas em dinheiro. Impacto no cliente: bugs de saldo/
 
 ### 🟠 Alto
 
-**A1 — Rate limiting durável ausente nos proxies públicos.**
-Evidência: só `api/ai.js` tem rate-limit, e é **in-memory** (`const hits = new Map()`), por instância serverless — não compartilhado. `quotes/universe/asset/us/market/...` são **abertos, sem auth e sem limite**. Mitigação parcial: edge cache.
-Impacto: abuso/custo (esgotar cota brapi/FMP, "DoS de custo"), degradação para todos. Impacto no cliente: lentidão/indisponibilidade de cotações.
+**A1 — Rate limiting durável ausente nos proxies públicos.** *(durável no /api/ai entregue — ver §5)*
+Evidência: só `api/ai.js` tinha rate-limit, in-memory por instância. `quotes/universe/asset/us/market/...` são abertos, sem auth, protegidos só por edge cache.
+**Status:** `backend/supabase/rate-limit.sql` (RPC atômica `rl_check`, compartilhada entre instâncias) + `/api/ai` usa o limitador **durável** com fallback ao in-memory. **Lacuna:** os proxies públicos de dados seguem dependendo do edge cache (aplicar `rl_check` por IP neles é a próxima etapa — custo de 1 ida ao banco por request precisa ser pesado vs. o cache).
 
 **A2 — Observabilidade mínima.**
 Evidência: apenas `console.log/console.error`. Sem logs estruturados, correlation IDs, métricas, tracing, health/readiness/liveness, dashboards ou alertas.
@@ -170,7 +170,9 @@ Impacto: IA/resumo do dia falham silenciosamente. Impacto no cliente: recurso PR
 
 **Testes de unidade (C3, parcial)** — `test/*.mjs` com o runner nativo (`node:test`, sem dependências): 14 testes cobrindo o matcher/parse da CVM (`matchOne`/`parseNum` — correção de dado financeiro), datas/dedupe do histórico e o mapeamento de mercado (`pct`/`mapOne`). CI em `.github/workflows/test.yml` (roda testes + `node --check` a cada push/PR). Funções puras exportadas de `api/fundinfo.js`, `lib/history.js`, `lib/crypto.js`, `lib/usdetail.js`.
 
-> As demais correções (C1–C3, A1–A5) são mudanças estruturais que **exigem decisão de produto e implementação faseada** (billing, módulo monetário, suíte de testes, KV, observabilidade). Alterá-las às cegas num app financeiro em produção seria arriscado — estão no plano de evolução (§7).
+**Rate limiting durável (A1) + Entitlement server-side (C1)** — `backend/supabase/rate-limit.sql` (RPC `rl_check`) e `backend/supabase/entitlement.sql` (`subscriptions` + `my_plan`/`start_trial`); `api/ai.js` usa o limitador durável e enforça a cota diária de IA do plano FREE no servidor. **Setup (donos):** rodar os dois `.sql` no SQL Editor do Supabase (como o `schema.sql`). Antes disso, o `/api/ai` mantém o comportamento atual (fallback in-memory, sem gate de plano) — nada quebra. Conceder PRO: ver comentário no fim do `entitlement.sql`.
+
+> As correções estruturais restantes (C3 no `wealthSeries`, migrar recursos PRO client-only p/ o servidor, rate limit nos proxies de dados) exigem coordenação/decisão e estão no plano de evolução (§7).
 
 ---
 
