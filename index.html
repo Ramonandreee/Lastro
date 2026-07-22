@@ -980,13 +980,11 @@ img, svg, canvas, video { max-width: 100%; }
     </nav>
 
     <nav class="nav-group nav-group-premium" data-group="analises" data-tour="analise">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-crown"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Análises Pro</span><span class="nav-ghead-s">Raio-X · Backtest · Stress · +2</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-crown"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Análises Pro</span><span class="nav-ghead-s">Raio-X · Backtest · Stress</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item premium-item" data-view="raiox" onclick="nav('raiox',this)"><i class="fa-solid fa-magnifying-glass-chart"></i><span>Raio-X da Carteira</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-        <div class="nav-item premium-item" data-view="deterioracao" onclick="nav('deterioracao',this)"><i class="fa-solid fa-arrow-trend-down"></i><span>Detector de Risco</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
         <div class="nav-item premium-item" data-view="stress" onclick="nav('stress',this)"><i class="fa-solid fa-heart-pulse"></i><span>Stress Test</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
         <div class="nav-item premium-item" data-view="backtest" onclick="nav('backtest',this)"><i class="fa-solid fa-chart-line"></i><span>Backtest</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
-        <div class="nav-item premium-item" data-view="barganhas" onclick="nav('barganhas',this)"><i class="fa-solid fa-magnifying-glass-dollar"></i><span>Radar de Barganhas</span><span class="nav-badge nav-badge-pro nav-crown"><i class="fa-solid fa-crown"></i></span></div>
       </div>
     </nav>
 
@@ -2865,32 +2863,6 @@ body.report-open { overflow:hidden; }
 .st-aff { display:flex; justify-content:space-between; align-items:center; font-size:12px; }
 .st-aff-tk { color:var(--ink-2); font-weight:600; }
 .st-aff.faint { font-size:11.5px; line-height:1.4; }
-/* Radar de barganhas */
-.bg-list { padding:6px 8px; }
-.bg-row { display:flex; align-items:center; gap:12px; padding:11px 8px; border-radius:10px; cursor:pointer; transition:background .15s var(--ease); border-bottom:1px solid var(--line); }
-.bg-row:last-child { border-bottom:none; }
-.bg-row:hover { background:var(--surface-2,var(--brand-l)); }
-.bg-rank { flex:none; width:22px; text-align:center; font-size:13px; font-weight:700; color:var(--ink-3); }
-.bg-id { flex:1; min-width:0; }
-.bg-tk { font-size:13.5px; font-weight:600; color:var(--ink-1); }
-.bg-nm { font-size:11px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.bg-score { flex:none; }
-.bg-pvp { flex:none; width:96px; text-align:right; font-size:12px; color:var(--ink-2); }
-.bg-pvp .faint { font-size:10.5px; }
-.bg-desc { flex:none; width:140px; display:flex; align-items:center; gap:9px; }
-.bg-desc-track { flex:1; height:7px; background:var(--line); border-radius:5px; overflow:hidden; }
-.bg-desc-track i { display:block; height:100%; border-radius:5px; background:linear-gradient(90deg,var(--brand),#1E56A6); }
-.bg-desc-v { flex:none; width:42px; text-align:right; font-size:12.5px; font-weight:700; color:var(--brand); }
-@media (max-width:640px){
-  .bg-row { gap:9px; padding:11px 4px; }
-  .bg-rank { width:15px; font-size:12px; }
-  .bg-nm { display:none; }
-  .bg-score { display:none; }            /* score é o critério do filtro; secundário no mobile */
-  .bg-pvp { width:66px; }
-  .bg-pvp .faint { font-size:10px; }
-  .bg-desc { width:88px; gap:7px; }
-  .bg-desc-v { width:36px; }
-}
 /* Consultor IA */
 .cons-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 @media (max-width:820px){ .cons-grid { grid-template-columns:1fr; } }
@@ -2909,27 +2881,6 @@ body.report-open { overflow:hidden; }
 .cons-pick-tk { font-size:14.5px; font-weight:700; color:var(--ink-1); }
 .cons-pick-id .faint { font-size:12px; }
 .cons-motivo { font-size:13px; color:var(--ink-2); line-height:1.6; margin:0 0 4px; }
-/* Detector de deterioração */
-.det-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:16px; }
-.det-card { border-left:3px solid var(--warn); }
-.det-card.det-card-alta { border-left-color:var(--down); }
-.det-head { display:flex; align-items:center; gap:11px; cursor:pointer; padding-bottom:13px; margin-bottom:12px; border-bottom:1px solid var(--line); }
-.det-id { flex:1; min-width:0; }
-.det-tk { font-size:14px; font-weight:600; color:var(--ink-1); display:flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:4px; }
-.det-nm { font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.det-badge { font-size:9.5px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; padding:2px 7px; border-radius:20px; white-space:nowrap; }
-.det-badge.alta { background:color-mix(in srgb,var(--down) 14%,transparent); color:var(--down); }
-.det-badge.media { background:var(--warn-l); color:var(--warn); }
-.det-sigs { display:grid; gap:11px; }
-.det-sig { display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5; color:var(--ink-2); }
-.det-sig-ic { flex:none; width:24px; height:24px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:11px; margin-top:1px; }
-.det-sig-ic.alta { background:color-mix(in srgb,var(--down) 13%,transparent); color:var(--down); }
-.det-sig-ic.media { background:var(--warn-l); color:var(--warn); }
-.det-dot { display:inline-block; width:8px; height:8px; border-radius:50%; }
-.det-dot.alta { background:var(--down); } .det-dot.media { background:var(--warn); }
-.det-clear { display:flex; align-items:center; gap:16px; }
-.det-clear-ic { flex:none; width:52px; height:52px; border-radius:14px; background:var(--up-l); color:var(--up); display:flex; align-items:center; justify-content:center; font-size:22px; }
-.det-clear-t { font-size:16px; font-weight:700; letter-spacing:-.01em; color:var(--ink); }
 .rec-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
 .rec-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
 .rec-nm { font-size:18px; font-weight:700; letter-spacing:-.01em; }
@@ -4405,8 +4356,6 @@ const PAGES = {
   backtest:     { t:'Backtest da Carteira',  s:'Simulação histórica da sua carteira vs CDI e IBOV' },
   raiox:        { t:'Raio-X da Carteira',     s:'Diversificação, concentração e Nota Lastro da sua carteira' },
   stress:       { t:'Stress Test',            s:'Impacto estimado de cenários de crise na sua carteira' },
-  barganhas:    { t:'Radar de Barganhas',     s:'Ativos de qualidade abaixo da média histórica de valuation' },
-  deterioracao: { t:'Detector de Deterioração',s:'Alertas automáticos quando os fundamentos da sua carteira pioram' },
   planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
   indicar:      { t:'Indique e Ganhe',       s:'Ganhe 20% da assinatura de cada amigo que você indicar, via PIX' },
   admin:        { t:'Painel administrativo',  s:'Clientes, leads, financeiro e métricas da Lastro' },
@@ -4449,12 +4398,10 @@ const PREMIUM_FEATURES = {
   backtest:  { name:'Backtest da Carteira', icon:'fa-chart-line', pro:true, desc:'Simule como a sua carteira teria se comportado no passado: retorno, volatilidade e maior queda, comparados ao CDI e ao IBOV.', why:'Entenda o risco e o retorno histórico da sua estratégia antes de tomar decisões.' },
   raiox:     { name:'Raio-X da Carteira', icon:'fa-magnifying-glass-chart', pro:true, desc:'O retrato completo da sua carteira: diversificação por setor, ativo e classe, com a Nota de Diversificação Lastro e alertas de concentração.', why:'Enxergue de relance onde sua carteira está concentrada e o que melhorar.' },
   stress:    { name:'Stress Test da Carteira', icon:'fa-heart-pulse', pro:true, desc:'Simule cenários de crise — queda de bancos, do petróleo, alta de juros, queda da bolsa, dólar em alta — e veja o impacto estimado em reais na sua carteira.', why:'Saiba quanto a sua carteira pode perder antes de a crise acontecer.' },
-  barganhas: { name:'Radar de Barganhas', icon:'fa-magnifying-glass-dollar', pro:true, desc:'Ranking de ativos de qualidade negociando abaixo da própria média histórica de valuation — os maiores descontos do mercado.', why:'Encontre boas empresas em momentos de preço atrativo, sem garimpar manualmente.' },
-  deterioracao: { name:'Detector de Deterioração', icon:'fa-arrow-trend-down', pro:true, desc:'Vigia os fundamentos dos seus ativos e te avisa quando algo piora: margem ou ROE em queda, dividendo em risco, vacância subindo, lucros inconsistentes.', why:'Saia antes do problema — descubra a deterioração de uma empresa antes que ela vire prejuízo.' },
   carteiras: { name:'Carteiras Recomendadas Exclusivas', icon:'fa-layer-group', pro:true, desc:'Estratégias premium montadas pela inteligência Lastro, disponíveis apenas para assinantes Investidor Pro.', why:'Acesse alocações mais sofisticadas, com composição e estratégia detalhadas.' },
 };
 const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço ilimitados','Watchlist ilimitada e exportação CSV'];
-const PRO_BENEFITS = ['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Detector de deterioração de fundamentos','Stress Test e Radar de Barganhas','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'];
+const PRO_BENEFITS = ['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test da carteira','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'];
 /* tela de apresentação Premium / Investidor Pro (usada no modal e como paywall inline) */
 function premiumPresentation(key){
   const f = PREMIUM_FEATURES[key] || { name:'Recurso Premium', icon:'fa-crown', desc:'Desbloqueie todo o poder da plataforma Lastro.', why:'' };
@@ -4487,7 +4434,7 @@ function proGate(key){ if(isPro()) return true; openPremiumModal(key); return fa
 function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias Premium grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
 function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
 function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
-const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox','stress','barganhas','deterioracao'];
+const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox','stress'];
 function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
@@ -5456,7 +5403,7 @@ const OB_STEPS=[
   { logo:true, title:'Bem-vindo à Lastro', sub:'Inteligência para o investidor brasileiro — renda variável com dados ao vivo e Score proprietário. Veja em 30 segundos o que dá pra fazer aqui.' },
   { ic:'fa-chart-column', bg:'brand', title:'Explore o mercado', sub:'Ações, FIIs, BDRs, ETFs, Stocks e cripto — com fundamentos completos.', feats:[['fa-award','Score Lastro™','Qualidade de cada ativo, de 0 a 100, transparente'],['fa-filter','Rastreador','Filtre por DY, P/VP, P/L, ROE, setor e mais']] },
   { ic:'fa-wallet', bg:'accent', title:'Sua carteira, viva', sub:'Acompanhe patrimônio, proventos e rentabilidade — sincronizados na nuvem no seu login.', feats:[['fa-magnifying-glass-chart','Raio-X da Carteira','Diversificação, Nota Lastro e recomendações'],['fa-coins','Proventos','Histórico, Yield on Cost e projeção de renda']] },
-  { ic:'fa-crown', bg:'gold', title:'Ferramentas Investidor Pro', sub:'Decisões com o nível de uma mesa profissional.', feats:[['fa-chart-line','Backtest','Histórico da carteira vs CDI e IBOV'],['fa-heart-pulse','Stress Test','Simule crises e veja o impacto em reais'],['fa-magnifying-glass-dollar','Radar de Barganhas','Ativos de qualidade abaixo da média histórica']] },
+  { ic:'fa-crown', bg:'gold', title:'Ferramentas Investidor Pro', sub:'Decisões com o nível de uma mesa profissional.', feats:[['fa-chart-line','Backtest','Histórico da carteira vs CDI e IBOV'],['fa-heart-pulse','Stress Test','Simule crises e veja o impacto em reais'],['fa-magnifying-glass-chart','Raio-X da Carteira','Diversificação e concentração com Nota Lastro']] },
 ];
 let obStep=0;
 function renderOb(){
@@ -5653,7 +5600,7 @@ const TOUR=[
   { center:true, ic:'fa-hand-sparkles', title:'Bora conhecer o app?', text:'Em poucos passos eu te mostro as seções e o que dá pra fazer em cada uma. Use Próximo, as setas do teclado ou arraste.' },
   { sel:'[data-tour="mercado"]', pre:tourGroupPre, title:'Mercado', text:'Explore Ações, FIIs, BDRs, ETFs, Stocks e Cripto — com fundamentos completos e o Score Lastro™ (0 a 100) de cada ativo. As Notícias também ficam aqui.' },
   { sel:'[data-tour="carteira"]', pre:tourGroupPre, title:'Minha Carteira', text:'Cadastre seus aportes e acompanhe patrimônio, proventos, agenda de dividendos, watchlist, alertas e o Aporte Inteligente — sincronizado na nuvem.' },
-  { sel:'[data-tour="analise"]', pre:tourGroupPre, title:'Análise', text:'Ferramentas de decisão: Raio-X da carteira, Backtest, Stress Test, Detector de Risco, Rastreador e Radar de Barganhas.' },
+  { sel:'[data-tour="analise"]', pre:tourGroupPre, title:'Análise', text:'Ferramentas de decisão: Raio-X da carteira, Backtest, Stress Test e Rastreador.' },
   { sel:'.hcard-health', pre:tourContentPre, title:'Saúde da carteira', text:'Um retrato rápido da diversificação da sua carteira — toque para abrir o Raio-X completo com concentração por ativo, setor e classe.' },
   { sel:'.hdr-profile', pre:tourTopPre, title:'Sua conta', text:'Perfil, plano e tema claro/escuro ficam aqui no seu avatar. Para rever este tour, abra Suporte → Recursos.' },
   { center:true, ic:'fa-circle-check', title:'Tudo pronto!', text:'Explore à vontade. Você pode rever este tour quando quiser no menu da conta.' },
@@ -5839,7 +5786,7 @@ function syncNavGroups(){
 const VIEW_TAB = {
   painel:'painel',
   mercado:'mercado', acoes:'mercado', fiis:'mercado', etfs:'mercado', etfsint:'mercado', bdrs:'mercado', stocks:'mercado', cripto:'mercado', score:'mercado', agenda:'mercado', screener:'mercado',
-  carteira:'carteira', proventos:'carteira', aporte:'carteira', fire:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira', barganhas:'carteira', deterioracao:'carteira',
+  carteira:'carteira', proventos:'carteira', aporte:'carteira', fire:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira',
   noticias:'noticias',
   mais:'mais', simulador:'mais', comparador:'mais', recomendadas:'mais', recdetail:'mais', planos:'mais', indicar:'mais', assinatura:'mais', admin:'mais'
 };
@@ -5880,8 +5827,6 @@ function render(v, soft){
   else if(v==='backtest')    c.innerHTML = viewBacktest();
   else if(v==='raiox')       c.innerHTML = viewRaioX();
   else if(v==='stress')      c.innerHTML = viewStress();
-  else if(v==='barganhas')   c.innerHTML = viewBargain();
-  else if(v==='deterioracao') c.innerHTML = viewDeterioracao();
   else if(v==='admin')       c.innerHTML = isOwner()? viewAdmin() : viewPainel();
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
@@ -6711,7 +6656,7 @@ const PLANS = {
     feats:['Tudo do Gratuito, sem limites','Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço ilimitados','Watchlist ilimitada + exportação CSV'] },
   pro: { key:'pro', name:'Investidor Pro', popular:false, desc:'Tudo do Premium, com análises, relatórios e prioridade.',
     anual:39.90, mensal:49.90, anchorA:54.90, anchorM:64.90, anualTotal:478.80,
-    feats:['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test e Radar de Barganhas','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'] },
+    feats:['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test da carteira','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'] },
 };
 let planCycle = 'anual';
 function setPlanCycle(c){ planCycle = c==='mensal'?'mensal':'anual'; render('planos'); }
@@ -6786,9 +6731,8 @@ function viewPlanos(){
       ['Watchlist', PLAN_LIMITS.watchlist, 'Ilimitada', 'Ilimitada'],
       ['Comparador', PLAN_LIMITS.comparador, '4 ativos', '4 ativos'],
       ['Comissão de indicação', '20%', '20%', '40%'],
-      ['Detector de deterioração', false, false, true],
       ['Raio-X da carteira (Nota Lastro)', false, false, true],
-      ['Stress Test e Radar de Barganhas', false, false, true],
+      ['Stress Test da carteira', false, false, true],
       ['Backtest histórico da carteira', false, false, true],
       ['Carteiras recomendadas exclusivas', false, false, true],
       ['Relatório mensal da carteira', false, false, true],
@@ -8374,10 +8318,8 @@ function viewMais(){
     ]},
     {t:'Análises Pro', items:[
       ['raiox','fa-magnifying-glass-chart','Raio-X da Carteira',1],
-      ['deterioracao','fa-arrow-trend-down','Detector de Risco',1],
       ['stress','fa-heart-pulse','Stress Test',1],
       ['backtest','fa-chart-line','Backtest da Carteira',1],
-      ['barganhas','fa-magnifying-glass-dollar','Radar de Barganhas',1],
     ]},
     {t:'Ferramentas', items:[
       ['comparador','fa-code-compare','Comparador',0],
@@ -9700,108 +9642,6 @@ function viewStress(){
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sensibilidades estimadas por setor/classe sobre as posições reais da carteira. Cenários hipotéticos — não são recomendação nem previsão de mercado.</div>`;
 }
 
-/* ── Radar de Barganhas (Investidor Pro) ── */
-let bargainFilter='Todos';
-function bargainRadar(){
-  const items=[];
-  [['acoes',ACOES],['fiis',FIIS]].forEach(([k,arr])=> arr.forEach(a=>{
-    const pvp=a.pvp; if(typeof a.score!=='number'||!pvp||pvp<=0) return;
-    const mean=histMean(indHistory('pvp',a.tk,pvp,10)); if(!mean) return;
-    const desc=(mean-pvp)/mean*100;
-    items.push({ tk:a.tk, k, nm:a.nm, seg:a.seg||'', pvp, mean, desc, score:a.score, dy:a.dy||0 });
-  }));
-  return items.filter(x=>x.desc>3 && x.score>=58).sort((a,b)=> (b.desc+b.score*0.18)-(a.desc+a.score*0.18));
-}
-function setBargainFilter(f){ bargainFilter=f; render('barganhas'); }
-function viewBargain(){
-  if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('barganhas')}</div>`;
-  let list=bargainRadar();
-  if(bargainFilter==='Ações') list=list.filter(x=>x.k==='acoes');
-  else if(bargainFilter==='FIIs') list=list.filter(x=>x.k==='fiis');
-  list=list.slice(0,20);
-  const chips=['Todos','Ações','FIIs'].map(f=>`<button class="rec-chip ${f===bargainFilter?'on':''}" onclick="setBargainFilter('${f}')">${f}</button>`).join('');
-  const rows=list.map((x,i)=>`<div class="bg-row" onclick="quickView('${x.tk}')">
-    <span class="bg-rank">${i+1}</span>
-    ${assetLogo(x.tk,x.k,'sm')}
-    <div class="bg-id"><div class="bg-tk">${x.tk}</div><div class="bg-nm">${esc(x.nm)} · ${esc(x.seg)}</div></div>
-    <span class="score-pill bg-score" style="color:${scoreColor(x.score)}"><span class="score-dot" style="background:${scoreColor(x.score)}"></span>${x.score}</span>
-    <div class="bg-pvp"><div>P/VP <b class="mono">${x.pvp.toFixed(2)}</b></div><div class="faint">média ${x.mean.toFixed(2)}</div></div>
-    <div class="bg-desc"><div class="bg-desc-track"><i style="width:${Math.min(100,x.desc*2.2).toFixed(0)}%"></i></div><span class="bg-desc-v mono">−${pc(x.desc,0)}%</span></div>
-  </div>`).join('') || '<div class="search-empty">Nenhuma barganha nesta categoria no momento.</div>';
-  return `
-  <div class="sec-title">Radar de barganhas</div>
-  <div class="sec-desc">Ativos de qualidade (Score Lastro alto) negociando <strong>abaixo da própria média histórica de P/VP</strong> — ordenados pelo maior desconto combinado à qualidade. Referência de valuation, não recomendação de compra.</div>
-  <div class="rec-filters"><div class="rec-filters-inner">${chips}</div></div>
-  <div class="card card-pad bg-list">${rows}</div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Média histórica reconstruída de forma estimada (10 anos). Desconto não garante retorno — verifique os fundamentos antes de decidir.</div>`;
-}
-
-/* ── Detector de Deterioração de Fundamentos (Investidor Pro) ── */
-function deteriorationScan(){
-  const p=portfolioStats(); if(!p._byT.length) return null;
-  const items=p._byT.map(g=>({tk:g.tk, k:g.f.k, a:g.f.a})).filter(x=>x.k==='acoes'||x.k==='fiis');
-  if(!items.length) return [];
-  const decl=(id,tk,cur)=>{ if(typeof cur!=='number'||!isFinite(cur)) return null; const h=indHistory(id,tk,cur,6); const d=h.data; let n=0; for(let i=d.length-1;i>0;i--){ if(d[i]<d[i-1]) n++; else break; } const mean=histMean(h); return { n, mean, cur, dropPct:mean?(mean-cur)/mean*100:0 }; };
-  const out=items.map(x=>{
-    const a=x.a, sig=[];
-    if(x.k==='acoes'){
-      const m=decl('mgl',x.tk,a.mgl); if(m && (m.n>=2 || m.dropPct>18)) sig.push({sev:m.dropPct>30?'alta':'media', i:'fa-chart-line-down', t:`Margem líquida em queda — ${pc(a.mgl,1)}% hoje vs média de ${pc(m.mean,1)}%${m.n>=2?`, ${m.n} períodos seguidos`:''}.`});
-      const r=decl('roe',x.tk,a.roe); if(r && r.dropPct>25) sig.push({sev:r.dropPct>35?'alta':'media', i:'fa-percent', t:`ROE recuou ${pc(r.dropPct,0)}% frente à média histórica (${pc(a.roe,1)}% vs ${pc(r.mean,1)}%).`});
-      if((a.dy||0)>13 && (a.consist||1)<0.8) sig.push({sev:'alta', i:'fa-hand-holding-dollar', t:`Dividend Yield de ${pc(a.dy,1)}% muito acima do usual com baixa consistência — o dividendo pode não se sustentar.`});
-      if((a.consist||1)<0.6) sig.push({sev:'media', i:'fa-wave-square', t:`Lucros pouco consistentes (consistência ${pc((a.consist||0)*100,0)}%) — resultado volátil.`});
-    } else {
-      if((a.vac||0)>8) sig.push({sev:a.vac>12?'alta':'media', i:'fa-door-open', t:`Vacância elevada de ${pc(a.vac,1)}% — pressiona a distribuição de rendimentos.`});
-      const dd=decl('dy',x.tk,a.dy); if(dd && dd.n>=2) sig.push({sev:'media', i:'fa-chart-line-down', t:`Rendimento em queda — DY de ${pc(a.dy,1)}% recuando ${dd.n} períodos seguidos.`});
-      if((a.consist||1)<0.75) sig.push({sev:'media', i:'fa-wave-square', t:`Distribuição pouco consistente (${pc((a.consist||0)*100,0)}%) — renda menos previsível.`});
-    }
-    if((a.score||100)<55) sig.push({sev:'media', i:'fa-award', t:`Score Lastro baixo (${a.score}/100) — qualidade fundamentalista fraca.`});
-    return { tk:x.tk, k:x.k, nm:a.nm||'', score:a.score, sig };
-  }).filter(r=>r.sig.length);
-  const rank=r=>r.sig.some(s=>s.sev==='alta')?0:1;
-  out.sort((a,b)=>rank(a)-rank(b) || b.sig.length-a.sig.length);
-  return out;
-}
-function viewDeterioracao(){
-  if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('deterioracao')}</div>`;
-  const p=portfolioStats(), res=deteriorationScan();
-  if(res===null) return `<div class="card card-pad">${emptyState('fa-arrow-trend-down','Sem carteira para monitorar','Adicione ativos para o detector vigiar os fundamentos e te avisar quando algo piorar.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
-  const monit=p._byT.filter(g=>g.f.k==='acoes'||g.f.k==='fiis').length;
-  const totalSig=res.reduce((s,r)=>s+r.sig.length,0), altas=res.reduce((s,r)=>s+r.sig.filter(x=>x.sev==='alta').length,0);
-  const sevDot=s=>`<span class="det-dot ${s}"></span>`;
-  if(!res.length){
-    return `
-    <div class="sec-title">Detector de deterioração</div>
-    <div class="sec-desc">O Lastro vigia os fundamentos dos seus ativos e te avisa quando algo começa a piorar.</div>
-    <div class="card card-pad det-clear">
-      <span class="det-clear-ic"><i class="fa-solid fa-shield-check"></i></span>
-      <div><div class="det-clear-t">Nenhum sinal de deterioração</div><div class="faint" style="font-size:13px;margin-top:3px">Os ${monit} ativos monitorados da sua carteira estão com fundamentos saudáveis. Continuaremos de olho.</div></div>
-    </div>
-    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Análise sobre as posições reais da carteira, com séries históricas estimadas. Não é recomendação de compra ou venda.</div>`;
-  }
-  const cards=res.map(r=>{
-    const top=r.sig.some(s=>s.sev==='alta');
-    const rows=r.sig.map(s=>`<div class="det-sig"><span class="det-sig-ic ${s.sev}"><i class="fa-solid ${s.i}"></i></span><span>${s.t}</span></div>`).join('');
-    return `<div class="card card-pad det-card${top?' det-card-alta':''}">
-      <div class="det-head" onclick="quickView('${r.tk}')">
-        ${assetLogo(r.tk,r.k,'sm')}
-        <div class="det-id"><div class="det-tk">${r.tk} ${top?'<span class="det-badge alta">risco alto</span>':'<span class="det-badge media">atenção</span>'}</div><div class="det-nm">${esc(r.nm)}</div></div>
-        <span class="score-pill" style="color:${scoreColor(r.score)}"><span class="score-dot" style="background:${scoreColor(r.score)}"></span>${r.score}</span>
-      </div>
-      <div class="det-sigs">${rows}</div>
-    </div>`;
-  }).join('');
-  return `
-  <div class="sec-title">Detector de deterioração</div>
-  <div class="sec-desc">O Lastro vigia os fundamentos dos seus ativos e te avisa quando algo começa a piorar — antes que vire prejuízo.</div>
-  <div class="mstrip" style="grid-template-columns:repeat(3,1fr)">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Ativos monitorados</div><div class="vl">${monit}</div><div class="dl faint">na carteira</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Com alertas</div><div class="vl ${res.length?'down':''}">${res.length}</div><div class="dl faint">${totalSig} sinais</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Risco alto</div><div class="vl ${altas?'down':''}">${altas}</div><div class="dl faint">prioridade</div></div>
-  </div>
-  <div class="det-grid" style="margin-top:16px">${cards}</div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sinais calculados sobre as posições reais da carteira, com séries históricas estimadas. Educativo — não é recomendação de compra ou venda.</div>`;
-}
-
 /* Simulador */
 function runSim(){
   const cap = +$('#simCap').value, ap = +$('#simAp').value, dy = +$('#simDy').value/100, yr = +$('#simYr').value, goal = +$('#simGoal').value;
@@ -11017,13 +10857,12 @@ function indHistory(id,tk,val,years){ const key=id+'|'+tk+'|'+years; if(HIST_CAC
   labels.push('Atual'); data.push(val);
   const res={labels,data}; HIST_CACHE[key]=res; return res; }
 function histMean(h){ return h.data.reduce((s,v)=>s+v,0)/h.data.length; }
-function indAnalysis(id,a,k,val){ if(typeof val!=='number') return ''; const d=INDICATORS[id]; const mean=histMean(indHistory(id,a.tk,val,10)); const sec=sectorAvg(id,a,k); const lines=[];
-  const rel = val<mean*0.92?'abaixo':val>mean*1.08?'acima':'em linha com';
-  lines.push(`O ${d.nome} atual de <strong>${fmtMetric(id,val)}</strong> está <strong>${rel}</strong> da média histórica de ${fmtMetric(id,mean)}.`);
-  if(sec!=null){ const r2 = val>sec?'acima':'abaixo'; lines.push(`Frente ao setor (${esc(a.seg)}), está <strong>${r2}</strong> da média (${fmtMetric(id,sec)}).`); }
-  // leitura qualitativa por tipo de indicador
+function indAnalysis(id,a,k,val){ if(typeof val!=='number') return ''; const d=INDICATORS[id]; const sec=sectorAvg(id,a,k); const lines=[];
+  if(sec!=null){ const r2 = val>sec?'acima':'abaixo'; lines.push(`O ${d.nome} atual de <strong>${fmtMetric(id,val)}</strong> está <strong>${r2}</strong> da média do setor (${esc(a.seg)}: ${fmtMetric(id,sec)}).`); }
+  else lines.push(`O ${d.nome} atual é <strong>${fmtMetric(id,val)}</strong>.`);
+  // leitura qualitativa por tipo de indicador (comparação real com o setor)
   const lowerBetter = ['pl','pvp','evebitda','evebit','pebit','pativo','dleb','dlpl','pmr'].includes(id);
-  if(sec!=null){ const better = lowerBetter ? val<sec : val>sec; lines.push(better?`Comparativamente, é um ponto <span class="tone-pos">favorável</span>.`:`Vale checar se há razão fundamentalista para o desvio antes de concluir.`); }
+  if(sec!=null){ const better = lowerBetter ? val<sec : val>sec; lines.push(better?`Comparativamente ao setor, é um ponto <span class="tone-pos">favorável</span>.`:`Vale checar se há razão fundamentalista para o desvio antes de concluir.`); }
   return lines.join(' '); }
 
 /* termos proprietários/derivados — "?" com explicação (reaproveita o sistema de tooltip data-tip) */
@@ -11091,7 +10930,9 @@ function indCard(id, value, cls){
   const sid = (lk&&lk.k==='fiis') ? (id==='pvp'?'pvpFii':id==='dy'?'dyFii':id) : id;
   let st = hasData ? indState(sid, raw) : 'neu';
   if(st==='neu'){ if(cls==='up') st='pos'; else if(cls==='down') st='crit'; }
-  const h = hasData?`<button class="ind-ic" onclick="event.stopPropagation();openIndHistory('${id}')" aria-label="Histórico de ${esc(label)}"><i class="fa-solid fa-chart-column"></i></button>`:'';
+  // histórico por indicador só aparece para o DY quando há série REAL de proventos (realDyByYear); demais indicadores não têm histórico real.
+  const dyReal = (id==='dy' && lk && hasData) ? realDyByYear(lk.a.tk, lk.a) : null;
+  const h = dyReal?`<button class="ind-ic" onclick="event.stopPropagation();openIndHistory('dy')" aria-label="Histórico de ${esc(label)}"><i class="fa-solid fa-chart-column"></i></button>`:'';
   const v = nz(value)?'—':String(value);
   // count-up: separa prefixo/numero/sufixo de um valor formatado pt-BR
   const m = v.match(/^([^\d-]*)(-?[\d.]*,?\d+)(.*)$/);
@@ -11104,12 +10945,9 @@ function indCard(id, value, cls){
 }
 
 /* ── modal de histórico de indicadores ── */
-let histState={ id:'pvp', years:10, type:'bar', ignore:false };
-function availableIndicators(a,k){
-  const order = k==='fiis' ? ['pvp','vpa','dy','dpa','vac'] : ['pl','pvp','evebitda','evebit','pebit','pativo','dy','payout','roe','roic','roa','mb','mebit','ml','giro','dleb','dlpl','lc','cagrRec','cagrLuc','vpa','lpa'];
-  return order.filter(id=>INDICATORS[id] && typeof indVal(id,a)==='number');
-}
-function openIndHistory(id){ const lk=assetLookup(currentAssetTk); if(!lk) return; if(id) histState.id=id; if(!availableIndicators(lk.a,lk.k).includes(histState.id)) histState.id=availableIndicators(lk.a,lk.k)[0]||histState.id; $('#indModal').classList.add('open'); renderIndHistory(); setTimeout(initHistChart,40); }
+// modal de histórico agora é exclusivo do DY, e só com série REAL de proventos (realDyByYear). Nenhum histórico fabricado por RNG é exibido.
+let histState={ id:'dy', years:10, type:'bar', ignore:false };
+function openIndHistory(id){ const lk=assetLookup(currentAssetTk); if(!lk) return; if(!realDyByYear(lk.a.tk,lk.a)) return; histState.id='dy'; $('#indModal').classList.add('open'); renderIndHistory(); setTimeout(initHistChart,40); }
 function closeIndHistory(){ $('#indModal').classList.remove('open'); if(charts.hist){ try{charts.hist.destroy()}catch(e){} delete charts.hist; } }
 function setHistMetric(v){ histState.id=v; renderIndHistory(); setTimeout(initHistChart,30); }
 function setHistType(t){ histState.type=t; document.querySelectorAll('#histType button').forEach(b=>b.classList.toggle('on', b.dataset.t===t)); initHistChart(); }
@@ -11129,11 +10967,11 @@ function indInsights(id,a,k,val,h){
     const better = lowerBetter ? (100-pAbove) : pAbove;
     out.push(`<li><i class="fa-solid fa-ranking-star"></i> O <b>${esc(d.nome)}</b> atual está ${lowerBetter?'abaixo':'acima'} de <b>${(lowerBetter?(100-pAbove):pAbove)}%</b> das empresas do mesmo setor — ${better>=66?'posição favorável':better>=40?'posição mediana':'posição desfavorável'}.</li>`);
   }
-  // vs média histórica
+  // vs média histórica (série real de proventos, no modal de DY)
   if(isFinite(mean) && mean!==0){
     const diff=Math.round((val-mean)/Math.abs(mean)*100);
-    if(Math.abs(diff)>=4) out.push(`<li><i class="fa-solid fa-clock-rotate-left"></i> Está <b>${Math.abs(diff)}% ${diff>0?'acima':'abaixo'}</b> da própria média dos últimos ${histState.years} anos (${fmtMetric(id,mean)}).</li>`);
-    else out.push(`<li><i class="fa-solid fa-clock-rotate-left"></i> Está praticamente <b>na média histórica</b> dos últimos ${histState.years} anos (${fmtMetric(id,mean)}).</li>`);
+    if(Math.abs(diff)>=4) out.push(`<li><i class="fa-solid fa-clock-rotate-left"></i> Está <b>${Math.abs(diff)}% ${diff>0?'acima':'abaixo'}</b> da própria média histórica de proventos (${fmtMetric(id,mean)}).</li>`);
+    else out.push(`<li><i class="fa-solid fa-clock-rotate-left"></i> Está praticamente <b>na média histórica</b> de proventos (${fmtMetric(id,mean)}).</li>`);
   }
   // proximidade de máxima/mínima
   const rng=mx-mn||1;
@@ -11145,15 +10983,18 @@ function indInsights(id,a,k,val,h){
   return out;
 }
 function renderIndHistory(){
-  const lk=assetLookup(currentAssetTk); if(!lk) return; const {a,k}=lk; const id=histState.id, val=indVal(id,a);
-  $('#indMTitle').textContent = `Histórico de Indicadores · ${a.tk}`;
-  $('#indMSel').innerHTML = availableIndicators(a,k).map(x=>`<option value="${x}" ${x===id?'selected':''}>${INDICATORS[x].nome}</option>`).join('');
-  const h=indHistory(id,a.tk,val,histState.years), mean=histMean(h), sec=sectorAvg(id,a,k);
-  const data=h.data, mx=Math.max(...data), mn=Math.min(...data), med=median(data);
+  const lk=assetLookup(currentAssetTk); if(!lk) return; const {a,k}=lk; histState.id='dy'; const id='dy', val=indVal(id,a);
+  const h=realDyByYear(a.tk,a); if(!h){ closeIndHistory(); return; }
+  $('#indMTitle').textContent = `Histórico de Dividend Yield · ${a.tk}`;
+  // controles que só faziam sentido para séries fabricadas (seletor de indicador, janela em anos, ignorar anomalias) ficam ocultos — a série real de proventos tem tamanho fixo.
+  const selW=document.querySelector('#indModal .hist-sel'); if(selW) selW.style.display='none';
+  const yW=$('#histYears'); if(yW) yW.style.display='none';
+  const igW=document.querySelector('#indModal .hist-chk'); if(igW) igW.style.display='none';
+  const data=h.data, mean=data.reduce((s,v)=>s+v,0)/data.length, mx=Math.max(...data), mn=Math.min(...data), med=median(data), sec=sectorAvg(id,a,k);
   const sd=Math.sqrt(data.reduce((s,v)=>s+(v-mean)*(v-mean),0)/data.length), cv=mean?Math.abs(sd/mean*100):0;
   $('#indMStats').innerHTML = `
     <div class="hstat pri"><div class="l">Valor atual</div><div class="v">${fmtMetric(id,val)}</div></div>
-    <div class="hstat"><div class="l">Média da empresa</div><div class="v">${fmtMetric(id,mean)}</div></div>
+    <div class="hstat"><div class="l">Média histórica</div><div class="v">${fmtMetric(id,mean)}</div></div>
     <div class="hstat"><div class="l">Média do setor</div><div class="v">${sec!=null?fmtMetric(id,sec):'—'}</div></div>`;
   $('#indMStats2').innerHTML = `
     <div class="hs"><div class="l">Máxima</div><div class="v">${fmtMetric(id,mx)}</div></div>
@@ -11161,15 +11002,16 @@ function renderIndHistory(){
     <div class="hs"><div class="l">Mediana</div><div class="v">${fmtMetric(id,med)}</div></div>
     <div class="hs"><div class="l">${termLabel('vol','Volatilidade')}</div><div class="v">${cv?pc(cv,0)+'%':'—'}</div></div>`;
   const ins=indInsights(id,a,k,val,h);
-  $('#indMAnalysis').innerHTML = `<div class="hist-an-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Insights automáticos</div>${ins.length?`<ul class="hist-ins">${ins.join('')}</ul>`:`<p>${indAnalysis(id,a,k,val)}</p>`}<div class="hist-note">Série histórica estimada · valor atual, média e percentil do setor com dados reais.</div>`;
+  $('#indMAnalysis').innerHTML = `<div class="hist-an-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Insights automáticos</div>${ins.length?`<ul class="hist-ins">${ins.join('')}</ul>`:`<p>${indAnalysis(id,a,k,val)}</p>`}<div class="hist-note">Dividend Yield por ano com base nos proventos reais pagos, sobre a cotação atual · média do setor com dados reais.</div>`;
 }
 function smoothOut(data){ const m=data.reduce((s,v)=>s+v,0)/data.length, sd=Math.sqrt(data.reduce((s,v)=>s+(v-m)*(v-m),0)/data.length)||1; return data.map(v=> Math.abs(v-m)>2.2*sd?m:v); }
 function initHistChart(){
   const ctx=document.getElementById('histChart'); if(!ctx) return;
   if(typeof Chart==='undefined'){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4)">Gráfico indisponível</div>'; return; }
   if(charts.hist){ try{charts.hist.destroy()}catch(e){} }
-  const lk=assetLookup(currentAssetTk); if(!lk) return; const {a}=lk; const id=histState.id, val=indVal(id,a);
-  const h=indHistory(id,a.tk,val,histState.years); let data=h.data.slice(); if(histState.ignore) data=smoothOut(data);
+  const lk=assetLookup(currentAssetTk); if(!lk) return; const {a}=lk; const id='dy', val=indVal(id,a);
+  const h=realDyByYear(a.tk,a); if(!h){ closeIndHistory(); return; }
+  let data=h.data.slice(); if(histState.ignore) data=smoothOut(data);
   const mean=data.reduce((s,v)=>s+v,0)/data.length;
   const gold='#A87C2A', g=ctx.getContext('2d'); const grad=g.createLinearGradient(0,0,0,320); grad.addColorStop(0,hexToRgba(gold,.30)); grad.addColorStop(1,hexToRgba(gold,0));
   const main = histState.type==='bar'
