@@ -6525,6 +6525,7 @@ function posCard(g){
 function togglePosMore(tk){ const m=document.getElementById('more-'+tk); if(!m) return; m.hidden=!m.hidden; const c=document.querySelector(`.pos-card[data-tk="${tk}"] .pc-more`); if(c) c.classList.toggle('open', !m.hidden); }
 function viewCarteira(){
   const p = portfolioStats();
+  const _pev = (typeof patrimonioEvolution==='function')?patrimonioEvolution():null;   // real? p/ o rótulo do gráfico
   const byT = p._byT;
   const n = byT.length;
   const concentracao = n ? Math.max(...byT.map(g=>p.atual? g.val/p.atual*100 : 0)) : 0;
@@ -6568,9 +6569,9 @@ function viewCarteira(){
   </div>
 
   <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução do patrimônio <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div><span class="chip ilus" title="Reconstrução estimada — ainda não é histórico real de preços"><i class="fa-solid fa-flask"></i> estimativa</span></div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução do patrimônio <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div>${(_pev&&_pev.real)?`<span class="chip" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-circle-check"></i> fechamentos reais</span>`:`<span class="chip ilus"><i class="fa-solid fa-flask"></i> aguardando histórico</span>`}</div>
     <div style="position:relative;height:240px;margin-top:6px"><canvas id="patrEvolChart" role="img" aria-label="Evolução do patrimônio comparada a CDI e IBOV"></canvas></div>
-    <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Reconstrução estimada do valor da carteira mês a mês a partir das datas e valores dos seus aportes, comparada a aplicar os mesmos aportes no CDI (Selic 14,5% a.a.) e no IBOV. Conecte o histórico de preços para valores exatos.</div>
+    <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Valor da carteira mês a mês pelos <strong>fechamentos reais</strong> dos seus ativos, comparado a aplicar os mesmos aportes no CDI (pela Selic vigente) e no IBOV (BOVA11). Onde ainda falta o fechamento de um ativo, ele entra pelo custo.</div>
   </div>
 
   ${(()=>{ const pays=provPayments(); if(!pays.length) return ''; const total=pays.reduce((s,p)=>s+p.valor,0);
@@ -8534,11 +8535,11 @@ function afterRender(v, soft){
     if(us.length) loadUsQuotes(us);
     if(typeof loadPortfolioHistory==='function') loadPortfolioHistory();   // fechamentos reais p/ reconstruir a evolução
   }
-  if(v==='carteira'){ initAlloc(); initPatrEvol(); initSalary(); if(!soft) diagnose(); }
+  if(v==='carteira'){ initAlloc(); initPatrEvol(); initSalary(); if(!soft){ diagnose(); if(typeof loadBacktestHistory==='function') loadBacktestHistory(); } }
   if(v==='proventos'){ initProventosCharts(); }
   if(v==='aporte'){ runAporte(); }
   if(v==='fire'){ runFire(); }
-  if(v==='backtest'){ initBacktest(); }
+  if(v==='backtest'){ initBacktest(); if(!soft && typeof loadBacktestHistory==='function') loadBacktestHistory(); }
   if(v==='raiox'){ initRaioX(); }
   if(v==='comparador'){ initComparador(); }
   if(v==='screener'){ runScreener(); }
@@ -9278,31 +9279,65 @@ function initSalary(){
 }
 
 /* ── Evolução do patrimônio vs CDI/IBOV (reconstrução estimada a partir dos aportes) ── */
+/* Fechamentos históricos p/ o BACKTEST: janela longa (até 2 anos) dos ativos da carteira
+   + BOVA11 (proxy do IBOV). Alimenta o mesmo HIST_CLOSE usado pela reconstrução. */
+let _btKey='', _btAt=0;
+async function loadBacktestHistory(force){
+  if(!CARTEIRA.length || typeof HIST_CLOSE==='undefined') return;
+  const tks=[...new Set(CARTEIRA.map(c=>c.tk))];
+  const b3=[], us=[], cr=[];
+  tks.forEach(tk=>{ const lk=assetLookup(tk); if(!lk) return; if(lk.k==='cripto') cr.push(tk); else if(typeof isUsAsset==='function'&&isUsAsset(lk)) us.push(tk); else b3.push(tk); });
+  if(!b3.includes('BOVA11')) b3.push('BOVA11');   // benchmark IBOV real
+  const key=b3.concat(us,cr).sort().join(',');
+  const now=Date.now(); if(!force && key===_btKey && now-_btAt<3600000) return;
+  _btKey=key; _btAt=now;
+  const qs=new URLSearchParams();
+  if(b3.length) qs.set('symbols', b3.join(',')); if(us.length) qs.set('us', us.join(',')); if(cr.length) qs.set('crypto', cr.join(','));
+  qs.set('range','2y'); qs.set('interval','1mo'); qs.set('days','500');
+  try{
+    const r=await fetch(`/api/market?fn=history&${qs.toString()}`); if(!r.ok){ _btAt=0; return; }
+    const d=await r.json(); const res=(d&&d.results)||{}; let any=false;
+    Object.keys(res).forEach(tk=>{ const ser=res[tk]; if(!Array.isArray(ser)||!ser.length) return; const m=HIST_CLOSE[tk]=HIST_CLOSE[tk]||{}; ser.forEach(x=>{ if(x&&x.d&&typeof x.c==='number'&&x.c>0) m[x.d]=x.c; }); any=true; });
+    if(any){ if(typeof histSaveClose==='function') histSaveClose(); if(currentView==='backtest'||currentView==='carteira') render(currentView,true); }
+  }catch(e){ _btAt=0; }
+}
+/* Evolução mensal REAL da carteira vs CDI e IBOV. Cada mês = Σ(cotas × fechamento real do mês)
+   (custo do lote onde ainda falta o fechamento — nunca RNG). CDI money-weighted pela Selic real;
+   IBOV pelo retorno mensal real do BOVA11. Em centavos (sem drift). */
 function patrimonioEvolution(){
-  const lots=[]; portfolioByTicker().forEach(g=>{ g.lots.forEach(l=>{ let d=l.date?new Date(l.date):null; if(!d||isNaN(d)) d=new Date(); lots.push({ tk:g.tk, cotas:l.cotas, pm:l.pm, px:g.f.a.px, date:d }); }); });
-  if(!lots.length) return null;
-  const now=new Date();
-  let first=lots.reduce((m,l)=> l.date<m?l.date:m, lots[0].date);
-  const minStart=new Date(now.getFullYear(), now.getMonth()-23, 1);
-  if(first<minStart) first=minStart;
-  const months=[]; let d=new Date(first.getFullYear(), first.getMonth(), 1);
-  while(d<=now){ months.push(new Date(d)); d=new Date(d.getFullYear(), d.getMonth()+1, 1); }
-  const n=months.length;
-  const monthIdx=date=>{ const i=(date.getFullYear()-months[0].getFullYear())*12 + (date.getMonth()-months[0].getMonth()); return Math.max(0, Math.min(n-1, i)); };
-  const tickers=[...new Set(lots.map(l=>l.tk))], priceSeries={};
-  tickers.forEach(tk=>{ const px=lots.find(l=>l.tk===tk).px; priceSeries[tk]=genSeries('patr'+tk, px, n, 0.045); });
-  const ibovLvl=genSeries('IBOVpatr', 168619, n, 0.05), cdiM=Math.pow(1.145,1/12)-1;
-  const contrib=new Array(n).fill(0); lots.forEach(l=>{ contrib[monthIdx(l.date)] += l.cotas*l.pm; });
-  const cart=[], cdi=[], ibov=[]; let cdiV=0, ibovV=0;
-  months.forEach((mo,i)=>{
-    let cv=0; lots.forEach(l=>{ if(monthIdx(l.date)<=i) cv += l.cotas*priceSeries[l.tk][i]; }); cart.push(cv);
-    const r = i===0?0:(ibovLvl[i]/ibovLvl[i-1]-1);
-    cdiV = cdiV*(1+cdiM) + contrib[i]; ibovV = ibovV*(1+r) + contrib[i];
-    cdi.push(cdiV); ibov.push(ibovV);
+  const M=window.LastroMoney;
+  const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[]; if(!groups.length) return null;
+  const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const flat=[]; let first=t0;
+  groups.forEach(g=>{ const a=g.f.a, tk=g.tk, rate=(g.cur==='usd')?usdBrlRate():1; const live=!!(a.live&&a.px>0);
+    (g.lots||[]).forEach(l=>{ let d=l.date?new Date(l.date+'T00:00:00'):t0; if(isNaN(d)) d=t0;
+      const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate()); if(dd<first) first=dd;
+      flat.push({ tk, cotas:l.cotas, pm:l.pm||0, date:dd, rate, pxNow:live?a.px:(l.pm||0) }); }); });
+  if(!flat.length) return null;
+  let firstM=new Date(first.getFullYear(),first.getMonth(),1);
+  const capM=new Date(now.getFullYear(),now.getMonth()-23,1); if(firstM<capM) firstM=capM;   // até ~24 meses
+  const months=[]; let d=new Date(firstM); while(d<=now){ months.push(new Date(d)); d=new Date(d.getFullYear(),d.getMonth()+1,1); }
+  const n=months.length; if(!n) return null;
+  const p2=x=>String(x).padStart(2,'0'); const key=dt=>`${dt.getFullYear()}-${p2(dt.getMonth()+1)}-${p2(dt.getDate())}`;
+  const refDate=(mo,i)=>{ if(i===n-1) return t0; const end=new Date(mo.getFullYear(),mo.getMonth()+1,0); return end>t0?t0:end; };
+  const monthIdx=dt=>{ const i=(dt.getFullYear()-months[0].getFullYear())*12+(dt.getMonth()-months[0].getMonth()); return Math.max(0,Math.min(n-1,i)); };
+  const contribCents=new Array(n).fill(0); flat.forEach(l=>{ contribCents[monthIdx(l.date)] += M.toCents(l.cotas*l.pm*l.rate); });
+  // CDI mensal a partir da Selic REAL (≈ Selic − 0,1 p.p.); fallback ~10,5% a.a. se sem dado
+  const selM=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm==='SELIC'); let selicA=selM?parseFloat(String(selM.vl).replace('%','').replace(',','.')):null;
+  const cdiA=(selicA>0)?(selicA-0.1)/100:0.105; const cdiM=Math.pow(1+cdiA,1/12)-1;
+  const cart=[], cdi=[], ibov=[]; let cdiCents=0, ibovCents=0, anyReal=false;
+  months.forEach((mo,i)=>{ const dref=refDate(mo,i), ds=key(dref), isLast=(i===n-1);
+    let gv=0;
+    for(const l of flat){ if(l.date<=dref){ let px; if(isLast) px=l.pxNow; else { const c=(typeof closeOn==='function')?closeOn(l.tk,ds):null; if(c!=null){ px=c; anyReal=true; } else px=l.pm; } gv += l.cotas*px*l.rate; } }
+    cart.push(M.fromCents(M.toCents(gv)));
+    cdiCents = M.roundCents(cdiCents*(1+cdiM)) + contribCents[i]; cdi.push(M.fromCents(cdiCents));
+    let ibr=0; if(i>0 && typeof closeOn==='function'){ const c1=closeOn('BOVA11',ds), c0=closeOn('BOVA11',key(refDate(months[i-1],i-1))); if(c1!=null&&c0>0) ibr=c1/c0-1; }
+    ibovCents = M.roundCents(ibovCents*(1+ibr)) + contribCents[i]; ibov.push(M.fromCents(ibovCents));
   });
-  const aplicado=[]; let accAp=0; contrib.forEach(c=>{ accAp+=c; aplicado.push(accAp); });
-  const ganho = cart.map((v,i)=> v - aplicado[i]);
-  return { labels: months.map(m=>m.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.','')), cart, cdi, ibov, aplicado, ganho };
+  const ps=(typeof portfolioStats==='function')?portfolioStats():null; if(ps&&ps.atual>0) cart[cart.length-1]=ps.atual;   // âncora final = patrimônio real
+  const aplicado=[]; let accAp=0; contribCents.forEach(c=>{ accAp+=c; aplicado.push(M.fromCents(accAp)); });
+  const ganho=cart.map((v,i)=>v-aplicado[i]);
+  return { labels: months.map(m=>m.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.','')), cart, cdi, ibov, aplicado, ganho, real:anyReal, startLabel: firstM.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.','') };
 }
 function initPatrEvol(){
   const ctx=$('#patrEvolChart'); if(!ctx) return;
@@ -9364,14 +9399,14 @@ function viewBacktest(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Pior mês</div><div class="vl down">${pc(m.worstM,1)}%</div><div class="dl faint">no período</div></div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução simulada <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div><span class="chip ilus"><i class="fa-solid fa-flask"></i> estimativa</span></div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução histórica <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div>${d.real?`<span class="chip" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-circle-check"></i> fechamentos reais</span>`:`<span class="chip ilus"><i class="fa-solid fa-flask"></i> aguardando histórico</span>`}</div>
     <div style="position:relative;height:280px;margin-top:6px"><canvas id="backtestChart" role="img" aria-label="Backtest da carteira"></canvas></div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-h" style="margin-bottom:8px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Leitura</div>
-    <p style="font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0">${venceu? `No período simulado, sua carteira <strong>superou o CDI e o IBOV</strong>, com retorno de ${pc(m.ret,1)}% e maior queda de ${pc(m.mdd,1)}%.` : `No período simulado, sua carteira rendeu <strong>${pc(m.ret,1)}%</strong> — ${vs>=0?'acima':'abaixo'} do CDI (${pc(m.retCdi,1)}%). Volatilidade de ${pc(m.vol,1)}% e maior queda de ${pc(m.mdd,1)}% mostram o risco assumido.`} Resultados passados não garantem retornos futuros.</p>
+    <p style="font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0">${venceu? `No período, sua carteira <strong>superou o CDI e o IBOV</strong>, com retorno de ${pc(m.ret,1)}% e maior queda de ${pc(m.mdd,1)}%.` : `No período, sua carteira rendeu <strong>${pc(m.ret,1)}%</strong> — ${vs>=0?'acima':'abaixo'} do CDI (${pc(m.retCdi,1)}%). Volatilidade de ${pc(m.vol,1)}% e maior queda de ${pc(m.mdd,1)}% mostram o risco assumido.`} Resultados passados não garantem retornos futuros.</p>
   </div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Reconstrução estimada a partir das datas dos seus aportes — conecte o histórico real de preços para um backtest exato.</div>`;
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Reconstrução mês a mês pelos <strong>fechamentos reais</strong> dos seus ativos e do IBOV (BOVA11); o CDI aplica os mesmos aportes pela Selic vigente. Onde ainda falta o fechamento de um ativo, ele entra pelo <strong>custo</strong> — nunca por dado inventado.</div>`;
 }
 function initBacktest(){
   const ctx=$('#backtestChart'); if(!ctx) return;
