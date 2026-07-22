@@ -9063,32 +9063,38 @@ async function loadPortfolioHistory(force){
    Aporte de hoje usa o preço de compra como base (o aporte não é lucro). Só ativos com cotação
    REAL (a.live) entram; sem cotação ao vivo, contribui 0 (nunca variação fictícia). */
 function portfolioDayVar(){
+  const M=window.LastroMoney;   // agrega em centavos inteiros (cada posição arredonda 1x; soma exata)
   const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[]; const today=_patDay();
-  let val=0, base=0;
+  let valCents=0, baseCents=0;
   groups.forEach(g=>{ const a=g.f.a; if(!(a.live && a.px>0)) return;
     const v=(g.f.k==='cripto')?(typeof a.v24==='number'?a.v24:null):(typeof a.var==='number'?a.var:null); if(v==null) return;   // cripto: variação 24h
     const rate=(g.cur==='usd')?usdBrlRate():1; const prev=a.px/(1+v/100);   // fechamento anterior real (derivado da variação do feed)
     // base do dia = fechamento anterior; para o lote comprado HOJE, base = preço de compra (o
     // aporte não é lucro — conta só o movimento desde a compra). R$ e % saem da MESMA base.
+    let gv=0, gb=0;
     g.lots.forEach(l=>{ const b=(String(l.date||'').slice(0,10)>=today)?l.pm:prev;
-      val += l.cotas*(a.px-b)*rate; base += l.cotas*b*rate; }); });
-  return { val, pct: base? val/base*100 : 0, base };
+      gv += l.cotas*(a.px-b)*rate; gb += l.cotas*b*rate; });
+    valCents += M.toCents(gv); baseCents += M.toCents(gb); });
+  return { val: M.fromCents(valCents), pct: baseCents? M.pctCents(valCents, baseCents) : 0, base: M.fromCents(baseCents) };
 }
 /* resultado dos ÚLTIMOS 7 DIAS: cotação atual vs fechamento de 7 dias atrás (ou preço de compra,
    se o aporte é mais novo que isso — aporte não é lucro). R$ e % na mesma base. */
 function portfolioWeekVar(){
+  const M=window.LastroMoney;
   const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[];
   const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const wk=new Date(t0.getTime()-7*86400000); const p2=n=>String(n).padStart(2,'0');
   const wkStr=`${wk.getFullYear()}-${p2(wk.getMonth()+1)}-${p2(wk.getDate())}`;
-  let val=0, base=0;
+  let valCents=0, baseCents=0;
   groups.forEach(g=>{ const a=g.f.a; if(!(a.live && a.px>0)) return; const rate=(g.cur==='usd')?usdBrlRate():1;
+    let gv=0, gb=0;
     g.lots.forEach(l=>{ const ld=String(l.date||'').slice(0,10);
       let b;
       if(ld>wkStr) b=l.pm;                                   // comprado nos últimos 7 dias → base = compra
       else { const c=closeOn(l.tk, wkStr); b=(c!=null)?c:l.pm; }   // senão, fechamento de ~7 dias atrás (ou custo, se faltar)
-      val += l.cotas*(a.px-b)*rate; base += l.cotas*b*rate; }); });
-  return { val, pct: base? val/base*100 : 0, base };
+      gv += l.cotas*(a.px-b)*rate; gb += l.cotas*b*rate; });
+    valCents += M.toCents(gv); baseCents += M.toCents(gb); });
+  return { val: M.fromCents(valCents), pct: baseCents? M.pctCents(valCents, baseCents) : 0, base: M.fromCents(baseCents) };
 }
 /* série da evolução do patrimônio: RECONSTRUÍDA a partir dos FECHAMENTOS REAIS de cada dia,
    respeitando a data de cada aporte. Sem interpolação/RNG. Cada ponto = Σ(cotas×fechamento do
