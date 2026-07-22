@@ -9281,7 +9281,7 @@ function initSalary(){
 /* ── Evolução do patrimônio vs CDI/IBOV (reconstrução estimada a partir dos aportes) ── */
 /* Fechamentos históricos p/ o BACKTEST: janela longa (até 2 anos) dos ativos da carteira
    + BOVA11 (proxy do IBOV). Alimenta o mesmo HIST_CLOSE usado pela reconstrução. */
-let _btKey='', _btAt=0;
+let _btKey='', _btAt=0, _pevCache=null;
 async function loadBacktestHistory(force){
   if(!CARTEIRA.length || typeof HIST_CLOSE==='undefined') return;
   const tks=[...new Set(CARTEIRA.map(c=>c.tk))];
@@ -9293,6 +9293,7 @@ async function loadBacktestHistory(force){
   _btKey=key; _btAt=now;
   const qs=new URLSearchParams();
   if(b3.length) qs.set('symbols', b3.join(',')); if(us.length) qs.set('us', us.join(',')); if(cr.length) qs.set('crypto', cr.join(','));
+  if(us.length) qs.set('fx','USDBRL');   // câmbio USDBRL histórico (FMP) p/ dolarizar meses passados no câmbio real
   qs.set('range','2y'); qs.set('interval','1mo'); qs.set('days','500');
   try{
     const r=await fetch(`/api/market?fn=history&${qs.toString()}`); if(!r.ok){ _btAt=0; return; }
@@ -9306,13 +9307,22 @@ async function loadBacktestHistory(force){
    IBOV pelo retorno mensal real do BOVA11. Em centavos (sem drift). */
 function patrimonioEvolution(){
   const M=window.LastroMoney;
+  // Memoização por ASSINATURA (não por tempo): dado igual = cache; dado diferente = recalcula.
+  // Captura, de forma barata, TODAS as entradas que mudam o resultado — lotes, chegada do
+  // histórico (nº de fechamentos por ticker, incl. 'USDBRL'), câmbio atual, Selic e âncora ao vivo.
+  const ps=(typeof portfolioStats==='function')?portfolioStats():null;   // 1x só (reusado na âncora)
+  const selSig=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm==='SELIC');
+  const sig=(CARTEIRA||[]).map(c=>c.tk+'|'+c.cotas+'|'+c.pm+'|'+(c.date||'')).join(',')
+    +'#'+((typeof HIST_CLOSE!=='undefined')?Object.keys(HIST_CLOSE).map(k=>k+':'+Object.keys(HIST_CLOSE[k]).length).join(','):'')
+    +'#'+usdBrlRate()+'#'+(selSig?selSig.vl:'')+'#'+(ps?ps.atual:0);
+  if(_pevCache && _pevCache.sig===sig) return _pevCache.val;
   const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[]; if(!groups.length) return null;
   const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const flat=[]; let first=t0;
-  groups.forEach(g=>{ const a=g.f.a, tk=g.tk, rate=(g.cur==='usd')?usdBrlRate():1; const live=!!(a.live&&a.px>0);
+  groups.forEach(g=>{ const a=g.f.a, tk=g.tk, usd=(g.cur==='usd'), rate=usd?usdBrlRate():1; const live=!!(a.live&&a.px>0);
     (g.lots||[]).forEach(l=>{ let d=l.date?new Date(l.date+'T00:00:00'):t0; if(isNaN(d)) d=t0;
       const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate()); if(dd<first) first=dd;
-      flat.push({ tk, cotas:l.cotas, pm:l.pm||0, date:dd, rate, pxNow:live?a.px:(l.pm||0) }); }); });
+      flat.push({ tk, cotas:l.cotas, pm:l.pm||0, date:dd, usd, rate, pxNow:live?a.px:(l.pm||0) }); }); });
   if(!flat.length) return null;
   let firstM=new Date(first.getFullYear(),first.getMonth(),1);
   const capM=new Date(now.getFullYear(),now.getMonth()-23,1); if(firstM<capM) firstM=capM;   // até ~24 meses
@@ -9321,23 +9331,27 @@ function patrimonioEvolution(){
   const p2=x=>String(x).padStart(2,'0'); const key=dt=>`${dt.getFullYear()}-${p2(dt.getMonth()+1)}-${p2(dt.getDate())}`;
   const refDate=(mo,i)=>{ if(i===n-1) return t0; const end=new Date(mo.getFullYear(),mo.getMonth()+1,0); return end>t0?t0:end; };
   const monthIdx=dt=>{ const i=(dt.getFullYear()-months[0].getFullYear())*12+(dt.getMonth()-months[0].getMonth()); return Math.max(0,Math.min(n-1,i)); };
-  const contribCents=new Array(n).fill(0); flat.forEach(l=>{ contribCents[monthIdx(l.date)] += M.toCents(l.cotas*l.pm*l.rate); });
+  // Câmbio POR MÊS: BRL/cripto = 1; USD = fechamento real do USDBRL naquele dia (fallback câmbio atual).
+  const fxOn=(l,ds)=> l.usd ? (((typeof closeOn==='function')&&closeOn('USDBRL',ds))||l.rate) : 1;
+  const contribCents=new Array(n).fill(0); flat.forEach(l=>{ contribCents[monthIdx(l.date)] += M.toCents(l.cotas*l.pm*fxOn(l,key(l.date))); });
   // CDI mensal a partir da Selic REAL (≈ Selic − 0,1 p.p.); fallback ~10,5% a.a. se sem dado
   const selM=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm==='SELIC'); let selicA=selM?parseFloat(String(selM.vl).replace('%','').replace(',','.')):null;
   const cdiA=(selicA>0)?(selicA-0.1)/100:0.105; const cdiM=Math.pow(1+cdiA,1/12)-1;
   const cart=[], cdi=[], ibov=[]; let cdiCents=0, ibovCents=0, anyReal=false;
   months.forEach((mo,i)=>{ const dref=refDate(mo,i), ds=key(dref), isLast=(i===n-1);
     let gv=0;
-    for(const l of flat){ if(l.date<=dref){ let px; if(isLast) px=l.pxNow; else { const c=(typeof closeOn==='function')?closeOn(l.tk,ds):null; if(c!=null){ px=c; anyReal=true; } else px=l.pm; } gv += l.cotas*px*l.rate; } }
+    for(const l of flat){ if(l.date<=dref){ let px; if(isLast) px=l.pxNow; else { const c=(typeof closeOn==='function')?closeOn(l.tk,ds):null; if(c!=null){ px=c; anyReal=true; } else px=l.pm; } gv += l.cotas*px*fxOn(l,ds); } }
     cart.push(M.fromCents(M.toCents(gv)));
     cdiCents = M.roundCents(cdiCents*(1+cdiM)) + contribCents[i]; cdi.push(M.fromCents(cdiCents));
     let ibr=0; if(i>0 && typeof closeOn==='function'){ const c1=closeOn('BOVA11',ds), c0=closeOn('BOVA11',key(refDate(months[i-1],i-1))); if(c1!=null&&c0>0) ibr=c1/c0-1; }
     ibovCents = M.roundCents(ibovCents*(1+ibr)) + contribCents[i]; ibov.push(M.fromCents(ibovCents));
   });
-  const ps=(typeof portfolioStats==='function')?portfolioStats():null; if(ps&&ps.atual>0) cart[cart.length-1]=ps.atual;   // âncora final = patrimônio real
+  if(ps&&ps.atual>0) cart[cart.length-1]=ps.atual;   // âncora final = patrimônio real (câmbio atual)
   const aplicado=[]; let accAp=0; contribCents.forEach(c=>{ accAp+=c; aplicado.push(M.fromCents(accAp)); });
   const ganho=cart.map((v,i)=>v-aplicado[i]);
-  return { labels: months.map(m=>m.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.','')), cart, cdi, ibov, aplicado, ganho, real:anyReal, startLabel: firstM.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.','') };
+  const val={ labels: months.map(m=>m.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.','')), cart, cdi, ibov, aplicado, ganho, real:anyReal, rfPct: cdiA*100, startLabel: firstM.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.','') };
+  _pevCache={sig, val};
+  return val;
 }
 function initPatrEvol(){
   const ctx=$('#patrEvolChart'); if(!ctx) return;
@@ -9371,7 +9385,8 @@ function backtestMetrics(d){
   let peak=cart[0]||0, mdd=0; cart.forEach(v=>{ if(v>peak) peak=v; if(peak>0){ const dd=(v-peak)/peak*100; if(dd<mdd) mdd=dd; } });
   const cagr = (invest>0 && n>1) ? (Math.pow(cartF/invest, 12/(n-1))-1)*100 : 0;
   const ann = mean*12*100;
-  const sharpe = vol>0 ? (ann-14.5)/vol : 0;
+  const rf=(typeof d.rfPct==='number'?d.rfPct:14.5);   // taxa livre de risco = CDI real (Selic vigente), fallback seguro
+  const sharpe = vol>0 ? (ann-rf)/vol : 0;
   const pos = rs.filter(r=>r>0).length, posPct = rs.length? pos/rs.length*100 : 0;
   const bestM = rs.length? Math.max(...rs)*100 : 0, worstM = rs.length? Math.min(...rs)*100 : 0;
   return { ret, retCdi, retIbov, vol, mdd, meses:n-1, cagr, sharpe, posPct, bestM, worstM };
