@@ -11824,17 +11824,6 @@ function balancoResumo(tk){
   };
 }
 function donutLegend(items){ return items.map(it=>`<div class="dleg"><span class="dleg-l"><span class="dot" style="background:${it.c}"></span>${esc(it.n)}<small>${it.s||''}</small></span><span class="dleg-v">${it.p}</span></div>`).join(''); }
-function receitasPorTipo(tk){
-  const r=rngF(seedFrom(tk+'rtipo')); const segs=['Operação principal','Comercialização','Serviços','Outros'];
-  let parts=segs.map(()=>0.1+r()); const sum=parts.reduce((s,v)=>s+v,0); parts=parts.map(p=>p/sum);
-  const cols=['#E8607A','#4F7FE8','#9B8BE8','#E8B45A'];
-  return segs.map((n,i)=>({n, p:(parts[i]*100).toFixed(2)+'%', c:cols[i], v:parts[i]}));
-}
-function receitasPorRegiao(tk){
-  const r=rngF(seedFrom(tk+'rreg')); let parts=[0.55+r()*0.2,0.1+r()*0.1,0.05+r()*0.08,0.05+r()*0.05]; const sum=parts.reduce((s,v)=>s+v,0); parts=parts.map(p=>p/sum);
-  const reg=['Brasil','Ásia','América do Norte','Europa']; const cols=['#E8607A','#4F7FE8','#9B8BE8','#E8B45A'];
-  return reg.map((n,i)=>({n, p:(parts[i]*100).toFixed(2)+'%', c:cols[i], v:parts[i]}));
-}
 function tabResultados(tk,a,k,f){
   const rl=receitaLucroSeries(tk);
   const fu=(ASSET_LIVE[tk]||{}).fund||{};
@@ -11927,17 +11916,6 @@ function tabChecklist(tk,a,k,f){
   </div>`;
 }
 
-/* ── Carteira do FII (composição) ── */
-function fiiCarteira(tk,a,f){
-  const r=rngF(seedFrom(tk+'cart'));
-  const tipoF = (f&&/papel|cri|recebí/i.test((f.tipo||'')+(f.sub||''))) ? 'papel' : (f&&/fof|fundos/i.test((f.tipo||'')))?'fof':'tijolo';
-  let comp;
-  if(tipoF==='papel') comp=[{n:'CRIs indexados ao IPCA',v:.45+r()*.1,c:'#4F7FE8'},{n:'CRIs indexados ao CDI',v:.3+r()*.1,c:'#E8607A'},{n:'Caixa / LFTs',v:.08+r()*.05,c:'#9B8BE8'},{n:'Outros',v:.05+r()*.04,c:'#E8B45A'}];
-  else if(tipoF==='fof') comp=[{n:'FIIs de tijolo',v:.4+r()*.1,c:'#E8607A'},{n:'FIIs de papel',v:.3+r()*.1,c:'#4F7FE8'},{n:'FIIs de desenvolvimento',v:.1+r()*.05,c:'#9B8BE8'},{n:'Caixa',v:.06+r()*.04,c:'#E8B45A'}];
-  else comp=[{n:'Logística',v:.35+r()*.15,c:'#E8607A'},{n:'Lajes corporativas',v:.25+r()*.1,c:'#4F7FE8'},{n:'Shoppings',v:.15+r()*.1,c:'#9B8BE8'},{n:'Renda urbana / outros',v:.1+r()*.05,c:'#E8B45A'}];
-  const sum=comp.reduce((s,x)=>s+x.v,0); comp.forEach(x=>x.v/=sum); comp.forEach(x=>x.p=(x.v*100).toFixed(2)+'%');
-  return {tipoF, comp};
-}
 function tabCarteiraFii(tk,a,k,f){
   const rows=(f?[
     ['Tipo', f.tipo],['Gestão', f.gestao],['Segmento', a.seg],
