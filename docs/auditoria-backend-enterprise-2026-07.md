@@ -87,9 +87,9 @@ Nenhum problema **destrutivo** foi encontrado; os riscos são de **receita, prec
 
 ### 🔴 Crítico
 
-**C1 — Entitlement (plano PRO) apenas no cliente.** *(fundação server-side entregue — ver §5)*
-Evidência: `index.html` (`isPro()`, `refreshPlanUI`, `setPlan`) decide PRO localmente; o único recurso PRO com barreira de servidor era `/api/ai` (só JWT). Qualquer usuário vira PRO editando `localStorage`/JS.
-**Status:** `backend/supabase/entitlement.sql` cria a **fonte de verdade server-side** (`subscriptions` com RLS de leitura-própria/escrita-negada; RPCs `my_plan()` e `start_trial()`); `/api/ai` passa a enforçar **cota diária de IA para FREE** no servidor (não contornável), PRO ilimitado. **Retrocompatível/inerte** até a migração ser aplicada. **Lacuna:** os demais recursos PRO client-only (Raio-X, Backtest…) só ficam realmente protegidos ao migrarem sua lógica para o servidor — próxima etapa.
+**C1 — Entitlement (plano PRO) apenas no cliente.**
+Evidência: `index.html` (`isPro()`, `refreshPlanUI`, `setPlan`) decide PRO localmente. Com a **IA removida** (jul/2026), não há mais nenhum recurso PRO gatilhado no servidor — todos (Raio-X, Backtest, Detector de Risco…) são client-only, logo o gating é 100% no cliente (contornável).
+**Recomendação:** ao migrar qualquer recurso PRO para o servidor, adotar a fonte de verdade `subscriptions` (design de `entitlement.sql` no histórico do git).
 
 **C2 — Cálculos financeiros em ponto flutuante (float64).** *(corrigido — ver §5)*
 Evidência (à época): `portfolioByTicker`/`portfolioStats` somavam posições em `Number`; centenas de posições acumulavam erro de arredondamento em **dinheiro**.
@@ -102,9 +102,9 @@ Impacto: regressões silenciosas em dinheiro. Impacto no cliente: bugs de saldo/
 
 ### 🟠 Alto
 
-**A1 — Rate limiting durável ausente nos proxies públicos.** *(durável no /api/ai entregue — ver §5)*
-Evidência: só `api/ai.js` tinha rate-limit, in-memory por instância. `quotes/universe/asset/us/market/...` são abertos, sem auth, protegidos só por edge cache.
-**Status:** `backend/supabase/rate-limit.sql` (RPC atômica `rl_check`, compartilhada entre instâncias) + `/api/ai` usa o limitador **durável** com fallback ao in-memory. **Lacuna:** os proxies públicos de dados seguem dependendo do edge cache (aplicar `rl_check` por IP neles é a próxima etapa — custo de 1 ida ao banco por request precisa ser pesado vs. o cache).
+**A1 — Rate limiting durável ausente nos proxies públicos.**
+Evidência: com a IA removida, nenhum endpoint tem rate-limit; `quotes/universe/asset/us/market/...` são abertos, sem auth, protegidos só por edge cache.
+**Recomendação:** aplicar um limitador por IP (o design `rl_check` em `rate-limit.sql` está no histórico do git) nos proxies mais custosos — pesando 1 ida ao banco por request vs. o edge cache.
 
 **A2 — Observabilidade mínima.**
 Evidência: apenas `console.log/console.error`. Sem logs estruturados, correlation IDs, métricas, tracing, health/readiness/liveness, dashboards ou alertas.
@@ -170,9 +170,9 @@ Impacto: IA/resumo do dia falham silenciosamente. Impacto no cliente: recurso PR
 
 **Testes de unidade (C3, parcial)** — `test/*.mjs` com o runner nativo (`node:test`, sem dependências): 14 testes cobrindo o matcher/parse da CVM (`matchOne`/`parseNum` — correção de dado financeiro), datas/dedupe do histórico e o mapeamento de mercado (`pct`/`mapOne`). CI em `.github/workflows/test.yml` (roda testes + `node --check` a cada push/PR). Funções puras exportadas de `api/fundinfo.js`, `lib/history.js`, `lib/crypto.js`, `lib/usdetail.js`.
 
-**Rate limiting durável (A1) + Entitlement server-side (C1)** — `backend/supabase/rate-limit.sql` (RPC `rl_check`) e `backend/supabase/entitlement.sql` (`subscriptions` + `my_plan`/`start_trial`); `api/ai.js` usa o limitador durável e enforça a cota diária de IA do plano FREE no servidor. **Setup (donos):** rodar os dois `.sql` no SQL Editor do Supabase (como o `schema.sql`). Antes disso, o `/api/ai` mantém o comportamento atual (fallback in-memory, sem gate de plano) — nada quebra. Conceder PRO: ver comentário no fim do `entitlement.sql`.
+**IA removida do projeto (jul/2026)** — por decisão dos donos, toda a IA foi retirada: `api/ai.js` (proxy Anthropic), as features de IA no front (Consultor IA, Resumo IA do dia, análise de ativo por IA, leitura de foto no Raio-X) e o resumo IA do coletor de notícias. Com isso, o rate limit durável e o entitlement server-side que eu havia entregue — **cujo único consumidor era o `/api/ai`** — foram **revertidos** (`rate-limit.sql`/`entitlement.sql` removidos). Os achados **A1** e **C1** voltam a "recomendado" (§3). O design de `subscriptions`/`rl_check` fica no histórico do git como referência, caso um dia se queira entitlement server-side para os demais recursos PRO.
 
-> As correções estruturais restantes (C3 no `wealthSeries`, migrar recursos PRO client-only p/ o servidor, rate limit nos proxies de dados) exigem coordenação/decisão e estão no plano de evolução (§7).
+> As correções estruturais restantes (C1/A1 quando houver recursos server-side a proteger, C3 no `wealthSeries`) exigem coordenação/decisão e estão no plano de evolução (§7).
 
 ---
 

@@ -35,7 +35,6 @@ function health(res) {
       brapi: !!process.env.BRAPI_TOKEN,
       fmp: !!process.env.FMP_KEY,
       supabase: !!process.env.SUPABASE_URL,
-      anthropic: !!process.env.ANTHROPIC_API_KEY,
     },
   });
 }

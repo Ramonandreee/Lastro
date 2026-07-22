@@ -6,16 +6,14 @@ import { withObs } from "../lib/log.js";
  * Servido como /config.js (ver rewrite no vercel.json). O front carrega via
  * <script src="config.js">. Só expõe valores PÚBLICOS:
  *   - SUPABASE_ANON_KEY / publishable (leitura, protegida por RLS)
- *   - endpoints dos proxies (/api/ai, /api/quotes)
- * Segredos NUNCA vêm aqui: ANTHROPIC_API_KEY (só /api/ai) e BRAPI_TOKEN
- * (só /api/quotes) ficam server-side.
+ *   - endpoints dos proxies (/api/quotes)
+ * Segredos NUNCA vêm aqui: BRAPI_TOKEN e FMP_KEY ficam server-side.
  *
  * Configure no painel da Vercel (Project Settings → Environment Variables):
  *   SUPABASE_URL, SUPABASE_ANON_KEY  (e opcionalmente REFRESH_MS, NEWS_REFRESH_MS)
  */
 function handler(req, res) {
   const cfg = {
-    AI_ENDPOINT: process.env.AI_ENDPOINT || '/api/ai',
     QUOTES_ENDPOINT: process.env.QUOTES_ENDPOINT || '/api/quotes',
     SUPABASE_URL: process.env.SUPABASE_URL || '',
     SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',

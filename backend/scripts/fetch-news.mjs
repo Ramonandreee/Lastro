@@ -14,7 +14,6 @@
  * Variáveis de ambiente necessárias:
  *   SUPABASE_URL              - https://xxxx.supabase.co
  *   SUPABASE_SERVICE_KEY      - service/secret key (ignora RLS; NUNCA no front)
- *   ANTHROPIC_API_KEY         - (opcional) para o resumo do dia por IA
  * ════════════════════════════════════════════════════════════
  */
 
@@ -23,7 +22,6 @@ import crypto from 'node:crypto';
 
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SERVICE_KEY   = process.env.SUPABASE_SERVICE_KEY;
-const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 if (!SUPABASE_URL || !SERVICE_KEY) {
   console.error('✗ Defina SUPABASE_URL e SUPABASE_SERVICE_KEY.');
@@ -166,47 +164,6 @@ async function cleanupIrrelevant() {
 }
 
 /* ════════════════════════════════════════════════════════════
-   RESUMO DO DIA por IA (opcional — diferencial do Lastro)
-   ════════════════════════════════════════════════════════════ */
-async function generateSummary(items) {
-  if (!ANTHROPIC_KEY || !items.length) return;
-  const manchetes = items.slice(0, 15).map(i => `- ${i.title}`).join('\n');
-  try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 300,
-        system: 'Você é analista do mercado brasileiro de renda variável. Resuma o dia em no máximo 3 frases, objetivo e sem jargão excessivo.',
-        messages: [{ role: 'user', content: `Manchetes de hoje:\n${manchetes}\n\nFaça um resumo curto do dia no mercado.` }],
-      }),
-    });
-    const d = await r.json();
-    const txt = d?.content?.[0]?.text;
-    if (txt) {
-      await fetch(`${SUPABASE_URL}/rest/v1/meta?on_conflict=key`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SERVICE_KEY,
-          'Authorization': `Bearer ${SERVICE_KEY}`,
-          'Prefer': 'resolution=merge-duplicates,return=minimal',
-        },
-        body: JSON.stringify({ key: 'resumo_dia', value: txt, updated_at: new Date().toISOString() }),
-      });
-      console.log('✓ Resumo do dia atualizado');
-    }
-  } catch (e) {
-    console.warn('⚠ Falha no resumo IA:', e.message);
-  }
-}
-
-/* ════════════════════════════════════════════════════════════
    MAIN
    ════════════════════════════════════════════════════════════ */
 (async () => {
@@ -216,6 +173,5 @@ async function generateSummary(items) {
   console.log(`✓ ${n} notícias relevantes gravadas/atualizadas`);
   const removed = await cleanupIrrelevant();
   if (removed) console.log(`🧹 ${removed} notícias fora de escopo removidas do banco`);
-  await generateSummary(rss);
   console.log('■ Concluído');
 })();

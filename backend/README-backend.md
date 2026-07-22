@@ -11,7 +11,6 @@ Portais RSS (InfoMoney, Money Times, Suno)
           · busca, FILTRA por relevância (renda variável)
           · normaliza, deduplica, classifica tag + ticker
           · limpa do banco o que ficou fora de escopo
-          · gera "Resumo IA do dia" (opcional)
                     │
                     ▼
             Supabase (Postgres + REST)
@@ -41,7 +40,6 @@ Portais RSS (InfoMoney, Money Times, Suno)
 2. Em **Settings → Secrets and variables → Actions**, crie:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_KEY`  (a service_role)
-   - `ANTHROPIC_API_KEY`     (opcional — habilita o resumo do dia)
 3. O workflow `.github/workflows/news.yml` já está pronto. Ele roda a cada 20 min e pode ser disparado manualmente em **Actions → Coletar notícias → Run workflow**.
 
 > O `backend/package-lock.json` já está versionado (necessário para o cache do
@@ -67,7 +65,7 @@ as chaves (usa o feed estático) e **"Feed offline"** se a API falhar.
 ```bash
 cd backend
 npm install
-SUPABASE_URL=... SUPABASE_SERVICE_KEY=... ANTHROPIC_API_KEY=... npm run fetch
+SUPABASE_URL=... SUPABASE_SERVICE_KEY=... npm run fetch
 ```
 
 ---
@@ -77,7 +75,6 @@ SUPABASE_URL=... SUPABASE_SERVICE_KEY=... ANTHROPIC_API_KEY=... npm run fetch
 | Fonte | O que traz | Custo |
 |---|---|---|
 | RSS InfoMoney / Money Times / Suno | Manchetes jornalísticas | Grátis |
-| Anthropic (opcional) | Resumo do dia + (futuro) classificação avançada | Por uso |
 
 - **Filtro de relevância (renda variável):** o coletor mantém **apenas** o que pode influenciar ativos de renda variável — ações, FIIs, BDRs, ETFs, cripto e macro/mercado (Selic, Copom, câmbio, commodities…). Notícias fora de escopo (esporte, política geral, entretenimento, finanças pessoais) são **descartadas na coleta** (`isRelevant()` em `fetch-news.mjs`) e o coletor ainda **remove do banco** o que ficou fora do escopo (`cleanupIrrelevant()`). Ajuste o `RELEVANT_RE` para afinar a curadoria.
 - **RSS**: adicione/remova feeds editando `RSS_SOURCES` no `fetch-news.mjs`. Nem todo portal mantém o caminho `/feed/`.
