@@ -7,13 +7,46 @@
 
 ## O que é o Lastro
 
-Plataforma web de inteligência para o investidor brasileiro, focada em **renda variável** — concorrente premium do Investidor10, com design refinado, Score proprietário e IA integrada. Produto será comercializado (planos Free / Premium / Investidor Pro).
+Plataforma web de inteligência para o investidor brasileiro, focada em **renda variável** — concorrente premium do Investidor10, com design refinado e Score proprietário. Produto será comercializado (planos Free / Premium / Investidor Pro). **A IA foi removida do produto (jul/2026)** — foco em dados reais e conta que fecha, sem "enrolação".
 
 - Identidade: **Lastro** (reserva que dá respaldo). Marca esmeralda `#0E7C5A`/`#23B07E`, ouro para elite do Score, tinta quase-preta, dark mode nativo.
-- App é **single-file**: `index.html` (~11.600 linhas, HTML + CSS + JS puro, sem framework). Assets sempre carregados (Chart.js, Font Awesome, PDF.js) são auto-hospedados em `vendor/`.
+- App é **single-file**: `index.html` (~12.300 linhas, HTML + CSS + JS puro, sem framework). Assets sempre carregados (Chart.js, Font Awesome, PDF.js) e a matemática de dinheiro (`vendor/money.js`, centavos) são auto-hospedados em `vendor/`.
 
 ## Estado atual (jul/2026)
 
+> **Atualização — sessão de refino "qualidade > quantidade" (jul/2026).** Rodada focada
+> em honestidade de dados, limpeza e confiabilidade. O que mudou e já está na `main`:
+> - **IA removida por completo** (front + backend + endpoint `api/ai.js` + SQLs de gate).
+> - **Dados fabricados por RNG aposentados:** Radar de Barganhas e Detector de
+>   Deterioração **removidos**; histórico de indicador na página do ativo só aparece
+>   **quando é real** (DY real); donuts/curvas fake removidos.
+> - **Backtest e evolução da carteira agora são REAIS:** `patrimonioEvolution()`
+>   reconstrói mês a mês por **fechamentos reais** (sem RNG), CDI ponderado pela **Selic
+>   real**, IBOV pelo **BOVA11**; câmbio USD por mês (USDBRL via FMP); Sharpe usa o CDI
+>   real. Tudo em **centavos** (via `vendor/money.js`, sem drift). `lib/history.js` busca
+>   histórico longo (até 2 anos, `range`/`interval`).
+> - **Poda de navegação:** **Rastreador** standalone aposentado (os filtros seguem
+>   embutidos nas listagens); **FIRE** virou a 4ª aba **"Independência"** dos Simuladores
+>   (deep-link `nav('fire')` preservado, gate Pro por aba).
+> - **Vercel:** removida do `vercel.json` a referência à `api/ai.js` (deletada) que
+>   quebrava o build; `api/market.js` (dispatcher) ganhou 512MB/60s.
+> - **Serverless consolidado:** para respeitar o **limite de 12 funções** da Vercel, os
+>   proxies novos vivem sob `api/market.js` (dispatcher `?fn=crypto|usuniverse|usdetail|history|health`)
+>   importando `lib/*` (helpers em `lib/` NÃO contam no limite). Hoje: **11/12** funções.
+> - **Testes + observabilidade:** `node:test` em `test/*.mjs` (22 testes) + CI em
+>   `.github/workflows/test.yml`; proxies logam com request-id (`lib/log.js`).
+>
+> **Pendências desta frente (próximos passos, decididos com o dono):**
+> - **Persistência do Premium (bug de confiabilidade):** hoje o plano vive só em
+>   `localStorage`, é zerado no logout e não restaura no relogin → assinante perde o
+>   Premium. Decisão: **servidor é a fonte da verdade** — tabela `user_entitlement`
+>   (gravável só por `service_role`, cliente só lê) + RPC provisória `grant_entitlement`
+>   até haver gateway de pagamento. **A implementar.**
+> - **Perfil como página cheia** (hoje é modal `#authBody`): foto, nome, e-mail, plano,
+>   assinatura, renovação, configurações, segurança, dispositivos, suporte, sair.
+> - **Carteiras Recomendadas reais:** substituir os números fabricados por **carteiras
+>   públicas de corretoras** que publicam mensalmente (feature de dados a planejar).
+>
 > **App funcional (jul/2026) — dados reais, sem demo fora do dev.** Dados fictícios
 > agora vivem **só no Modo desenvolvedor** (donos). Fora dele, sem aportes, o painel
 > fica **zerado** (estado vazio "Monte sua carteira"), sem a antiga carteira demo
@@ -52,8 +85,8 @@ Muito além do MVP inicial. Já implementado e no ar (`main`):
 
 - **Mercado:** Início, Ações, FIIs, ETFs (B3), Cripto, Notícias, Agenda, Score Lastro™. Filtros fundamentalistas (o antigo Rastreador) **embutidos** em cada listagem (botão Filtros) — **gratuitos**.
 - **Internacional:** Stocks (EUA), BDRs, ETFs internacionais (listados nos EUA, em US$). Os ETFs foram separados: a página de Mercado mostra só os da B3 (sem filtro de região); os internacionais têm página própria.
-- **Carteira:** Carteira, Proventos, Aporte, FIRE, Imposto de Renda, Acompanhar (watchlist+alertas), Comparador.
-- **Ferramentas Pro:** Raio-X, Backtest, Stress Test, Radar de Barganhas, Consultor IA, Detector de Deterioração, Carteiras Recomendadas, **Simuladores** (renda, juros compostos, aposentadoria).
+- **Carteira:** Carteira, Proventos, Aporte, Imposto de Renda, Acompanhar (watchlist+alertas), Comparador.
+- **Ferramentas Pro:** Raio-X, **Backtest (real — fechamentos históricos)**, Stress Test, Carteiras Recomendadas, **Simuladores** (renda, juros compostos, aposentadoria e **Independência/FIRE** — FIRE foi fundido aqui). *Aposentados (jul/2026): Radar de Barganhas, Consultor IA, Detector de Deterioração, Rastreador standalone.*
 - **Conta/negócio:** cadastro em etapas com **captação de leads**, Perfil completo (dados cadastrais + perfil de investidor + contas conectadas + segurança/2FA), Assinatura, **Indique e Ganhe** (com simulador de comissão), Suporte (FAQ + tour), Planos.
 - **Painel administrativo** (só para o e‑mail do dono): visão geral, clientes, leads, financeiro (MRR/ARR), aba **Ações** (plano de ação por sugestão, aprovar/arquivar, persistido) e aba **Relatórios** — construtor de relatórios com 5 tipos (geral, receita, crescimento, clientes, conversão), período preset (3M–36M) ou personalizado (de/até), filtros por plano e estado, gráficos (linha + barras), tabela de detalhamento e exportação em **PDF/CSV/compartilhar**. Séries ainda estimadas a partir dos dados atuais (`adminRamp`), prontas para virar histórico real quando o backend registrar snapshots mensais.
 - **Gráfico "Patrimônio Total" (Início) + seletor de período:** seletor **7D / 30D / 3M / 6M / 1A / MAX** compacto e discreto (`.whero-periods`/`.wper` — botões pequenos, baixa altura, realce sutil no ativo; padrão **7D**, memoriza na sessão via `sessionStorage['lastro_wperiod']` → `homeWealthPeriod`). Cada período redesenha o gráfico e **atualiza os indicadores** (chip de variação R$/% e a célula "Resultado {período}" do rodapé, via `updateWealthKPIs`). `wealthSeries(period)` usa **fonte única por janela**: (1) tabela de histórico de patrimônio (`patHistArr`), (2) reconstrução por fechamentos reais da B3 (`HIST_CLOSE`/`closeOn`, `/api/market?fn=history` — **o backend só devolve ~90 dias**: brapi `range=3mo`, `days` clampado 7–90 em `lib/history.js`). Se os dados reais **não cobrirem bem a janela** (comum em 6M/1A/MAX enquanto o histórico é curto), cai numa **estimativa determinística** (`wealthEst`) ancorada no patrimônio real, com tendência/ondulação que escalam por período (semente por período) → **cada período desenha uma curva distinta e o gráfico sempre muda**. Termina sempre no patrimônio atual. **Follow-up p/ dados 100% reais em janelas longas:** ampliar o range no `lib/history.js` (brapi `range=6mo/1y/...`) e o `days` no `loadPortfolioHistory`. **Obs.: `wealthSeries()`/`wealthEst()`/`initWealthSpark()` são editadas pelos dois donos — coordenar antes de mexer.**
@@ -127,16 +160,16 @@ seguro para os dados curados se um proxy falhar. Cripto (CoinGecko) e notícias 
 Supabase) já eram reais.
 
 **Ainda hipotético por natureza (não é bug):** simuladores/projeções (juros compostos,
-aposentadoria, FIRE, backtest, stress test) são cálculos, não dados. FIIs têm menos
-cobertura de fundamentos que ações no brapi (vacância/composição não vêm da API);
-Stocks (EUA) o brapi não cobre.
+aposentadoria, FIRE) e o **stress test** são cálculos/cenários, não dados. **O backtest
+deixou de ser hipotético** — reconstrói pela série real de fechamentos (ver "sessão de
+refino" acima). FIIs têm menos cobertura de fundamentos que ações no brapi
+(vacância/composição não vêm da API); Stocks (EUA) o brapi não cobre.
 
 ## Stack
 
 - **Front:** `index.html` — HTML + CSS + JS puro. Chart.js (CDN), Font Awesome (CDN), ícones de cripto via jsDelivr (`cryptocurrency-icons`).
-- **Auth + DB + sync + notícias:** Supabase (Postgres + Auth + RLS). Tabela `user_state` guarda o estado do usuário (jsonb).
-- **IA:** proxy serverless `api/ai.js` (Vercel) protegendo a chave da Anthropic.
-- **Cotações:** brapi.dev (B3) — token em `config.js`; sem token, modo Demonstração.
+- **Auth + DB + sync + notícias:** Supabase (Postgres + Auth + RLS). Tabela `user_state` guarda o estado do usuário (jsonb) via RPC `save_state`. *(Entitlement/plano migrará para tabela server-authoritative `user_entitlement` — ver pendências.)*
+- **Cotações e dados reais:** proxies serverless em `api/*` + `lib/*` (dispatcher `api/market.js`) — brapi Pro (B3), FMP (EUA), CoinGecko (cripto), CVM (docs/FII/ETF). Chaves só no servidor (`BRAPI_TOKEN`, `FMP_KEY`). *(Não há mais IA no projeto.)*
 - **Coletor de notícias:** Node em `backend/` + GitHub Actions (cron).
 - **Deploy:** Vercel (`vercel.json`).
 
@@ -144,29 +177,49 @@ Estrutura de arquivos e como rodar: ver **README.md** (seções 3 e 4). Configur
 
 ## Contexto do GitHub
 
-- Repositório `lastro` (owner: Ramonandreee). Colaborador adicionado para ajudar no desenvolvimento.
-- **Regra de ouro:** nenhum segredo no código. `config.js` fica fora do git; chaves de servidor (Anthropic) vão nas env vars da Vercel; chaves de servidor do coletor, em GitHub Secrets. A chave **publishable/anon** do Supabase é pública por design (protegida por RLS).
+- Repositório `Lastro` (owner: Ramonandreee). **Donos:** Ramon e Mikael — autoridade
+  total e igual, ambos trabalham **direto na `main`** (sem PR). O deploy (Vercel) publica
+  a cada push na `main`.
+- **Só existe a branch `main`** (jul/2026 — branches antigas `claude/*` foram removidas
+  para não confundir o trabalho conjunto). Comece e termine sempre da/na `main`
+  (`git pull origin main` antes; push direto depois).
+- **Regra de ouro:** nenhum segredo no código. `config.js` fica fora do git; chaves de
+  servidor (`BRAPI_TOKEN`, `FMP_KEY`) vão nas env vars da Vercel; chaves de servidor do
+  coletor de notícias, em GitHub Secrets. A chave **publishable/anon** do Supabase é
+  pública por design (protegida por RLS). *(A antiga `ANTHROPIC_API_KEY` pode ser
+  removida da Vercel — a IA saiu do projeto.)*
 
 ## Ainda importante saber
 
-- **Dados são de demonstração** na maior parte (arrays no `index.html`, com selo "ilustrativo"). O maior salto de valor é torná-los reais.
-- **Fundamentos** (P/VP, ROE, vacância) são o ponto caro: brapi cobre cotações; fundamentos completos exigem fonte paga.
-- **Coletor CVM** é geobloqueado nos runners do GitHub (resolver via origem BR).
-- **Assinatura de commit:** neste ambiente os commits aparecem como "Unverified" (chave SSH de assinatura vazia). O e‑mail do committer está correto — é só a assinatura ausente, sem impacto no código.
+- **Dados reais são o padrão** hoje (B3/EUA/cripto/CVM via proxies); o curado é só
+  fallback quando um proxy falha. Ainda há pontos com fallback determinístico rotulado
+  (ex.: patrimônio em janelas longas sem histórico) — nunca RNG sem rótulo.
+- **Fundamentos** (P/VP, ROE, vacância): brapi cobre cotações; fundamentos completos
+  vêm de brapi Pro + CVM (FII/ETF). Stocks EUA via FMP.
+- **Coletor CVM** é geobloqueado nos runners do GitHub (resolver via origem BR); os
+  proxies rodam em `gru1` (Brasil) e alcançam a CVM.
+- **Limite da Vercel:** **máximo 12 Serverless Functions** no plano. Estourar faz TODO
+  deploy falhar em silêncio. Hoje 11/12 — novos endpoints entram como `?fn=` no
+  dispatcher `api/market.js`, com a lógica em `lib/*` (helpers não contam).
+- **Assinatura de commit:** neste ambiente os commits aparecem como "Unverified" (sem
+  assinatura GPG/SSH — não disponível aqui). O e‑mail do committer está correto — é só a
+  assinatura ausente, sem impacto no código.
 
 ## Roadmap curto (o que falta para "produção de verdade")
 
-1. **Cotações ao vivo** (B3 + cripto) substituindo os dados estáticos.
-2. **Import de carteira** (B3/CEI ou nota/extrato da corretora).
-3. **Proventos e IR reais** (data-com, DARF, informe anual).
-4. **2FA real** (hoje é demonstração) + rodapé institucional (CNPJ, termos, LGPD).
-5. Rentabilidade real (TWR/MWR) vs CDI/IBOV/IPCA; exportar relatórios (PDF/Excel).
-
-> Regra combinada com o dono: **dados reais só quando ele avisar.** Até lá, evoluir UX, organização e recursos client-side.
+1. **Persistência do Premium / entitlement server-side** (`user_entitlement` + RPC) —
+   prioridade: resolve o bug de perder o plano no relogin. *(ver pendências acima)*
+2. **Perfil como página cheia** (hoje é modal).
+3. **Import de carteira** (B3/CEI ou nota/extrato da corretora).
+4. **Carteiras Recomendadas reais** (corretoras que publicam mensalmente).
+5. **Proventos e IR reais** (data-com, DARF, informe anual); **2FA real** + rodapé
+   institucional (CNPJ, termos, LGPD).
+6. Rentabilidade real (TWR/MWR) vs CDI/IBOV/IPCA; exportar relatórios (PDF/Excel);
+   histórico longo de patrimônio 100% real (ampliar `range`/`days` já suportado em `lib/history.js`).
 
 ## Convenções (resumo — detalhe no README §8)
 
-- Validar CSS (chaves balanceadas) + JS (sintaxe) antes de cada commit.
-- Trabalhar em branch; `main` é produção.
+- Validar CSS (chaves balanceadas) + JS (sintaxe) antes de cada commit (esperar `CSS chaves: 0 | JS: OK`). Rodar `node --test test/*.mjs` quando mexer em `lib/*`.
+- **Trabalhar direto na `main`** (sem PR) — é produção e publica no Vercel a cada push.
 - Mobile-first / iOS: cuidado com `viewport`, `touch-action`, `user-select` e `position: sticky`.
 - Explicar jargão sempre com o padrão de **termo clicável** (`termLabel`/`TERM_CARDS`), nunca espalhando "?".
