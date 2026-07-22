@@ -1099,7 +1099,7 @@ img, svg, canvas, video { max-width: 100%; }
       </div>
       <div class="fld-row">
         <label class="fld"><span>Quantidade</span><input id="posQt" type="number" min="0" step="any" inputmode="decimal" placeholder="0" oninput="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
-        <label class="fld"><span><span id="posCurLbl">Valor (R$)</span> <small style="color:var(--ink-4);font-weight:400">por unidade</small></span><input id="posPm" type="text" inputmode="decimal" placeholder="0,00" oninput="maskBRL(this)" onkeydown="if(event.key==='Enter')savePos()"></label>
+        <label class="fld"><span><span id="posCurLbl">Valor (R$)</span> <small style="color:var(--ink-4);font-weight:400">por unidade</small></span><input id="posPm" type="text" inputmode="decimal" placeholder="0,00" oninput="_pmTouched=true;maskBRL(this)" onkeydown="if(event.key==='Enter')savePos()"></label>
       </div>
       <label class="fld"><span>Data do aporte <small style="color:var(--ink-4);font-weight:400">· contabiliza os proventos</small></span><input id="posDt" type="date" required onchange="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
       <div id="posPreview" class="pos-preview"></div>
@@ -3960,6 +3960,7 @@ function todayISO(){ const d=new Date(); const p=x=>String(x).padStart(2,'0'); r
 
 /* autocomplete rico do ativo (logo + ticker + nome) */
 let _sugList=[], _sugIdx=-1;
+let _pmTouched=false;   // true quando o usuário edita o preço à mão → para de auto-preencher com a cotação
 function posSuggest(){
   const box=$('#posSug'), inp=$('#posTk'); if(!box||!inp) return;
   posPreview();
@@ -3995,8 +3996,9 @@ function posPreview(){
   const cur=curOf(tk); const lblc=$('#posCurLbl'); if(lblc) lblc.textContent = cur==='usd'?'Valor (US$)':'Valor (R$)';
   if(!f){ el.innerHTML=''; el.classList.remove('on'); return; }
   const a=f.a,k=f.k;
-  // pré-preenche o preço com a cotação atual (editável) — só quando o campo está vazio
-  const pmEl=$('#posPm'); if(pmEl && !pmEl.value.trim() && a.px>0) pmEl.value=fmtBRLInput(a.px);
+  // pré-preenche o preço com a cotação atual (editável) e ACOMPANHA o ativo resolvido enquanto o
+  // usuário não editar à mão — evita travar no preço de um ticker parcial (ex.: 'V' → Visa) ao digitar.
+  const pmEl=$('#posPm'); if(pmEl && !_pmTouched && a.px>0) pmEl.value=fmtBRLInput(a.px);
   const pm=parseBRL($('#posPm').value), qt=+$('#posQt').value;
   const rows=[];
   if(typeof a.score==='number') rows.push(`<div class="pp-row"><span>Score Lastro</span><b style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)};margin-right:6px"></span>${a.score}/100 · ${scoreTier(a.score)}</b></div>`);
@@ -4014,6 +4016,7 @@ function openPosModal(tk, lotId){
   $('#posSug').classList.remove('on'); _sugList=[]; _sugIdx=-1;
   $('#posTk').value = (lot?lot.tk:tk)||''; $('#posTk').disabled = lockTk;
   $('#posQt').value = lot? lot.cotas : ''; $('#posPm').value = lot? fmtBRLInput(lot.pm) : '';
+  _pmTouched = !!lot;   // edição de lote mantém o preço salvo; novo aporte auto-preenche pela cotação do ativo
   $('#posDt').value = (lot&&lot.date) || todayISO(); $('#posDt').max = todayISO();
   $('#posModal').dataset.lot = lot? lot.id : '';
   $('#posTitle').textContent = lot? `Editar aporte · ${lot.tk}` : (tk?`Novo aporte · ${tk}`:'Adicionar aporte');
