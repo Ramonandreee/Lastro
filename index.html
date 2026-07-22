@@ -1823,9 +1823,9 @@ input[type=range]::-moz-range-thumb {
 
 /* news feed */
 /* Notícias: no desktop o feed fica à esquerda; no mobile "Em alta" vem PRIMEIRO */
-.news-grid { display:grid; grid-template-columns:1fr 320px; grid-template-areas:"feed alta" "feed ai"; gap:16px; align-items:start; }
-.news-alta { grid-area:alta; } .news-feed-wrap { grid-area:feed; } .news-ai { grid-area:ai; }
-@media (max-width:900px){ .news-grid { grid-template-columns:1fr; grid-template-areas:"alta" "feed" "ai"; } }
+.news-grid { display:grid; grid-template-columns:1fr 320px; grid-template-areas:"feed alta"; gap:16px; align-items:start; }
+.news-alta { grid-area:alta; } .news-feed-wrap { grid-area:feed; }
+@media (max-width:900px){ .news-grid { grid-template-columns:1fr; grid-template-areas:"alta" "feed"; } }
 .news-feed { display: flex; flex-direction: column; }
 .news-item {
   padding: 16px 4px;
@@ -4406,7 +4406,6 @@ const PAGES = {
   raiox:        { t:'Raio-X da Carteira',     s:'Diversificação, concentração e Nota Lastro da sua carteira' },
   stress:       { t:'Stress Test',            s:'Impacto estimado de cenários de crise na sua carteira' },
   barganhas:    { t:'Radar de Barganhas',     s:'Ativos de qualidade abaixo da média histórica de valuation' },
-  consultor:    { t:'Consultor IA da Carteira',s:'Diagnóstico e sugestão de aporte personalizada para a sua carteira' },
   deterioracao: { t:'Detector de Deterioração',s:'Alertas automáticos quando os fundamentos da sua carteira pioram' },
   planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
   indicar:      { t:'Indique e Ganhe',       s:'Ganhe 20% da assinatura de cada amigo que você indicar, via PIX' },
@@ -4417,7 +4416,7 @@ let currentView = 'painel';
 /* ══════════════════════════════════════════════════════════
    PLANOS (SaaS Free / Premium) + soft paywall
    ══════════════════════════════════════════════════════════ */
-const PLAN_LIMITS = { carteira: 6, watchlist: 8, comparador: 2, aiDay: 5 };
+const PLAN_LIMITS = { carteira: 6, watchlist: 8, comparador: 2 };
 let demoMode = false;   // carteira de demonstração (efêmera, só em memória — some ao recarregar)
 function getPlan(){ return localStorage.getItem('lastro_plan')==='premium' ? 'premium' : 'free'; }
 
@@ -4451,12 +4450,11 @@ const PREMIUM_FEATURES = {
   raiox:     { name:'Raio-X da Carteira', icon:'fa-magnifying-glass-chart', pro:true, desc:'O retrato completo da sua carteira: diversificação por setor, ativo e classe, com a Nota de Diversificação Lastro e alertas de concentração.', why:'Enxergue de relance onde sua carteira está concentrada e o que melhorar.' },
   stress:    { name:'Stress Test da Carteira', icon:'fa-heart-pulse', pro:true, desc:'Simule cenários de crise — queda de bancos, do petróleo, alta de juros, queda da bolsa, dólar em alta — e veja o impacto estimado em reais na sua carteira.', why:'Saiba quanto a sua carteira pode perder antes de a crise acontecer.' },
   barganhas: { name:'Radar de Barganhas', icon:'fa-magnifying-glass-dollar', pro:true, desc:'Ranking de ativos de qualidade negociando abaixo da própria média histórica de valuation — os maiores descontos do mercado.', why:'Encontre boas empresas em momentos de preço atrativo, sem garimpar manualmente.' },
-  consultor: { name:'Consultor IA da Carteira', icon:'fa-user-tie', pro:true, desc:'Diagnóstico automático da sua carteira e respostas do tipo “tenho R$ 3.000 para investir” — com a sugestão de onde aportar, sempre explicando o porquê.', why:'Tenha um consultor que analisa a SUA carteira e diz o próximo passo, não dicas genéricas.' },
   deterioracao: { name:'Detector de Deterioração', icon:'fa-arrow-trend-down', pro:true, desc:'Vigia os fundamentos dos seus ativos e te avisa quando algo piora: margem ou ROE em queda, dividendo em risco, vacância subindo, lucros inconsistentes.', why:'Saia antes do problema — descubra a deterioração de uma empresa antes que ela vire prejuízo.' },
   carteiras: { name:'Carteiras Recomendadas Exclusivas', icon:'fa-layer-group', pro:true, desc:'Estratégias premium montadas pela inteligência Lastro, disponíveis apenas para assinantes Investidor Pro.', why:'Acesse alocações mais sofisticadas, com composição e estratégia detalhadas.' },
 };
-const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço e IA ilimitada','Watchlist ilimitada e exportação CSV'];
-const PRO_BENEFITS = ['Tudo do Premium, sem limites','Consultor IA da carteira (diagnóstico + onde aportar)','Raio-X da carteira com Nota de Diversificação Lastro','Detector de deterioração de fundamentos','Stress Test e Radar de Barganhas','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'];
+const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço ilimitados','Watchlist ilimitada e exportação CSV'];
+const PRO_BENEFITS = ['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Detector de deterioração de fundamentos','Stress Test e Radar de Barganhas','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'];
 /* tela de apresentação Premium / Investidor Pro (usada no modal e como paywall inline) */
 function premiumPresentation(key){
   const f = PREMIUM_FEATURES[key] || { name:'Recurso Premium', icon:'fa-crown', desc:'Desbloqueie todo o poder da plataforma Lastro.', why:'' };
@@ -4489,7 +4487,7 @@ function proGate(key){ if(isPro()) return true; openPremiumModal(key); return fa
 function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias Premium grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
 function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
 function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
-const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox','stress','barganhas','consultor','deterioracao'];
+const PREMIUM_VIEWS = ['proventos','aporte','fire','ir','screener','alertas','score','backtest','raiox','stress','barganhas','deterioracao'];
 function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
@@ -4581,7 +4579,7 @@ const SUPPORT_FAQ=[
   ['Como cadastro meus ativos na carteira?','Vá em Carteira → Adicionar ativo, busque pelo ticker (ex.: PETR4, HGLG11) e informe a quantidade e o preço médio. O restante é calculado automaticamente.'],
   ['Como funciona o teste grátis do Premium?','São 7 dias com acesso completo, sem precisar de cartão. Ao final, você escolhe se quer continuar — sem cobrança automática surpresa.'],
   ['Como cancelo minha assinatura?','Em Gerenciar assinatura você pode cancelar quando quiser. O acesso permanece até o fim do período já pago.'],
-  ['Qual a diferença entre Premium e Investidor Pro?','O Premium libera carteira real, proventos, aporte, IR, rastreador e alertas. O Investidor Pro acrescenta consultor de IA da carteira, Raio-X com Nota Lastro, detector de deterioração, backtest, stress test e comissão de indicação dobrada (40%).'],
+  ['Qual a diferença entre Premium e Investidor Pro?','O Premium libera carteira real, proventos, aporte, IR, rastreador e alertas. O Investidor Pro acrescenta Raio-X com Nota Lastro, detector de deterioração, backtest, stress test e comissão de indicação dobrada (40%).'],
   ['Como funciona o programa Indique e Ganhe?','Você compartilha seu link exclusivo e ganha uma comissão recorrente (20%, ou 40% sendo Investidor Pro) sobre a assinatura de cada amigo que assinar — paga via PIX enquanto ele permanecer ativo.'],
   ['A Lastro dá recomendação de compra ou venda?','Não. A Lastro é uma ferramenta de organização e análise. Todos os indicadores e scores são informativos e educacionais — a decisão de investimento é sempre sua.'],
 ];
@@ -4900,10 +4898,6 @@ function openProfile(){
   _profileOpen=true;
   $('#authModal').classList.add('open');
 }
-/* uso de IA no dia (limite do plano free) */
-function aiUsedToday(){ try{ const o=JSON.parse(localStorage.getItem('lastro_ai')||'{}'); const d=new Date().toISOString().slice(0,10); return o.d===d?(o.n||0):0; }catch(e){ return 0; } }
-function aiInc(){ const d=new Date().toISOString().slice(0,10); localStorage.setItem('lastro_ai', JSON.stringify({ d, n: aiUsedToday()+1 })); }
-function aiCanRun(){ return isPro() || aiUsedToday() < PLAN_LIMITS.aiDay; }
 
 function goPricing(){
   currentView='planos';
@@ -4946,7 +4940,7 @@ function openAssinatura(){ closeAcctMenu(); currentView='assinatura'; document.q
 function viewAssinatura(){
   const pro=isPremium(); let s=getSub();
   if(pro && !s){ s={ cycle:'anual', since:new Date().toISOString(), card:'4242', brand:'Visa', amount:298.80 }; setSub(s); }
-  const benefits = planTier()==='pro' ? PRO_BENEFITS : ['Carteira e watchlist ilimitadas','Rastreador avançado','Score Lastro completo + ranking','Comparador de 4 ativos','Análises de IA ilimitadas','Alertas de preço','Exportação da carteira (CSV)'];
+  const benefits = planTier()==='pro' ? PRO_BENEFITS : ['Carteira e watchlist ilimitadas','Rastreador avançado','Score Lastro completo + ranking','Comparador de 4 ativos','Alertas de preço','Exportação da carteira (CSV)'];
   if(!pro){
     return `
     <button class="dt-back" onclick="goView('painel')"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
@@ -5459,10 +5453,10 @@ function maybeOnboard(){
 }
 const OB_LOGO='<svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg>';
 const OB_STEPS=[
-  { logo:true, title:'Bem-vindo à Lastro', sub:'Inteligência para o investidor brasileiro — renda variável com dados ao vivo, Score proprietário e IA. Veja em 30 segundos o que dá pra fazer aqui.' },
+  { logo:true, title:'Bem-vindo à Lastro', sub:'Inteligência para o investidor brasileiro — renda variável com dados ao vivo e Score proprietário. Veja em 30 segundos o que dá pra fazer aqui.' },
   { ic:'fa-chart-column', bg:'brand', title:'Explore o mercado', sub:'Ações, FIIs, BDRs, ETFs, Stocks e cripto — com fundamentos completos.', feats:[['fa-award','Score Lastro™','Qualidade de cada ativo, de 0 a 100, transparente'],['fa-filter','Rastreador','Filtre por DY, P/VP, P/L, ROE, setor e mais']] },
   { ic:'fa-wallet', bg:'accent', title:'Sua carteira, viva', sub:'Acompanhe patrimônio, proventos e rentabilidade — sincronizados na nuvem no seu login.', feats:[['fa-magnifying-glass-chart','Raio-X da Carteira','Diversificação, Nota Lastro e recomendações'],['fa-coins','Proventos','Histórico, Yield on Cost e projeção de renda']] },
-  { ic:'fa-crown', bg:'gold', title:'Ferramentas Investidor Pro', sub:'Decisões com o nível de uma mesa profissional.', feats:[['fa-chart-line','Backtest','Histórico da carteira vs CDI e IBOV'],['fa-heart-pulse','Stress Test','Simule crises e veja o impacto em reais'],['fa-user-tie','Aporte Inteligente','Quanto e onde investir — com o motivo de cada ativo']] },
+  { ic:'fa-crown', bg:'gold', title:'Ferramentas Investidor Pro', sub:'Decisões com o nível de uma mesa profissional.', feats:[['fa-chart-line','Backtest','Histórico da carteira vs CDI e IBOV'],['fa-heart-pulse','Stress Test','Simule crises e veja o impacto em reais'],['fa-magnifying-glass-dollar','Radar de Barganhas','Ativos de qualidade abaixo da média histórica']] },
 ];
 let obStep=0;
 function renderOb(){
@@ -5493,7 +5487,7 @@ const INTRO_SLIDES=[
   { photo:'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1000&q=80', shape:'arch', pos:'50% 30%',
     c1:'#2f5f8a', c2:'#1e3d5c', icon:'fa-coins',
     eyebrow:'Proventos & renda', h:'Acompanhe seus<br>dividendos mês a mês.' },
-  { feature:'carteira', eyebrow:'Inteligência artificial', h:'Sua carteira<br>analisada por IA.' },
+  { feature:'carteira', eyebrow:'Carteira & patrimônio', h:'Sua carteira,<br>viva e sincronizada.' },
   { photo:'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1000&q=80', shape:'oval', pos:'50% 40%',
     c1:'#a5683a', c2:'#6e4526', icon:'fa-bullseye',
     eyebrow:'Metas & projeções', h:'Planeje sua<br>independência financeira.' },
@@ -5513,9 +5507,6 @@ function introFeature(k){
   if(k==='carteira'){
     return `<div class="ifx ifx-cart">
       <div class="ifp"><div class="ifp-top"><span>Meu patrimônio</span><b class="ifp-g">+18,4%</b></div><div class="ifp-v">R$ 128.940</div><div class="ifp-bars">${[38,54,48,66,60,78,72,90].map((v,i)=>`<i style="height:${v}%;--d:${(i*0.06).toFixed(2)}s"></i>`).join('')}</div></div>
-      <div class="ifp-pill"><div class="ifp-head"><span class="ifp-ia"><i class="fa-solid fa-wand-magic-sparkles"></i></span>Lastro IA</div><div class="ift-body"><span class="ift-type" data-full="Sua carteira está muito concentrada: 62% do seu patrimônio está em bancos hoje.
-
-Vale diversificar com HGLG11 (galpões), KNCR11 (crédito no CDI) e IVVB11 (S&P 500), que trazem renda estável e diluem essa concentração."></span><i class="ift-caret"></i></div></div>
       <div class="ifx-chip ifx-chip-3"><i class="fa-solid fa-coins"></i> Proventos</div>
       <div class="ifx-chip ifx-chip-4"><i class="fa-solid fa-file-lines"></i> Relatórios</div>
     </div>`;
@@ -5538,14 +5529,7 @@ function renderIntro(){
   const stage=$('#introStage'); if(stage){ stage.style.setProperty('--idx', (_introDir*24)+'px'); stage.innerHTML=`${introVisualHTML(s)}<div class="intro-eyebrow">${s.eyebrow}</div><div class="intro-h">${s.h}</div>`; stage.classList.remove('intro-in'); void stage.offsetWidth; stage.classList.add('intro-in'); }
   const dots=$('#introDots'); if(dots){ dots.innerHTML=INTRO_SLIDES.map((_,i)=>`<span class="intro-dot ${i===introIdx?'on':''}" role="button" aria-label="Slide ${i+1}" onclick="introGoto(${i})"></span>`).join(''); }
   clearInterval(_introTypeT); clearInterval(_introCartT);
-  if(s.feature==='carteira'){ setTimeout(introTypewriter, 620); _cartVal=128940; _cartPct=18.4; _cartLvl=0.5; setTimeout(introCartAnim, 900); }   // IA digita + patrimônio/barras vivos
-}
-function introTypewriter(){
-  const el=document.querySelector('#introStage .ift-type'); if(!el) return;
-  const caret=document.querySelector('#introStage .ift-caret'); if(caret) caret.style.display='';
-  const full=el.getAttribute('data-full')||''; el.textContent=''; let i=0;
-  clearInterval(_introTypeT);
-  _introTypeT=setInterval(()=>{ el.textContent=full.slice(0,++i); if(i>=full.length){ clearInterval(_introTypeT); if(caret) caret.style.display='none'; } }, 24);
+  if(s.feature==='carteira'){ _cartVal=128940; _cartPct=18.4; _cartLvl=0.5; setTimeout(introCartAnim, 900); }   // patrimônio/barras vivos
 }
 let _introCartT=null, _cartVal=128940, _cartPct=18.4, _cartLvl=0.5;
 function introCartAnim(){
@@ -5855,7 +5839,7 @@ function syncNavGroups(){
 const VIEW_TAB = {
   painel:'painel',
   mercado:'mercado', acoes:'mercado', fiis:'mercado', etfs:'mercado', etfsint:'mercado', bdrs:'mercado', stocks:'mercado', cripto:'mercado', score:'mercado', agenda:'mercado', screener:'mercado',
-  carteira:'carteira', proventos:'carteira', aporte:'carteira', fire:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira', barganhas:'carteira', consultor:'carteira', deterioracao:'carteira',
+  carteira:'carteira', proventos:'carteira', aporte:'carteira', fire:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira', barganhas:'carteira', deterioracao:'carteira',
   noticias:'noticias',
   mais:'mais', simulador:'mais', comparador:'mais', recomendadas:'mais', recdetail:'mais', planos:'mais', indicar:'mais', assinatura:'mais', admin:'mais'
 };
@@ -5897,7 +5881,6 @@ function render(v, soft){
   else if(v==='raiox')       c.innerHTML = viewRaioX();
   else if(v==='stress')      c.innerHTML = viewStress();
   else if(v==='barganhas')   c.innerHTML = viewBargain();
-  else if(v==='consultor')   c.innerHTML = viewConsultor();
   else if(v==='deterioracao') c.innerHTML = viewDeterioracao();
   else if(v==='admin')       c.innerHTML = isOwner()? viewAdmin() : viewPainel();
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
@@ -6669,12 +6652,8 @@ function viewCarteira(){
     </div>`; })()}
 
   <div class="card card-pad" style="margin-top:16px">
-    <div class="card-h" style="margin-bottom:14px"><span class="ico" style="background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff"><i class="fa-solid fa-stethoscope"></i></span> Diagnóstico da carteira · Inteligência Lastro</div>
+    <div class="card-h" style="margin-bottom:14px"><span class="ico" style="background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff"><i class="fa-solid fa-stethoscope"></i></span> Diagnóstico da carteira</div>
     <div id="diagBody" style="font-size:13.5px;line-height:1.7;color:var(--ink-2)"><span class="faint">Diagnosticando sua carteira…</span></div>
-    <div class="insight-input" style="margin-top:16px">
-      <input id="cartAI" placeholder="Devo adicionar XPML11? Como rebalancear?" onkeydown="if(event.key==='Enter')askAICart()">
-      <button class="insight-send" onclick="askAICart()"><i class="fa-solid fa-arrow-up"></i></button>
-    </div>
   </div>`;
 }
 
@@ -6729,10 +6708,10 @@ function viewWatchlist(){
 const PLANS = {
   premium: { key:'premium', name:'Premium', popular:true, desc:'Para acompanhar sua carteira de verdade e decidir com dados.',
     anual:24.90, mensal:29.90, anchorA:34.90, anchorM:39.90, anualTotal:298.80,
-    feats:['Tudo do Gratuito, sem limites','Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço + IA ilimitada','Watchlist ilimitada + exportação CSV'] },
+    feats:['Tudo do Gratuito, sem limites','Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço ilimitados','Watchlist ilimitada + exportação CSV'] },
   pro: { key:'pro', name:'Investidor Pro', popular:false, desc:'Tudo do Premium, com análises, relatórios e prioridade.',
     anual:39.90, mensal:49.90, anchorA:54.90, anchorM:64.90, anualTotal:478.80,
-    feats:['Tudo do Premium, sem limites','Consultor IA da carteira (diagnóstico + onde aportar)','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test e Radar de Barganhas','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'] },
+    feats:['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test e Radar de Barganhas','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'] },
 };
 let planCycle = 'anual';
 function setPlanCycle(c){ planCycle = c==='mensal'?'mensal':'anual'; render('planos'); }
@@ -6781,7 +6760,6 @@ function viewPlanos(){
         ${feat('Carteira em modo demonstração')}
         ${feat('Watchlist até ' + PLAN_LIMITS.watchlist + ' ativos')}
         ${feat('Comparador de ' + PLAN_LIMITS.comparador + ' ativos')}
-        ${feat(PLAN_LIMITS.aiDay + ' análises de IA por dia')}
         ${featx('Sem carteira real e sincronizada')}
         ${featx('Sem Proventos, Aporte, FIRE e IR')}
         ${featx('Sem rastreador, alertas e Score completo')}
@@ -6805,11 +6783,9 @@ function viewPlanos(){
       ['Proventos · Aporte · FIRE · IR', false, true, true],
       ['Rastreador + Score completo', false, true, true],
       ['Alertas de preço', false, true, true],
-      ['Análises de IA', PLAN_LIMITS.aiDay+'/dia', 'Ilimitada', 'Prioritária'],
       ['Watchlist', PLAN_LIMITS.watchlist, 'Ilimitada', 'Ilimitada'],
       ['Comparador', PLAN_LIMITS.comparador, '4 ativos', '4 ativos'],
       ['Comissão de indicação', '20%', '20%', '40%'],
-      ['Consultor IA da carteira', false, false, true],
       ['Detector de deterioração', false, false, true],
       ['Raio-X da carteira (Nota Lastro)', false, false, true],
       ['Stress Test e Radar de Barganhas', false, false, true],
@@ -7122,7 +7098,7 @@ function adminSuggestions(all){
   if(premN>0) out.push({ id:'upsell', ic:'fa-crown', st:'warn', impact:'alto',
     title:`Upsell de ${premN} Premium para Investidor Pro`,
     detail:'Assinantes Premium podem subir para o Pro, elevando o ticket médio e dobrando a comissão de indicação.',
-    plan:['Segmentar Premium com patrimônio acima de R$ 50 mil','Oferecer 1 mês de Pro grátis para experimentar','Destacar Raio-X, Backtest e Consultor IA','Medir adesão em 14 dias'],
+    plan:['Segmentar Premium com patrimônio acima de R$ 50 mil','Oferecer 1 mês de Pro grátis para experimentar','Destacar Raio-X, Backtest e Stress Test','Medir adesão em 14 dias'],
     cta:'Campanha de upsell Premium → Pro' });
   if(ufTop[0]) out.push({ id:'regional', ic:'fa-location-dot', st:'neu', impact:'médio',
     title:'Expandir presença regional',
@@ -8398,7 +8374,6 @@ function viewMais(){
     ]},
     {t:'Análises Pro', items:[
       ['raiox','fa-magnifying-glass-chart','Raio-X da Carteira',1],
-      ['consultor','fa-user-tie','Consultor IA da Carteira',1],
       ['deterioracao','fa-arrow-trend-down','Detector de Risco',1],
       ['stress','fa-heart-pulse','Stress Test',1],
       ['backtest','fa-chart-line','Backtest da Carteira',1],
@@ -8518,10 +8493,6 @@ function viewNoticias(){
       <div class="rank" id="newsAlta">${newsAltaHTML()}</div>
     </div>
     <div class="card card-pad news-feed-wrap"><div class="news-feed" id="newsFeed">${items}</div></div>
-    <div class="card card-pad news-ai" style="background:var(--surface-2)">
-      <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff"><i class="fa-solid fa-sparkles"></i></span> Resumo IA do dia</div>
-      <div style="font-size:13px;color:var(--ink-2);line-height:1.65" id="newsAI"><span class="faint">Gerando resumo do dia…</span></div>
-    </div>
   </div>`;
 }
 
@@ -8551,9 +8522,6 @@ async function loadNewsFeed(){
     } else if(!feed.dataset.loaded){
       feed.innerHTML = emptyState('fa-newspaper','Sem notícias agora','O feed atualiza automaticamente a cada poucos minutos.');
     }
-    // resumo do dia do Supabase (meta), se existir
-    const rm = await fetch(`${cfg.SUPABASE_URL}/rest/v1/meta?key=eq.resumo_dia&select=value`, { headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${cfg.SUPABASE_ANON_KEY}` } });
-    if(rm.ok){ const m = await rm.json(); const el=$('#newsAI'); if(m[0]&&el) el.textContent = m[0].value; }
   }catch(e){
     const st = $('#newsStatusTxt'); if(st) st.textContent = 'Feed offline';
     if(!feed.dataset.loaded) feed.innerHTML = emptyState('fa-wifi','Feed indisponível','Não foi possível carregar as notícias agora. Tente novamente em instantes.');
@@ -8639,9 +8607,6 @@ function afterRender(v, soft){
     if(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY){
       const nms = Math.max(cfg.NEWS_REFRESH_MS || 300000, 60000);
       newsTimer = setInterval(()=>{ if(currentView==='noticias') loadNewsFeed(); }, nms);
-    } else {
-      // resumo IA local como fallback caso o Supabase não esteja configurado
-      callAI('Faça um resumo de 2 frases do dia no mercado brasileiro de renda variável, considerando: Ibovespa em máxima, Petrobras com dividendos extras, FIIs de papel atrativos com Selic 14,5%.', $('#newsAI'));
     }
   }
   if(v==='simulador'){ initSimActive(); }
@@ -9535,48 +9500,7 @@ function lastroScores(lots){
 function rxBar(label, pct, color, sub){
   return `<div class="rx-bar"><div class="rx-bar-top"><span>${label}${sub?` <em class="faint">${sub}</em>`:''}</span><b class="mono">${pc(pct,1)}%</b></div><div class="rx-bar-track"><i style="width:${Math.min(100,pct).toFixed(1)}%;background:${color}"></i></div></div>`;
 }
-/* ── Raio-X de outra carteira por foto (IA lê o print e monta o Raio-X) ── */
-let rxMode='minha', rxPhotoLots=null, rxPhotoBusy=false, rxPhotoErr='', _rxLots=null;
-function rxSetMode(m){ rxMode=(m==='foto')?'foto':'minha'; render('raiox'); }
-function rxClearPhoto(){ rxPhotoLots=null; rxPhotoErr=''; render('raiox'); }
-function rxPickPhotos(){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.multiple=true; inp.onchange=()=>{ if(inp.files&&inp.files.length) rxAnalyzePhotos(inp.files); }; inp.click(); }
-function fileToB64(file){ return new Promise((res)=>{ const r=new FileReader(); r.onload=()=>{ const m=/^data:(.+?);base64,(.*)$/.exec(r.result||''); res(m?{media_type:m[1],data:m[2]}:null); }; r.onerror=()=>res(null); r.readAsDataURL(file); }); }
-const RX_EXTRACT_SYS = 'Você é um leitor de carteiras de investimento brasileiras. Recebe imagens (prints de corretora, app ou planilha) e extrai as posições. Responda APENAS com um array JSON, sem texto antes ou depois.';
-const RX_EXTRACT_PROMPT = 'Extraia todas as posições visíveis nas imagens. Para cada ativo retorne {"ticker":"<código B3 ex: PETR4, HGLG11>","cotas":<quantidade inteira>,"pm":<preço médio em número com ponto decimal; se não houver, 0>}. Use o código do ticker (não o nome). Responda só o array JSON, ex: [{"ticker":"PETR4","cotas":100,"pm":36.5}].';
-async function rxAnalyzePhotos(files){
-  rxPhotoBusy=true; rxPhotoErr=''; rxPhotoLots=null; render('raiox');
-  try{
-    const imgs=(await Promise.all([...files].slice(0,5).map(fileToB64))).filter(Boolean);
-    if(!imgs.length) throw new Error('img');
-    const endpoint=(window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || '/api/ai';
-    const content=[...imgs.map(i=>({type:'image',source:{type:'base64',media_type:i.media_type,data:i.data}})), {type:'text', text:RX_EXTRACT_PROMPT}];
-    const _sx=(typeof getSession==='function')?getSession():null; const _hx={'Content-Type':'application/json'}; if(_sx&&_sx.access_token) _hx.Authorization=`Bearer ${_sx.access_token}`;
-    const r=await fetch(endpoint,{method:'POST',headers:_hx,body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,system:RX_EXTRACT_SYS,messages:[{role:'user',content}]})});
-    const dd=await r.json(); const txt=(dd.content&&dd.content[0]&&dd.content[0].text)||'';
-    const arr=JSON.parse((txt.match(/\[[\s\S]*\]/)||['[]'])[0]);
-    const lots=arr.map(x=>{ const tk=String(x.ticker||x.tk||'').toUpperCase().replace(/[^A-Z0-9]/g,''); const lk=assetLookup(tk); if(!lk) return null; const cotas=Math.max(0,Math.round(+x.cotas||+x.quantidade||0)); if(!cotas) return null; const pm=(+x.pm||+x.preco_medio||lk.a.px||0); return { id:uid(), tk, cotas, pm, date:todayISO() }; }).filter(Boolean);
-    if(!lots.length) rxPhotoErr='Não reconheci ativos da B3 nas fotos. Tente um print mais nítido da lista de posições (com os códigos dos ativos).';
-    rxPhotoLots = lots.length? lots : null;
-  }catch(e){ rxPhotoErr='Não consegui ler as fotos. A leitura por IA precisa do endpoint conectado (config.js → AI_ENDPOINT). Tente novamente.'; }
-  rxPhotoBusy=false; render('raiox');
-}
-function rxModeBar(){
-  return `<div class="rx-modebar">
-    <button class="${rxMode==='minha'?'on':''}" onclick="rxSetMode('minha')"><i class="fa-solid fa-wallet"></i> Minha carteira</button>
-    <button class="${rxMode==='foto'?'on':''}" onclick="rxSetMode('foto')"><i class="fa-solid fa-camera"></i> Outra carteira</button>
-  </div>`;
-}
-function rxUploadUI(){
-  if(rxPhotoBusy) return `<div class="card card-pad rx-upload"><div class="rx-up-ic spin"><i class="fa-solid fa-spinner fa-spin"></i></div><div class="rx-up-t">Lendo as fotos com IA…</div><div class="faint" style="font-size:12.5px">Identificando ativos, quantidades e preços</div></div>`;
-  return `<div class="card card-pad rx-upload">
-    <div class="rx-up-ic"><i class="fa-solid fa-camera-retro"></i></div>
-    <div class="rx-up-t">Raio-X de outra carteira por foto</div>
-    <p class="faint" style="font-size:13px;line-height:1.6;max-width:440px;margin:6px auto 16px">Envie um ou mais prints da carteira (corretora, app ou planilha). A IA lê os ativos e monta o Raio-X completo — diversificação, concentração, Nota Lastro e sugestões.</p>
-    <button class="btn btn-primary" onclick="rxPickPhotos()"><i class="fa-solid fa-arrow-up-from-bracket"></i> Enviar fotos</button>
-    ${rxPhotoErr?`<div class="rx-up-err"><i class="fa-solid fa-triangle-exclamation"></i> ${esc(rxPhotoErr)}</div>`:''}
-    <div class="illus-note" style="margin-top:16px;text-align:left"><i class="fa-solid fa-circle-info"></i> As imagens são enviadas à IA apenas para extrair os ativos. Reconhecemos tickers da B3 e principais ativos da base Lastro.</div>
-  </div>`;
-}
+let _rxLots=null;
 /* recomendações de ação (comprar/reduzir) com justificativa — sobre a carteira ativa */
 function rxRecommendations(lots){
   const d=diversificationGrade(lots); if(!d) return { buy:[], sell:[] };
@@ -9604,11 +9528,8 @@ function rxRecommendations(lots){
 function viewRaioX(){
   if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('raiox')}</div>`;
   const head = `<div class="sec-title">Raio-X da carteira</div>
-  <div class="sec-desc">O retrato completo da carteira: patrimônio, diversificação por setor, ativo e classe, a Nota de Diversificação Lastro e sugestões de melhoria.</div>
-  ${rxModeBar()}`;
-  if(rxMode==='foto' && !rxPhotoLots) return head + rxUploadUI();
-  const lots = rxMode==='foto' ? rxPhotoLots : null; _rxLots = lots;
-  const isFoto = rxMode==='foto' && !!lots;
+  <div class="sec-desc">O retrato completo da carteira: patrimônio, diversificação por setor, ativo e classe, a Nota de Diversificação Lastro e sugestões de melhoria.</div>`;
+  const lots = null; _rxLots = lots;
   const p=portfolioStats(lots), d=diversificationGrade(lots);
   if(!d) return head + `<div class="card card-pad">${emptyState('fa-magnifying-glass-chart','Sem posições para o Raio-X','Adicione ativos à sua carteira para ver a diversificação, a concentração e a Nota Lastro.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   // agregações
@@ -9643,7 +9564,6 @@ function viewRaioX(){
   const buyRows = recs.buy.map(recRow).join('') || '<div class="faint" style="font-size:12px;padding:6px">Carteira bem coberta — sem compras prioritárias agora.</div>';
   const sellRows = recs.sell.map(recRow).join('') || '<div class="rx-rec-ok"><i class="fa-solid fa-circle-check"></i> Nada a reduzir: sem concentração excessiva nem ativos de baixa qualidade.</div>';
   return head + `
-  ${isFoto?`<div class="rx-photo-banner"><i class="fa-solid fa-camera"></i> <span>Raio-X de uma carteira importada por foto · <strong>${lots.length}</strong> ativo${lots.length!==1?'s':''} reconhecido${lots.length!==1?'s':''}</span><button onclick="rxClearPhoto()"><i class="fa-solid fa-arrows-rotate"></i> Trocar fotos</button></div>`:''}
   <div class="mstrip" style="grid-template-columns:repeat(6,1fr)">
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl">${brl0(p.atual)}</div><div class="dl ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}%</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Rentabilidade</div><div class="vl ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div><div class="dl faint">c/ proventos</div></div>
@@ -9687,12 +9607,12 @@ function viewRaioX(){
     </div>
     <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sugestões educativas geradas a partir da composição, concentração e Score Lastro — não são recomendação personalizada de investimento.</div>
   </div>
-  ${!isFoto?`<div class="card card-pad rx-aporte-cta" onclick="nav('aporte')">
-    <div class="rx-aporte-l"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+  <div class="card card-pad rx-aporte-cta" onclick="nav('aporte')">
+    <div class="rx-aporte-l"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-scale-balanced"></i></span>
       <div><div class="rx-aporte-t">Quanto e onde investir agora?</div><div class="faint" style="font-size:12px;margin-top:2px">Informe o valor do aporte e receba o plano de compra completo em cotas inteiras, com 6 estratégias e o motivo de cada ativo.</div></div>
     </div>
     <button class="btn btn-primary" onclick="event.stopPropagation();nav('aporte')"><i class="fa-solid fa-scale-balanced"></i> Aporte Inteligente</button>
-  </div>`:''}
+  </div>
   <div class="rx-cols" style="margin-top:16px">
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Por setor</div></div>
@@ -9814,71 +9734,6 @@ function viewBargain(){
   <div class="rec-filters"><div class="rec-filters-inner">${chips}</div></div>
   <div class="card card-pad bg-list">${rows}</div>
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Média histórica reconstruída de forma estimada (10 anos). Desconto não garante retorno — verifique os fundamentos antes de decidir.</div>`;
-}
-
-/* ── Consultor IA da Carteira (Investidor Pro) ── */
-function consultorRecommend(amount){
-  const d=diversificationGrade(); if(!d) return null;
-  const pos=d.pos;
-  const byClasse={}; pos.forEach(x=> byClasse[x.classe]=(byClasse[x.classe]||0)+x.w);
-  const minClasse=Object.entries(byClasse).sort((a,b)=>a[1]-b[1])[0];
-  const brlPos=pos.filter(x=> x.a && x.a.px>0 && ASSET_CLASS[x.k] && ASSET_CLASS[x.k].cur==='brl');
-  if(!brlPos.length) return null;
-  const cand=brlPos.filter(x=>x.w<14).map(x=>({x, key:(x.a.score||50) + (x.classe===minClasse[0]?40:0) + (14-x.w)*1.5})).sort((a,b)=>b.key-a.key);
-  const pick=cand.length? cand[0].x : brlPos.slice().sort((a,b)=>a.w-b.w)[0];
-  const over=pos.slice().sort((a,b)=>b.w-a.w)[0];
-  const px=pick.a.px, shares=Math.max(1,Math.floor(amount/px)), cost=shares*px, leftover=amount-cost;
-  let motivo;
-  if(over.tk!==pick.tk && over.w>=20)
-    motivo=`Sua carteira já tem forte exposição a <strong>${over.tk}</strong> (${pc(over.w,0)}%${over.setor?`, setor ${esc(over.setor)}`:''}). Hoje faz mais sentido reforçar <strong>${pick.tk}</strong> do que aumentar essa concentração.`;
-  else if(pick.classe===minClasse[0] && Object.keys(byClasse).length>1)
-    motivo=`<strong>${pick.classe}</strong> é a sua menor exposição (${pc(minClasse[1],0)}%). Aportar em <strong>${pick.tk}</strong> equilibra as classes da carteira.`;
-  else
-    motivo=`<strong>${pick.tk}</strong> tem Score Lastro ${pick.a.score||'—'}/100 e pesa só ${pc(pick.w,1)}% — há espaço para reforçar uma posição de qualidade.`;
-  return { pick, over, px, shares, cost, leftover, motivo };
-}
-function runConsultor(){
-  const el=$('#consultorOut'); if(!el) return;
-  const amt=parseBRL((($('#consultorAmt')||{}).value)||'');
-  if(!amt||amt<=0){ el.innerHTML='<div class="faint" style="font-size:12.5px;padding:4px 2px">Informe um valor para receber a sugestão.</div>'; return; }
-  const r=consultorRecommend(amt); if(!r){ el.innerHTML='<div class="faint" style="font-size:12.5px;padding:4px 2px">Adicione posições em reais à carteira para receber a sugestão.</div>'; return; }
-  el.innerHTML=`<div class="cons-rec">
-    <div class="cons-rec-h"><i class="fa-solid fa-lightbulb"></i> Sugestão para ${brl0(amt)}</div>
-    <div class="cons-rec-pick">${assetLogo(r.pick.tk,r.pick.k,'sm')}<div class="cons-pick-id"><div class="cons-pick-tk">Reforçar ${r.pick.tk}</div><div class="faint">${esc((r.pick.a&&r.pick.a.nm)||'')} · ${r.shares} cota${r.shares>1?'s':''} a ${brl(r.px)} = <strong>${brl(r.cost)}</strong></div></div></div>
-    <p class="cons-motivo">${r.motivo}</p>
-    ${r.leftover>0.5?`<div class="faint" style="font-size:11.5px">Sobram ${brl(r.leftover)} — guarde para o próximo aporte ou complemente com outra posição.</div>`:''}</div>`;
-}
-function viewConsultor(){
-  if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('consultor')}</div>`;
-  const p=portfolioStats();
-  if(!p._byT.length) return `<div class="card card-pad">${emptyState('fa-user-tie','Sem carteira para analisar','Adicione posições para o Consultor IA diagnosticar a sua carteira e sugerir o próximo aporte.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
-  const ins=portfolioInsights(), d=diversificationGrade();
-  const cons=ins.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> <span>${t}</span></li>`).join('');
-  const pros=ins.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>${t}</span></li>`).join('');
-  const rebal=(ins.rebal||[]).map(t=>`<li><i class="fa-solid fa-arrow-right-arrow-left"></i> <span>${t}</span></li>`).join('');
-  const falta=['Ações','FIIs','Exterior'].filter(c=>!d.classes.includes(c));
-  const faltaHtml = falta.length? falta.map(c=>`<li><i class="fa-solid fa-plus"></i> <span>Falta exposição a <strong>${c}</strong> — adicionar diversifica a carteira.</span></li>`).join('') : '<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>Sua carteira cobre as principais classes de ativos.</span></li>';
-  return `
-  <div class="sec-title">Consultor IA da carteira</div>
-  <div class="sec-desc">Um consultor que olha a <strong>sua</strong> carteira: faz o diagnóstico, aponta o que ajustar e responde quanto e onde investir o próximo aporte. Análise educativa — não é recomendação personalizada de investimento.</div>
-  <div class="cons-grid">
-    <div class="card card-pad">
-      <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-stethoscope"></i></span> Diagnóstico automático</div>
-      <p style="font-size:13.5px;color:var(--ink-2);line-height:1.65;margin:0 0 12px">${ins.summary}</p>
-      <ul class="rx-reasons">${cons}${pros}</ul>
-    </div>
-    <div class="card card-pad">
-      <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-list-check"></i></span> Sugestões inteligentes</div>
-      <ul class="cons-sug">${rebal}${faltaHtml}</ul>
-    </div>
-  </div>
-  <div class="card card-pad cons-tool" style="margin-top:16px">
-    <div class="card-h" style="margin-bottom:6px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Quanto e onde investir agora?</div>
-    <p class="faint" style="font-size:12.5px;margin:0 0 12px;line-height:1.55">Diga quanto você tem para aportar este mês. O consultor sugere onde, com base na composição atual da sua carteira.</p>
-    <div class="cons-input"><span class="cons-cur">R$</span><input id="consultorAmt" type="text" inputmode="decimal" placeholder="3.000" oninput="maskBRL(this)" onkeydown="if(event.key==='Enter')runConsultor()"><button class="btn btn-primary" onclick="runConsultor()"><i class="fa-solid fa-arrow-right"></i> Analisar</button></div>
-    <div id="consultorOut"></div>
-  </div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Diagnóstico determinístico calculado sobre a sua carteira. Educativo — não constitui recomendação personalizada de investimento.</div>`;
 }
 
 /* ── Detector de Deterioração de Fundamentos (Investidor Pro) ── */
@@ -10106,73 +9961,6 @@ function runSimMeta(){
 function initSimActive(){ if(simTab==='juros') runSimJuros(); else if(simTab==='meta') runSimMeta(); else runSim(); }
 function brl0(n){ return 'R$ '+Math.round(n).toLocaleString('pt-BR'); }
 
-/* ══════════════════════════════════════════════════════════
-   IA — Anthropic
-   ══════════════════════════════════════════════════════════ */
-/* Prompt do sistema montado com DADOS REAIS do usuário (carteira + macro do app),
-   nunca valores fixos. A IA é instruída a NÃO inventar número ausente. */
-function buildSys(){
-  const nm = (typeof profileName==='function' && profileName()) || 'investidor';
-  let cart = 'o usuário ainda não cadastrou ativos na carteira';
-  try{
-    const g = portfolioByTicker().filter(x=>x.val>0).sort((a,b)=>b.val-a.val);
-    const tot = g.reduce((s,x)=>s+x.val,0);
-    if(g.length){
-      cart = g.slice(0,12).map(x=>{ const lk=assetLookup(x.tk); const k=(lk&&lk.k)||'';
-        const kind = k==='fiis'?'FII':k==='acoes'?'ação':(k==='etfs'||k==='etfsint')?'ETF':k==='stocks'?'stock':k==='bdrs'?'BDR':k==='cripto'?'cripto':'';
-        const w = tot?Math.round(x.val/tot*100):0; return `${x.tk}${kind?' ('+kind+')':''} ${w}%`; }).join(', ');
-    }
-  }catch(e){}
-  const mk=(n)=>{ const m=(typeof MARKET!=='undefined')&&MARKET.find(x=>x.nm===n); return m?`${m.vl}${(m.dl&&m.dl!=='a.a.')?' ('+m.dl+')':''}`:'n/d'; };
-  const macro = `SELIC ${mk('SELIC')}, IPCA ${mk('IPCA')}, IFIX ${mk('IFIX')}, Ibovespa ${mk('Ibovespa')}, Dólar ${mk('Dólar')}`;
-  return `Você é a Inteligência Lastro, assistente financeiro especializado no mercado brasileiro de renda variável (FIIs, ações B3, ETFs, BDRs, cripto).
-Usuário: ${nm}. Carteira ATUAL do usuário: ${cart}.
-Contexto macro (valores atuais exibidos no app): ${macro}.
-Regras: responda em português, objetivo, no máximo 3 parágrafos curtos. Baseie-se na carteira e nos dados acima e em conhecimento geral de mercado. IMPORTANTE: se um dado específico (DY, P/VP, ROE, cotação, proventos de um ativo) não estiver acima, diga explicitamente que não tem o valor atualizado — NUNCA invente número. Nunca prometa rentabilidade; eduque sobre risco. Não dê recomendação direta de compra/venda — apresente análise para decisão própria.`;
-}
-
-async function callAI(msg, el){
-  if(!aiCanRun()){
-    if(el) el.innerHTML = `<div class="ai-locked"><i class="fa-solid fa-crown"></i> Você usou suas <strong>${PLAN_LIMITS.aiDay} análises gratuitas</strong> de hoje. <a onclick="goPricing()">Fazer upgrade para ilimitado →</a></div>`;
-    return;
-  }
-  if(!isPro()) aiInc();
-  if(el) el.innerHTML = skelLines(3);
-  // sempre via proxy serverless (nunca o host da Anthropic direto do cliente — a chave fica só no servidor)
-  const endpoint = (window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || '/api/ai';
-  const s = (typeof getSession==='function') ? getSession() : null;
-  const headers = {'Content-Type':'application/json'};
-  if(s && s.access_token) headers.Authorization = `Bearer ${s.access_token}`;   // proxy valida a sessão
-  try{
-    const r = await fetch(endpoint,{
-      method:'POST', headers,
-      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, system:buildSys(), messages:[{role:'user',content:msg}] })
-    });
-    const d = await r.json();
-    const txt = (d.content && d.content[0] && d.content[0].text) || null;
-    // escapa antes de aplicar markdown mínimo (evita XSS via retorno do modelo)
-    if(txt && el) el.innerHTML = esc(txt).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
-    else if(el) el.innerHTML = '<span class="faint">Não consegui gerar a análise agora. Tente reformular a pergunta em instantes.</span>';
-  }catch(e){
-    if(el) el.innerHTML = '<span class="faint">A Inteligência Lastro está indisponível no momento. Tente novamente em instantes.</span>';
-  }
-}
-function askAISugg(q){ const inp=$('#insightInput'); if(inp) inp.value=q; askAI(); }
-function askAI(initial){
-  const inp = $('#insightInput'), out = $('#insightBody');
-  const msg = initial ? 'Em 2 frases, dê um panorama do mercado brasileiro de renda variável hoje (Ibovespa, Selic e oportunidades em dividendos/FIIs).' : (inp?inp.value.trim():'');
-  if(!initial && !msg){ inp&&inp.focus(); return; }
-  if(inp && !initial) inp.value='';
-  callAI(msg, out);
-}
-function askAITbl(kind){
-  const inp=$('#tblAI'), out=$('#tblAIOut'); const msg=inp.value.trim(); if(!msg){inp.focus();return;} inp.value='';
-  callAI(msg, out);
-}
-function askAICart(){
-  const inp=$('#cartAI'), out=$('#diagBody'); const msg=inp.value.trim(); if(!msg){inp.focus();return;} inp.value='';
-  callAI(msg, out);
-}
 /* diagnóstico determinístico da carteira (instantâneo, gratuito) */
 function portfolioInsights(lots){
   const p = portfolioStats(lots); const n = p.nAtivos;
@@ -11715,30 +11503,6 @@ function decisionCard(a,k,f){
   </div>`;
 }
 
-function premiumCard(a,k){
-  if(!ASSET_CLASS[k].score || typeof a.score!=='number') return '';
-  if(isPro()){
-    return `<div class="card card-pad" style="margin-bottom:16px">
-      <div class="ds-title">Análise aprofundada · IA <span class="pro-tag">Premium</span></div>
-      <div id="aiDeep" style="font-size:13.5px;color:var(--ink-2);line-height:1.7"><span class="faint">Gere uma leitura contextual deste ativo com a Inteligência Lastro.</span></div>
-      <button class="btn btn-primary" style="margin-top:14px" onclick="deepAnalyze('${a.tk}')"><i class="fa-solid fa-wand-magic-sparkles"></i> Gerar análise</button>
-    </div>`;
-  }
-  return `<div class="card card-pad premium-teaser" style="margin-bottom:16px">
-    <div class="pt-blur">
-      <div class="ds-title">Análise aprofundada · IA</div>
-      <p style="font-size:13.5px;line-height:1.7;color:var(--ink-2);margin-top:6px">Com base nos fundamentos, ${a.tk} apresenta preço-teto estimado de R$ ••,•• e projeção de proventos de R$ ••• nos próximos 12 meses. No comparativo setorial, figura entre os ••• do segmento em qualidade, com gatilhos de valorização em ••••••.</p>
-      <p style="font-size:13.5px;line-height:1.7;color:var(--ink-2)">Riscos monitorados: •••••••••• · Sensibilidade à Selic: ••••• · Margem de segurança: ••••.</p>
-    </div>
-    <div class="pt-lock">
-      <div class="pw-ic"><i class="fa-solid fa-crown"></i></div>
-      <div class="pw-t">Análise aprofundada é Premium</div>
-      <div class="pw-s">Preço-teto, projeção de proventos, comparativo setorial e leitura por IA deste ativo.</div>
-      ${proCtaButton()}
-    </div>
-  </div>`;
-}
-function deepAnalyze(tk){ const f=assetLookup(tk); if(!f) return; callAI(`Analise ${tk} (${f.a.nm}) para um investidor pessoa física: está cara ou barata, pontos fortes, principais riscos e perspectiva. Objetivo, 2 parágrafos curtos.`, $('#aiDeep')); }
 
 /* ══════════════════════════════════════════════════════════
    PÁGINA DO ATIVO — experiência em abas (premium)
@@ -11873,7 +11637,6 @@ function tabGeral(tk,a,k,f){
   return `
   <div class="sumgrid">${summaryCards(a,k,f)}</div>
   ${decisionCard(a,k,f)}
-  ${premiumCard(a,k)}
   <div class="card card-pad" style="margin-bottom:16px">
     <div class="ds-head">
       <span class="ds-title" style="margin:0">Cotação</span>
@@ -12276,7 +12039,7 @@ function ensurePdfModal(){
     <button onclick="pdfShare()"><i class="fa-solid fa-share-nodes"></i> Compartilhar</button>
     <button onclick="pdfOpenExternal()"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir no navegador</button>
   </div>
-  <div class="pdf-body" id="pdfBody"><div id="pdfPages" class="pdf-pages"></div><div id="pdfSummary" class="pdf-summary"></div></div>`;
+  <div class="pdf-body" id="pdfBody"><div id="pdfPages" class="pdf-pages"></div></div>`;
   document.body.appendChild(m);
   return m;
 }
@@ -12286,7 +12049,6 @@ function openPdf(url, title, sub){
   _pdfUrl=url; _pdfSub=sub||'';
   const m=ensurePdfModal();
   const t=document.getElementById('pdfTitle'); if(t) t.textContent=title||'Documento';
-  const s=document.getElementById('pdfSummary'); if(s) s.innerHTML='';
   pdfCloseMenu();
   m.classList.add('open'); document.body.classList.add('pdf-lock');
   try{ history.pushState({pdf:1},''); }catch(e){}
@@ -12297,7 +12059,6 @@ function closePdf(){
   pdfCloseMenu();
   m.classList.remove('open'); document.body.classList.remove('pdf-lock');
   const c=document.getElementById('pdfPages'); if(c) c.innerHTML='';
-  const s=document.getElementById('pdfSummary'); if(s) s.innerHTML='';
 }
 /* carrega o PDF.js (cdnjs) sob demanda */
 let _pdfjsPromise=null;
@@ -12325,7 +12086,6 @@ async function renderPdf(url){
     cont.innerHTML='';
     const cw=Math.max(1, cont.clientWidth || document.documentElement.clientWidth);
     const dpr=Math.min(window.devicePixelRatio||1, 2);
-    let fullText='';
     for(let n=1;n<=doc.numPages;n++){
       const page=await doc.getPage(n);
       if(_pdfUrl!==url) return;
@@ -12338,34 +12098,11 @@ async function renderPdf(url){
       canvas.style.width='100%'; canvas.style.height='auto';
       cont.appendChild(canvas);
       await page.render({canvasContext:canvas.getContext('2d'), viewport:vp}).promise;
-      if(n<=6){ try{ const tc=await page.getTextContent(); fullText += tc.items.map(it=>it.str).join(' ')+'\n'; }catch(_){} }
     }
-    summarizePdf(fullText, url);                        // resumo em linguagem simples (IA)
   }catch(e){
     if(_pdfUrl!==url) return;
     cont.innerHTML='<div class="pdf-loading">Não foi possível exibir aqui. Use o menu ⋮ → “Abrir no navegador”.</div>';
   }
-}
-/* resumo do documento em linguagem simples (IA), abaixo do PDF */
-const PDF_SUMMARY_CACHE={};
-function summaryCardHTML(inner){ return `<div class="pdf-sum-card"><div class="pdf-sum-h"><i class="fa-solid fa-wand-magic-sparkles"></i> Resumo — para entender fácil</div><div class="pdf-sum-b">${inner}</div></div>`; }
-async function summarizePdf(text, url){
-  const box=document.getElementById('pdfSummary'); if(!box) return;
-  const clean=(text||'').replace(/\s+/g,' ').trim();
-  if(clean.length<50 && !_pdfSub){ box.innerHTML=''; return; }
-  if(PDF_SUMMARY_CACHE[url]){ if(_pdfUrl===url) box.innerHTML=summaryCardHTML(esc(PDF_SUMMARY_CACHE[url]).replace(/\n/g,'<br>')); return; }
-  box.innerHTML=summaryCardHTML('<span class="faint"><i class="fa-solid fa-circle-notch fa-spin"></i> Gerando resumo…</span>');
-  const endpoint=(window.LASTRO_CONFIG && window.LASTRO_CONFIG.AI_ENDPOINT) || '';
-  const base = clean.length>=50 ? clean.slice(0,6000) : ('Assunto do documento: '+_pdfSub);
-  const prompt=`Explique o documento abaixo (comunicado ou fato relevante enviado à CVM por uma empresa listada) em português simples e claro, para que qualquer pessoa leiga entenda. Em 2 a 4 frases: diga o que a empresa comunicou e por que isso importa para o investidor. Não use jargão nem se apresente. Documento:\n\n${base}`;
-  try{
-    const r=await fetch(endpoint,{ method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:400, messages:[{role:'user',content:prompt}] }) });
-    const d=await r.json(); const txt=(d.content && d.content[0] && d.content[0].text) || '';
-    if(_pdfUrl!==url) return;
-    if(txt){ PDF_SUMMARY_CACHE[url]=txt; box.innerHTML=summaryCardHTML(esc(txt).replace(/\n/g,'<br>')); }
-    else box.innerHTML=summaryCardHTML('<span class="faint">Resumo indisponível no momento.</span>');
-  }catch(e){ if(_pdfUrl===url) box.innerHTML=summaryCardHTML('<span class="faint">Resumo indisponível (requer a IA conectada).</span>'); }
 }
 function togglePdfMenu(e){ if(e){ e.stopPropagation(); } const m=document.getElementById('pdfMenu'); if(m) m.classList.toggle('open'); }
 function pdfCloseMenu(){ const m=document.getElementById('pdfMenu'); if(m) m.classList.remove('open'); }
