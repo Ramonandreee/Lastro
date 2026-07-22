@@ -210,7 +210,11 @@ Estrutura de arquivos e como rodar: ver **README.md** (seções 3 e 4). Configur
 1. **Persistência do Premium / entitlement server-side** (`user_entitlement` + RPC) —
    prioridade: resolve o bug de perder o plano no relogin. *(ver pendências acima)*
 2. **Perfil como página cheia** (hoje é modal).
-3. **Import de carteira** (B3/CEI ou nota/extrato da corretora).
+3. **Livro de Movimentações** (venda, provento-caixa, saldo em caixa, eventos societários,
+   IR realizado) — carteira/patrimônio reais centavo a centavo. **Plano faseado pronto:**
+   `docs/PLANO-livro-movimentacoes.md` (MVP = venda + provento + caixa; `MOVS` como fonte de
+   verdade e `CARTEIRA` como projeção derivada; sync reusa o blob `user_state`, sem endpoint novo).
+4. **Import de carteira** (B3/CEI ou nota/extrato da corretora).
 4. **Carteiras Recomendadas reais** (corretoras que publicam mensalmente).
 5. **Proventos e IR reais** (data-com, DARF, informe anual); **2FA real** + rodapé
    institucional (CNPJ, termos, LGPD).
