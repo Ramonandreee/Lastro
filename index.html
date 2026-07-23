@@ -571,10 +571,6 @@ body.acct-open .topbar .acct-menu { pointer-events:auto; }
   .pager { justify-content:space-between; }
   .pg-btn { min-width:38px; height:38px; }
 }
-/* feedback visual do swipe-back (mobile) */
-.swipe-hint { position:fixed; top:50%; left:0; transform:translateY(-50%) translateX(-44px); width:40px; height:40px; border-radius:50%; background:var(--surface); box-shadow:var(--sh-lg); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--brand); z-index:120; opacity:0; pointer-events:none; }
-#content.swiping { transition:none; }
-#content.swipe-snap { transition:transform .26s var(--ease-out); }
 .search-trigger {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 14px;
@@ -12057,15 +12053,12 @@ function goBack(){
   if(currentView!=='painel'){ goView('painel'); return true; }    // demais telas → Início
   return false;
 }
-/* swipe-back na borda esquerda (mobile), estilo iOS/bancos */
+/* swipe-back na borda esquerda (mobile): apenas troca de página, SEM arrastar o conteúdo
+   nem mostrar seta. Detecta o gesto (borda → horizontal → limiar) e chama goBack(). */
 (function(){
   if(!('ontouchstart' in window)) return;
   let sx=0, sy=0, dx=0, tracking=false, decided=false;
   const EDGE=30, THRESH=78;
-  let hint;
-  const getHint=()=>{ if(!hint){ hint=document.createElement('div'); hint.className='swipe-hint'; hint.innerHTML='<i class="fa-solid fa-arrow-left"></i>'; document.body.appendChild(hint); } return hint; };
-  const content=()=>document.getElementById('content');
-  function reset(){ const c=content(); if(c){ c.classList.remove('swiping'); c.classList.add('swipe-snap'); c.style.transform=''; setTimeout(()=>c.classList.remove('swipe-snap'),280); } const h=getHint(); h.style.opacity='0'; h.style.transform='translateY(-50%) translateX(-44px)'; }
   document.addEventListener('touchstart', e=>{
     if(e.touches.length!==1 || !canGoBack()) return;
     if(document.querySelector('.modal-scrim.open, .search-modal.open, .tip.sheet.show')) return; // não interferir com modais
@@ -12077,19 +12070,14 @@ function goBack(){
     const t=e.touches[0]; dx=t.clientX-sx; const dy=t.clientY-sy;
     if(!decided){
       if(Math.abs(dy)>Math.abs(dx) && Math.abs(dy)>8){ tracking=false; return; } // rolagem vertical: ignora
-      if(dx>10){ decided=true; const c=content(); if(c) c.classList.add('swiping'); }
-      else return;
+      if(dx>10){ decided=true; } else return;
     }
     if(dx<0) dx=0;
-    e.preventDefault();
-    const x=Math.min(dx*0.5, window.innerWidth*0.35);
-    const c=content(); if(c) c.style.transform=`translateX(${x}px)`;
-    const h=getHint(); const p=Math.min(dx/THRESH,1);
-    h.style.opacity=String(p); h.style.transform=`translateY(-50%) translateX(${ -44 + p*60 }px) scale(${.8+p*.2})`;
+    e.preventDefault();   // trava a rolagem horizontal durante o gesto, mas NÃO arrasta o conteúdo
   }, {passive:false});
   document.addEventListener('touchend', ()=>{
     if(!tracking) return; tracking=false;
-    if(decided && dx>THRESH){ reset(); goBack(); } else reset();
+    if(decided && dx>THRESH) goBack();   // passou do limiar → volta com troca de página limpa (sem arrasto/seta)
     decided=false;
   });
 })();
