@@ -5138,7 +5138,9 @@ async function loadCloudState(){
     if(!d){ await saveCloudState(); return; }   // primeira vez: envia o estado local
     // PROTEÇÃO 2: nuvem com carteira VAZIA nunca apaga uma carteira local com posições —
     // mantém o local e o empurra. (Um portfólio real jamais é "sincronizado para vazio".)
-    if(Array.isArray(d.carteira) && d.carteira.length===0 && Array.isArray(CARTEIRA) && CARTEIRA.length>0){ try{ saveCloudState(); }catch(e){} return; }
+    // EXCEÇÃO: se a nuvem traz `movs` não-vazio, a carteira vazia é um estado LEGÍTIMO (100%
+    // vendida) — não é wipe; deixa seguir para a comparação por ts (o ts atrasado ainda protege).
+    if(Array.isArray(d.carteira) && d.carteira.length===0 && Array.isArray(CARTEIRA) && CARTEIRA.length>0 && !(Array.isArray(d.movs) && d.movs.length>0)){ try{ saveCloudState(); }catch(e){} return; }
     // Quem é mais novo? Se o local tem mutações e a nuvem não é mais recente, mantemos o local
     // (e, se estivermos à frente, empurramos). Só adotamos a nuvem quando ela é de fato mais nova.
     const cts = +d.ts || 0;
@@ -9011,7 +9013,7 @@ function wealthSeries(period){
     // fonte 1 — SNAPSHOT real observado (prioridade; é o valor que o app viu naquele dia)
     if(!isToday && phMap[ds]!=null){ labels.push(fmtLbl(d)); cart.push(phMap[ds]); usedSnap=true; continue; }
     // fonte 2 — reconstrução por FECHAMENTOS reais; em CENTAVOS (arredonda 1x por posição, soma inteira)
-    let valCents=0, hasLot=false, allReal=true;
+    let valCents=0, hasLot=false, allReal=true, hasCash=false;
     const stDay = useMovs ? movsState(ds) : null;   // posições LÍQUIDAS de venda + caixa naquele dia
     if(stDay){
       const pb=stDay.posByTk;
@@ -9023,7 +9025,9 @@ function wealthSeries(period){
         // valoriza POR LOTE (mesmo arredondamento por-lote do legado ⇒ série idêntica p/ só-compra)
         pos.lots.forEach(l=>{ valCents += M.positionCents(l.cotas, px*fx); });
       }
-      if(hasLot && allReal) valCents += stDay.caixaCents;   // + caixa do dia (Fase 1 só-compra ⇒ 0)
+      const cashC = stDay.caixaCents||0;   // caixa é dinheiro parado — não precisa de cotação
+      if(allReal) valCents += cashC;        // soma o caixa do dia (Fase 1 só-compra ⇒ 0)
+      if(cashC!==0) hasCash=true;           // dia só-de-caixa (carteira 100% vendida) ainda é plotável
     } else {
       for(const l of flat){ if(l.date<=d){ hasLot=true;
         const fx = l.usd ? ((typeof closeOn==='function'&&closeOn('USDBRL',ds))||usdRate) : 1;
@@ -9032,7 +9036,7 @@ function wealthSeries(period){
         valCents += M.positionCents(l.cotas, px*fx);
       }}
     }
-    if(!hasLot || !allReal) continue;   // dia sem cobertura real → descartado (nunca plota custo/pm)
+    if(!allReal || (!hasLot && !hasCash)) continue;   // sem cobertura real de posição, e sem caixa → descartado (nunca plota custo/pm)
     let v=M.fromCents(valCents);
     if(isToday && atual!=null) v=atual;   // último ponto = patrimônio atual REAL
     labels.push(fmtLbl(d)); cart.push(v);

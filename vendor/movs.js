@@ -90,9 +90,10 @@
             // zerou a posição: custo e lotes zerados (spec: cotas→0 zera custoNat)
             pv.cotas = 0; pv.custoCentsNat = 0; pv.lots = [];
           } else {
-            // baixa por PM: reduz cada lote proporcionalmente (PM de cada lote e o ponderado NÃO mudam)
+            // baixa o MESMO custo usado no realizado (custoBaixaCents) → balanço e realizado
+            // batem centavo a centavo numa venda parcial (achado 4). Lotes só p/ exibição.
             var factor = before > 0 ? pv.cotas / before : 0;
-            pv.custoCentsNat = M.roundCents(pv.custoCentsNat * factor);
+            pv.custoCentsNat = Math.max(0, pv.custoCentsNat - custoBaixaCents);
             pv.lots.forEach(function (l) { l.cotas = l.cotas * factor; });
             pv.pm = pv.cotas > 0 ? pv.custoCentsNat / (pv.cotas * 100) : pv.pm;
           }

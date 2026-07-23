@@ -135,3 +135,20 @@ test('fx USD: caixa de venda dolarizada é convertido a BRL', () => {
   // realizado 10*(120-100)=US$200 → R$ 1000,00 = 100.000 ¢
   assert.equal(st.realizadoCents['2025'].ganhoCents, 100000);
 });
+
+test('venda PARCIAL: balanço e realizado batem centavo a centavo (achado 4)', () => {
+  // PM ponderado fracionário para estressar arredondamento: 3 cotas a 10,333 = custo 30,999
+  const MOVS = [
+    { id: 'a', type: 'compra', tk: 'XPTO3', cotas: 3, preco: 10.333, date: '2025-01-01' },
+    { id: 'b', type: 'venda',  tk: 'XPTO3', cotas: 1, preco: 20.00,   date: '2025-02-01' },
+  ];
+  const custoAntes = M.positionCents(3, 10.333);            // custo total em centavos (3100)
+  const produto = M.positionCents(1, 20.00);               // produto da venda (2000)
+  const st = Movs.deriveState(MOVS);
+  const p = st.posByTk.XPTO3;
+  const realizado = st.realizadoCents['2025'].ganhoCents;
+  // INVARIANTE do achado 4: o custo RETIRADO do balanço == a base usada no realizado
+  // (custoBaixaCents), sem divergência de 1¢. custo baixado = custoAntes − custoRestante = produto − realizado.
+  assert.equal(custoAntes - p.custoCentsNat, produto - realizado);
+  assert.equal(p.cotas, 2);
+});
