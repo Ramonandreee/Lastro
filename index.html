@@ -1446,16 +1446,21 @@ table.tbl th {
   font-size: 11px; font-weight: 700;
   letter-spacing: .03em; text-transform: uppercase;
   color: var(--ink-3);
-  padding: 0 16px 13px;
+  padding: 0 16px 12px;
   white-space: nowrap;
-  cursor: pointer;
+  cursor: default;
   user-select: none;
   vertical-align: middle;
+  border-bottom: 1px solid var(--line);
+  transition: color .14s var(--ease);
 }
 table.tbl th:not(:first-child) { text-align: right; }
 table.tbl th.cell-left { text-align: left !important; }
-table.tbl th .sort-i { font-size: 9px; margin-left: 4px; opacity: .4; }
-table.tbl th.sorted .sort-i { opacity: 1; color: var(--brand); }
+/* cabeçalhos ordenáveis: afordância de clique + coluna ativa em destaque */
+table.tbl th.th-sort { cursor: pointer; }
+table.tbl th.th-sort:hover { color: var(--ink); }
+table.tbl th.sorted { color: var(--brand); }
+table.tbl th .sort-i { font-size: 8.5px; margin-left: 5px; color: var(--brand); vertical-align: 1px; }
 table.tbl td {
   padding: 15px 16px;
   border-top: 1px solid var(--line);
@@ -1466,8 +1471,10 @@ table.tbl td {
 table.tbl td:not(:first-child) { text-align: right; }
 table.tbl td.cell-left { text-align: left !important; }
 table.tbl tbody tr:first-child td { border-top: none; }
-table.tbl tbody tr { transition: background .14s var(--ease); cursor: pointer; }
+table.tbl tbody tr { transition: background .14s var(--ease); cursor: pointer; -webkit-tap-highlight-color: transparent; }
 table.tbl tbody tr:hover { background: var(--surface-2); }
+table.tbl tbody tr:active { background: var(--surface-3); }
+table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { background: transparent; }
 .td-asset { display: flex; align-items: center; gap: 12px; }
 .asset-ic {
   width: 34px; height: 34px; border-radius: 9px;
@@ -1545,7 +1552,8 @@ table.tbl tbody tr:hover { background: var(--surface-2); }
   padding: 0 15px;
   transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
 }
-.search-inp:focus-within { border-color: var(--line-2); box-shadow: none; }
+.search-inp:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-l); }
+.search-inp:focus-within i { color: var(--brand); }
 .search-inp input { flex: 1; min-width: 0; font-size: 14px; background: transparent; color: var(--ink); }
 .search-inp input::placeholder { color: var(--ink-4); }
 .search-inp i { color: var(--ink-4); font-size: 13px; }
@@ -6155,9 +6163,9 @@ const ASSET_CFG = {
     cols:[
       {h:'Segmento', f:a=>`<td class="cell-left"><span class="seg seg-${a.seg}">${a.seg}</span></td>`},
       {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
-      {h:'Score', f:scoreCell},
-      {h:'DY 12M', f:a=>`<td class="mono up">${pc(a.dy,1)}%</td>`},
-      {h:'P/VP', f:a=>`<td class="mono ${a.pvp<1?'up':''}">${pc(a.pvp)}</td>`},
+      {h:'Score', f:scoreCell, s:'score'},
+      {h:'DY 12M', f:a=>`<td class="mono up">${pc(a.dy,1)}%</td>`, s:'dy'},
+      {h:'P/VP', f:a=>`<td class="mono ${a.pvp<1?'up':''}">${pc(a.pvp)}</td>`, s:'pvp'},
       {h:'Div/cota', f:a=>`<td class="mono up">${brl(a.div)}</td>`},
       {h:'Vacância', f:a=>`<td class="mono ${a.vac<5?'':'down'}">${pc(a.vac,1)}%</td>`},
     ],
@@ -6170,11 +6178,11 @@ const ASSET_CFG = {
     cols:[
       {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
       {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
-      {h:'Score', f:scoreCell},
-      {h:'P/L', f:a=>`<td class="mono ${a.pl<10?'up':''}">${pc(a.pl,1)}x</td>`},
+      {h:'Score', f:scoreCell, s:'score'},
+      {h:'P/L', f:a=>`<td class="mono ${a.pl<10?'up':''}">${pc(a.pl,1)}x</td>`, s:'pl'},
       {h:'P/VP', f:a=>`<td class="mono">${pc(a.pvp,1)}x</td>`},
-      {h:'DY', f:a=>`<td class="mono ${a.dy>5?'up':''}">${pc(a.dy,1)}%</td>`},
-      {h:'ROE', f:a=>`<td class="mono">${pc(a.roe,1)}%</td>`},
+      {h:'DY', f:a=>`<td class="mono ${a.dy>5?'up':''}">${pc(a.dy,1)}%</td>`, s:'dy'},
+      {h:'ROE', f:a=>`<td class="mono">${pc(a.roe,1)}%</td>`, s:'roe'},
     ],
     ai:'Ex: PETR4 ou BBAS3 para dividendos em 2026?',
   },
@@ -6184,9 +6192,9 @@ const ASSET_CFG = {
     sorts:[['var','Maior alta'],['px','Maior cotação'],['dy','Maior DY']],
     cols:[
       {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
-      {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`, s:'px'},
       {h:'Paridade', f:a=>`<td class="mono muted">${a.par}</td>`},
-      {h:'DY', f:a=>`<td class="mono ${a.dy>0?'up':'muted'}">${pc(a.dy,1)}%</td>`},
+      {h:'DY', f:a=>`<td class="mono ${a.dy>0?'up':'muted'}">${pc(a.dy,1)}%</td>`, s:'dy'},
     ],
     ai:'Ex: vale a pena BDR de NVIDIA (NVDC34) ou comprar via stock?',
   },
@@ -6196,7 +6204,7 @@ const ASSET_CFG = {
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
       {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
-      {h:'Cotação', f:a=>`<td class="mono">${a.px>0?brl(a.px):'—'}</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${a.px>0?brl(a.px):'—'}</td>`, s:'px'},
       {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat||'—'}</td>`},
       {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx||'—'}</td>`},
     ],
@@ -6208,7 +6216,7 @@ const ASSET_CFG = {
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
       {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
-      {h:'Cotação', f:a=>`<td class="mono">${a.px>0?usd(a.px):'—'}</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${a.px>0?usd(a.px):'—'}</td>`, s:'px'},
       {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat||'—'}</td>`},
       {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx||'—'}</td>`},
     ],
@@ -6220,10 +6228,10 @@ const ASSET_CFG = {
     sorts:[['var','Maior alta'],['px','Maior cotação'],['dy','Maior DY']],
     cols:[
       {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
-      {h:'Cotação', f:a=>`<td class="mono">${a.px>0?usd(a.px):'—'}</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${a.px>0?usd(a.px):'—'}</td>`, s:'px'},
       {h:'Valor mercado', f:a=>`<td class="mono muted">${a.mkt?('$'+a.mkt):'—'}</td>`},
       {h:'P/L', f:a=>`<td class="mono ${a.pe<30?'up':''}">${typeof a.pe==='number'?pc(a.pe,1)+'x':'—'}</td>`},
-      {h:'DY', f:a=>`<td class="mono ${a.dy>0?'up':'muted'}">${typeof a.dy==='number'?pc(a.dy,1)+'%':'—'}</td>`},
+      {h:'DY', f:a=>`<td class="mono ${a.dy>0?'up':'muted'}">${typeof a.dy==='number'?pc(a.dy,1)+'%':'—'}</td>`, s:'dy'},
     ],
     ai:'Ex: NVDA está cara pelo P/L atual? Compare com AMD.',
   },
@@ -6231,7 +6239,7 @@ const ASSET_CFG = {
     data:()=>CRIPTO, icon:'fa-bitcoin', label:'Criptomoedas', unit:'criptoativos', score:false, brand:true,
     segs:[], sorts:[['v24','Variação 24h'],['px','Maior cotação']],
     cols:[
-      {h:'Cotação', f:a=>`<td class="mono">${a.px>=100?brl(Math.round(a.px)):brl(a.px)}</td>`},
+      {h:'Cotação', f:a=>`<td class="mono">${a.px>=100?brl(Math.round(a.px)):brl(a.px)}</td>`, s:'px'},
       {h:'Valor mercado', f:a=>`<td class="mono muted">${a.mkt}</td>`},
       {h:'7 dias', f:a=>`<td class="mono ${a.v7>=0?'up':'down'}">${a.v7>=0?'+':''}${pc(a.v7,1)}%</td>`},
     ],
@@ -6515,8 +6523,17 @@ function renderAssets(kind){
 
   // alinhamento do cabeçalho segue o da coluna (corrige Setor/Segmento desalinhados)
   const sample = pageData[0];
-  const thCls = c => (sample && /class="[^"]*cell-left/.test(c.f(sample))) ? ' class="cell-left"' : '';
-  const thead = `<tr><th class="cell-left">Ativo</th>${cfg.cols.map(c=>`<th${thCls(c)}>${c.h}</th>`).join('')}<th>Var. ${cfg.customVar==='v24'?'24h':'hoje'}</th></tr>`;
+  const leftCol = c => !!(sample && /class="[^"]*cell-left/.test(c.f(sample)));
+  // cabeçalhos clicáveis: ordena pela coluna quando o campo está na lista de ordenações
+  const sortable = new Set(cfg.sorts.map(s=>s[0]));
+  const th = (label,left,field)=>{
+    const on = field && st.sort===field, clk = field && sortable.has(field);
+    const cls = [left?'cell-left':'', on?'sorted':'', clk?'th-sort':''].filter(Boolean).join(' ');
+    const arrow = on ? `<i class="sort-i fa-solid fa-arrow-${st.dir>0?'up':'down'}"></i>` : '';
+    return `<th${cls?` class="${cls}"`:''}${clk?` onclick="tblSort('${kind}','${field}')"`:''}>${label}${arrow}</th>`;
+  };
+  const vf = cfg.customVar || 'var';
+  const thead = `<tr>${th('Ativo',true,null)}${cfg.cols.map(c=>th(c.h,leftCol(c),c.s)).join('')}${th('Var. '+(cfg.customVar==='v24'?'24h':'hoje'),false,vf)}</tr>`;
   const rows = pageData.map(a=>{
     const vfield = cfg.customVar || 'var';
     const vv = a[vfield];
@@ -6566,6 +6583,16 @@ function tblFilter(kind, key, val){
   if(key==='sort'){ tableState[kind].sort=val; tableState[kind].dir = (val==='pvp'||val==='pl')?1:-1; }
   else tableState[kind][key]=val;
   tableState[kind].page=1;   // filtro/busca volta para a 1ª página
+  renderAssets(kind);
+}
+/* clique no cabeçalho da coluna: ordena por ela; reclique inverte a direção */
+function tblSort(kind, field){
+  const st=tableState[kind];
+  if(st.sort===field){ st.dir=-st.dir; }
+  else { st.sort=field; st.dir=(field==='pvp'||field==='pl')?1:-1; }
+  st.page=1;
+  const sel=document.querySelector('.sel-ordenar select');   // mantém o seletor "Ordenar" em sincronia
+  if(sel && [...sel.options].some(o=>o.value===field)) sel.value=field;
   renderAssets(kind);
 }
 
