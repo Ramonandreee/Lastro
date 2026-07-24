@@ -8984,6 +8984,27 @@ function portfolioPeriodVar(days){
     valCents += M.toCents(gv); baseCents += M.toCents(gb); });
   return { val: M.fromCents(valCents), pct: baseCents? M.pctCents(valCents, baseCents) : 0, base: M.fromCents(baseCents) };
 }
+/* LUCRO APORTE-NEUTRO acumulado do período ATÉ um dia (para o tooltip do gráfico bater com o chip):
+   mesma base do portfolioPeriodVar (fechamento no início do período, ou preço de compra p/ lote
+   comprado dentro do período), mas valorizado no FECHAMENTO do dia `asOfStr` (ou cotação atual, se
+   for hoje). Só conta lotes que já existiam em asOf. No último ponto (hoje) = exatamente o chip. */
+function periodProfitAsOf(days, asOfStr, isToday){
+  const M=window.LastroMoney;
+  const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[];
+  const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const st=new Date(t0.getTime()-(days||7)*86400000); const p2=n=>String(n).padStart(2,'0');
+  const stStr=`${st.getFullYear()}-${p2(st.getMonth()+1)}-${p2(st.getDate())}`;
+  let valCents=0, baseCents=0;
+  groups.forEach(g=>{ const a=g.f.a; const live=!!(a.live&&a.px>0); const rate=(g.cur==='usd')?usdBrlRate():1;
+    let gv=0, gb=0;
+    g.lots.forEach(l=>{ const ld=String(l.date||'').slice(0,10);
+      if(ld>asOfStr) return;                                  // lote ainda não existia nesse dia
+      let b; if(ld>stStr) b=l.pm; else { const c=closeOn(l.tk, stStr); b=(c!=null)?c:l.pm; }
+      let px; if(isToday){ if(!live) return; px=a.px; } else { const c=closeOn(l.tk, asOfStr); if(c==null) return; px=c; }
+      gv += l.cotas*(px-b)*rate; gb += l.cotas*b*rate; });
+    valCents += M.toCents(gv); baseCents += M.toCents(gb); });
+  return { pct: baseCents? M.pctCents(valCents, baseCents) : 0, val: M.fromCents(valCents) };
+}
 /* KPI do chip/rodapé do card de patrimônio para o PERÍODO selecionado: resultado real (R$ e %),
    sinal e RÓTULO honesto. Se você ainda não investiu o período inteiro, o rótulo mostra
    "desde {1ª aplicação}" em vez de mentir "3 meses" — assim o número e o texto BATEM. */
@@ -9049,11 +9070,11 @@ function wealthSeries(period){
   const usdRate=(typeof usdBrlRate==='function')?usdBrlRate():1;
   const isDemo=(typeof demoMode!=='undefined'&&demoMode)||(typeof testModeOn==='function'&&testModeOn());
   // ── Reconstrução dia a dia: SÓ pontos reais entram (dias sem cobertura são pulados) ──
-  const labels=[], cart=[]; let usedSnap=false, usedRecon=false; const persist=[];
+  const labels=[], cart=[], dates=[]; let usedSnap=false, usedRecon=false; const persist=[];
   for(const i of idxs){
     const d=new Date(f0.getTime()+i*86400000); const ds=key(d); const isToday=(ds===todayK);
     // fonte 1 — SNAPSHOT real observado (prioridade; é o valor que o app viu naquele dia)
-    if(!isToday && phMap[ds]!=null){ labels.push(fmtLbl(d)); cart.push(phMap[ds]); usedSnap=true; continue; }
+    if(!isToday && phMap[ds]!=null){ labels.push(fmtLbl(d)); cart.push(phMap[ds]); dates.push(ds); usedSnap=true; continue; }
     // fonte 2 — reconstrução por FECHAMENTOS reais; em CENTAVOS (arredonda 1x por posição, soma inteira)
     let valCents=0, hasLot=false, allReal=true, hasCash=false;
     const stDay = useMovs ? movsState(ds) : null;   // posições LÍQUIDAS de venda + caixa naquele dia
@@ -9081,15 +9102,15 @@ function wealthSeries(period){
     if(!allReal || (!hasLot && !hasCash)) continue;   // sem cobertura real de posição, e sem caixa → descartado (nunca plota custo/pm)
     let v=M.fromCents(valCents);
     if(isToday && atual!=null) v=atual;   // último ponto = patrimônio atual REAL
-    labels.push(fmtLbl(d)); cart.push(v);
+    labels.push(fmtLbl(d)); cart.push(v); dates.push(ds);
     if(!isToday){ usedRecon=true; persist.push({d:ds, v:Math.round(v)}); }
   }
   // garante que o ÚLTIMO ponto seja HOJE (patrimônio atual real), sem duplicar
-  if(atual!=null){ if(labels.length && labels[labels.length-1]===fmtLbl(t0)) cart[cart.length-1]=atual;
-    else { labels.push(fmtLbl(t0)); cart.push(atual); } }
+  if(atual!=null){ if(labels.length && labels[labels.length-1]===fmtLbl(t0)){ cart[cart.length-1]=atual; if(dates.length) dates[dates.length-1]=todayK; }
+    else { labels.push(fmtLbl(t0)); cart.push(atual); dates.push(todayK); } }
   // sem par de dias reais (ex.: carteira criada hoje) → 1 ponto honesto; o card mostra "sem histórico ainda"
   if(cart.length<2){
-    if(atual!=null) return { labels:[fmtLbl(t0)], cart:[atual], cost:[], real:true, recon:false, days:1, single:true, period, startLabel:fmtLbl(t0) };
+    if(atual!=null) return { labels:[fmtLbl(t0)], cart:[atual], cost:[], dates:[todayK], real:true, recon:false, days:1, single:true, period, startLabel:fmtLbl(t0) };
     return null;
   }
   // persiste no patHist os dias RECONSTRUÍDOS totalmente reais ainda não gravados → render instantâneo
@@ -9099,7 +9120,7 @@ function wealthSeries(period){
     persist.forEach(pp=>{ if(!map.has(pp.d)){ map.set(pp.d,pp.v); changed=true; } });
     if(changed) patHistSave([...map.entries()].map(([dd,v])=>({d:dd,v})).sort((a,b)=>a.d<b.d?-1:1));
   }
-  return { labels, cart, cost:[], real:true, recon:usedRecon, snap:usedSnap, days:cart.length, spanDays:totalDays-1, period, startLabel:labels[0]||'' };
+  return { labels, cart, cost:[], dates, real:true, recon:usedRecon, snap:usedSnap, days:cart.length, spanDays:totalDays-1, period, startLabel:labels[0]||'' };
 }
 /* troca o período do gráfico de patrimônio: memoriza na sessão, destaca o botão e
    redesenha com a animação suave do Chart.js. Janela sem histórico não gera erro. */
@@ -9118,9 +9139,15 @@ function initWealthSpark(){
   const d=wealthSeries(); if(!d||!d.cart||d.cart.length<2) return;
   if(charts.wspark) charts.wspark.destroy();
   const pts=d.cart, lbs=d.labels;
-  // % de cada ponto = RETORNO NO PERÍODO (variação do patrimônio sobre o 1º ponto real da janela) —
-  // o padrão dos apps de investimento; bate com o chip (mesma série d).
-  const base0=pts[0]||0; const pcts=pts.map(v=> base0>0? (v-base0)/base0*100 : 0);
+  // % de cada ponto = LUCRO APORTE-NEUTRO acumulado até aquele dia (não a variação do patrimônio, que
+  // somaria aportes). Mesma base do chip → no último ponto bate EXATAMENTE com o chip. Fallback: se
+  // faltar a data crua do ponto, usa a variação do patrimônio sobre o 1º ponto (comportamento antigo).
+  const _pp2=n=>String(n).padStart(2,'0'); const _tt=new Date(); const _todayK=`${_tt.getFullYear()}-${_pp2(_tt.getMonth()+1)}-${_pp2(_tt.getDate())}`;
+  const PDAYS={'7D':7,'30D':30,'3M':91,'6M':182,'1A':365,'MAX':1000000};
+  const _days=PDAYS[d.period]||7; const _dts=d.dates||[]; const base0=pts[0]||0;
+  const pcts=pts.map((v,i)=>{ const ds=_dts[i];
+    if(ds && typeof periodProfitAsOf==='function'){ return periodProfitAsOf(_days, ds, ds===_todayK).pct; }
+    return base0>0? (v-base0)/base0*100 : 0; });
   // mantém a linha na METADE SUPERIOR do card; abaixo dela fica só a sombra degradê
   // (a faixa dos textos Investido/DY/Renda). min/max do eixo empurram a série p/ cima.
   const mn=Math.min(...pts), mx=Math.max(...pts); let rng=mx-mn; if(rng<=0) rng=Math.max(1, Math.abs(mx)*0.008);
