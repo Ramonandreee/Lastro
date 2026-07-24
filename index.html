@@ -8776,7 +8776,8 @@ function renderHomeDashboard(p){
   // Variação do dia SÓ com cotação REAL (a.live). Sem pregão/sem cotação ao vivo, fica 0 —
   // não fabrica "hoje" a partir do valor curado (evita mostrar variação com o mercado fechado).
   const _dv=portfolioDayVar(); const dayVal=_dv.val, dayP=_dv.pct;   // variação de mercado do dia (Performance Diária)
-  const _wk=portfolioWeekVar();   // resultado dos últimos 7 dias (coluna "Resultado semanal")
+  const _wk=portfolioWeekVar();   // resultado dos últimos 7 dias (compat)
+  const _pr=wealthPeriodKPI(homeWealthPeriod);   // resultado REAL do período do gráfico (chip + rodapé)
   // alocação por classe
   const CLS={acoes:['Ações','#0B2E5E'],fiis:['FIIs','#3F79D6'],etfs:['ETFs','#B8860B'],etfsint:['ETFs int.','#2f6f9e'],bdrs:['BDRs','#8b5cf6'],stocks:['Stocks','#0ea5e9'],cripto:['Cripto','#f59e0b']};
   const alloc={}; (p._byT||[]).forEach(g=>{ const lk=assetLookup(g.tk); const k=(lk&&lk.k)||'acoes'; alloc[k]=(alloc[k]||0)+g.val; });
@@ -8821,7 +8822,7 @@ function renderHomeDashboard(p){
       </div>
       <div class="whero-val priv-blur">${fmtHomeCur(p.atual)}</div>
       <div class="whero-chips">
-        <span id="wHeroChip" class="whero-chip priv-blur ${p.lucroProv>=0?'up':'down'}"><i class="fa-solid fa-arrow-${p.lucroProv>=0?'up':'down'}"></i> ${p.lucroProv>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucroProv))} · ${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,2)}% hoje</span>
+        <span id="wHeroChip" class="whero-chip priv-blur ${_pr.up?'up':'down'}"><i class="fa-solid fa-arrow-${_pr.up?'up':'down'}"></i> ${_pr.up?'+':'−'}${fmtHomeCur(Math.abs(_pr.val))} · ${_pr.up?'+':'−'}${Math.abs(_pr.pct).toFixed(2).replace('.',',')}% · ${_pr.label}</span>
       </div>
       <div class="whero-periods" id="wPeriods" role="tablist" aria-label="Período do gráfico de patrimônio">
         ${WEALTH_PERIODS.map(pp=>`<button class="wper${pp===homeWealthPeriod?' active':''}" role="tab" aria-selected="${pp===homeWealthPeriod?'true':'false'}" onclick="setWealthPeriod('${pp}',this)">${pp}</button>`).join('')}
@@ -8830,7 +8831,7 @@ function renderHomeDashboard(p){
         <canvas id="wSpark" role="img" aria-label="Evolução do patrimônio no período selecionado"></canvas>
         <div class="whero-foot">
           <div><span>Investido</span><b class="priv-blur">${fmtHomeCur(p.invest)}</b></div>
-          <div><span id="wFootResLbl">Resultado</span><b id="wFootResVal" class="priv-blur" style="color:${_wk.val>=0?'var(--up)':'var(--down)'}">${_wk.val>=0?'+':'−'}${fmtHomeCur(Math.abs(_wk.val))}</b></div>
+          <div><span id="wFootResLbl">Resultado</span><b id="wFootResVal" class="priv-blur" style="color:${_pr.up?'var(--up)':'var(--down)'}">${_pr.up?'+':'−'}${fmtHomeCur(Math.abs(_pr.val))}</b></div>
           <div><span>Renda/mês</span><b class="priv-blur">${fmtHomeCur(p.renda)}</b></div>
         </div>
       </div>
@@ -8960,6 +8961,51 @@ function portfolioWeekVar(){
       gv += l.cotas*(a.px-b)*rate; gb += l.cotas*b*rate; });
     valCents += M.toCents(gv); baseCents += M.toCents(gb); });
   return { val: M.fromCents(valCents), pct: baseCents? M.pctCents(valCents, baseCents) : 0, base: M.fromCents(baseCents) };
+}
+/* RESULTADO REAL de um PERÍODO qualquer (7/30/91/182/365 dias, ou MAX). Mesmo método do
+   portfolioWeekVar, generalizado: por lote, base = FECHAMENTO real no início do período; se o
+   lote foi comprado DENTRO do período, base = preço de compra (aporte NÃO é lucro). Só entra
+   posição com cotação REAL ao vivo. Em centavos (sem drift). MAX ⇒ base = preço de compra de tudo
+   ⇒ resultado desde a 1ª aplicação. Aporte no meio do período nunca vira "lucro". */
+function portfolioPeriodVar(days){
+  const M=window.LastroMoney;
+  const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[];
+  const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const st=new Date(t0.getTime()-(days||7)*86400000); const p2=n=>String(n).padStart(2,'0');
+  const stStr=`${st.getFullYear()}-${p2(st.getMonth()+1)}-${p2(st.getDate())}`;
+  let valCents=0, baseCents=0;
+  groups.forEach(g=>{ const a=g.f.a; if(!(a.live && a.px>0)) return; const rate=(g.cur==='usd')?usdBrlRate():1;
+    let gv=0, gb=0;
+    g.lots.forEach(l=>{ const ld=String(l.date||'').slice(0,10);
+      let b;
+      if(ld>stStr) b=l.pm;                                   // comprado dentro do período → base = compra (aporte não é lucro)
+      else { const c=closeOn(l.tk, stStr); b=(c!=null)?c:l.pm; }   // senão, fechamento no início do período (ou custo, se faltar)
+      gv += l.cotas*(a.px-b)*rate; gb += l.cotas*b*rate; });
+    valCents += M.toCents(gv); baseCents += M.toCents(gb); });
+  return { val: M.fromCents(valCents), pct: baseCents? M.pctCents(valCents, baseCents) : 0, base: M.fromCents(baseCents) };
+}
+/* KPI do chip/rodapé do card de patrimônio para o PERÍODO selecionado: resultado real (R$ e %),
+   sinal e RÓTULO honesto. Se você ainda não investiu o período inteiro, o rótulo mostra
+   "desde {1ª aplicação}" em vez de mentir "3 meses" — assim o número e o texto BATEM. */
+function wealthPeriodKPI(period){
+  period = WEALTH_PERIODS.includes(period) ? period : (WEALTH_PERIODS.includes(homeWealthPeriod)?homeWealthPeriod:'7D');
+  const PDAYS={'7D':7,'30D':30,'3M':91,'6M':182,'1A':365,'MAX':1000000};
+  const PLBL={'7D':'7 dias','30D':'30 dias','3M':'3 meses','6M':'6 meses','1A':'1 ano','MAX':'máximo'};
+  const days=PDAYS[period]||7;
+  const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[];
+  let first=null;   // 1ª aplicação (menor data de lote) → tempo realmente investido
+  groups.forEach(g=>(g.lots||[]).forEach(l=>{ const d=l.date?new Date(l.date+'T00:00:00'):null; if(d&&!isNaN(d)){ const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate()); if(!first||dd<first) first=dd; } }));
+  const invDays = first? Math.round((t0-first)/86400000) : 0;
+  const pv=portfolioPeriodVar(days);
+  let val, pct, ok=false;
+  if(pv && Math.abs(pv.base)>0){ val=pv.val; pct=pv.pct; ok=true; }
+  else { const p=(typeof portfolioStats==='function')?portfolioStats():null; val=p?p.lucroProv:0; pct=p?p.lucroProvP:0; }   // sem cotação ao vivo: cai no resultado total
+  let label;
+  if(period==='MAX') label='máximo';
+  else if(first && invDays < days-1) label='desde '+first.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});   // ainda não completou o período
+  else label=PLBL[period];
+  return { val, pct, up: val>=0, label, ok, invDays };
 }
 /* série da evolução do patrimônio — 100% REAL, sem estimativa. Cada ponto = patrimônio no
    FECHAMENTO daquele dia, reconstruído por MARK-TO-MARKET das posições mantidas em D
@@ -9112,20 +9158,17 @@ function initWealthSpark(){
    chip de variação (R$ e %) no topo e a célula "Resultado" do rodapé. Variação = último ponto
    da série menos o primeiro (retorno no período), na moeda base. */
 function updateWealthKPIs(d){
-  if(!d||!Array.isArray(d.cart)||d.cart.length<2) return;
-  // variação do PATRIMÔNIO na janela = último ponto − primeiro ponto da MESMA série desenhada.
-  // Em CENTAVOS (bate exatamente com os extremos da curva; sem drift de ponto flutuante).
-  const M=window.LastroMoney;
-  const fc=M.toCents(d.cart[0]), lc=M.toCents(d.cart[d.cart.length-1]);
-  const absC=lc-fc; const abs=M.fromCents(absC); const pct=fc? M.pctCents(absC, fc) : 0; const up=absC>=0;
-  const PLBL={'7D':'7 dias','30D':'30 dias','3M':'3 meses','6M':'6 meses','1A':'1 ano','MAX':'máximo'};
-  const perTxt=(d.period&&PLBL[d.period])||'período';
-  const money=(typeof fmtHomeCur==='function')?fmtHomeCur(Math.abs(abs)):Math.round(Math.abs(abs));
-  const pctTxt=`${up?'+':'−'}${Math.abs(pct).toFixed(2).replace('.',',')}%`;
+  // Resultado REAL do período (aporte-neutro; NÃO usa o Δ patrimônio da curva, que somaria aportes
+  // como se fossem lucro). Rótulo honesto ("desde {1ª aplicação}" quando ainda não completou o
+  // período). Chip, rodapé e o 1º paint (SSR) usam o MESMO wealthPeriodKPI → tudo bate.
+  const period=(d&&d.period)||homeWealthPeriod;
+  const k=wealthPeriodKPI(period); const up=k.up;
+  const money=(typeof fmtHomeCur==='function')?fmtHomeCur(Math.abs(k.val)):Math.round(Math.abs(k.val));
+  const pctTxt=`${up?'+':'−'}${Math.abs(k.pct).toFixed(2).replace('.',',')}%`;
   const chip=document.getElementById('wHeroChip');
   if(chip){ chip.className='whero-chip priv-blur '+(up?'up':'down');
-    chip.innerHTML=`<i class="fa-solid fa-arrow-${up?'up':'down'}"></i> ${up?'+':'−'}${money} · ${pctTxt} · ${perTxt}`; }
-  const lbl=document.getElementById('wFootResLbl'); if(lbl) lbl.textContent='Resultado '+(d.period||'');
+    chip.innerHTML=`<i class="fa-solid fa-arrow-${up?'up':'down'}"></i> ${up?'+':'−'}${money} · ${pctTxt} · ${k.label}`; }
+  const lbl=document.getElementById('wFootResLbl'); if(lbl) lbl.textContent='Resultado';
   const val=document.getElementById('wFootResVal'); if(val){ val.style.color=up?'var(--up)':'var(--down)'; val.textContent=`${up?'+':'−'}${money}`; }
 }
 function initHomeEvol(){
