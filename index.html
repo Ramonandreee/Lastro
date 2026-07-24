@@ -3491,36 +3491,69 @@ body.pdf-lock { overflow:hidden; }
   .acct-wrap { display:none !important; }                 /* ícone de perfil sai no mobile — conta/tema vivem na aba "Mais" */
   .content { padding-bottom:calc(92px + env(safe-area-inset-bottom,0px)) !important; }  /* conteúdo não fica atrás da barra flutuante */
 }
-/* Hub Mercado */
-.mkt-sec-t { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin:20px 2px 10px; }
+/* ════════ Hub Mercado (vitrine de análise) ════════ */
+.mkt-sec-t { display:flex; align-items:baseline; gap:8px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin:22px 2px 11px; }
 .mkt-sec-t:first-child { margin-top:2px; }
-.mkt-recent { display:flex; gap:9px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
-.mkt-recent::-webkit-scrollbar { display:none; }
-.mrec { flex:none; display:flex; flex-direction:column; align-items:center; gap:5px; width:76px; padding:12px 6px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); cursor:pointer; }
-.mrec .logo { width:34px; height:34px; }
-.mrec-tk { font-family:var(--mono); font-size:12px; font-weight:600; color:var(--ink); }
-.mrec-v { font-size:11px; font-weight:600; }
+.mkt-sec-t .mkt-sec-hint { margin-left:auto; font-size:11px; font-weight:600; letter-spacing:0; text-transform:none; color:var(--ink-4); }
+
+/* Busca de ativos — gancho de descoberta no topo */
+.mkt-search { display:flex; align-items:center; gap:11px; width:100%; padding:13px 16px; margin:2px 0 4px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; color:var(--ink-3); transition:border-color .18s var(--ease), box-shadow .18s var(--ease), transform .12s var(--ease); }
+.mkt-search:hover { border-color:var(--line-2); box-shadow:var(--sh); }
+.mkt-search:active { transform:scale(.99); }
+.mkt-search > i { font-size:15px; color:var(--brand); }
+.mkt-search span { flex:1; min-width:0; font-size:14.5px; font-weight:500; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mkt-search .mkt-search-cta { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--brand); background:var(--brand-l); padding:5px 9px; border-radius:999px; }
+
+/* Pulso do mercado — fita compacta de contexto */
+.mkt-pulse { display:grid; grid-template-columns:repeat(3,1fr); background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); overflow:hidden; }
+.mp-cell { position:relative; padding:13px 15px; text-align:left; background:transparent; border:0; }
+.mp-cell + .mp-cell::before { content:''; position:absolute; left:0; top:22%; bottom:22%; width:1px; background:var(--line); }
+button.mp-cell { cursor:pointer; font-family:inherit; transition:background .15s var(--ease); }
+button.mp-cell:active { background:var(--surface-3); }
+.mp-l { font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-4); margin-bottom:6px; }
+.mp-v { font-size:16.5px; font-weight:700; color:var(--ink); letter-spacing:-.01em; line-height:1.05; }
+.mp-d { display:inline-flex; align-items:center; gap:3px; font-size:11.5px; font-weight:700; margin-top:4px; }
+.mp-d.up { color:var(--up); } .mp-d.down { color:var(--down); } .mp-d.faint { color:var(--ink-4); }
+
+/* Explorar por classe — grade de cards com profundidade */
 .mkt-classes { display:grid; grid-template-columns:repeat(2,1fr); gap:11px; }
-.mkt-class { display:flex; flex-direction:column; align-items:flex-start; gap:7px; padding:15px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; }
-.mkt-class:active { transform:scale(.98); }
-.mc-ic { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px; background:var(--brand-l); color:var(--brand); }
-.mc-nm { font-size:15px; font-weight:600; color:var(--ink); }
+.mkt-class { position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:11px; padding:15px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; overflow:hidden; transition:border-color .18s var(--ease), box-shadow .18s var(--ease), transform .12s var(--ease); }
+.mkt-class:hover { border-color:var(--line-2); box-shadow:var(--sh); }
+.mkt-class:active { transform:scale(.975); }
+.mc-ic { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:17px; background:var(--brand-l); color:var(--brand); transition:transform .2s var(--ease-out); }
+.mkt-class:hover .mc-ic { transform:scale(1.06) rotate(-2deg); }
+.mc-tx { display:flex; flex-direction:column; gap:2px; }
+.mc-nm { font-size:15px; font-weight:600; color:var(--ink); letter-spacing:-.01em; }
 .mc-n { font-size:12px; color:var(--ink-3); }
-.mkt-pulse { display:grid; grid-template-columns:repeat(3,1fr); gap:11px; }
-.mp-cell { padding:14px 14px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); text-align:left; }
-button.mp-cell { cursor:pointer; font-family:inherit; }
-.mp-l { font-size:11px; color:var(--ink-3); margin-bottom:5px; }
-.mp-v { font-size:16px; font-weight:700; color:var(--ink); letter-spacing:-.01em; }
-.mp-d { font-size:11.5px; font-weight:600; margin-top:3px; }
-.mkt-shortcuts { display:flex; flex-direction:column; gap:10px; }
-.mkt-short { display:flex; align-items:center; gap:13px; padding:14px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; }
+.mc-n b { font-weight:700; color:var(--ink-2); font-variant-numeric:tabular-nums; }
+.mc-go { position:absolute; top:15px; right:14px; font-size:11px; color:var(--ink-4); opacity:0; transform:translateX(-3px); transition:opacity .18s var(--ease), transform .18s var(--ease); }
+.mkt-class:hover .mc-go { opacity:1; transform:translateX(0); }
+
+/* Vistos recentemente — carrossel de mini-cards */
+.mkt-recent { display:flex; gap:10px; overflow-x:auto; padding:2px 2px 6px; margin:0 -2px; -webkit-overflow-scrolling:touch; scrollbar-width:none; scroll-snap-type:x proximity; }
+.mkt-recent::-webkit-scrollbar { display:none; }
+.mrec { flex:none; scroll-snap-align:start; display:flex; flex-direction:column; align-items:center; gap:6px; width:78px; padding:13px 6px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); cursor:pointer; transition:border-color .18s var(--ease), box-shadow .18s var(--ease), transform .12s var(--ease); }
+.mrec:hover { border-color:var(--line-2); box-shadow:var(--sh); }
+.mrec:active { transform:scale(.96); }
+.mrec .logo { width:36px; height:36px; }
+.mrec-tk { font-family:var(--mono); font-size:12px; font-weight:600; color:var(--ink); }
+.mrec-v { display:inline-flex; align-items:center; gap:2px; font-size:11px; font-weight:700; }
+.mrec-v.up { color:var(--up); } .mrec-v.down { color:var(--down); }
+
+/* Descobrir — atalhos e hero do Score */
+.mkt-shortcuts { display:flex; flex-direction:column; gap:11px; }
+.mkt-short { display:flex; align-items:center; gap:13px; padding:15px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; transition:border-color .18s var(--ease), box-shadow .18s var(--ease), transform .12s var(--ease); }
+.mkt-short:hover { border-color:var(--line-2); box-shadow:var(--sh); }
 .mkt-short:active { transform:scale(.99); }
-.ms-ic { width:40px; height:40px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px; background:var(--brand-l); color:var(--brand); }
+.mkt-short.hero { background:linear-gradient(135deg, var(--gold-l) 0%, var(--surface) 62%); border-color:var(--gold-l); }
+.ms-ic { width:42px; height:42px; flex:none; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:17px; background:var(--brand-l); color:var(--brand); }
+.mkt-short.hero .ms-ic { background:var(--gold-l); color:var(--gold); }
 .ms-tx { flex:1; display:flex; flex-direction:column; gap:2px; }
-.ms-tx b { font-size:14.5px; font-weight:600; color:var(--ink); }
-.ms-tx small { font-size:12px; color:var(--ink-3); }
+.ms-tx b { font-size:15px; font-weight:600; color:var(--ink); letter-spacing:-.01em; }
+.ms-tx small { font-size:12px; color:var(--ink-3); line-height:1.35; }
+.ms-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--gold); background:var(--gold-l); padding:3px 8px; border-radius:999px; margin-left:8px; }
 .ms-cv { color:var(--ink-4); font-size:13px; }
-@media (max-width:420px){ .mkt-pulse { grid-template-columns:1fr 1fr; } .mp-cell:last-child { grid-column:1 / -1; } }
+@media (max-width:420px){ .mkt-pulse { grid-template-columns:1fr 1fr; } .mp-cell:nth-child(3) { grid-column:1 / -1; border-top:1px solid var(--line); } .mp-cell:nth-child(3)::before { display:none; } }
 
 /* Tela "Mais" (menu + conta em página cheia) */
 .mais-acct { display:flex; align-items:center; gap:13px; width:100%; padding:15px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; margin-bottom:6px; }
@@ -8331,42 +8364,54 @@ function viewMercado(){
     const cfg=ASSET_CFG[c.k]; const n=(cfg&&cfg.data)?cfg.data().length:0;
     return `<button class="mkt-class" onclick="nav('${c.k}')">
       <span class="mc-ic"><i class="fa-${c.br?'brands':'solid'} ${c.ic}"></i></span>
-      <span class="mc-nm">${c.nm}</span>
-      <span class="mc-n">${n} ativo${n!==1?'s':''}</span>
+      <span class="mc-tx">
+        <span class="mc-nm">${c.nm}</span>
+        <span class="mc-n">${n?`<b data-mkt-count="${n}">0</b> ativo${n!==1?'s':''}`:'em breve'}</span>
+      </span>
+      <i class="fa-solid fa-arrow-right mc-go"></i>
     </button>`;
   };
   const cards = NAT.map(cardOf).join('');
   const cardsIntl = INTL.map(cardOf).join('');
 
-  const rec = getRecent().map(tk=>{ const l=assetLookup(tk); return l?{a:l.a,k:l.k}:null; }).filter(Boolean).slice(0,8);
+  const rec = getRecent().map(tk=>{ const l=assetLookup(tk); return l?{a:l.a,k:l.k}:null; }).filter(Boolean).slice(0,10);
   const recBlock = rec.length ? `
-    <div class="mkt-sec-t">Vistos recentemente</div>
+    <div class="mkt-sec-t">Vistos recentemente<span class="mkt-sec-hint">deslize →</span></div>
     <div class="mkt-recent">${rec.map(x=>{ const up=(x.a.var||0)>=0;
-      return `<button class="mrec" onclick="quickView('${x.a.tk}')">${assetLogo(x.a.tk,x.k,'sm')}<span class="mrec-tk">${x.a.tk}</span><span class="mrec-v ${up?'up':'down'}">${up?'+':''}${pc(x.a.var||0,1)}%</span></button>`;
+      return `<button class="mrec" onclick="quickView('${x.a.tk}')">${assetLogo(x.a.tk,x.k,'sm')}<span class="mrec-tk">${x.a.tk}</span><span class="mrec-v ${up?'up':'down'}"><i class="fa-solid fa-caret-${up?'up':'down'}"></i>${pc(Math.abs(x.a.var||0),1)}%</span></button>`;
     }).join('')}</div>` : '';
 
   const ib=MARKET.find(m=>m.nm==='Ibovespa')||MARKET[0], dol=MARKET.find(m=>m.nm==='Dólar');
   const liq=(typeof ACOES!=='undefined'?ACOES:[]).filter(a=>a.px>0 && typeof a.var==='number');
   const ups=liq.filter(a=>a.var>0).length, downs=liq.filter(a=>a.var<0).length;
   const sgn = s => { const t=(s||'').trim(); return /^[-−]/.test(t)?'down':(/^\+/.test(t)?'up':'faint'); };
+  const caret = cls => cls==='up'?'<i class="fa-solid fa-caret-up"></i>':cls==='down'?'<i class="fa-solid fa-caret-down"></i>':'';
   const pulse = `<div class="mkt-pulse">
-    <div class="mp-cell"><div class="mp-l">Ibovespa</div><div class="mp-v">${ib.vl}</div><div class="mp-d ${sgn(ib.dl)}">${ib.dl}</div></div>
-    <div class="mp-cell"><div class="mp-l">Dólar</div><div class="mp-v">R$ ${dol?dol.vl:'—'}</div><div class="mp-d ${dol?sgn(dol.dl):'faint'}">${dol?dol.dl:''}</div></div>
-    <button class="mp-cell" onclick="goView('painel')"><div class="mp-l">No dia</div><div class="mp-v"><span class="up">${ups}</span> · <span class="down">${downs}</span></div><div class="mp-d faint">altas · baixas</div></button>
+    <div class="mp-cell"><div class="mp-l">Ibovespa</div><div class="mp-v">${ib.vl}</div><div class="mp-d ${sgn(ib.dl)}">${caret(sgn(ib.dl))}${(ib.dl||'').replace(/^[+−-]\s*/,'')}</div></div>
+    <div class="mp-cell"><div class="mp-l">Dólar</div><div class="mp-v">R$ ${dol?dol.vl:'—'}</div><div class="mp-d ${dol?sgn(dol.dl):'faint'}">${dol?caret(sgn(dol.dl))+(dol.dl||'').replace(/^[+−-]\s*/,''):'—'}</div></div>
+    <button class="mp-cell" onclick="goView('painel')"><div class="mp-l">No dia</div><div class="mp-v"><span style="color:var(--up)">${ups}</span> <span style="color:var(--ink-4);font-weight:500">·</span> <span style="color:var(--down)">${downs}</span></div><div class="mp-d faint">altas · baixas</div></button>
   </div>`;
 
+  const search = `<button class="mkt-search" onclick="openSearch()">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span>Buscar ação, FII, cripto…</span>
+    <span class="mkt-search-cta"><i class="fa-solid fa-bolt"></i> Rápido</span>
+  </button>`;
+
   return `
+  ${search}
+  <div class="mkt-sec-t">Pulso do mercado</div>
+  ${pulse}
   ${recBlock}
   <div class="mkt-sec-t">Explorar por classe</div>
   <div class="mkt-classes">${cards}</div>
   <div class="mkt-sec-t">Internacional</div>
   <div class="mkt-classes">${cardsIntl}</div>
-  <div class="mkt-sec-t">Pulso do mercado</div>
-  ${pulse}
   <div class="mkt-sec-t">Descobrir</div>
   <div class="mkt-shortcuts">
-    <button class="mkt-short" onclick="nav('score')"><span class="ms-ic" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></span><span class="ms-tx"><b>Score Lastro</b><small>Ranking de qualidade dos ativos</small></span><i class="fa-solid fa-chevron-right ms-cv"></i></button>
+    <button class="mkt-short hero" onclick="nav('score')"><span class="ms-ic"><i class="fa-solid fa-award"></i></span><span class="ms-tx"><b>Score Lastro™<span class="ms-badge"><i class="fa-solid fa-crown"></i> Elite</span></b><small>Ranking de qualidade dos ativos, de 0 a 100</small></span><i class="fa-solid fa-chevron-right ms-cv"></i></button>
     <button class="mkt-short" onclick="nav('agenda')"><span class="ms-ic"><i class="fa-solid fa-calendar-day"></i></span><span class="ms-tx"><b>Agenda de Dividendos</b><small>Calendário de proventos do mercado</small></span><i class="fa-solid fa-chevron-right ms-cv"></i></button>
+    <button class="mkt-short" onclick="nav('noticias')"><span class="ms-ic"><i class="fa-solid fa-newspaper"></i></span><span class="ms-tx"><b>Notícias do mercado</b><small>Curadoria de renda variável em tempo real</small></span><i class="fa-solid fa-chevron-right ms-cv"></i></button>
   </div>`;
 }
 
@@ -8504,6 +8549,19 @@ function afterRender(v, soft){
   if(v==='recdetail'){ initRecCharts(); }
   if(v==='asset'){ initDetailCharts(); animateGauges(); animateCounts(); }
   if(v==='admin'){ initAdminCharts(); }
+  if(v==='mercado'){ initMktHub(); }
+}
+
+/* Hub Mercado — contagem progressiva discreta dos ativos por classe */
+function initMktHub(){
+  const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  document.querySelectorAll('.mc-n b[data-mkt-count]').forEach((el,i)=>{
+    const target=parseInt(el.dataset.mktCount,10); if(!isFinite(target)) return;
+    if(reduce){ el.textContent=target; return; }
+    const dur=680, start=performance.now()+Math.min(i*60,320);
+    (function tick(now){ const t=Math.max(0,Math.min((now-start)/dur,1)); const e=1-Math.pow(1-t,3); el.textContent=Math.round(target*e); if(t<1) requestAnimationFrame(tick); })(performance.now());
+    el.textContent='0';
+  });
 }
 function initPlanCarousel(){
   const car=$('#planCarousel'), dots=$('#planDots'); if(!car) return;
