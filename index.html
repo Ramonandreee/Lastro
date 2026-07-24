@@ -8558,9 +8558,9 @@ function initMktHub(){
   document.querySelectorAll('.mc-n b[data-mkt-count]').forEach((el,i)=>{
     const target=parseInt(el.dataset.mktCount,10); if(!isFinite(target)) return;
     if(reduce){ el.textContent=target; return; }
+    el.textContent='0';
     const dur=680, start=performance.now()+Math.min(i*60,320);
     (function tick(now){ const t=Math.max(0,Math.min((now-start)/dur,1)); const e=1-Math.pow(1-t,3); el.textContent=Math.round(target*e); if(t<1) requestAnimationFrame(tick); })(performance.now());
-    el.textContent='0';
   });
 }
 function initPlanCarousel(){
