@@ -3465,29 +3465,31 @@ body.pdf-lock { overflow:hidden; }
 .tabbar { display:none; }
 @media (max-width:760px){
   .tabbar {
-    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:60;
-    height:calc(56px + env(safe-area-inset-bottom,0px));
-    padding-bottom:env(safe-area-inset-bottom,0px);
-    background:var(--surface); border-top:1px solid var(--line);
-    box-shadow:0 -2px 12px rgba(15,20,25,.05);
+    display:flex; align-items:center; position:fixed; left:14px; right:14px; z-index:60;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+    height:62px; padding:0 8px;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:34px;                                  /* cápsula arredondada (estilo Instagram) */
+    box-shadow:0 8px 28px rgba(15,20,25,.14), 0 2px 8px rgba(15,20,25,.06);
   }
-  [data-theme="dark"] .tabbar { box-shadow:0 -2px 12px rgba(0,0,0,.3); }
+  [data-theme="dark"] .tabbar { border-color:rgba(255,255,255,.09); box-shadow:0 8px 30px rgba(0,0,0,.5); }
   .tab-item {
     flex:1 1 20%; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:3px; min-height:44px; padding:7px 0 6px; color:var(--ink-2); background:none; border:none;
+    gap:3px; height:100%; padding:0; color:var(--ink-3); background:none; border:none;
     cursor:pointer; position:relative; font-family:var(--sans); -webkit-tap-highlight-color:transparent;
-    transition:transform .1s var(--ease);
+    transition:transform .12s var(--ease), color .16s var(--ease);
   }
-  .tab-item .tab-pill { position:absolute; top:5px; left:50%; transform:translateX(-50%); width:44px; height:26px; border-radius:13px; background:var(--brand-l); opacity:0; transition:opacity .16s var(--ease); }
-  .tab-item i { font-size:19px; line-height:1; position:relative; z-index:1; }
-  .tab-item .tab-lbl { font-size:11px; font-weight:500; letter-spacing:-.01em; position:relative; z-index:1; }
+  /* realce arredondado atrás do ícone da aba ativa (a "bolha" do Instagram) */
+  .tab-item .tab-pill { position:absolute; top:9px; left:50%; transform:translateX(-50%) scale(.7); width:52px; height:30px; border-radius:16px; background:var(--brand-l); opacity:0; transition:opacity .18s var(--ease), transform .2s var(--ease); }
+  .tab-item i { font-size:20px; line-height:1; position:relative; z-index:1; transition:transform .2s var(--ease); }
+  .tab-item .tab-lbl { font-size:10.5px; font-weight:500; letter-spacing:-.01em; position:relative; z-index:1; }
   .tab-item.active { color:var(--brand); }
   .tab-item.active .tab-lbl { font-weight:600; }
-  .tab-item.active .tab-pill { opacity:1; }
-  .tab-item:active { transform:scale(.93); }
+  .tab-item.active .tab-pill { opacity:1; transform:translateX(-50%) scale(1); }
+  .tab-item:active { transform:scale(.9); }
   .menu-btn { display:none !important; }                 /* hambúrguer sai no mobile — aba "Mais" abre o menu */
   .acct-wrap { display:none !important; }                 /* ícone de perfil sai no mobile — conta/tema vivem na aba "Mais" */
-  .content { padding-bottom:calc(78px + env(safe-area-inset-bottom,0px)) !important; }  /* conteúdo não fica atrás da barra */
+  .content { padding-bottom:calc(92px + env(safe-area-inset-bottom,0px)) !important; }  /* conteúdo não fica atrás da barra flutuante */
 }
 /* Hub Mercado */
 .mkt-sec-t { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin:20px 2px 10px; }
