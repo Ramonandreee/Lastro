@@ -1458,7 +1458,7 @@ table.tbl th:not(:first-child) { text-align: right; }
 table.tbl th.cell-left { text-align: left !important; }
 /* cabeçalhos ordenáveis: afordância de clique + coluna ativa em destaque */
 table.tbl th.th-sort { cursor: pointer; }
-table.tbl th.th-sort:hover { color: var(--ink); }
+table.tbl th.th-sort:not(.sorted):hover { color: var(--ink); }
 table.tbl th.sorted { color: var(--brand); }
 table.tbl th .sort-i { font-size: 8.5px; margin-left: 5px; color: var(--brand); vertical-align: 1px; }
 table.tbl td {
