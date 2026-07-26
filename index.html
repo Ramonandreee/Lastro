@@ -3214,8 +3214,9 @@ body.report-open { overflow:hidden; }
 #assetBody { animation:viewIn .3s var(--ease-out); }
 .prov-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
 .prov-tbl td, .prov-tbl th { padding-top:12px; padding-bottom:12px; }
-.illus-note { display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--ink-4); margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
-.illus-note i { color:var(--ink-4); }
+.illus-note { display:flex; align-items:flex-start; gap:8px; font-size:11.5px; line-height:1.55; color:var(--ink-4); margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+.illus-note i { color:var(--ink-4); margin-top:3px; flex:none; }
+.illus-note strong { color:var(--ink-2); font-weight:600; }
 /* Documentos (CVM) */
 .doc-list { display:flex; flex-direction:column; }
 .doc-item { display:flex; align-items:center; gap:13px; padding:13px 4px; border-bottom:1px solid var(--line); text-decoration:none; color:inherit; transition:background .15s var(--ease); }
@@ -3677,6 +3678,131 @@ button.mp-cell:active { background:var(--surface-3); }
   .lot-line { gap:10px; font-size:12px; flex-wrap:wrap; }
   .lot-line .lot-dt { flex:1 1 100%; }
 }
+/* ════════ AGENDA DE DIVIDENDOS ════════ */
+.ag-kpis { margin: 4px 0 14px; }
+.ag-grid { display: grid; grid-template-columns: 1fr; gap: 13px; }
+.ag-card { padding-top: 15px; }
+.ag-card .card-head { margin-bottom: 10px; }
+.ag-card .timeline { margin: 0 -6px; }
+.ag-card .tl-item { cursor: pointer; }
+.ag-card .tl-item:active { background: var(--surface-3); }
+.ag-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: .02em; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+.ag-tag i { font-size: 9px; }
+.ag-tag-real { color: var(--up); background: var(--up-l); }
+.ag-tag-est { color: var(--gold); background: var(--gold-l); }
+.ag-mo { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-4); padding: 12px 10px 4px; }
+.ag-mo:first-child { padding-top: 2px; }
+.ag-date-est { border-right-style: dashed; }
+.ag-date-est .d { color: var(--ink-2); }
+.ag-sub { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-4); font-family: inherit; margin-top: 2px; }
+.ag-bars { display: flex; flex-direction: column; gap: 7px; margin: 2px 0 14px; }
+.ag-bar { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 10px; }
+.ag-bm { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-4); }
+.ag-bt { height: 7px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+.ag-bt i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, color-mix(in srgb, var(--up) 62%, transparent), var(--up)); }
+.ag-bv { font-size: 12px; font-weight: 600; color: var(--ink-2); min-width: 74px; text-align: right; }
+.ag-mlist { display: flex; flex-direction: column; }
+.ag-mrow { display: grid; grid-template-columns: 32px 1fr auto auto; align-items: center; gap: 12px; padding: 11px 6px; border-bottom: 1px solid var(--line); border-radius: var(--r-sm); cursor: pointer; transition: background .15s var(--ease); }
+.ag-mrow:last-child { border-bottom: none; }
+.ag-mrow:hover { background: var(--surface-2); }
+.ag-mrow:active { background: var(--surface-3); }
+.ag-mid { min-width: 0; }
+.ag-mid .tk { font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.ag-mid .ds { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ag-mdt, .ag-mvl { text-align: right; }
+.ag-mdt .v { font-family: var(--mono); font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.ag-mdt .v.up { color: var(--up); }
+.ag-mvl { min-width: 74px; }
+.ag-mvl .v { font-size: 13px; font-weight: 600; color: var(--ink); }
+.ag-card .empty-state { padding: 28px 14px 22px; }
+.ag-skel { display: flex; flex-direction: column; gap: 14px; padding: 6px 0 2px; }
+.ag-skel-row { display: flex; align-items: center; gap: 14px; }
+@media (min-width: 1000px) {
+  .ag-grid { grid-template-columns: 1fr 1fr; align-items: start; }
+  .ag-wide { grid-column: 1 / -1; }
+}
+
+/* ════════ SCORE LASTRO ════════ */
+.sc-seg { display: inline-flex; gap: 3px; padding: 3px; margin: 2px 0 16px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; }
+.sc-seg button { padding: 7px 16px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-3); font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .18s var(--ease), color .18s var(--ease); }
+.sc-seg button.on { background: var(--surface); color: var(--brand); box-shadow: var(--sh-sm); }
+.sc-seg button:active { transform: scale(.97); }
+.sc-lead { display: flex; align-items: baseline; gap: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin: 0 2px 11px; }
+.sc-lead i { color: var(--gold); font-size: 11px; }
+.sc-lead span { margin-left: auto; font-size: 11px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-4); }
+.sc-podium { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; }
+.sc-card { cursor: pointer; position: relative; overflow: hidden; transition: border-color .2s var(--ease), box-shadow .2s var(--ease), transform .14s var(--ease); }
+.sc-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--sc); opacity: .75; }
+.sc-card:hover { border-color: var(--line-2); box-shadow: var(--sh); }
+.sc-card:active { transform: scale(.99); }
+.sc-card .gauge { width: 100px; height: 100px; }
+.sc-card .gauge-break { min-width: 0; }
+.sc-card .gb-top { gap: 10px; font-size: 11.5px; }
+.sc-card .gauge-num { font-size: 28px; }
+.sc-card .gauge-lbl { font-size: 8px; letter-spacing: .04em; }
+.sc-card .gb-top > .muted { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-card .gb-top .v { flex: none; }
+.sc-card-id { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+.sc-card-nm { min-width: 0; flex: 1; }
+.sc-card-nm .tk { font-family: var(--mono); font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.sc-card-nm .ds { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gb-w { font-size: 10px; font-weight: 600; color: var(--ink-4); margin-left: 5px; }
+.gb-bar-na { background: repeating-linear-gradient(90deg, var(--surface-3) 0 6px, transparent 6px 10px); }
+.sc-dist { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-bottom: 16px; }
+.sc-d { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--sh-sm); padding: 12px 13px; }
+.sc-d-top { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--ink-3); }
+.sc-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.sc-d-n { font-family: var(--mono); font-size: 21px; font-weight: 700; line-height: 1.2; margin-top: 4px; }
+.sc-d-b { height: 4px; border-radius: 3px; background: var(--surface-3); overflow: hidden; margin-top: 6px; }
+.sc-d-b i { display: block; height: 100%; border-radius: 3px; }
+.sc-d-f { font-size: 10.5px; color: var(--ink-4); margin-top: 6px; font-family: var(--mono); }
+.sc-list { display: flex; flex-direction: column; }
+.sc-row { display: grid; grid-template-columns: 26px 32px 1fr 110px auto; align-items: center; gap: 12px; padding: 11px 8px; border-radius: var(--r-sm); border-bottom: 1px solid var(--line); cursor: pointer; transition: background .15s var(--ease); }
+.sc-row:last-child { border-bottom: none; }
+.sc-row:hover { background: var(--surface-2); }
+.sc-row:active { background: var(--surface-3); }
+.sc-rk { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ink-4); text-align: center; }
+.sc-rk.sc-top1, .sc-rk.sc-top2, .sc-rk.sc-top3 { width: 22px; height: 22px; line-height: 22px; margin: 0 auto; border-radius: 50%; color: var(--gold); background: var(--gold-l); font-weight: 700; }
+.sc-rk.sc-top2 { color: var(--ink-2); background: var(--surface-3); }
+.sc-rk.sc-top3 { color: var(--ink-3); background: var(--surface-3); }
+.sc-id { min-width: 0; }
+.sc-id .tk { font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 7px; }
+.sc-id .ds { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-kind { font-size: 9.5px; padding: 1px 7px; }
+.sc-meter { height: 6px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+.sc-meter i { display: block; height: 100%; border-radius: 4px; }
+.sc-val { display: flex; align-items: center; justify-content: flex-end; gap: 9px; }
+.sc-num { font-family: var(--mono); font-size: 16px; font-weight: 700; min-width: 26px; text-align: right; }
+@media (min-width: 1000px) { .sc-podium { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 720px) {
+  .sc-dist { grid-template-columns: repeat(2, 1fr); }
+  .sc-row { grid-template-columns: 22px 30px 1fr auto; gap: 10px; }
+  .sc-meter { display: none; }
+  .sc-tier { display: none; }
+  .sc-seg { display: flex; width: 100%; }
+  .sc-seg button { flex: 1; }
+}
+
+/* ════════ NOTÍCIAS ════════ */
+.nw-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+.nw-h-tx { min-width: 0; }
+.nw-status { display: inline-flex; flex: none; }   /* status do feed é informação honesta (Demonstração/offline): fica visível também no mobile */
+.nw-alta-sub { font-size: 11.5px; color: var(--ink-4); margin: 0 0 12px; line-height: 1.4; }
+.nw-feed-h { display: flex; align-items: baseline; gap: 8px; padding-bottom: 11px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.nw-feed-t { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); }
+.nw-feed-s { margin-left: auto; font-size: 11px; color: var(--ink-4); }
+/* manchete: o primeiro item do feed ganha peso editorial */
+.news-feed .news-item:first-child { padding: 18px 12px 20px; margin: 6px 0 4px; border-bottom: none; background: linear-gradient(160deg, var(--brand-l) 0%, transparent 78%); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.news-feed .news-item:first-child .news-title { font-size: 19px; font-weight: 600; line-height: 1.32; letter-spacing: -.02em; }
+.news-feed .news-item:first-child .news-meta { margin-bottom: 9px; }
+.news-feed .news-item:first-child .news-src { color: var(--ink); font-weight: 600; }
+@media (hover:hover) { .news-feed .news-item:first-child:hover { border-color: var(--line-2); background: linear-gradient(160deg, var(--brand-l) 0%, var(--surface-2) 82%); padding-left: 12px; padding-right: 12px; } }
+.news-feed .news-item + .news-item { padding-left: 2px; padding-right: 2px; }
+@media (max-width: 620px) {
+  .nw-head { flex-direction: column; align-items: flex-start; gap: 9px; }
+  .news-feed .news-item:first-child .news-title { font-size: 17px; }
+}
+
 /* ── Touch (sem mouse): nunca deixar o estado de hover "grudado" ao tocar ou rolar a tela ── */
 @media (hover: none) {
   /* sombra/brilho de hover: seguro zerar em tudo (não afeta layout) */
@@ -3690,12 +3816,12 @@ button.mp-cell:active { background:var(--surface-3); }
   .icon-btn:hover, .search-trigger:hover, .hdr-crown:hover, .insight-send:hover,
   .nav-social a:hover, .brand .brand-home:hover, .dt-back:hover,
   table.tbl tbody tr:hover .logo, .sr:hover .logo,
-  .mv-row:hover, .sr:hover, .rank-row:hover { transform: none !important; }
+  .mv-row:hover, .sr:hover, .rank-row:hover, .sc-card:hover { transform: none !important; }
   .nav-item:hover { background: transparent !important; color: var(--ink-2) !important; }
   .nav-item:hover i { color: var(--ink-2) !important; }
   .nav-ghead:hover { background: transparent !important; }
   table.tbl tbody tr:hover, table.tbl tbody tr:hover td:first-child,
-  .sr:hover, .mv-row:hover, .rank-row:hover { background: transparent !important; }
+  .sr:hover, .mv-row:hover, .rank-row:hover, .sc-row:hover, .ag-card .tl-item:hover { background: transparent !important; }
   .nav-social a:hover, .brand .brand-home:hover { background: var(--surface-3) !important; color: var(--ink-3) !important; }
   .brand .brand-home.active { background: var(--brand-l) !important; color: var(--brand) !important; }
 }
@@ -7945,13 +8071,35 @@ function runDarf(){
 /* ══════════════════════════════════════════════════════════
    VIEW: SCORE LASTRO
    ══════════════════════════════════════════════════════════ */
+let scoreFilter='todos';   // todos | fiis | acoes — destaques e ranking SEMPRE do mesmo universo
+function setScoreFilter(f){ scoreFilter=f; render('score'); }
+/* universo avaliado — mesma regra para os destaques do topo e para o ranking */
+function scoreRanked(){
+  const all=[...FIIS.map(a=>({a,k:'fiis'})), ...ACOES.map(a=>({a,k:'acoes'}))].filter(o=>typeof o.a.score==='number');
+  const f = scoreFilter==='fiis' ? all.filter(o=>o.k==='fiis')
+          : scoreFilter==='acoes'? all.filter(o=>o.k==='acoes') : all;
+  return f.sort((x,y)=>y.a.score-x.a.score);
+}
+/* pilares do Score, espelhando scoreOf() — rótulo do 3º pilar muda conforme o dado disponível */
+function scorePillars(a){
+  const dy=typeof a.dy==='number'?a.dy:null, pvp=typeof a.pvp==='number'?a.pvp:null;
+  const roe=typeof a.roe==='number'?a.roe:null, liq=typeof a.liq==='number'?a.liq:null;
+  const rows=[
+    ['Dividendos (DY)','35%', dy!=null? Math.min(dy/15,1)*100 : null],
+    ['Valuation (P/VP)','30%', pvp!=null? (pvp<=1?1:Math.max(0,1.6-pvp)/0.6)*100 : null],
+    roe!=null ? ['Rentabilidade (ROE)','20%', Math.min(Math.max(roe,0)/25,1)*100]
+              : ['Liquidez','20%', liq!=null? Math.min(liq/50,1)*100 : null],
+    ['Consistência','15%', typeof a.consist==='number'? a.consist*100 : null],
+  ];
+  return rows;
+}
 function viewScore(){
-  const top = [...FIIS].sort((a,b)=>b.score-a.score).slice(0,3);
-  const cards = top.map((a,i)=>{
-    const c = scoreColor(a.score);
-    const circ = 2*Math.PI*52;
-    const off = circ - (a.score/100)*circ;
-    return `<div class="card card-pad gauge-card">
+  const ranked = scoreRanked();
+  const pro = isPro();
+  const top = ranked.slice(0,3);
+  const cards = top.map(o=>{
+    const a=o.a, c=scoreColor(a.score), circ=2*Math.PI*52, off=circ-(a.score/100)*circ;
+    return `<div class="card card-pad gauge-card sc-card" onclick="quickView('${a.tk}')" style="--sc:${c}">
       <div class="gauge">
         <svg width="132" height="132" viewBox="0 0 132 132">
           <circle cx="66" cy="66" r="52" fill="none" stroke="var(--surface-3)" stroke-width="11"/>
@@ -7960,48 +8108,56 @@ function viewScore(){
         <div class="gauge-center"><div class="gauge-num" style="color:${c}">${a.score}</div><div class="gauge-lbl">${scoreTier(a.score)}</div></div>
       </div>
       <div class="gauge-break">
-        <div style="margin-bottom:4px"><span class="mono" style="font-weight:600;font-size:15px">${a.tk}</span> <span class="faint" style="font-size:12px">· ${a.nm}</span></div>
-        ${gbRow('DY sustentável', Math.min(a.dy/15,1)*100)}
-        ${gbRow('Valuation (P/VP)', (a.pvp<=1?1:Math.max(0,1.6-a.pvp)/0.6)*100)}
-        ${gbRow('Liquidez', Math.min(a.liq/50,1)*100)}
-        ${gbRow('Consistência histórica', (typeof a.consist==='number'?a.consist:0.7)*100)}
+        <div class="sc-card-id">${assetLogo(a.tk,o.k,'sm')}<div class="sc-card-nm"><div class="tk">${a.tk}</div><div class="ds">${esc(a.nm||'')}</div></div><span class="chip ${o.k==='fiis'?'chip-blue':'chip-neu'}">${o.k==='fiis'?'FII':'Ação'}</span></div>
+        ${scorePillars(a).map(p=>gbRow(p[0],p[2],p[1])).join('')}
       </div>
     </div>`;
   }).join('');
 
-  const ranked = [...FIIS,...ACOES].filter(a=>typeof a.score==='number').sort((a,b)=>b.score-a.score);
-  const pro = isPro();
+  // distribuição real do universo avaliado (nada estimado — contagem direta)
+  const tiers=[['Excelente','80+',s=>s>=80,'var(--brand)'],['Sólido','65–79',s=>s>=65&&s<80,'var(--accent)'],['Razoável','50–64',s=>s>=50&&s<65,'var(--gold)'],['Atenção','< 50',s=>s<50,'var(--down)']];
+  const dist = `<div class="sc-dist">${tiers.map(([nm,fx,test,col])=>{
+    const n=ranked.filter(o=>test(o.a.score)).length;
+    const p=ranked.length? n/ranked.length*100 : 0;
+    return `<div class="sc-d"><div class="sc-d-top"><span class="sc-dot" style="background:${col}"></span>${nm}</div><div class="sc-d-n" style="color:${col}">${n}</div><div class="sc-d-b"><i style="width:${p.toFixed(0)}%;background:${col}"></i></div><div class="sc-d-f">${fx}</div></div>`;
+  }).join('')}</div>`;
+
   const visible = pro ? ranked : ranked.slice(0,8);
-  const rows = visible.map((a,i)=>{
-    const c = scoreColor(a.score);
-    const isF = FIIS.includes(a);
-    return `<tr onclick="quickView('${a.tk}')">
-      <td><span class="rank-n" style="font-size:13px">${i+1}</span></td>
-      <td class="cell-left"><div class="td-asset">${assetLogo(a.tk,isF?'fiis':'acoes','sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div></div></div></td>
-      <td><span class="chip ${isF?'chip-blue':'chip-neu'}">${isF?'FII':'Ação'}</span></td>
-      <td><div class="rank-bar" style="width:120px;display:inline-block"><i style="width:${a.score}%;background:${c}"></i></div></td>
-      <td><span class="score-pill" style="color:${c};justify-content:flex-end"><span class="score-dot" style="background:${c}"></span>${a.score}</span></td>
-      <td><span class="chip ${scoreChip(a.score)}">${scoreTier(a.score)}</span></td>
-    </tr>`;
+  const rows = visible.map((o,i)=>{
+    const a=o.a, c=scoreColor(a.score), medal = i<3 ? ` sc-top${i+1}` : '';
+    return `<div class="sc-row" onclick="quickView('${a.tk}')">
+      <span class="sc-rk${medal}">${i+1}</span>
+      ${assetLogo(a.tk,o.k,'sm')}
+      <div class="sc-id"><div class="tk">${a.tk} <span class="chip ${o.k==='fiis'?'chip-blue':'chip-neu'} sc-kind">${o.k==='fiis'?'FII':'Ação'}</span></div><div class="ds">${esc(a.nm||'')}</div></div>
+      <div class="sc-meter"><i style="width:${a.score}%;background:${c}"></i></div>
+      <div class="sc-val"><span class="sc-num" style="color:${c}">${a.score}</span><span class="chip ${scoreChip(a.score)} sc-tier">${scoreTier(a.score)}</span></div>
+    </div>`;
   }).join('');
 
+  const segs=[['todos','Todos'],['fiis','FIIs'],['acoes','Ações']];
   return `
   <div class="sec-title">${termLabel('scoreLastro','Score Lastro™')}</div>
-  <div class="sec-desc">Um índice proprietário de 0 a 100 que mede a qualidade de cada ativo combinando quatro pilares: sustentabilidade do dividendo (35%), valuation P/VP (30%), liquidez (20%) e consistência histórica (15%). Transparente e auditável.</div>
+  <div class="sec-desc">Índice proprietário de 0 a 100 que mede a qualidade de cada ativo em quatro pilares: sustentabilidade do dividendo (35%), valuation P/VP (30%), rentabilidade/liquidez (20%) e consistência histórica (15%). Transparente e auditável — o mesmo cálculo para <strong>ações e FIIs</strong>.</div>
 
-  <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">${cards}</div>
+  <div class="sc-seg">${segs.map(([v,l])=>`<button class="${scoreFilter===v?'on':''}" onclick="setScoreFilter('${v}')">${l}</button>`).join('')}</div>
 
-  <div class="card card-pad">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-ranking-star"></i></span> Ranking geral de qualidade</div>${pro?'':'<span class="card-sub">Top 8 no Premium</span>'}</div>
-    <div class="tbl-wrap"><table class="tbl tbl-rank">
-      <thead><tr><th>#</th><th>Ativo</th><th>Tipo</th><th>Distribuição</th><th>Score</th><th>Classificação</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>
-    ${pro?'':`<div style="margin-top:18px">${paywall('Ranking completo é Premium','Veja o Score e o ranking de todos os '+ranked.length+' ativos avaliados, com breakdown dos 4 pilares.')}</div>`}
+  <div class="sc-lead"><i class="fa-solid fa-crown"></i> Destaques do ranking${scoreFilter==='fiis'?' · FIIs':scoreFilter==='acoes'?' · Ações':''}<span>${ranked.length} ativos avaliados</span></div>
+  <div class="sc-podium">${cards||`<div class="card card-pad" style="grid-column:1/-1">${emptyState('fa-award','Sem ativos avaliados','Nenhum ativo desta classe tem dados suficientes para o Score agora.')}</div>`}</div>
+
+  ${ranked.length?dist:''}
+
+  <div class="card card-pad sc-rank-card">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-ranking-star"></i></span> Ranking de qualidade</div>${pro?`<span class="card-sub">${ranked.length} ativos</span>`:'<span class="card-sub">Top 8 · completo no Premium</span>'}</div>
+    <div class="sc-list">${rows||emptyState('fa-award','Nada para ranquear','Escolha outra classe de ativos acima.')}</div>
+    ${pro?'':`<div style="margin-top:18px">${paywall('Ranking completo é Premium','Veja o Score e o ranking de todos os '+ranked.length+' ativos avaliados, com o detalhe dos 4 pilares.')}</div>`}
   </div>`;
 }
-function gbRow(label, pct){
-  return `<div class="gb-row"><div class="gb-top"><span class="muted">${label}</span><span class="v" style="color:${scoreColor(pct)}">${Math.round(pct)}</span></div><div class="gb-bar"><i style="width:0%;background:${scoreColor(pct)}" data-w="${Math.round(pct)}%"></i></div></div>`;
+/* linha de pilar do Score — pct null = sem dado (não inventa barra) */
+function gbRow(label, pct, weight){
+  const w = weight?`<span class="gb-w">${weight}</span>`:'';
+  if(pct==null || !isFinite(pct)) return `<div class="gb-row"><div class="gb-top"><span class="muted">${label}${w}</span><span class="v faint">sem dado</span></div><div class="gb-bar gb-bar-na"></div></div>`;
+  const v=Math.round(pct);
+  return `<div class="gb-row"><div class="gb-top"><span class="muted">${label}${w}</span><span class="v" style="color:${scoreColor(pct)}">${v}</span></div><div class="gb-bar"><i style="width:0%;background:${scoreColor(pct)}" data-w="${v}%"></i></div></div>`;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -8093,44 +8249,203 @@ function initComparador(){
 
 /* ══════════════════════════════════════════════════════════
    VIEW: AGENDA DE DIVIDENDOS
+   ──────────────────────────────────────────────────────────
+   REGRA DESTA TELA: nenhuma data é inventada. Todo dia/mês exibido vem do
+   histórico REAL de proventos do ativo (ASSET_LIVE[tk].dividends — /api/asset,
+   com data-com e data de pagamento declaradas pela empresa/fundo). O que é
+   projeção aparece SEMPRE rotulado como "estimado" e nunca com data fabricada.
    ══════════════════════════════════════════════════════════ */
+const AG_MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+let _agState={ pend:0, done:false, fail:0, tried:0 };
+
+/* ── Plugue para um CALENDÁRIO FUTURO oficial (data-com/pagamento anunciados) ──
+   Hoje a única fonte de data futura são os proventos JÁ ANUNCIADOS que a API de
+   proventos devolve com data à frente (entram como "confirmados"). Quando o
+   backend expuser um calendário oficial, basta preencher:
+       window.LASTRO_DIV_CALENDAR = [{tk, com:'YYYY-MM-DD', pay:'YYYY-MM-DD', value, tipo}]
+   (ou resolver window.loadDivCalendar() e chamar renderAgenda()) — a seção de
+   confirmados passa a consumir a fonte real sem reescrever a tela. */
+function agendaCalendar(){
+  const c=window.LASTRO_DIV_CALENDAR;
+  if(!Array.isArray(c)) return [];
+  return c.map(x=>({ tk:x.tk, pay:parseLotDate(x.pay), com:parseLotDate(x.com||x.pay), value:+x.value, tipo:x.tipo||'', src:'cal' }))
+          .filter(x=>x.tk && x.pay && isFinite(x.value) && x.value>0);
+}
+/* proventos REAIS de um ativo já carregado. null = ainda não temos o dado (≠ vazio) */
+function agendaDivs(tk){
+  const dd=(ASSET_LIVE[tk]||{}).dividends;
+  if(!Array.isArray(dd)) return null;
+  const cal=agendaCalendar().filter(x=>x.tk===tk);
+  const rows=dd.map(d=>{ const pay=parseLotDate(d.date); return { tk, pay, com:parseLotDate(d.com)||pay, value:+d.value, label:d.label||'' }; })
+    .filter(d=>d.pay && isFinite(d.value) && d.value>0);
+  cal.forEach(c=>{ if(!rows.some(r=>+r.pay===+c.pay)) rows.push({ tk, pay:c.pay, com:c.com, value:c.value, label:c.tipo }); });
+  return rows.sort((a,b)=>b.pay-a.pay);
+}
+/* pagamentos REAIS da carteira: valor por cota declarado × cotas com direito na DATA-COM real */
+function agendaMyPayments(groups){
+  const out=[];
+  (groups||portfolioByTicker()).forEach(g=>{
+    const dd=agendaDivs(g.tk); if(!dd) return;
+    const rate = g.cur==='usd' ? usdBrlRate() : 1;
+    dd.forEach(d=>{
+      let cotas=0, semData=false;
+      g.lots.forEach(l=>{ const dt=parseLotDate(l.date); if(!dt) semData=true; if(!dt || dt<=d.com) cotas+=l.cotas; });
+      if(cotas<=0) return;
+      out.push({ tk:g.tk, k:g.f.k, pay:d.pay, com:d.com, perCota:d.value, cotas, total:d.value*cotas*rate, semData });
+    });
+  });
+  return out.sort((a,b)=>b.pay-a.pay);
+}
+/* universo consultado na aba mercado (teto baixo — cada ativo é uma chamada) */
+function agendaMktTickers(){
+  const fiis=[...FIIS].filter(f=>f.px>0).sort((a,b)=>(b.liq||0)-(a.liq||0)).slice(0,6).map(f=>f.tk);
+  const acs =[...ACOES].filter(a=>a.px>0 && (a.dy||0)>0).sort((a,b)=>(b.dy||0)-(a.dy||0)).slice(0,4).map(a=>a.tk);
+  return [...fiis,...acs];
+}
+function agendaDate(d){ return `<div class="tl-date"><div class="d">${String(d.getDate()).padStart(2,'0')}</div><div class="m">${AG_MES[d.getMonth()]}</div></div>`; }
+
 function viewAgenda(){
-  // gera proventos do mercado a partir dos FIIs
-  const mkt = FIIS.filter(f=>f.div>0).map((f,i)=>({ tk:f.tk, nm:f.nm, dia:10+(i%18), valor:f.div, dy:f.dy })).sort((a,b)=>a.dia-b.dia);
-  const meus = portfolioByTicker().filter(g=>g.f.k==='fiis' && typeof g.f.a.div==='number').map((g,i)=>({ tk:g.tk, dia:[16,18,20,14,12,22][i%6], valor:g.f.a.div, cotas:g.cotas, total:g.cotas*g.f.a.div }));
-  const totalMes = meus.reduce((s,m)=>s+m.total,0);
-
-  const meusRows = meus.sort((a,b)=>a.dia-b.dia).map(m=>`
-    <div class="tl-item">
-      <div class="tl-date"><div class="d">${m.dia}</div><div class="m">jun</div></div>
-      <div class="tl-info"><div class="tk">${m.tk}</div><div class="ds">${m.cotas} cotas × ${brl(m.valor)}</div></div>
-      <div class="tl-val"><div class="v">${brl(m.total)}</div><div class="t">a receber</div></div>
-    </div>`).join('');
-
-  const mktRows = mkt.map(m=>`
-    <tr onclick="quickView('${m.tk}')">
-      <td class="cell-left"><div class="td-asset"><div class="asset-ic">${m.tk.slice(0,4)}</div><div class="nm"><div class="tk">${m.tk}</div><div class="ds">${m.nm}</div></div></div></td>
-      <td class="mono">${m.dia}/jun</td>
-      <td class="mono up">${brl(m.valor)}</td>
-      <td class="mono">${pc(m.dy,1)}%</td>
-    </tr>`).join('');
-
   return `
-  <div class="grid" style="grid-template-columns: 360px 1fr">
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-calendar-check"></i></span> Você vai receber</div><span class="chip chip-up">${brl(totalMes)}</span></div>
-      <div class="timeline">${meusRows}</div>
-      <div class="divider"></div>
-      <div style="font-size:12.5px;color:var(--ink-2);line-height:1.6"><i class="fa-solid fa-circle-info faint"></i> Em junho, seus FIIs distribuem <strong style="color:var(--ink)">${brl(totalMes)}</strong> — equivalente a ${pc(totalMes*12/portfolioStats().atual*100,1)}% a.a. sobre o patrimônio atual.</div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-calendar-day"></i></span> Calendário do mercado</div><span class="card-sub">junho 2026</span></div>
-      <div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th class="cell-left">Ativo</th><th>Data-com / pgto</th><th>Provento</th><th>DY</th></tr></thead>
-        <tbody>${mktRows}</tbody>
-      </table></div>
-    </div>
+  <div class="sec-title">Agenda de Dividendos</div>
+  <div class="sec-desc">Proventos com <strong>data real</strong> — a data-com e a data de pagamento declaradas por cada empresa e fundo. O Lastro não inventa datas: o que é projeção aparece sempre marcado como <strong>estimado</strong>.</div>
+  <div id="agBody">${agendaBodyHTML()}</div>`;
+}
+function renderAgenda(){ const el=$('#agBody'); if(el) el.innerHTML=agendaBodyHTML(); }
+function initAgenda(){
+  const want=new Set();
+  portfolioByTicker().forEach(g=>{ if(LIVE_ASSET_KINDS.has(g.f.k)) want.add(g.tk); });
+  agendaMktTickers().forEach(tk=>want.add(tk));
+  const todo=[...want].filter(tk=>!Array.isArray((ASSET_LIVE[tk]||{}).dividends));
+  _agState={ pend:todo.length, done:!todo.length, fail:0, tried:todo.length };
+  renderAgenda();
+  todo.forEach(tk=>{
+    Promise.resolve(loadAssetLive(tk)).catch(()=>null).then(d=>{
+      if(!d) _agState.fail++;
+      if(--_agState.pend<=0) _agState.done=true;
+      if(currentView==='agenda') renderAgenda();
+    });
+  });
+}
+function agendaSkeleton(n){
+  return `<div class="ag-skel">${Array.from({length:n||3}).map(()=>`<div class="ag-skel-row"><div class="skeleton" style="width:44px;height:46px;border-radius:12px"></div><div style="flex:1"><div class="skeleton skel-line sk-40"></div><div class="skeleton skel-line sk-75" style="height:9px"></div></div></div>`).join('')}</div>`;
+}
+function agendaBodyHTML(){
+  const now=new Date(), loading=!_agState.done;
+  const groups=portfolioByTicker();
+  const mine=agendaMyPayments(groups);
+  const future=mine.filter(p=>p.pay>now).sort((a,b)=>a.pay-b.pay);
+  const past=mine.filter(p=>p.pay<=now);
+  const lim12=new Date(now.getFullYear()-1, now.getMonth(), now.getDate());
+  const last12=past.filter(p=>p.pay>=lim12);
+  const total12=last12.reduce((s,p)=>s+p.total,0);
+  const futTotal=future.reduce((s,p)=>s+p.total,0);
+  const ult=past[0];
+
+  /* ── KPIs (tudo real: soma de pagamentos declarados) ── */
+  const kpis = past.length||future.length ? `
+    <div class="mkt-pulse ag-kpis">
+      <div class="mp-cell"><div class="mp-l">Recebido · 12 meses</div><div class="mp-v priv-blur">${brl(total12)}</div><div class="mp-d faint">${last12.length} pagamento${last12.length===1?'':'s'} reais</div></div>
+      <div class="mp-cell"><div class="mp-l">Último pagamento</div><div class="mp-v">${ult?`${String(ult.pay.getDate()).padStart(2,'0')} ${AG_MES[ult.pay.getMonth()]}`:'—'}</div><div class="mp-d faint">${ult?`${ult.tk} · ${brl(ult.perCota)}/cota`:'sem histórico'}</div></div>
+      <div class="mp-cell"><div class="mp-l">Confirmado a receber</div><div class="mp-v priv-blur">${future.length?brl(futTotal):'—'}</div><div class="mp-d ${future.length?'up':'faint'}">${future.length?`${future.length} provento${future.length===1?'':'s'} anunciado${future.length===1?'':'s'}`:'nada anunciado ainda'}</div></div>
+    </div>` : '';
+
+  /* ── Confirmados (data real, já anunciada) ── */
+  const confCard = future.length ? `
+    <div class="card card-pad ag-card">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-circle-check"></i></span> Confirmados</div><span class="ag-tag ag-tag-real"><i class="fa-solid fa-circle-check"></i> data real</span></div>
+      <div class="timeline">${future.map(p=>`
+        <div class="tl-item" onclick="quickView('${p.tk}')">
+          ${agendaDate(p.pay)}
+          <div class="tl-info"><div class="tk">${p.tk}</div><div class="ds">${p.cotas} cota${p.cotas===1?'':'s'} × ${brl(p.perCota)} · data-com ${fmtDateBR(_patDay(p.com))}</div></div>
+          <div class="tl-val"><div class="v priv-blur">${brl(p.total)}</div><div class="t">a receber</div></div>
+        </div>`).join('')}</div>
+    </div>` : '';
+
+  /* ── Histórico real da carteira ── */
+  let mineCard;
+  if(!groups.length){
+    mineCard = `<div class="card card-pad">${emptyState('fa-calendar-check','Sua agenda começa na carteira','Adicione FIIs ou ações pagadoras de proventos: cada pagamento aparece aqui com a data que o fundo ou a empresa realmente declarou.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Montar carteira</button>`)}</div>`;
+  } else if(!past.length){
+    mineCard = `<div class="card card-pad ag-card">
+      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-clock-rotate-left"></i></span> Sua carteira</div></div>
+      ${loading ? agendaSkeleton(3)
+        : emptyState('fa-calendar-xmark','Ainda sem proventos com data real','Não encontramos histórico oficial de pagamentos para os ativos da sua carteira (ou você comprou depois da última data-com). Assim que a fonte publicar, os pagamentos aparecem aqui — nunca estimamos a data.')}
+    </div>`;
+  } else {
+    // renda mensal REAL dos últimos 6 meses (agrupada pela data de pagamento declarada)
+    const meses=[];
+    for(let i=5;i>=0;i--){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); meses.push({ y:d.getFullYear(), m:d.getMonth(), v:0 }); }
+    past.forEach(p=>{ const b=meses.find(x=>x.y===p.pay.getFullYear() && x.m===p.pay.getMonth()); if(b) b.v+=p.total; });
+    const mx=Math.max(...meses.map(m=>m.v),0.01);
+    const bars = meses.some(m=>m.v>0) ? `<div class="ag-bars">${meses.map(m=>`
+      <div class="ag-bar"><span class="ag-bm">${AG_MES[m.m]}</span><span class="ag-bt"><i style="width:${Math.max(m.v>0?4:0,(m.v/mx)*100).toFixed(1)}%"></i></span><span class="ag-bv priv-blur mono">${m.v>0?brl(m.v):'—'}</span></div>`).join('')}</div><div class="divider"></div>` : '';
+    const list = past.slice(0,10);
+    let lastKey='';
+    const rows = list.map(p=>{
+      const key=p.pay.getFullYear()+'-'+p.pay.getMonth();
+      const head = key!==lastKey ? `<div class="ag-mo">${AG_MES[p.pay.getMonth()]} ${p.pay.getFullYear()}</div>` : '';
+      lastKey=key;
+      return head+`<div class="tl-item" onclick="quickView('${p.tk}')">
+        ${agendaDate(p.pay)}
+        <div class="tl-info"><div class="tk">${p.tk}</div><div class="ds">${p.cotas} cota${p.cotas===1?'':'s'} × ${brl(p.perCota)}</div></div>
+        <div class="tl-val"><div class="v priv-blur">${brl(p.total)}</div><div class="t">recebido</div></div>
+      </div>`;
+    }).join('');
+    const semData = past.some(p=>p.semData);
+    mineCard = `<div class="card card-pad ag-card">
+      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-clock-rotate-left"></i></span> Sua carteira</div><span class="ag-tag ag-tag-real"><i class="fa-solid fa-circle-check"></i> data real</span></div>
+      ${bars}${rows}
+      ${illusNote(`Cada linha é um pagamento realmente declarado pelo ativo: o valor por cota é o oficial e contam apenas as cotas que você já tinha na <strong>data-com</strong>.${semData?' Lotes cadastrados sem data de compra são considerados anteriores ao provento.':''}`)}
+    </div>`;
+  }
+
+  /* ── Previsão (ESTIMATIVA rotulada — nunca some com o que é real) ── */
+  // só entram ativos cujo CICLO vem do histórico real (x.real): sem histórico, sem data — nada é chutado
+  const upc = groups.length ? upcomingProventos().filter(x=>x.real) : [];
+  const prevCard = upc.length ? `
+    <div class="card card-pad ag-card">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Previsão do próximo ciclo</div><span class="ag-tag ag-tag-est"><i class="fa-solid fa-triangle-exclamation"></i> estimado</span></div>
+      <div class="timeline">${upc.map(x=>`
+        <div class="tl-item" onclick="quickView('${x.tk}')">
+          <div class="tl-date ag-date-est"><div class="d">${String(x.date.getDate()).padStart(2,'0')}</div><div class="m">${AG_MES[x.date.getMonth()]}</div></div>
+          <div class="tl-info"><div class="tk">${x.tk}</div><div class="ds">${x.tipo} · ${x.cotas} cota${x.cotas===1?'':'s'}</div></div>
+          <div class="tl-val"><div class="v priv-blur" style="color:var(--ink-2)">${brl(x.total)}</div><div class="t">estimado</div></div>
+        </div>`).join('')}</div>
+      ${illusNote('Projeção, não anúncio: repete o <strong>dia e o intervalo do último pagamento real</strong> de cada ativo, com o último provento declarado por cota. Ativos sem histórico de pagamento não aparecem aqui — não chutamos data. Enquanto a empresa ou o fundo não anunciar, trate como referência.')}
+    </div>` : '';
+
+  /* ── Mercado: últimos proventos pagos (data real) ── */
+  const mkt=[];
+  agendaMktTickers().forEach(tk=>{
+    const dd=agendaDivs(tk); if(!dd||!dd.length) return;
+    const lk=assetLookup(tk); if(!lk) return;
+    const px=lk.a.px||0;
+    const sum12=dd.filter(d=>d.pay<=now && d.pay>=lim12).reduce((s,d)=>s+d.value,0);
+    const nxt=dd.filter(d=>d.pay>now).sort((a,b)=>a.pay-b.pay)[0];
+    const ultimo=dd.find(d=>d.pay<=now);
+    if(!ultimo && !nxt) return;
+    mkt.push({ tk, k:lk.k, nm:lk.a.nm||'', ultimo, nxt, dy12: px>0&&sum12>0 ? sum12/px*100 : null });
+  });
+  mkt.sort((a,b)=> (b.nxt?1:0)-(a.nxt?1:0) || ((b.ultimo?+b.ultimo.pay:0)-(a.ultimo?+a.ultimo.pay:0)));
+  const mktRows = mkt.map(m=>{
+    const ev = m.nxt || m.ultimo;
+    return `<div class="ag-mrow" onclick="quickView('${m.tk}')">
+      ${assetLogo(m.tk,m.k,'sm')}
+      <div class="ag-mid"><div class="tk">${m.tk}</div><div class="ds">${esc(m.nm)}</div></div>
+      <div class="ag-mdt"><div class="v ${m.nxt?'up':''}">${fmtDateBR(_patDay(ev.pay))}</div><div class="ag-sub">${m.nxt?'anunciado':'último pago'}</div></div>
+      <div class="ag-mvl"><div class="v mono">${brl(ev.value)}</div><div class="ag-sub">${m.dy12!=null?'DY '+pc(m.dy12,1)+'%':'por cota'}</div></div>
+    </div>`;
+  }).join('');
+  const mktCard = `<div class="card card-pad ag-card ag-wide">
+    <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-calendar-day"></i></span> Proventos do mercado</div>${loading?'<span class="loading-chip"><span class="spin"></span> buscando</span>': mkt.length?`<span class="ag-tag ag-tag-real"><i class="fa-solid fa-circle-check"></i> data real</span>`:''}</div>
+    ${mkt.length
+      ? `<div class="ag-mlist">${mktRows}</div>
+         ${illusNote(`Datas e valores publicados pelo próprio ativo. O <strong>${termLabel('dyMed','DY 12m')}</strong> soma os proventos realmente pagos nos últimos 12 meses sobre a cotação atual. Não existe ainda um calendário oficial de datas futuras: só listamos o que já foi anunciado.`)}`
+      : loading ? agendaSkeleton(4)
+      : emptyState('fa-plug-circle-xmark','Calendário indisponível agora','Não conseguimos falar com a fonte de proventos. Nada é preenchido com estimativa aqui — tente novamente em instantes.',`<button class="btn btn-ghost" onclick="initAgenda()"><i class="fa-solid fa-rotate"></i> Tentar de novo</button>`)}
   </div>`;
+
+  return `${kpis}<div class="ag-grid">${confCard}${mineCard}${prevCard}${mktCard}</div>`;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -8460,16 +8775,23 @@ function viewMercado(){
 function viewNoticias(){
   const items = NEWS.map(newsItemHTML).join('');
   return `
-  <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:18px">
-    <div><div class="sec-title" style="margin-bottom:0">Notícias do mercado</div><div class="sec-desc" style="margin-bottom:0">Curadoria de renda variável — ações, FIIs, BDRs, ETFs, cripto e macro</div></div>
-    <span class="market-status" id="newsStatus"><span class="pulse"></span> <span id="newsStatusTxt">Atualizado agora</span></span>
+  <div class="nw-head">
+    <div class="nw-h-tx">
+      <div class="sec-title" style="margin-bottom:2px">Notícias do mercado</div>
+      <div class="sec-desc" style="margin-bottom:0">Curadoria de renda variável — ações, FIIs, BDRs, ETFs, cripto e macro</div>
+    </div>
+    <span class="market-status nw-status" id="newsStatus"><span class="pulse"></span> <span id="newsStatusTxt">Atualizado agora</span></span>
   </div>
   <div class="news-grid">
     <div class="card card-pad news-alta">
-      <div class="card-h" style="margin-bottom:14px"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-fire"></i></span> Em alta agora</div>
+      <div class="card-h" style="margin-bottom:4px"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-fire"></i></span> Em alta agora</div>
+      <div class="nw-alta-sub">Maiores altas do pregão — toque para abrir o ativo</div>
       <div class="rank" id="newsAlta">${newsAltaHTML()}</div>
     </div>
-    <div class="card card-pad news-feed-wrap"><div class="news-feed" id="newsFeed">${items}</div></div>
+    <div class="card card-pad news-feed-wrap">
+      <div class="nw-feed-h"><span class="nw-feed-t">Últimas</span><span class="nw-feed-s">manchete em destaque</span></div>
+      <div class="news-feed" id="newsFeed">${items}</div>
+    </div>
   </div>`;
 }
 
@@ -8586,6 +8908,7 @@ function afterRender(v, soft){
     }
   }
   if(v==='simulador'){ initSimActive(); }
+  if(v==='agenda'){ initAgenda(); }
   if(v==='score'){ animateGauges(); }
   if(v==='planos'){ initPlanCarousel(); }
   if(v==='recdetail'){ initRecCharts(); }
@@ -11545,7 +11868,7 @@ function assetTabContent(tk,a,k,f){
     default:            return tabGeral(tk,a,k,f);
   }
 }
-function illusNote(txt){ return `<div class="illus-note"><i class="fa-solid fa-circle-info"></i> ${txt}</div>`; }
+function illusNote(txt){ return `<div class="illus-note"><i class="fa-solid fa-circle-info"></i> <span>${txt}</span></div>`; }
 
 /* ── Estatísticas do ativo: expõe na Visão Geral TODO dado real disponível por classe
    (só valores reais; null/— é omitido). Agrega o que o brapi/CVM já trazem mas não apareciam. ── */
