@@ -9,6 +9,7 @@
  *   GET /api/market?fn=usuniverse
  *   GET /api/market?fn=usdetail&symbol=AAPL
  *   GET /api/market?fn=history&symbols=PETR4&us=AAPL&crypto=BTC&days=40
+ *   GET /api/market?fn=dividends&symbols=PETR4,MXRF11&ahead=365&past=45
  *   GET /api/market?fn=health          → readiness (200) + upstreams configurados
  *
  * Observabilidade: cada requisição recebe um request-id (header x-request-id) e
@@ -18,9 +19,10 @@ import crypto from '../lib/crypto.js';
 import usuniverse from '../lib/usuniverse.js';
 import usdetail from '../lib/usdetail.js';
 import history from '../lib/history.js';
+import dividends from '../lib/dividends.js';
 import { reqId, logger } from '../lib/log.js';
 
-const HANDLERS = { crypto, usuniverse, usdetail, history };
+const HANDLERS = { crypto, usuniverse, usdetail, history, dividends };
 
 // Health/readiness: reporta SÓ a PRESENÇA de config (booleano) — nunca o valor dos segredos.
 function health(res) {
@@ -51,7 +53,7 @@ export default async function handler(req, res) {
   if (!h) {
     log.warn('fn inválido');
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(400).json({ error: 'fn inválido (crypto|usuniverse|usdetail|history|health)' });
+    return res.status(400).json({ error: 'fn inválido (crypto|usuniverse|usdetail|history|dividends|health)' });
   }
 
   const t0 = Date.now();

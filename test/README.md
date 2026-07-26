@@ -16,6 +16,7 @@ node --test test/*.mjs
 |---|---|---|
 | `fundinfo.test.mjs` | `normalize`, `parseNum`, `tokens`, `matchOne` | Um match errado aplica patrimônio/taxa da CVM ao **ativo errado**; `parseNum` errado = patrimônio errado |
 | `history.test.mjs` | `isoDay`, `dedupeAsc` | Base da reconstrução dia-a-dia do patrimônio — data errada = ponto do gráfico no dia errado |
+| `dividends.test.mjs` | `isoDate`, `tipoProvento`, `normEvent`, `dedupeSort`, `inWindow` + handler | Agenda de proventos: data inventada faz o usuário se planejar por um pagamento que não existe — os testes travam "sem data real → fora da agenda" e a degradação graciosa (sem token / upstream fora) |
 | `market-map.test.mjs` | `pct` (fração→%), `mapOne` (CoinGecko) | `pct` já teve risco de dupla conversão (auditoria); mapeamento com fallback de variação 24h |
 
 Roda também em CI a cada push/PR (`.github/workflows/test.yml`) junto de `node --check`
