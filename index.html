@@ -7072,7 +7072,7 @@ function viewCarteira(){
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução do patrimônio <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div>${(_pev&&_pev.real)?`<span class="chip" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-circle-check"></i> fechamentos reais</span>`:`<span class="chip ilus"><i class="fa-solid fa-flask"></i> aguardando histórico</span>`}</div>
     <div style="position:relative;height:240px;margin-top:6px"><canvas id="patrEvolChart" role="img" aria-label="Evolução do patrimônio comparada a CDI e IBOV"></canvas></div>
-    <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Valor da carteira mês a mês pelos <strong>fechamentos reais</strong> dos seus ativos, comparado a aplicar os mesmos aportes no CDI (pela Selic vigente) e no IBOV (BOVA11). Onde ainda falta o fechamento de um ativo, ele entra pelo custo.</div>
+    <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> <span>Valor da carteira mês a mês pelos <strong>fechamentos reais</strong> dos seus ativos, comparado a aplicar os mesmos aportes no CDI (pela Selic vigente) e no IBOV (BOVA11). Onde ainda falta o fechamento de um ativo, ele entra pelo custo.</span></div>
   </div>
 
   ${(()=>{ const pays=provPayments(byT); if(!pays.length) return ''; const total=pays.reduce((s,p)=>s+(p.valorBRL||0),0);
@@ -7082,7 +7082,7 @@ function viewCarteira(){
     return `<div class="card card-pad" style="margin-top:16px">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Extrato de proventos</div><div class="pex-total"><div class="pex-total-v">${brl(total)}</div><div class="pex-total-l">recebido no total</div></div></div>
       <div class="prov-extract">${rows}</div>
-      <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Pagamentos <strong>realmente declarados</strong> por cada ativo (valor por cota oficial), contando as cotas que você tinha na <strong>data-com</strong>. Nada é projetado.</div>
+      <div class="illus-note"><i class="fa-solid fa-circle-info"></i> <span>Pagamentos <strong>realmente declarados</strong> por cada ativo (valor por cota oficial), contando as cotas que você tinha na <strong>data-com</strong>. Nada é projetado.</span></div>
     </div>`; })()}
 
   ${(()=>{ const sal=salaryProjection(); if(!(sal.totalAno>0)) return ''; const meta=getRendaMeta(); const prog=Math.min(100, sal.media/meta*100);
@@ -10171,7 +10171,7 @@ function viewBacktest(){
     <div class="card-h" style="margin-bottom:8px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Leitura</div>
     <p style="font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0">${venceu? `No período, sua carteira <strong>superou o CDI e o IBOV</strong>, com retorno de ${pc(m.ret,1)}% e maior queda de ${pc(m.mdd,1)}%.` : `No período, sua carteira rendeu <strong>${pc(m.ret,1)}%</strong> — ${vs>=0?'acima':'abaixo'} do CDI (${pc(m.retCdi,1)}%). Volatilidade de ${pc(m.vol,1)}% e maior queda de ${pc(m.mdd,1)}% mostram o risco assumido.`} Resultados passados não garantem retornos futuros.</p>
   </div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Reconstrução mês a mês pelos <strong>fechamentos reais</strong> dos seus ativos e do IBOV (BOVA11); o CDI aplica os mesmos aportes pela Selic vigente. Onde ainda falta o fechamento de um ativo, ele entra pelo <strong>custo</strong> — nunca por dado inventado.</div>`;
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> <span>Reconstrução mês a mês pelos <strong>fechamentos reais</strong> dos seus ativos e do IBOV (BOVA11); o CDI aplica os mesmos aportes pela Selic vigente. Onde ainda falta o fechamento de um ativo, ele entra pelo <strong>custo</strong> — nunca por dado inventado.</span></div>`;
 }
 function initBacktest(){
   const ctx=$('#backtestChart'); if(!ctx) return;
