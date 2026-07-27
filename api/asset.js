@@ -82,7 +82,10 @@ function normDividends(dd) {
       value: num(d.rate),
       label: d.label || d.relatedTo || null,
     }))
-    .filter((d) => d.value != null && d.date);
+    .filter((d) => d.value != null && d.date)
+    // ordem do upstream não é garantida: sem ordenar, dividends[0] pode ser o provento MAIS ANTIGO
+    // e virar o "último rendimento" do ativo (alimenta card de renda, projeção e carteira).
+    .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 }
 
 // DY calculado: soma dos proventos dos últimos 12 meses / preço atual.

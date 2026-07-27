@@ -4092,11 +4092,23 @@ function provRealInfo(tk){
   if(!Array.isArray(dd)||!dd.length) return null;
   const rows=dd.filter(d=>d&&d.date).slice().sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
   if(!rows.length) return null;
-  const pay=new Date(rows[0].date); if(isNaN(pay)) return null;
+  // parseLotDate (LOCAL) — new Date('2026-08-14') é UTC e em UTC-3 volta o dia ANTERIOR
+  const pay=parseLotDate(rows[0].date); if(!pay||isNaN(pay)) return null;
   let comOffset=0;
-  if(rows[0].com){ const c=new Date(rows[0].com);
-    if(!isNaN(c)){ const off=Math.round((pay-c)/86400000); if(off>=0&&off<=45) comOffset=off; } }
-  return { payDay:pay.getDate(), comOffset, hasReal:true };
+  if(rows[0].com){ const c=parseLotDate(rows[0].com);
+    if(c&&!isNaN(c)){ const off=Math.round((pay-c)/86400000); if(off>=0&&off<=45) comOffset=off; } }
+  // INTERVALO REAL apurado do histórico (mediana dos meses entre pagamentos consecutivos).
+  // Sem >=3 pagamentos não dá para afirmar a periodicidade → stepM null (quem chama decide).
+  let stepM=null;
+  const ds=rows.map(r=>parseLotDate(r.date)).filter(d=>d&&!isNaN(d));
+  if(ds.length>=3){
+    const gaps=[]; for(let i=0;i<ds.length-1;i++){
+      const g=(ds[i].getFullYear()-ds[i+1].getFullYear())*12 + (ds[i].getMonth()-ds[i+1].getMonth());
+      if(g>=1&&g<=12) gaps.push(g); }
+    if(gaps.length>=2){ gaps.sort((a,b)=>a-b); stepM=gaps[Math.floor(gaps.length/2)]; }
+  }
+  const lastValue=(typeof rows[0].value==='number'&&isFinite(rows[0].value)&&rows[0].value>0)?rows[0].value:null;
+  return { payDay:pay.getDate(), comOffset, stepM, lastValue, hasReal:true };
 }
 /* Próximo provento ESTIMADO de um ativo, contando SOMENTE as cotas com direito na DATA-COM.
    base por cota = provPerCota (FII: rendimento real declarado; ação: DY/12 estimado). */
@@ -4107,16 +4119,23 @@ function nextProventoFor(g){
   const info=provRealInfo(g.tk);
   const payDay = info ? info.payDay    : provPayDay(g.tk);
   const offset = info ? info.comOffset : 0;            // proxy: data-com = dia de pagamento
+  // PERIODICIDADE: usa o intervalo apurado do histórico real. Sem conseguir apurar, só o FII
+  // (que paga mensalmente por norma) segue projetado — ação/BDR sem cadência conhecida NÃO é
+  // projetada, para não inventar um pagamento mensal em quem paga trimestral/semestral.
+  const stepM = (info && info.stepM) ? info.stepM : (k==='fiis' ? 1 : null);
+  if(!stepM) return null;
   const dim=(y,m)=>new Date(y, m+1, 0).getDate();      // dias do mês (evita dia 31 transbordar p/ o mês seguinte)
   let py=now.getFullYear(), pm=now.getMonth();
   let pay=new Date(py, pm, Math.min(payDay, dim(py,pm)));
-  if(pay<now){ pm++; if(pm>11){ pm=0; py++; } pay=new Date(py, pm, Math.min(payDay, dim(py,pm))); }
+  if(pay<now){ pm+=stepM; while(pm>11){ pm-=12; py++; } pay=new Date(py, pm, Math.min(payDay, dim(py,pm))); }
   const com=new Date(pay.getFullYear(), pay.getMonth(), pay.getDate()-offset);   // data-com projetada
   // cotas com direito: lotes comprados até a data-com (inclusive). Sem data → tratado como antigo.
   let cotas=0;
   g.lots.forEach(l=>{ const dt=parseLotDate(l.date)||new Date(0); if(dt<=com) cotas+=l.cotas; });
   if(cotas<=0) return null;                            // só comprou depois da data-com → sem provento no ciclo
-  const perCota=provPerCotaMonth(g.tk, base, pay.getFullYear(), pay.getMonth());
+  // valor por cota: o ÚLTIMO PROVENTO REALMENTE DECLARADO quando existe (inclusive p/ ações,
+  // onde o DY/12 do provPerCota é só estimativa); senão, cai no base estimado.
+  const perCota=(info&&info.lastValue)?info.lastValue:provPerCotaMonth(g.tk, base, pay.getFullYear(), pay.getMonth());
   if(perCota<=0) return null;
   const rate = g.cur==='usd' ? usdBrlRate() : 1;       // dolarizado: total em BRL p/ o card
   return { tk:g.tk, date:pay, com, cotas, perCota, total:perCota*cotas*rate,
@@ -8276,9 +8295,14 @@ function agendaDivs(tk){
   const dd=(ASSET_LIVE[tk]||{}).dividends;
   if(!Array.isArray(dd)) return null;
   const cal=agendaCalendar().filter(x=>x.tk===tk);
-  const rows=dd.map(d=>{ const pay=parseLotDate(d.date); return { tk, pay, com:parseLotDate(d.com)||pay, value:+d.value, label:d.label||'' }; })
-    .filter(d=>d.pay && isFinite(d.value) && d.value>0);
-  cal.forEach(c=>{ if(!rows.some(r=>+r.pay===+c.pay)) rows.push({ tk, pay:c.pay, com:c.com, value:c.value, label:c.tipo }); });
+  // comReal distingue a data-com PUBLICADA do fallback (quando a fonte não a traz, cai na data de
+  // pagamento). Sem esse flag a tela afirmaria uma data-com que não existe — e contaria como
+  // elegível quem comprou depois dela. Janela de sanidade evita data absurda da fonte.
+  const _lo=new Date(2000,0,1), _hi=new Date(Date.now()+2*365*86400000);
+  const rows=dd.map(d=>{ const pay=parseLotDate(d.date); const c=parseLotDate(d.com);
+      return { tk, pay, com:c||pay, comReal:!!c, value:+d.value, label:d.label||'' }; })
+    .filter(d=>d.pay && d.pay>=_lo && d.pay<=_hi && isFinite(d.value) && d.value>0);
+  cal.forEach(c=>{ if(!rows.some(r=>+r.pay===+c.pay)) rows.push({ tk, pay:c.pay, com:c.com, comReal:!!c.com, value:c.value, label:c.tipo }); });
   return rows.sort((a,b)=>b.pay-a.pay);
 }
 /* pagamentos REAIS da carteira: valor por cota declarado × cotas com direito na DATA-COM real */
@@ -8291,7 +8315,7 @@ function agendaMyPayments(groups){
       let cotas=0, semData=false;
       g.lots.forEach(l=>{ const dt=parseLotDate(l.date); if(!dt) semData=true; if(!dt || dt<=d.com) cotas+=l.cotas; });
       if(cotas<=0) return;
-      out.push({ tk:g.tk, k:g.f.k, pay:d.pay, com:d.com, perCota:d.value, cotas, total:d.value*cotas*rate, semData });
+      out.push({ tk:g.tk, k:g.f.k, pay:d.pay, com:d.com, comReal:!!d.comReal, perCota:d.value, cotas, total:d.value*cotas*rate, semData });
     });
   });
   return out.sort((a,b)=>b.pay-a.pay);
@@ -8310,7 +8334,9 @@ function viewAgenda(){
   <div class="sec-desc">Proventos com <strong>data real</strong> — a data-com e a data de pagamento declaradas por cada empresa e fundo. O Lastro não inventa datas: o que é projeção aparece sempre marcado como <strong>estimado</strong>.</div>
   <div id="agBody">${agendaBodyHTML()}</div>`;
 }
-function renderAgenda(){ const el=$('#agBody'); if(el) el.innerHTML=agendaBodyHTML(); }
+/* re-render assíncrono reescreve o HTML DEPOIS do applyPriv() do afterRender —
+   sem reaplicar, os valores mascarados (olho fechado) vazariam em claro. */
+function renderAgenda(){ const el=$('#agBody'); if(el){ el.innerHTML=agendaBodyHTML(); if(typeof applyPriv==='function') applyPriv(); } }
 function initAgenda(){
   const want=new Set();
   portfolioByTicker().forEach(g=>{ if(LIVE_ASSET_KINDS.has(g.f.k)) want.add(g.tk); });
@@ -8344,7 +8370,7 @@ function agendaBodyHTML(){
   /* ── KPIs (tudo real: soma de pagamentos declarados) ── */
   const kpis = past.length||future.length ? `
     <div class="mkt-pulse ag-kpis">
-      <div class="mp-cell"><div class="mp-l">Recebido · 12 meses</div><div class="mp-v priv-blur">${brl(total12)}</div><div class="mp-d faint">${last12.length} pagamento${last12.length===1?'':'s'} reais</div></div>
+      <div class="mp-cell"><div class="mp-l">Recebido · 12 meses</div><div class="mp-v priv-blur">${brl(total12)}</div><div class="mp-d faint">${last12.length} pagamento${last12.length===1?'':'s'}${last12.some(p=>p.semData)?' · inclui lote sem data de compra':' reais'}</div></div>
       <div class="mp-cell"><div class="mp-l">Último pagamento</div><div class="mp-v">${ult?`${String(ult.pay.getDate()).padStart(2,'0')} ${AG_MES[ult.pay.getMonth()]}`:'—'}</div><div class="mp-d faint">${ult?`${ult.tk} · ${brl(ult.perCota)}/cota`:'sem histórico'}</div></div>
       <div class="mp-cell"><div class="mp-l">Confirmado a receber</div><div class="mp-v priv-blur">${future.length?brl(futTotal):'—'}</div><div class="mp-d ${future.length?'up':'faint'}">${future.length?`${future.length} provento${future.length===1?'':'s'} anunciado${future.length===1?'':'s'}`:'nada anunciado ainda'}</div></div>
     </div>` : '';
@@ -8356,7 +8382,7 @@ function agendaBodyHTML(){
       <div class="timeline">${future.map(p=>`
         <div class="tl-item" onclick="quickView('${p.tk}')">
           ${agendaDate(p.pay)}
-          <div class="tl-info"><div class="tk">${p.tk}</div><div class="ds">${p.cotas} cota${p.cotas===1?'':'s'} × ${brl(p.perCota)} · data-com ${fmtDateBR(_patDay(p.com))}</div></div>
+          <div class="tl-info"><div class="tk">${p.tk}</div><div class="ds">${p.cotas} cota${p.cotas===1?'':'s'} × ${brl(p.perCota)}${p.comReal?` · data-com ${fmtDateBR(_patDay(p.com))}`:' · data-com não publicada'}</div></div>
           <div class="tl-val"><div class="v priv-blur">${brl(p.total)}</div><div class="t">a receber</div></div>
         </div>`).join('')}</div>
     </div>` : '';
@@ -8411,7 +8437,7 @@ function agendaBodyHTML(){
           <div class="tl-info"><div class="tk">${x.tk}</div><div class="ds">${x.tipo} · ${x.cotas} cota${x.cotas===1?'':'s'}</div></div>
           <div class="tl-val"><div class="v priv-blur" style="color:var(--ink-2)">${brl(x.total)}</div><div class="t">estimado</div></div>
         </div>`).join('')}</div>
-      ${illusNote('Projeção, não anúncio: repete o <strong>dia e o intervalo do último pagamento real</strong> de cada ativo, com o último provento declarado por cota. Ativos sem histórico de pagamento não aparecem aqui — não chutamos data. Enquanto a empresa ou o fundo não anunciar, trate como referência.')}
+      ${illusNote('Projeção, não anúncio: usa o <strong>dia do último pagamento real</strong> e a <strong>periodicidade apurada do histórico</strong> (mediana do intervalo entre os pagamentos), com o último provento declarado por cota. Ativo sem histórico suficiente para apurar a periodicidade não aparece aqui — não chutamos data nem intervalo. Enquanto a empresa ou o fundo não anunciar, trate como referência.')}
     </div>` : '';
 
   /* ── Mercado: últimos proventos pagos (data real) ── */
