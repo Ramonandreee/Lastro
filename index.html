@@ -4049,35 +4049,86 @@ function editLot(id, cotas, pm, date){
 }
 function removeLot(id){ if(movsActive()){ const r=removeMov(id); if(r.ok){ toast('Aporte removido'); if(currentView==='carteira') render('carteira'); return; } } CARTEIRA=CARTEIRA.filter(c=>c.id!==id); savePortfolio(); toast('Aporte removido'); if(currentView==='carteira') render('carteira'); }
 function removePosition(tk){ if(movsActive()){ MOVS=MOVS.filter(m=>m.tk!==tk); movsSave(MOVS); _movsAfterMutate(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); return; } CARTEIRA = CARTEIRA.filter(c=>c.tk!==tk); savePortfolio(); toast(`${tk} removido da carteira`); if(currentView==='carteira') render('carteira'); }
-/* provento-base mensal por cota (FIIs: rendimento real; ações: DY/12 estimado) */
+/* provento-base mensal por cota — ESTIMATIVA (FIIs: rendimento declarado; ações: DY/12).
+   Usado SOMENTE na PROJEÇÃO do próximo provento (nextProventoFor), nunca no que já foi recebido. */
 function provPerCota(k,a){ return (k==='fiis' && typeof a.div==='number') ? a.div : (typeof a.dy==='number' && a.px ? a.px*(a.dy/100)/12 : 0); }
-/* dia de pagamento estável por ativo (cada fundo paga sempre por volta do mesmo dia) */
+/* dia de pagamento estável por ativo — fallback da PROJEÇÃO quando não há histórico real */
 function provPayDay(tk){ return 8 + (seedFrom(tk+'payday') % 12); }   // dia 8..19, fixo por ativo
-/* valor por cota do mês = rendimento-base declarado (SEM variação inventada por RNG).
-   Proventos exibidos são ESTIMATIVA a partir do rendimento/DY declarado, não pagamentos reais por data-com. */
+/* valor por cota do mês = rendimento-base declarado (SEM variação inventada por RNG) — só projeção */
 function provPerCotaMonth(tk, base, y, m){ return base>0 ? base : 0; }
-/* pagamentos mensais de um ativo desde a data de cada aporte (dia e valor realistas por ativo) */
-function groupPayments(g){
-  const a=g.f.a, k=g.f.k, base=provPerCota(k,a); const pays=[];
-  if(base<=0) return pays;
-  const now=new Date(), payDay=provPayDay(g.tk), monthMap=new Map();
-  g.lots.forEach(l=>{
-    let dt = l.date ? new Date(l.date) : new Date(now.getFullYear(), now.getMonth()-6, payDay);
-    if(isNaN(dt)) dt = new Date(now.getFullYear(), now.getMonth()-6, payDay);
-    const buyDay=dt.getDate();
-    // 1º pagamento elegível: data-com após a compra → quem comprou depois do dia de pagamento só recebe no mês seguinte
-    let d=new Date(dt.getFullYear(), dt.getMonth()+(buyDay>payDay?1:0), payDay);
-    let guard=0;
-    while(d<=now && guard++<240){ const key=d.getFullYear()+'-'+String(d.getMonth()).padStart(2,'0'); monthMap.set(key,(monthMap.get(key)||0)+l.cotas); d=new Date(d.getFullYear(), d.getMonth()+1, payDay); }
+
+/* ══ FONTE ÚNICA DE VERDADE dos proventos RECEBIDOS ══════════════════════════════
+   valor por cota REALMENTE declarado (ASSET_LIVE[tk].dividends, via /api/asset)
+   × cotas que o usuário detinha na DATA-COM. Nada aqui é projetado ou fabricado.
+   Retorno:
+     null            → histórico do ativo ainda NÃO chegou (≠ "não recebeu nada")
+     []  (.src='na') → classe sem fonte de proventos (cripto/stocks/ETF int.)
+     [...] (.src='real') → pagamentos reais (inclui os anunciados ainda a pagar)
+   Consumida pela Agenda (agendaMyPayments) e pela carteira (groupPayments).
+   `valor` é NATIVO (US$ p/ dolarizado); `total` já vem convertido em BRL. */
+function realPaymentsFor(g){
+  if(!g || !g.f) return null;
+  if(!(typeof LIVE_ASSET_KINDS!=='undefined' && LIVE_ASSET_KINDS.has(g.f.k))){ const e=[]; e.src='na'; return e; }
+  const dd=agendaDivs(g.tk); if(!dd) return null;
+  const rate = g.cur==='usd' ? usdBrlRate() : 1;
+  const out=[];
+  dd.forEach(d=>{
+    // elegibilidade: só as cotas já detidas na DATA-COM. Lote sem data é tratado como antigo (semData).
+    let cotas=0, semData=false;
+    g.lots.forEach(l=>{ const dt=parseLotDate(l.date); if(!dt) semData=true; if(!dt || dt<=d.com) cotas+=l.cotas; });
+    if(cotas<=0) return;
+    out.push({ tk:g.tk, k:g.f.k, pay:d.pay, com:d.com, comReal:!!d.comReal, perCota:d.value, cotas,
+               valor:d.value*cotas, total:d.value*cotas*rate, semData });
   });
-  monthMap.forEach((cotas,key)=>{ const [y,m]=key.split('-').map(Number);
-    const perCota = provPerCotaMonth(g.tk, base, y, m);
-    pays.push({ tk:g.tk, k, date:new Date(y,m,payDay), cotas, perCota, valor:perCota*cotas, pm:g.pm }); });
-  pays.sort((x,y)=>y.date-x.date);
-  return pays;
+  out.sort((a,b)=>b.pay-a.pay);
+  out.src='real';
+  return out;
 }
-/* extrato consolidado de proventos da carteira */
-function provPayments(){ const out=[]; portfolioByTicker().forEach(g=>{ (g.pays||groupPayments(g)).forEach(p=>out.push(p)); }); out.sort((a,b)=>b.date-a.date); return out; }
+/* proventos JÁ RECEBIDOS de um ativo da carteira (formato do extrato/carteira).
+   Vazio com .src='pend' enquanto o histórico real não carregou — a UI mostra "apurando",
+   nunca um valor inventado. Pagamento anunciado com data futura NÃO conta como recebido. */
+function groupPayments(g){
+  const pays=[]; const real=realPaymentsFor(g);
+  if(!real){ pays.src='pend'; return pays; }
+  pays.src = real.src || 'real';
+  const now=Date.now();
+  real.forEach(p=>{ if(p.pay>now) return;
+    pays.push({ tk:g.tk, k:g.f.k, date:p.pay, cotas:p.cotas, perCota:p.perCota,
+                valor:p.valor, valorBRL:p.total, pm:g.pm, com:p.com, comReal:p.comReal, semData:p.semData, real:true }); });
+  return pays;   // já em ordem decrescente de data
+}
+/* extrato consolidado de proventos da carteira (.pend = algum ativo ainda apurando) */
+function provPayments(groups){ const out=[]; let pend=false;
+  (groups||portfolioByTicker()).forEach(g=>{ (g.pays||groupPayments(g)).forEach(p=>out.push(p)); if(g.provPend) pend=true; });
+  out.sort((a,b)=>b.date-a.date); out.pend=pend; return out; }
+/* Busca o histórico REAL de proventos dos ativos da carteira (/api/asset, cache de 5min no
+   loadAssetLive) e re-renderiza a tela quando chega. Sem isso, as telas que mostram proventos
+   ficariam eternamente em "apurando" — e nunca voltamos a inventar número para preencher. */
+const _provTried=new Map();      // tk -> ts da última tentativa (evita loop de re-fetch quando a API falha)
+const _provFail=new Set();       // tickers cuja busca falhou → a UI diz "indisponível", nunca inventa valor
+function ensurePortfolioDividends(force){
+  if(typeof loadAssetLive!=='function' || typeof ASSET_LIVE==='undefined') return;
+  const now=Date.now();
+  if(force) _provTried.clear();
+  const want=[...new Set(portfolioByTicker().filter(g=>LIVE_ASSET_KINDS.has(g.f.k)).map(g=>g.tk))];
+  const todo=want.filter(tk=>!Array.isArray((ASSET_LIVE[tk]||{}).dividends) && !(now-(_provTried.get(tk)||0) < 300000));
+  if(!todo.length) return;
+  todo.forEach(tk=>{ _provTried.set(tk, now); _provFail.delete(tk); });
+  let pend=todo.length, got=false;                 // contadores do LOTE (não globais → sem corrida entre chamadas)
+  todo.forEach(tk=>{
+    Promise.resolve(loadAssetLive(tk)).catch(()=>null).then(d=>{
+      if(d && Array.isArray(d.dividends)) got=true; else _provFail.add(tk);
+      if(--pend<=0 && ['painel','carteira','proventos','raiox','ir'].includes(currentView)) render(currentView, true);
+    });
+  });
+}
+/* true quando TODOS os ativos que faltam apurar já falharam na busca → estado "indisponível"
+   (a tela não pode ficar eternamente em "apurando", nem preencher com estimativa) */
+function provFetchDown(groups){
+  const gs=(groups||portfolioByTicker()).filter(g=>g.provPend);
+  return gs.length>0 && gs.every(g=>_provFail.has(g.tk));
+}
+function provPendLabel(g){ return (g && _provFail.has(g.tk)) ? 'indisponível' : 'apurando…'; }
 /* parse de data de lote 'YYYY-MM-DD' como data LOCAL (evita erro de fuso ao comparar com data-com) */
 function parseLotDate(iso){
   if(!iso) return null;
@@ -4173,8 +4224,10 @@ function portfolioByTicker(lots){
     g.custo = M.fromCents(g.custoCents); g.val = M.fromCents(g.valCents);
     g.lucroCents = g.valCents - g.custoCents;
     g.lucro = M.fromCents(g.lucroCents); g.lp = g.custoCents ? M.pctCents(g.lucroCents, g.custoCents) : 0;
+    // proventos RECEBIDOS (reais, por data-com). provPend = histórico ainda carregando → prov não é 0 "de verdade"
     g.pays=groupPayments(g);
-    g.provCents = M.toCents(g.pays.reduce((s,p)=>s+p.valor,0)*rate);
+    g.provSrc=g.pays.src||'na'; g.provPend=(g.provSrc==='pend');
+    g.provCents = M.toCents(g.pays.reduce((s,p)=>s+(p.valorBRL||0),0));   // valorBRL já convertido na origem
     g.prov = M.fromCents(g.provCents);
     g.lucroProvCents = g.lucroCents + g.provCents;
     g.lucroProv = M.fromCents(g.lucroProvCents); g.lpProv = g.custoCents ? M.pctCents(g.lucroProvCents, g.custoCents) : 0;
@@ -4572,6 +4625,8 @@ function portfolioStats(lots){
   return { invest, atual, renda, dyMed, prov, caixa:M.fromCents(caixaCents),
     lucro: M.fromCents(lucroCents), lucroP: investCents ? M.pctCents(lucroCents, investCents) : 0,
     lucroProv: M.fromCents(lucroProvCents), lucroProvP: investCents ? M.pctCents(lucroProvCents, investCents) : 0,
+    // provPend: algum ativo ainda apurando o histórico real de proventos → prov/lucroProv são PARCIAIS
+    provPend: byT.some(g=>g.provPend), provReal: byT.some(g=>g.provSrc==='real'),
     nAtivos: byT.length, _byT: byT };
 }
 /* peso (%) de um ativo no patrimônio — aceita um grupo agregado ou um lote */
@@ -6789,15 +6844,15 @@ function posCard(g){
       ${row('Categoria', ASSET_CLASS[k].label)}
       ${row('Quantidade', `<span class="mono">${g.cotas}</span>`)}
       ${row('Preço médio', `<span class="mono priv-blur">${fmtCur(g.pm,g.cur)}</span>`)}
-      ${row('Proventos da posição', `<span class="mono up priv-blur">${brl(g.prov)}</span>`)}
-      ${row('Resultado com proventos', `<span class="mono ${g.lucroProv>=0?'up':'down'} priv-blur">${g.lucroProv>=0?'+':''}${brl(g.lucroProv)} · ${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</span>`)}
+      ${row('Proventos da posição', g.provPend?`<span class="faint" style="font-size:12px">${provPendLabel(g)}</span>`:`<span class="mono up priv-blur">${brl(g.prov)}</span>`)}
+      ${row('Resultado com proventos', g.provPend?`<span class="faint" style="font-size:12px">${provPendLabel(g)}</span>`:`<span class="mono ${g.lucroProv>=0?'up':'down'} priv-blur">${g.lucroProv>=0?'+':''}${brl(g.lucroProv)} · ${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</span>`)}
       ${row('Saldo bruto', `<span class="mono priv-blur">${brl(g.val)}</span>`)}
     </div>
     <button class="pc-more" onclick="togglePosMore('${g.tk}')"><span>Mais detalhes</span> <i class="fa-solid fa-chevron-down"></i></button>
     <div class="pc-extra" id="more-${g.tk}" hidden>
       <div class="pc-extra-t">Dados complementares</div>
       ${row('Valor investido', `<span class="mono priv-blur">${brl(g.custo)}</span>`)}
-      ${row(termLabel('pmProv','Preço médio com proventos'), `<span class="mono priv-blur">${fmtCur(pmProv,g.cur)}</span>`)}
+      ${row(termLabel('pmProv','Preço médio com proventos'), g.provPend?`<span class="faint" style="font-size:12px">${provPendLabel(g)}</span>`:`<span class="mono priv-blur">${fmtCur(pmProv,g.cur)}</span>`)}
       ${row('Resultado sem proventos', `<span class="mono ${g.lucro>=0?'up':'down'} priv-blur">${g.lucro>=0?'+':''}${brl(g.lucro)} · ${g.lucro>=0?'+':''}${pc(g.lp,1)}%</span>`)}
       <div class="pc-extra-t" style="margin-top:14px">Histórico de aportes</div>
       ${lotsHtml}
@@ -6834,14 +6889,15 @@ function viewCarteira(){
   }
 
   const holdings = byT.map(posCard).join('');
+  const _provDown = p.provPend && provFetchDown(byT);   // busca falhou → dizer "indisponível", nunca estimar
 
   return `
   ${demoMode?`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--gold-l);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);border-radius:var(--r);padding:12px 14px;margin-bottom:14px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold);font-size:16px"></i><div style="flex:1;min-width:180px;font-size:12.5px;color:var(--ink-2);line-height:1.5">Você está vendo uma <strong>carteira de demonstração</strong> — ela some ao fechar o app. Crie a sua para acompanhar de verdade, com sincronização na nuvem.</div><button class="btn btn-premium btn-sm" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Desbloquear minha carteira</button></div>`:''}
   <div class="cart-sum-head"><div class="sec-title" style="margin:0;font-size:19px">Minha carteira${demoMode?' <span class="chip ilus" style="vertical-align:middle"><i class="fa-solid fa-flask"></i> demonstração</span>':''}</div><button class="priv-eye" onclick="togglePriv()" title="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
   <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl priv-blur">${brl(p.atual)}</div><div class="dl priv-blur ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}% s/ prov.</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Resultado c/ proventos</div><div class="vl priv-blur ${p.lucroProv>=0?'up':'down'}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div><div class="dl priv-blur ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos recebidos</div><div class="vl priv-blur up">${brl(p.prov)}</div><div class="dl priv-blur faint">renda ~${brl(p.renda)}/mês</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Resultado c/ proventos</div>${p.provPend?`<div class="vl faint" style="font-size:15px">${_provDown?'indisponível':'apurando…'}</div><div class="dl faint">${_provDown?'proventos reais fora do ar':'buscando proventos reais'}</div>`:`<div class="vl priv-blur ${p.lucroProv>=0?'up':'down'}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div><div class="dl priv-blur ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div>`}</div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos recebidos</div>${p.provPend?`<div class="vl faint" style="font-size:15px">${_provDown?'indisponível':'apurando…'}</div><div class="dl faint">${_provDown?'proventos reais fora do ar':'buscando proventos reais'}</div>`:`<div class="vl priv-blur up">${brl(p.prov)}</div><div class="dl priv-blur faint">renda ~${brl(p.renda)}/mês <span class="faint">(est.)</span></div>`}</div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Saúde da carteira</div><div class="vl" style="color:${scoreColor(saude)}">${saude}<span style="font-size:12px;color:var(--ink-3)">/100</span></div><div class="dl" style="color:${scoreColor(saude)}">${scoreTier(saude)}</div></div>
   </div>
 
@@ -6861,14 +6917,14 @@ function viewCarteira(){
     <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Valor da carteira mês a mês pelos <strong>fechamentos reais</strong> dos seus ativos, comparado a aplicar os mesmos aportes no CDI (pela Selic vigente) e no IBOV (BOVA11). Onde ainda falta o fechamento de um ativo, ele entra pelo custo.</div>
   </div>
 
-  ${(()=>{ const pays=provPayments(); if(!pays.length) return ''; const total=pays.reduce((s,p)=>s+p.valor,0);
+  ${(()=>{ const pays=provPayments(byT); if(!pays.length) return ''; const total=pays.reduce((s,p)=>s+(p.valorBRL||0),0);
     const rows=pays.slice(0,18).map(p=>{ const yoc=p.pm?p.perCota/p.pm*100:0; return `<div class="pex-row" onclick="quickView('${p.tk}')">
       <div class="pex-l">${assetLogo(p.tk,p.k,'sm')}<div class="pex-id"><div class="pex-tk">${p.tk}</div><div class="pex-d"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(_patDay(p.date))}</div></div></div>
-      <div class="pex-r"><div class="pex-v up">${brl(p.valor)}</div><div class="pex-s">${p.cotas} cota${p.cotas!==1?'s':''} · YoC ${pc(yoc,2)}%</div></div></div>`; }).join('');
+      <div class="pex-r"><div class="pex-v up">${brl(p.valorBRL!=null?p.valorBRL:p.valor)}</div><div class="pex-s">${p.cotas} cota${p.cotas!==1?'s':''} · YoC ${pc(yoc,2)}%</div></div></div>`; }).join('');
     return `<div class="card card-pad" style="margin-top:16px">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Extrato de proventos</div><div class="pex-total"><div class="pex-total-v">${brl(total)}</div><div class="pex-total-l">líquido no período</div></div></div>
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Extrato de proventos</div><div class="pex-total"><div class="pex-total-v">${brl(total)}</div><div class="pex-total-l">recebido no total</div></div></div>
       <div class="prov-extract">${rows}</div>
-      <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Pagamentos mensais estimados a partir do rendimento atual e da data de cada aporte. Conecte o provedor de proventos por data-com para valores exatos.</div>
+      <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Pagamentos <strong>realmente declarados</strong> por cada ativo (valor por cota oficial), contando as cotas que você tinha na <strong>data-com</strong>. Nada é projetado.</div>
     </div>`; })()}
 
   ${(()=>{ const sal=salaryProjection(); if(!(sal.totalAno>0)) return ''; const meta=getRendaMeta(); const prog=Math.min(100, sal.media/meta*100);
@@ -7799,23 +7855,49 @@ function simRendaHTML(){
    VIEW: MEUS PROVENTOS
    ══════════════════════════════════════════════════════════ */
 function proventosData(){
-  const pays=provPayments(), now=new Date();
+  const groups=portfolioByTicker();
+  const pays=provPayments(groups), now=new Date();
+  // JANELA IDÊNTICA À DA AGENDA (12 meses corridos a partir de hoje) — é o que faz os dois
+  // "Recebido (12m)" do app baterem no centavo. Valores já em BRL (valorBRL) p/ somar dolarizado.
+  const lim12=new Date(now.getFullYear()-1, now.getMonth(), now.getDate());
+  const lim24=new Date(now.getFullYear()-2, now.getMonth(), now.getDate());
   const months=[]; for(let i=11;i>=0;i--){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); months.push({ key:d.getFullYear()+'-'+d.getMonth(), label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.',''), val:0 }); }
   const idx={}; months.forEach((m,i)=>idx[m.key]=i);
-  const byTk={}; let total12=0, prior12=0;
-  pays.forEach(p=>{ const key=p.date.getFullYear()+'-'+p.date.getMonth();
-    if(key in idx){ months[idx[key]].val+=p.valor; total12+=p.valor; byTk[p.tk]=(byTk[p.tk]||0)+p.valor; }
-    else { const diff=(now.getFullYear()-p.date.getFullYear())*12+(now.getMonth()-p.date.getMonth()); if(diff>=12 && diff<24) prior12+=p.valor; }
+  const byTk={}; let total12=0, prior12=0, totalAll=0;
+  pays.forEach(p=>{ const v=(p.valorBRL!=null?p.valorBRL:p.valor)||0; totalAll+=v;
+    if(p.date>=lim12 && p.date<=now){ const key=p.date.getFullYear()+'-'+p.date.getMonth();
+      if(key in idx) months[idx[key]].val+=v;
+      total12+=v; byTk[p.tk]=(byTk[p.tk]||0)+v; }
+    else if(p.date>=lim24 && p.date<lim12) prior12+=v;
   });
-  return { months, total12, media:total12/12, growth: prior12>0?(total12/prior12-1)*100:null, ranking:Object.entries(byTk).sort((a,b)=>b[1]-a[1]) };
+  return { months, total12, totalAll, media:total12/12, growth: prior12>0?(total12/prior12-1)*100:null,
+           ranking:Object.entries(byTk).sort((a,b)=>b[1]-a[1]),
+           pend:!!pays.pend, nPos:groups.length, nPays:pays.length,
+           semFonte:groups.filter(g=>g.provSrc==='na').map(g=>g.tk),
+           semData:pays.some(p=>p.semData) };
 }
 function viewProventos(){
   const d=proventosData(), p=portfolioStats();
-  if(!d.ranking.length){
-    return `<div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Meus Proventos</div></div>
+  const head=`<div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Meus Proventos</div></div>`;
+  if(!d.nPos){
+    return `<div class="card card-pad">${head}
     ${emptyState('fa-coins','Você ainda não tem proventos','Adicione aportes em FIIs ou ações pagadoras para acompanhar o histórico, o crescimento e o Yield on Cost da sua renda passiva.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   }
-  const yoc = p.invest? p.renda*12/p.invest*100 : 0;
+  if(d.pend){   // histórico REAL a caminho — nada de preencher a tela com estimativa
+    if(provFetchDown()){
+      return `<div class="card card-pad">${head}
+      ${emptyState('fa-plug-circle-exclamation','Proventos indisponíveis agora','Não conseguimos buscar o histórico <strong>real</strong> de proventos dos seus ativos. Preferimos não mostrar nada a mostrar um número estimado — tente novamente em instantes.',`<button class="btn btn-primary" onclick="ensurePortfolioDividends(true);render('proventos')"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>`)}</div>`;
+    }
+    return `<div class="card card-pad">${head}
+      <div class="sec-desc" style="margin:6px 0 14px">Apurando os proventos <strong>realmente pagos</strong> dos seus ativos (valor por cota declarado × cotas que você tinha na data-com).</div>
+      ${typeof agendaSkeleton==='function'?agendaSkeleton(4):'<div class="skeleton skel-line"></div>'}</div>`;
+  }
+  if(!d.ranking.length){
+    const semFonte = d.semFonte.length? ` Ativos de classes sem fonte de proventos no Lastro (${d.semFonte.slice(0,4).join(', ')}${d.semFonte.length>4?'…':''}) não entram nesta conta.`:'';
+    return `<div class="card card-pad">${head}
+    ${emptyState('fa-coins','Nenhum provento recebido nos últimos 12 meses',`Só entram aqui pagamentos <strong>realmente declarados</strong> pelos ativos, contando as cotas que você já tinha na data-com.${d.totalAll>0?` Você tem ${brl(d.totalAll)} recebidos em datas anteriores a este período.`:''}${semFonte}`,`<button class="btn btn-ghost" onclick="nav('agenda')"><i class="fa-regular fa-calendar"></i> Ver agenda de dividendos</button>`)}</div>`;
+  }
+  const yoc = p.invest? d.total12/p.invest*100 : 0;   // YoC REAL: 12m recebidos ÷ custo (sem projeção por DY)
   const gr = d.growth==null? '—' : (d.growth>=0?'+':'')+pc(d.growth,1)+'%';
   const rankRows = d.ranking.slice(0,8).map(([tk,v],i)=>{ const col=ALLOC_COLORS[i%ALLOC_COLORS.length], pctv=d.total12? v/d.total12*100:0;
     return `<div class="pex-row" onclick="quickView('${tk}')"><div class="pex-l"><span style="display:inline-flex;width:22px;height:22px;border-radius:6px;background:${col}22;color:${col};align-items:center;justify-content:center;font-size:11px;font-weight:700">${i+1}</span><div class="pex-id"><div class="pex-tk">${tk}</div><div class="pex-d">${pc(pctv,1)}% do total</div></div></div><div class="pex-r"><div class="pex-v up priv-blur">${brl(v)}</div><div class="pex-s">12 meses</div></div></div>`; }).join('');
@@ -7824,10 +7906,10 @@ function viewProventos(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Recebido (12m)</div><div class="vl priv-blur up">${brl(d.total12)}</div><div class="dl faint">renda passiva</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Média mensal</div><div class="vl priv-blur">${brl(d.media)}</div><div class="dl faint">por mês</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Crescimento a/a</div><div class="vl ${d.growth>=0?'up':'down'}">${gr}</div><div class="dl faint">vs 12m anteriores</div></div>
-    <div class="mcell" data-term="yoc"><div class="nm" style="margin-bottom:8px">Yield on Cost</div><div class="vl" style="color:var(--brand)">${pc(yoc,1)}%</div><div class="dl faint">renda s/ custo</div></div>
+    <div class="mcell" data-term="yoc"><div class="nm" style="margin-bottom:8px">Yield on Cost</div><div class="vl" style="color:var(--brand)">${pc(yoc,1)}%</div><div class="dl faint">12m recebidos ÷ custo</div></div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Proventos por mês <span class="card-sub" style="margin-left:6px">· últimos 12 meses</span></div><span class="chip ilus" title="Estimado a partir do rendimento atual — conecte a fonte por data-com para valores exatos"><i class="fa-solid fa-flask"></i> estimado</span></div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Proventos por mês <span class="card-sub" style="margin-left:6px">· últimos 12 meses</span></div><span class="chip" style="background:var(--up-l);color:var(--up)" title="Valor por cota declarado pelo ativo × cotas que você tinha na data-com"><i class="fa-solid fa-circle-check"></i> pagamentos reais</span></div>
     <div style="position:relative;height:240px;margin-top:6px"><canvas id="provMonthChart" role="img" aria-label="Proventos por mês"></canvas></div>
   </div>
   <div class="sim-grid" style="margin-top:16px">
@@ -7840,7 +7922,7 @@ function viewProventos(){
       <div style="position:relative;height:240px;margin-top:6px"><canvas id="provAssetChart" role="img" aria-label="Distribuição dos proventos por ativo"></canvas></div>
     </div>
   </div>
-  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Proventos estimados a partir do rendimento atual de cada ativo e das datas dos seus aportes. Conecte a fonte de proventos por data-com para o histórico exato.</div>`;
+  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Cada pagamento é o <strong>valor por cota realmente declarado</strong> pelo ativo, multiplicado pelas cotas que você já tinha na <strong>data-com</strong> — nada é projetado. Janela de 12 meses corridos, a mesma da <a href="javascript:nav('agenda')" style="color:var(--brand)">Agenda de Dividendos</a>.${d.semData?' Aportes <strong>sem data</strong> foram contados como anteriores a todos os pagamentos — informe a data para a conta ficar exata.':''}${d.semFonte.length?` Ainda sem fonte de proventos para: <strong>${d.semFonte.slice(0,6).join(', ')}</strong> — esses ativos não entram no total.`:''} Resultados passados não garantem retornos futuros.</div>`;
 }
 function chartUnavail(c){ if(c) c.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; }
 function initProventosCharts(){
@@ -8019,7 +8101,9 @@ function irBensDireitos(){
       qtd:g.cotas, custo:g.custo, pm:g.pm, disc:`${g.cotas} ${isFii?'cotas':'ações'} de ${g.tk} (${g.f.a.nm||''}) — custo médio ${brl(g.pm)}, custo total ${brl(g.custo)}.` };
   });
 }
-function irRendimentos(year){ const pays=provPayments(); let fii=0, acoes=0; pays.forEach(p=>{ if(p.date.getFullYear()===year){ if(p.k==='fiis') fii+=p.valor; else acoes+=p.valor; } }); return { fii, acoes, total:fii+acoes }; }
+function irRendimentos(year){ const pays=provPayments(); let fii=0, acoes=0;   // valores em BRL (valorBRL)
+  pays.forEach(p=>{ const v=(p.valorBRL!=null?p.valorBRL:p.valor)||0; if(p.date.getFullYear()===year){ if(p.k==='fiis') fii+=v; else acoes+=v; } });
+  return { fii, acoes, total:fii+acoes, pend:!!pays.pend }; }
 function viewIR(){
   const bd=irBensDireitos();
   if(!bd.length){
@@ -8307,17 +8391,8 @@ function agendaDivs(tk){
 }
 /* pagamentos REAIS da carteira: valor por cota declarado × cotas com direito na DATA-COM real */
 function agendaMyPayments(groups){
-  const out=[];
-  (groups||portfolioByTicker()).forEach(g=>{
-    const dd=agendaDivs(g.tk); if(!dd) return;
-    const rate = g.cur==='usd' ? usdBrlRate() : 1;
-    dd.forEach(d=>{
-      let cotas=0, semData=false;
-      g.lots.forEach(l=>{ const dt=parseLotDate(l.date); if(!dt) semData=true; if(!dt || dt<=d.com) cotas+=l.cotas; });
-      if(cotas<=0) return;
-      out.push({ tk:g.tk, k:g.f.k, pay:d.pay, com:d.com, comReal:!!d.comReal, perCota:d.value, cotas, total:d.value*cotas*rate, semData });
-    });
-  });
+  const out=[];   // mesma fonte única de verdade que alimenta a carteira/Proventos (realPaymentsFor)
+  (groups||portfolioByTicker()).forEach(g=>{ const r=realPaymentsFor(g); if(r) r.forEach(p=>out.push(p)); });
   return out.sort((a,b)=>b.pay-a.pay);
 }
 /* universo consultado na aba mercado (teto baixo — cada ativo é uma chamada) */
@@ -8919,6 +8994,8 @@ function afterRender(v, soft){
     if(typeof loadPortfolioHistory==='function') loadPortfolioHistory();   // fechamentos reais p/ reconstruir a evolução
   }
   if(v==='carteira'){ initAlloc(); initPatrEvol(); initSalary(); if(!soft){ diagnose(); if(typeof loadBacktestHistory==='function') loadBacktestHistory(); } }
+  // telas que exibem proventos recebidos: garante o histórico REAL (a UI mostra "apurando" até chegar)
+  if(!soft && ['painel','carteira','proventos','raiox','ir'].includes(v) && typeof ensurePortfolioDividends==='function') ensurePortfolioDividends();
   if(v==='proventos'){ initProventosCharts(); }
   if(v==='aporte'){ runAporte(); }
   if(v==='backtest'){ initBacktest(); if(!soft && typeof loadBacktestHistory==='function') loadBacktestHistory(); }
@@ -9297,7 +9374,7 @@ function renderHomeDashboard(p){
 
     <div class="wstats">
       <div class="wstat"><span class="ws-ic" style="background:${p.lucro>=0?'var(--up)':'var(--down)'};box-shadow:0 4px 12px color-mix(in srgb, ${p.lucro>=0?'var(--up)':'var(--down)'} 42%, transparent)"><i class="fa-solid fa-arrow-${p.lucro>=0?'up':'down'}"></i></span><div><span class="ws-l">Ganho de capital</span><b class="ws-v priv-blur ${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':'−'}${fmtHomeCur(Math.abs(p.lucro))}</b></div></div>
-      <div class="wstat"><span class="ws-ic" style="background:var(--gold);box-shadow:0 4px 12px color-mix(in srgb, var(--gold) 42%, transparent)"><i class="fa-solid fa-coins"></i></span><div><span class="ws-l">Meus proventos <span class="ws-est">est.</span></span><b class="ws-v priv-blur up">${fmtHomeCur(p.prov)}</b></div></div>
+      <div class="wstat"><span class="ws-ic" style="background:var(--gold);box-shadow:0 4px 12px color-mix(in srgb, var(--gold) 42%, transparent)"><i class="fa-solid fa-coins"></i></span><div><span class="ws-l">Meus proventos ${p.provPend?'<span class="ws-est">apurando</span>':''}</span><b class="ws-v priv-blur up">${p.provPend?'—':fmtHomeCur(p.prov)}</b></div></div>
     </div>
 
     <div class="walloc">
@@ -10006,9 +10083,9 @@ function viewRaioX(){
   return head + `
   <div class="mstrip" style="grid-template-columns:repeat(6,1fr)">
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl">${brl0(p.atual)}</div><div class="dl ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}%</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Rentabilidade</div><div class="vl ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div><div class="dl faint">c/ proventos</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos recebidos</div><div class="vl">${brl0(provReceb)}</div><div class="dl faint">acumulado</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos projetados</div><div class="vl">${brl0(provProj)}</div><div class="dl faint">12 meses</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Rentabilidade</div>${p.provPend?`<div class="vl faint" style="font-size:15px">apurando…</div><div class="dl faint">c/ proventos</div>`:`<div class="vl ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div><div class="dl faint">c/ proventos</div>`}</div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos recebidos</div><div class="vl">${p.provPend?'—':brl0(provReceb)}</div><div class="dl faint">${p.provPend?(provFetchDown(p._byT)?'indisponível':'apurando…'):'acumulado (real)'}</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos projetados</div><div class="vl">${brl0(provProj)}</div><div class="dl faint">12 meses · est.</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Ativos</div><div class="vl">${d.n}</div><div class="dl faint">posições</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Setores</div><div class="vl">${d.setores.length}</div><div class="dl faint">classes: ${d.classes.length}</div></div>
   </div>
@@ -10693,8 +10770,8 @@ function gerarRelatorioMensal(opts){
   const perLabel = REP_PERIODS[opts.period] || 'Últimos 12 meses';
   const resumo = opts.resumo? `<div class="kpis">
       <div class="kpi"><div class="l">Patrimônio</div><div class="v">${brl(p.atual)}</div></div>
-      <div class="kpi"><div class="l">Resultado c/ prov.</div><div class="v" style="color:${p.lucroProv>=0?up:down}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div></div>
-      <div class="kpi"><div class="l">Renda mensal</div><div class="v">${brl(p.renda)}</div></div>
+      <div class="kpi"><div class="l">Resultado c/ prov.</div>${p.provPend?`<div class="v">—</div><div class="l">proventos não apurados</div>`:`<div class="v" style="color:${p.lucroProv>=0?up:down}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div>`}</div>
+      <div class="kpi"><div class="l">Renda mensal (est.)</div><div class="v">${brl(p.renda)}</div></div>
       <div class="kpi"><div class="l">DY médio</div><div class="v">${pc(p.dyMed,1)}%</div></div>
     </div>` : '';
   const rows=groups.map(g=>`<tr><td><strong>${g.tk}</strong></td><td class="r">${g.cotas}</td><td class="r">${brl(g.pm)}</td><td class="r">${brl(g.val)}</td><td class="r" style="color:${g.lp>=0?up:down}">${g.lp>=0?'+':''}${pc(g.lp,1)}%</td><td class="r">${p.atual?pc(g.val/p.atual*100,1):0}%</td></tr>`).join('');
@@ -10704,8 +10781,8 @@ function gerarRelatorioMensal(opts){
   if(opts.aloc){ const byC={}; groups.forEach(g=>{ const c=rxClasseOf(g.f.k); byC[c]=(byC[c]||0)+g.val; }); const ent=Object.entries(byC).sort((a,b)=>b[1]-a[1]);
     alocSec=`<h2>Alocação por classe</h2><table><thead><tr><th>Classe</th><th class="r">Valor</th><th class="r">% Carteira</th></tr></thead><tbody>${ent.map(([c,v])=>`<tr><td>${c}</td><td class="r">${brl(v)}</td><td class="r">${p.atual?pc(v/p.atual*100,1):0}%</td></tr>`).join('')}</tbody></table>`; }
   let provSec='';
-  if(opts.prov){ const start=repPeriodStart(opts.period); const pays=provPayments().filter(x=>x.date>=start).sort((a,b)=>b.date-a.date); const tot=pays.reduce((s,x)=>s+x.valor,0);
-    const prows=pays.slice(0,80).map(x=>`<tr><td>${fmtDateBR(_patDay(x.date))}</td><td><strong>${x.tk}</strong></td><td>${x.k==='fiis'?'Rendimento':'Dividendo'}</td><td class="r">${x.cotas}</td><td class="r">${brl(x.valor)}</td></tr>`).join('');
+  if(opts.prov){ const start=repPeriodStart(opts.period); const pays=provPayments().filter(x=>x.date>=start).sort((a,b)=>b.date-a.date); const _v=x=>(x.valorBRL!=null?x.valorBRL:x.valor)||0; const tot=pays.reduce((s,x)=>s+_v(x),0);
+    const prows=pays.slice(0,80).map(x=>`<tr><td>${fmtDateBR(_patDay(x.date))}</td><td><strong>${x.tk}</strong></td><td>${x.k==='fiis'?'Rendimento':'Dividendo'}</td><td class="r">${x.cotas}</td><td class="r">${brl(_v(x))}</td></tr>`).join('');
     provSec = `<h2>Proventos · ${perLabel} · total ${brl(tot)}</h2>` + (pays.length? `<table><thead><tr><th>Data</th><th>Ativo</th><th>Tipo</th><th class="r">Cotas</th><th class="r">Valor</th></tr></thead><tbody>${prows}</tbody></table>` : `<p style="font-size:13px;color:#64707C;margin-top:4px">Nenhum provento recebido no período selecionado.</p>`); }
   const css=`*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif}body{padding:40px;color:#16202B;max-width:820px;margin:auto}.hd{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #1A4F94;padding-bottom:16px;margin-bottom:24px}.brand{font-size:22px;font-weight:800;color:#0B2E5E}.brand span{color:#16202B}.sub{color:#64707C;font-size:13px;text-transform:capitalize}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px}.kpi{border:1px solid #E5E8EC;border-radius:10px;padding:14px}.kpi .l{font-size:11px;color:#64707C;text-transform:uppercase;letter-spacing:.04em}.kpi .v{font-size:18px;font-weight:700;margin-top:4px}h2{font-size:14px;margin:26px 0 10px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 10px;border-bottom:1px solid #EEF0F2;text-align:left}th{font-size:11px;color:#64707C;text-transform:uppercase;letter-spacing:.03em}.r{text-align:right}.ft{margin-top:28px;font-size:11px;color:#9AA3AD;border-top:1px solid #EEF0F2;padding-top:12px;line-height:1.5}@media print{body{padding:0}}`;
   const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório Lastro · ${mes}</title><style>${css}</style></head><body>
@@ -10749,7 +10826,7 @@ function exportCarteiraCSV(opts){
   if(opts.tipo==='proventos'){
     const start=repPeriodStart(opts.period), pays=provPayments().filter(x=>x.date>=start).sort((a,b)=>a.date-b.date);
     const head=['Data','Ativo','Classe','Tipo','Cotas','Valor por cota (R$)','Valor total (R$)'];
-    const rows=pays.map(x=>[ fmtDateBR(_patDay(x.date)), x.tk, (ASSET_CLASS[x.k]?ASSET_CLASS[x.k].label:x.k), x.k==='fiis'?'Rendimento':'Dividendo', csvNum(x.cotas), csvNum(x.perCota||0), csvNum(x.valor) ]);
+    const rows=pays.map(x=>[ fmtDateBR(_patDay(x.date)), x.tk, (ASSET_CLASS[x.k]?ASSET_CLASS[x.k].label:x.k), x.k==='fiis'?'Rendimento':'Dividendo', csvNum(x.cotas), csvNum(x.perCota||0), csvNum((x.valorBRL!=null?x.valorBRL:x.valor)||0) ]);
     const lines=[head, ...rows].map(r=>r.map(csvCell).join(';'));
     downloadFile(`lastro-proventos-${stamp}.csv`, '﻿'+lines.join('\r\n'), 'text/csv;charset=utf-8');
     toast(rows.length? 'Proventos exportados em CSV ✓' : 'Sem proventos no período — planilha vazia gerada'); return;
