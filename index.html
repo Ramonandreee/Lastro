@@ -4685,7 +4685,23 @@ let currentView = 'painel';
    ══════════════════════════════════════════════════════════ */
 const PLAN_LIMITS = { carteira: 6, watchlist: 8, comparador: 2 };
 let demoMode = false;   // carteira de demonstração (efêmera, só em memória — some ao recarregar)
-function getPlan(){ return localStorage.getItem('lastro_plan')==='premium' ? 'premium' : 'free'; }
+/* ── Entitlement (plano) — FONTE DA VERDADE NO SERVIDOR (tabela user_entitlement) ──
+   O plano NÃO vive mais só no cliente: localStorage é forjável e some no logout. Agora o
+   cliente só LÊ o entitlement do servidor (hidratado no login/boot em `ENT`); o localStorage
+   `lastro_plan` vira apenas CACHE VISUAL (primeiro paint / offline). No modo dev, cai no cache
+   local (para permitir forçar o plano em testes). A gravação legítima é via RPC grant_entitlement. */
+let ENT = null;   // {plan,tier,status,periodEnd} do servidor; null = ainda não carregado
+function entEffective(){
+  if(typeof testModeOn==='function' && testModeOn()) return null;   // modo dev → usa cache local
+  if(!ENT) return null;                                             // ainda não hidratado → usa cache local
+  const plan = ENT.plan || 'free';
+  if(plan==='free') return { plan:'free', tier:null };
+  if(ENT.status && ENT.status!=='active') return { plan:'free', tier:null };            // cancelado/inadimplente
+  if(ENT.periodEnd && Date.now()>ENT.periodEnd) return { plan:'free', tier:null };      // período expirou
+  return { plan, tier:ENT.tier||null };
+}
+function entCacheSave(){ try{ const e=entEffective(); if(e) localStorage.setItem('lastro_plan', e.plan==='free'?'free':'premium'); }catch(_){}}
+function getPlan(){ const e=entEffective(); if(e) return e.plan==='free'?'free':'premium'; return localStorage.getItem('lastro_plan')==='premium' ? 'premium' : 'free'; }
 
 /* ══ Teste Premium de 7 dias (captação de leads) ══
    Criar conta (mesmo no plano Gratuito) libera todos os recursos Premium por 7 dias.
@@ -4756,7 +4772,7 @@ function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid
 function isPremium(){ return getPlan()==='premium'; }
 function setPlan(p){ localStorage.setItem('lastro_plan', p==='premium'?'premium':'free'); refreshPlanUI(); if(typeof saveCloudState==='function') saveCloudState(); }
 /* tier do plano pago: 'free' | 'premium' | 'pro' (Pro = assinante do tier superior) */
-function planTier(){ if(!isPremium()) return 'free'; const s=getSub(); return (s&&s.tier==='pro')?'pro':'premium'; }
+function planTier(){ const e=entEffective(); if(e){ if(e.plan==='free') return 'free'; return (e.plan==='pro'||e.tier==='pro')?'pro':'premium'; } if(!isPremium()) return 'free'; const s=getSub(); return (s&&s.tier==='pro')?'pro':'premium'; }
 function isProTier(){ return planTier()==='pro'; }
 const REF_RATE = 0.20, REF_RATE_PRO = 0.40;   // comissão de indicação (Pro dobra)
 function refreshPlanUI(){
@@ -5194,11 +5210,13 @@ function subscribePremium(tier, cycle){
   const p = PLANS[tier]||PLANS.premium; const c = cycle==='mensal'?'mensal':'anual';
   const amount = c==='anual'? p.anualTotal : p.mensal;
   setSub({ tier, plano:p.name, cycle:c, since:new Date().toISOString(), card:'4242', brand:'Visa', amount });
-  setPlan('premium');
+  setPlan('premium');   // cache otimista; a verdade é gravada no SERVIDOR abaixo
+  // grava no servidor (fonte da verdade — sobrevive ao logout e à troca de aparelho)
+  grantEntitlement(tier==='pro'?'pro':'premium', tier, c==='anual'?366:31).then(ok=>{ if(ok && typeof refreshPlanUI==='function') refreshPlanUI(); });
   toast(`Bem-vindo ao ${p.name} 👑`);
   openAssinatura();
 }
-function downgradeFree(){ setSub(null); setPlan('free'); toast('Plano alterado para Gratuito'); openAssinatura(); }
+function downgradeFree(){ setSub(null); setPlan('free'); grantEntitlement('free', null, 0).then(()=>{ if(typeof refreshPlanUI==='function') refreshPlanUI(); }); toast('Plano alterado para Gratuito'); openAssinatura(); }
 function cancelSub(){ showConfirm('Cancelar assinatura?','Você manterá o Premium até o fim do período já pago e depois volta ao plano Gratuito.','Cancelar assinatura', ()=>{ const s=getSub(); if(s){ s.canceled=true; setSub(s); } toast('Assinatura cancelada — ativa até o fim do período'); openAssinatura(); }, true); }
 function openAssinatura(){ closeAcctMenu(); currentView='assinatura'; document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); render('assinatura'); animateContent(); $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'}); closeSidebar(); }
 function viewAssinatura(){
@@ -5288,6 +5306,56 @@ async function sbFetch(url, opts, _retried){
   return r;
 }
 
+/* ── Entitlement server-side (plano) ──────────────────────────────────────────
+   loadEntitlement: lê a linha do próprio usuário (RLS: só a dele) e hidrata ENT.
+   grantEntitlement: RPC PROVISÓRIA (checkout simulado) — grava no servidor e re-hidrata.
+   Sem sessão/backend → mantém o cache local (offline-safe, nunca derruba o plano por erro de rede). */
+async function loadEntitlement(){
+  const s=getSession(), c=_sb(); if(!s || !c.SUPABASE_URL) return;
+  try{
+    const r=await sbFetch(`${c.SUPABASE_URL}/rest/v1/user_entitlement?user_id=eq.${s.user.id}&select=plan,tier,status,current_period_end`, {});
+    if(!r.ok) return;   // erro/offline → preserva o cache visual (não rebaixa por falha de rede)
+    const rows=await r.json().catch(()=>[]);
+    const row=Array.isArray(rows)?rows[0]:null;
+    if(row){
+      ENT={ plan:row.plan||'free', tier:row.tier||null, status:row.status||'active', periodEnd:row.current_period_end?Date.parse(row.current_period_end):0 };
+      entCacheSave();
+    } else {
+      ENT={ plan:'free', tier:null, status:'active', periodEnd:0 };
+      await migrateLegacyEntitlement();   // sem linha no servidor: sobe um Premium legado (1x) se houver
+    }
+    if(typeof refreshPlanUI==='function') refreshPlanUI();
+  }catch(e){}
+}
+async function grantEntitlement(plan, tier, days){
+  const s=getSession(), c=_sb(); if(!s || !c.SUPABASE_URL) return false;
+  try{
+    const r=await sbFetch(`${c.SUPABASE_URL}/rest/v1/rpc/grant_entitlement`, {
+      method:'POST', headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify({ p_plan:plan, p_tier:tier||null, p_days:days||30 })
+    });
+    if(!r.ok) return false;
+    const d=await r.json().catch(()=>null); const e=Array.isArray(d)?d[0]:d;
+    if(e){ ENT={ plan:e.plan||'free', tier:e.tier||null, status:e.status||'active', periodEnd:e.current_period_end?Date.parse(e.current_period_end):0 }; entCacheSave(); }
+    return true;
+  }catch(e){ return false; }
+}
+/* migração 1x: assinante do fluxo antigo (Premium só no localStorage) sobe ao servidor.
+   Conservador: exige plano premium E objeto de assinatura local (sinal de assinatura simulada real). */
+async function migrateLegacyEntitlement(){
+  try{
+    if(localStorage.getItem('lastro_ent_migrated')) return;
+    const legacyPremium = localStorage.getItem('lastro_plan')==='premium';
+    const sub=getSub();
+    if(legacyPremium && sub){
+      const tier=(sub.tier==='pro')?'pro':'premium';
+      if(await grantEntitlement(tier, tier, 366)) localStorage.setItem('lastro_ent_migrated','1');
+    } else {
+      localStorage.setItem('lastro_ent_migrated','1');   // nada a migrar; não tenta de novo
+    }
+  }catch(e){}
+}
+
 /* traduz erros comuns do Supabase Auth para português */
 function translateAuthErr(msg){
   const m=String(msg||'').toLowerCase();
@@ -5317,6 +5385,7 @@ async function authLogin(email, pass){
     if(!r.ok) return {error: d.error_description||d.msg||'E-mail ou senha inválidos'};
     saveSession({access_token:d.access_token, refresh_token:d.refresh_token, user:{id:d.user.id, email:d.user.email}});
     await loadCloudState();
+    await loadEntitlement();   // plano do SERVIDOR (restaura Premium no relogin/novo aparelho)
     return {ok:true};
   }catch(e){ return {error:'Sem conexão com o servidor'}; }
 }
@@ -5341,7 +5410,8 @@ function _doLogout(){
   ['lastro_carteira','lastro_movs','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts','lastro_dirty'].forEach(k=>localStorage.removeItem(k));
   _stateTs = 0; clearDirty(); setSync('idle','');   // zera o relógio de sync — o próximo login adota o estado da nuvem
   try{ sessionStorage.removeItem('lastro_unlocked'); }catch(e){}   // ao sair, o próximo acesso pede biometria de novo
-  localStorage.setItem('lastro_plan','free');          // assinante que sai volta ao Gratuito
+  localStorage.setItem('lastro_plan','free');          // cache visual → Gratuito; o próximo login rehidrata do servidor
+  localStorage.removeItem('lastro_ent_migrated'); ENT=null;   // entitlement volta a ser lido do servidor no próximo login
   CARTEIRA = []; MOVS = []; localStorage.removeItem('lastro_sub'); // sem dados pessoais nem demo
   refreshPlanUI(); updateAuthUI(); applyPriv();
   closeAuth(); closeAcctMenu();
@@ -12951,7 +13021,7 @@ try{
   refreshPlanUI();
   updateAuthUI();
   document.querySelectorAll('.modal-scrim,.search-modal').forEach(m=>{ m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); });
-  if(isAuthed()) loadCloudState();   // retoma sessão e sincroniza
+  if(isAuthed()){ loadCloudState(); loadEntitlement(); }   // retoma sessão, sincroniza e restaura o plano do servidor
   render('painel');   // afterRender('painel') já dispara refreshQuotes() da tela
   syncNavGroups();     // menu começa recolhido (só Mercado aberto)
   animateContent();

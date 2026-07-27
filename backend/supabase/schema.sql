@@ -93,3 +93,69 @@ end;
 $$;
 
 grant execute on function public.save_state(jsonb) to authenticated;
+
+-- ════════════════════════════════════════════════════════════
+-- ENTITLEMENT (plano/assinatura) — FONTE DA VERDADE NO SERVIDOR.
+-- O plano NÃO pode viver só no cliente: localStorage é forjável (qualquer um faria
+-- `localStorage.lastro_plan='premium'`) e some no logout (assinante perde o Premium).
+-- Aqui o cliente só LÊ a própria linha; NÃO há policy de insert/update para `authenticated`
+-- → ninguém se auto-promove a Premium mexendo no navegador. A escrita legítima vem:
+--   • hoje (provisório): pela RPC `grant_entitlement` (security definer) — checkout SIMULADO;
+--   • no futuro: pelo webhook do gateway de pagamento rodando com service_role (ignora RLS).
+-- ════════════════════════════════════════════════════════════
+create table if not exists public.user_entitlement (
+  user_id             uuid primary key references auth.users(id) on delete cascade,
+  plan                text not null default 'free',       -- 'free' | 'premium' | 'pro'
+  tier                text,                                -- rótulo opcional do nível
+  status              text not null default 'active',      -- active | canceled | past_due
+  current_period_end  timestamptz,                         -- fim do período pago (null = sem validade)
+  updated_at          timestamptz default now()
+);
+alter table public.user_entitlement enable row level security;
+
+-- Só LEITURA para o dono. SEM policy de insert/update para `authenticated` → não é forjável.
+drop policy if exists "entitlement select own" on public.user_entitlement;
+create policy "entitlement select own" on public.user_entitlement
+  for select using (auth.uid() = user_id);
+-- (Quando houver gateway real, a escrita fica a cargo do webhook com service_role — que ignora
+--  a RLS e dispensa policy. NÃO crie policy de escrita para `authenticated`.)
+
+-- ─── RPC PROVISÓRIA (checkout SIMULADO) — REMOVER quando o pagamento real existir ───
+-- security definer: roda como o dono da função (postgres) e grava mesmo sem policy de escrita.
+-- Ainda é chamável por qualquer usuário autenticado (por isso PROVISÓRIA — não é anti-fraude),
+-- mas já centraliza a verdade no SERVIDOR e faz o plano sobreviver ao logout/troca de aparelho.
+create or replace function public.grant_entitlement(p_plan text, p_tier text default null, p_days int default 30)
+returns public.user_entitlement
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_days int;
+  v_row  public.user_entitlement;
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated';
+  end if;
+  if p_plan not in ('free','premium','pro') then
+    raise exception 'invalid plan: %', p_plan;
+  end if;
+  v_days := least(greatest(coalesce(p_days, 30), 1), 366);   -- clamp defensivo
+  insert into public.user_entitlement (user_id, plan, tier, status, current_period_end, updated_at)
+    values (auth.uid(), p_plan, p_tier,
+            case when p_plan = 'free' then 'canceled' else 'active' end,
+            case when p_plan = 'free' then null else now() + (v_days || ' days')::interval end,
+            now())
+  on conflict (user_id) do update
+    set plan = excluded.plan,
+        tier = excluded.tier,
+        status = excluded.status,
+        current_period_end = excluded.current_period_end,
+        updated_at = now()
+  returning * into v_row;
+  return v_row;
+end;
+$$;
+
+revoke all on function public.grant_entitlement(text, text, int) from public;
+grant execute on function public.grant_entitlement(text, text, int) to authenticated;
