@@ -12664,12 +12664,15 @@ function quickView(tk){ openAsset(tk); }
 /* navegação "voltar" — segue a HIERARQUIA do app, não o histórico:
    Ativo → lista de origem → Início. Demais telas → Início. */
 function canGoBack(){ return currentView==='asset' || currentView!=='painel'; }
-const VIEW_PARENT = { recdetail:'recomendadas', assinatura:'painel' };
+// Pais EXPLÍCITOS (nesting mais profundo que a aba): detalhe→lista, sub-abas→wrapper.
+const VIEW_PARENT = { recdetail:'recomendadas', watchlist:'acompanhar', alertas:'acompanhar' };
 function goBack(){
   if(currentView==='asset'){ backFromAsset(); return true; }      // ativo → lista de origem (prevView)
   const parent = VIEW_PARENT[currentView];
-  if(parent){ goView(parent); return true; }                      // segue a hierarquia (ex.: detalhe → recomendadas)
-  if(currentView!=='painel'){ goView('painel'); return true; }    // demais telas → Início
+  if(parent){ goView(parent); return true; }                      // nesting explícito (ex.: detalhe → recomendadas)
+  const hub = (typeof VIEW_TAB!=='undefined') ? VIEW_TAB[currentView] : null;
+  if(hub && hub!==currentView){ goView(hub); return true; }       // sub-página → HUB da aba de origem (Mercado/Carteira/Mais)
+  if(currentView!=='painel'){ goView('painel'); return true; }    // aba-raiz → Início
   return false;
 }
 /* swipe-back na borda esquerda (mobile): apenas troca de página, SEM arrastar o conteúdo
