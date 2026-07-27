@@ -3648,6 +3648,85 @@ button.mp-cell:active { background:var(--surface-3); }
 .pex-v { font-family:var(--mono); font-weight:600; font-size:13.5px; }
 .pex-s { font-size:11px; color:var(--ink-3); }
 @media (max-width:760px){ .prov-extract { grid-template-columns:1fr; gap:0; } }
+
+/* ══ MEUS PROVENTOS — hero da renda passiva, gráfico e ranking ══════════════ */
+.prov-hero { --php:20px; position:relative; overflow:hidden; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); padding:17px var(--php) 0; margin-bottom:16px; }
+.prov-hero::before { content:''; position:absolute; left:0; right:0; top:0; height:180px; pointer-events:none;
+  background:radial-gradient(120% 100% at 86% 0%, color-mix(in srgb, var(--up) 12%, transparent), transparent 62%); }
+.ph-top { position:relative; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 10px; }
+.ph-eyebrow { white-space:nowrap; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-4); }
+.ph-val { position:relative; margin-top:11px; font-family:var(--mono); font-size:clamp(29px,8.4vw,38px); font-weight:700; line-height:1.04; letter-spacing:-.025em; color:var(--up); font-variant-numeric:tabular-nums; }
+.ph-meta { position:relative; display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin-top:9px; font-size:12px; }
+.ph-delta { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; }
+.ph-delta i { font-size:11px; }
+.ph-delta em { font-style:normal; font-weight:500; color:var(--ink-3); }
+.ph-delta.up { color:var(--up); } .ph-delta.down { color:var(--down); }
+.ph-delta.faint { color:var(--ink-4); font-weight:500; }
+.ph-sep { width:3px; height:3px; border-radius:50%; background:var(--ink-4); opacity:.55; flex:none; }
+.ph-n { color:var(--ink-3); }
+.ph-foot { position:relative; display:grid; grid-template-columns:repeat(3,1fr); margin:15px calc(var(--php)*-1) 0; border-top:1px solid var(--line); }
+.ph-stat { position:relative; min-width:0; padding:12px 14px 13px; display:flex; flex-direction:column; gap:3px; }
+.ph-stat + .ph-stat::before { content:''; position:absolute; left:0; top:24%; bottom:24%; width:1px; background:var(--line); }
+.ph-stat .l { display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:600; color:var(--ink-4); letter-spacing:.01em; }
+.ph-stat .v { font-family:var(--mono); font-size:15px; font-weight:600; letter-spacing:-.01em; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ph-stat .v.ph-v-brand { color:var(--brand); }
+.ph-stat .s { font-size:10.5px; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ph-stat[data-term] { cursor:pointer; transition:background .18s var(--ease); }
+.ph-stat[data-term] .l::after { content:''; width:5px; height:5px; border-radius:50%; background:var(--ink-4); opacity:.55; flex:none; transition:opacity .16s var(--ease), background .16s var(--ease); }
+.ph-stat[data-term]:hover { background:var(--surface-2); }
+.ph-stat[data-term]:hover .l::after { opacity:1; background:var(--brand); }
+.ph-stat[data-term]:active { background:var(--surface-3); }
+/* cartões da tela */
+.prov-card { margin-top:16px; }
+.prov-card .card-head { margin-bottom:8px; }
+.prov-chart { position:relative; height:228px; margin:12px -6px 0; }
+.prov-legend { display:inline-flex; align-items:center; gap:6px; font-size:10.5px; color:var(--ink-4); white-space:nowrap; }
+.prov-legend .pl-bar { width:9px; height:9px; border-radius:2px; background:var(--brand); }
+.prov-legend .pl-avg { width:13px; height:0; border-top:1.5px dashed var(--ink-4); margin-left:5px; }
+.prov-link { color:var(--brand); font-weight:600; }
+/* ranking "quem mais paga" */
+.prank { display:flex; flex-direction:column; }
+.prank-row { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:0 12px; padding:11px 8px 12px; margin:0 -8px; border-top:1px solid var(--line); border-radius:var(--r-lg); cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .18s var(--ease), transform .18s var(--ease); }
+.prank-row:first-child { border-top:0; }
+.prank-row:hover { background:var(--surface-2); }
+.prank-row:active { background:var(--surface-3); transform:scale(.994); }
+.prank-row:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l); }
+.prank-n { width:22px; height:22px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; font-weight:700; color:var(--brand); background:var(--brand-l); opacity:var(--pk,1); }
+.prank-lead .prank-n { color:var(--gold); background:var(--gold-l); opacity:1; }
+.prank-id { min-width:0; }
+.prank-tk { font-family:var(--mono); font-size:13.5px; font-weight:600; color:var(--ink); }
+.prank-nm { font-size:11px; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.prank-v { text-align:right; flex:none; }
+.prank-v .v { font-family:var(--mono); font-size:13.5px; font-weight:600; }
+.prank-v .s { font-family:var(--mono); font-size:10.5px; color:var(--ink-4); margin-top:1px; }
+.prank-track { grid-column:1 / -1; height:3px; margin-top:9px; border-radius:2px; background:var(--surface-3); overflow:hidden; }
+.prank-track i { display:block; height:100%; border-radius:2px; background:var(--brand); opacity:var(--pk,1); transform-origin:left center; animation:prankGrow .8s var(--ease-out) both; }
+.prank-lead .prank-track i { background:var(--gold); }
+@keyframes prankGrow { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+.prank-more { font-size:11.5px; color:var(--ink-4); padding-top:11px; margin-top:2px; border-top:1px solid var(--line); }
+/* estado PARCIAL — o número aparece, mas avisado (e com caminho para tentar de novo) */
+.prov-alert { display:flex; align-items:center; gap:11px; flex-wrap:wrap; padding:11px 13px; margin-bottom:14px; border-radius:var(--r-lg); background:var(--warn-l); border:1px solid color-mix(in srgb, var(--warn) 26%, transparent); }
+.pa-ic { flex:none; width:26px; height:26px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:11.5px; color:var(--warn); background:color-mix(in srgb, var(--warn) 16%, transparent); }
+.pa-tx { flex:1 1 190px; min-width:0; font-size:12px; line-height:1.5; color:var(--ink-2); }
+.pa-tx strong { color:var(--ink); font-weight:700; }
+.pa-btn { flex:none; margin-left:auto; }
+/* estado CARREGANDO — mesma silhueta da tela pronta */
+.prov-loading-h { display:flex; align-items:flex-start; gap:9px; margin-bottom:14px; font-size:12.5px; line-height:1.5; color:var(--ink-3); }
+.prov-loading-h .spin { flex:none; margin-top:3px; width:12px; height:12px; border:1.5px solid var(--line-2); border-top-color:var(--brand); border-radius:50%; animation:spin .7s linear infinite; }
+.prov-loading-h strong { color:var(--ink-2); font-weight:600; }
+.prov-hero-skel { padding-bottom:0; }
+.prov-skel-bars { display:flex; align-items:flex-end; gap:7px; height:150px; }
+.prov-skel-bars span { flex:1; border-radius:6px 6px 2px 2px; }
+.prov-state .card-head { margin-bottom:2px; }
+@media (max-width:520px){
+  .prov-hero { --php:16px; }
+  .ph-stat { padding:11px 10px 12px; }
+  .ph-stat .v { font-size:13.5px; }
+  .ph-stat .l, .ph-stat .s { font-size:10px; }
+  .prov-chart { height:205px; margin:10px -8px 0; }
+  .pa-btn { margin-left:0; width:100%; justify-content:center; }
+}
+@media (prefers-reduced-motion:reduce){ .prank-track i { animation:none; } }
 .pos-preview { display:none; margin-top:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:13px 15px; }
 .pos-preview.on { display:block; animation:fadeIn .2s var(--ease); }
 .pp-h { display:flex; align-items:center; gap:10px; padding-bottom:10px; margin-bottom:8px; border-bottom:1px solid var(--line); }
@@ -7955,11 +8034,31 @@ function proventosData(){
            semFonte:groups.filter(g=>g.provSrc==='na').map(g=>g.tk),
            semData:pays.some(p=>p.semData) };
 }
+/* nota de rodapé da tela (mesma redação honesta de antes, agora dentro de illusNote →
+   o texto solto virava flex-item e quebrava em colunas no mobile) */
+function provFootNote(d){
+  return illusNote(`Cada pagamento é o <strong>valor por cota realmente declarado</strong> pelo ativo, multiplicado pelas cotas que você já tinha na ${termLabel('datacom','data-com')} — nada é projetado. Janela de 12 meses corridos, a mesma da <a href="javascript:nav('agenda')" class="prov-link">Agenda de Dividendos</a>.${d.semData?' Aportes <strong>sem data</strong> foram contados como anteriores a todos os pagamentos — informe a data para a conta ficar exata.':''}${d.semFonte.length?` Ainda sem fonte de proventos para: <strong>${d.semFonte.slice(0,6).join(', ')}</strong> — esses ativos não entram no total.`:''} Resultados passados não garantem retornos futuros.`);
+}
+/* esqueleto com a MESMA silhueta da tela pronta (hero + barras) — carregar sem susto visual */
+function provSkeleton(){
+  const bars=[38,54,44,70,60,82,50,66,74,58,88,64];
+  return `<div class="prov-skel">
+    <div class="prov-hero prov-hero-skel">
+      <div class="skeleton skel-line sk-40" style="height:10px"></div>
+      <div class="skeleton" style="height:34px;width:62%;border-radius:8px;margin:14px 0 16px"></div>
+      <div class="ph-foot">${[0,1,2].map(()=>`<div class="ph-stat"><div class="skeleton skel-line sk-55" style="height:8px"></div><div class="skeleton skel-line sk-90" style="height:14px;margin-top:8px"></div></div>`).join('')}</div>
+    </div>
+    <div class="card card-pad prov-card">
+      <div class="skeleton skel-line sk-40" style="height:11px;margin-bottom:16px"></div>
+      <div class="prov-skel-bars">${bars.map(h=>`<span class="skeleton" style="height:${h}%"></span>`).join('')}</div>
+    </div>
+  </div>`;
+}
 function viewProventos(){
   const d=proventosData(), p=portfolioStats();
   const head=`<div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Meus Proventos</div></div>`;
   if(!d.nPos){
-    return `<div class="card card-pad">${head}
+    return `<div class="card card-pad prov-state">${head}
     ${emptyState('fa-coins','Você ainda não tem proventos','Adicione aportes em FIIs ou ações pagadoras para acompanhar o histórico, o crescimento e o Yield on Cost da sua renda passiva.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   }
   // histórico REAL a caminho — nada de preencher a tela com estimativa. Mas só apaga a tela quando
@@ -7967,62 +8066,97 @@ function viewProventos(){
   // parcialidade (antes, um único ticker com falha escondia todos os proventos reais da carteira).
   if(d.pend && !d.ranking.length){
     if(provFetchDown()){
-      return `<div class="card card-pad">${head}
+      return `<div class="card card-pad prov-state">${head}
       ${emptyState('fa-plug-circle-exclamation','Proventos indisponíveis agora','Não conseguimos buscar o histórico <strong>real</strong> de proventos dos seus ativos. Preferimos não mostrar nada a mostrar um número estimado — tente novamente em instantes.',`<button class="btn btn-primary" onclick="ensurePortfolioDividends(true);render('proventos')"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>`)}</div>`;
     }
-    return `<div class="card card-pad">${head}
-      <div class="sec-desc" style="margin:6px 0 14px">Apurando os proventos <strong>realmente pagos</strong> dos seus ativos (valor por cota declarado × cotas que você tinha na data-com).</div>
-      ${typeof agendaSkeleton==='function'?agendaSkeleton(4):'<div class="skeleton skel-line"></div>'}</div>`;
+    return `<div class="prov-loading">
+      <div class="prov-loading-h"><span class="spin"></span><span>Apurando os proventos <strong>realmente pagos</strong> dos seus ativos — valor por cota declarado × cotas que você tinha na ${termLabel('datacom','data-com')}.</span></div>
+      ${provSkeleton()}</div>`;
   }
   if(!d.ranking.length){
     const semFonte = d.semFonte.length? ` Ativos de classes sem fonte de proventos no Lastro (${d.semFonte.slice(0,4).join(', ')}${d.semFonte.length>4?'…':''}) não entram nesta conta.`:'';
-    return `<div class="card card-pad">${head}
+    return `<div class="card card-pad prov-state">${head}
     ${emptyState('fa-coins','Nenhum provento recebido nos últimos 12 meses',`Só entram aqui pagamentos <strong>realmente declarados</strong> pelos ativos, contando as cotas que você já tinha na data-com.${d.totalAll>0?` Você tem ${brl(d.totalAll)} recebidos em datas anteriores a este período.`:''}${semFonte}`,`<button class="btn btn-ghost" onclick="nav('agenda')"><i class="fa-regular fa-calendar"></i> Ver agenda de dividendos</button>`)}</div>`;
   }
   const yoc = p.invest? d.total12/p.invest*100 : 0;   // YoC REAL: 12m recebidos ÷ custo (sem projeção por DY)
-  const gr = d.growth==null? '—' : (d.growth>=0?'+':'')+pc(d.growth,1)+'%';
-  const rankRows = d.ranking.slice(0,8).map(([tk,v],i)=>{ const col=ALLOC_COLORS[i%ALLOC_COLORS.length], pctv=d.total12? v/d.total12*100:0;
-    return `<div class="pex-row" onclick="quickView('${tk}')"><div class="pex-l"><span style="display:inline-flex;width:22px;height:22px;border-radius:6px;background:${col}22;color:${col};align-items:center;justify-content:center;font-size:11px;font-weight:700">${i+1}</span><div class="pex-id"><div class="pex-tk">${tk}</div><div class="pex-d">${pc(pctv,1)}% do total</div></div></div><div class="pex-r"><div class="pex-v up priv-blur">${brl(v)}</div><div class="pex-s">12 meses</div></div></div>`; }).join('');
+  const gUp = d.growth!=null && d.growth>=0;
+  const growth = d.growth==null
+    ? `<span class="ph-delta faint"><i class="fa-regular fa-clock"></i> sem 12 meses anteriores para comparar</span>`
+    : `<span class="ph-delta ${gUp?'up':'down'}"><i class="fa-solid fa-arrow-trend-${gUp?'up':'down'}"></i> ${gUp?'+':''}${pc(d.growth,1)}% <em>vs 12m anteriores</em></span>`;
+  const best = d.months.reduce((a,b)=>(b.val>(a?a.val:-1)?b:a), null) || { val:0, label:'—' };
+  const nAtivos = d.ranking.length;
+  // cor por posição via TOKENS (ouro no líder, marca nos demais, esmaecendo) — legível no claro E no escuro
+  const rankRows = d.ranking.slice(0,8).map(([tk,v],i)=>{ const pctv=d.total12? v/d.total12*100:0, lead=i===0;
+    const lk=(typeof assetLookup==='function')?assetLookup(tk):null, nm=(lk&&lk.a&&lk.a.nm)?lk.a.nm:'';
+    return `<div class="prank-row${lead?' prank-lead':''}" onclick="quickView('${tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();quickView('${tk}')}" style="--pk:${Math.max(.42, 1-i*.11).toFixed(2)}">
+      <span class="prank-n">${i+1}</span>
+      <div class="prank-id"><div class="prank-tk">${tk}</div><div class="prank-nm">${nm?esc(nm):'&nbsp;'}</div></div>
+      <div class="prank-v"><div class="v up priv-blur">${brl(v)}</div><div class="s">${pc(pctv,1)}% da renda</div></div>
+      <span class="prank-track"><i style="width:${Math.max(2,pctv).toFixed(1)}%"></i></span>
+    </div>`; }).join('');
+  const rankMais = d.ranking.length>8 ? `<div class="prank-more">+ ${d.ranking.length-8} ativo${d.ranking.length-8===1?'':'s'} pagaram menos no período</div>` : '';
   // parcial: há proventos reais apurados, mas algum ativo ainda não respondeu → mostra o número
-  // com aviso, em vez de esconder tudo.
-  const parcial = d.pend ? `<div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Total <strong>parcial</strong>: ainda não conseguimos o histórico de ${provPendTickers().join(', ')||'alguns ativos'}. O valor abaixo tende a subir quando a apuração terminar.</div>` : '';
+  // com aviso (e caminho para tentar de novo), em vez de esconder tudo.
+  const parcial = d.pend ? `<div class="prov-alert">
+    <span class="pa-ic"><i class="fa-solid fa-hourglass-half"></i></span>
+    <div class="pa-tx"><strong>Total parcial.</strong> Ainda não conseguimos o histórico de ${provPendTickers().join(', ')||'alguns ativos'}. Os valores desta tela tendem a subir quando a apuração terminar.</div>
+    <button class="btn btn-ghost btn-sm pa-btn" onclick="ensurePortfolioDividends(true);render('proventos')"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>
+  </div>` : '';
   return `${parcial}
-  <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Recebido (12m)</div><div class="vl priv-blur up">${brl(d.total12)}</div><div class="dl faint">renda passiva</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Média mensal</div><div class="vl priv-blur">${brl(d.media)}</div><div class="dl faint">por mês</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Crescimento a/a</div><div class="vl ${d.growth>=0?'up':'down'}">${gr}</div><div class="dl faint">vs 12m anteriores</div></div>
-    <div class="mcell" data-term="yoc"><div class="nm" style="margin-bottom:8px">Yield on Cost</div><div class="vl" style="color:var(--brand)">${pc(yoc,1)}%</div><div class="dl faint">12m recebidos ÷ custo</div></div>
-  </div>
-  <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Proventos por mês <span class="card-sub" style="margin-left:6px">· últimos 12 meses</span></div><span class="chip" style="background:var(--up-l);color:var(--up)" title="Valor por cota declarado pelo ativo × cotas que você tinha na data-com"><i class="fa-solid fa-circle-check"></i> pagamentos reais</span></div>
-    <div style="position:relative;height:240px;margin-top:6px"><canvas id="provMonthChart" role="img" aria-label="Proventos por mês"></canvas></div>
-  </div>
-  <div class="sim-grid" style="margin-top:16px">
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-trophy"></i></span> Quem mais paga</div></div>
-      <div class="prov-extract" style="margin-top:8px">${rankRows}</div>
+  <section class="prov-hero">
+    <div class="ph-top">
+      <span class="ph-eyebrow">Renda passiva · 12m</span>
+      <span class="ag-tag ag-tag-real" data-tip="Valor por cota declarado pelo ativo × cotas que você tinha na data-com. Nada é estimado."><i class="fa-solid fa-circle-check"></i> pagamentos reais</span>
     </div>
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-chart-pie"></i></span> Distribuição da renda</div></div>
-      <div style="position:relative;height:240px;margin-top:6px"><canvas id="provAssetChart" role="img" aria-label="Distribuição dos proventos por ativo"></canvas></div>
+    <div class="ph-val priv-blur">${brl(d.total12)}</div>
+    <div class="ph-meta">${growth}<span class="ph-sep"></span><span class="ph-n">${nAtivos} ativo${nAtivos===1?'':'s'} pagando</span></div>
+    <div class="ph-foot">
+      <div class="ph-stat"><span class="l">Média mensal</span><span class="v priv-blur">${brl(d.media)}</span><span class="s">por mês</span></div>
+      <div class="ph-stat" data-term="yoc"><span class="l">Yield on Cost</span><span class="v ph-v-brand">${pc(yoc,1)}%</span><span class="s">sobre o custo</span></div>
+      <div class="ph-stat"><span class="l">Melhor mês</span><span class="v priv-blur">${best.val>0?brl(best.val):'—'}</span><span class="s">${best.val>0?best.label:'sem pagamento'}</span></div>
     </div>
+  </section>
+  <div class="card card-pad prov-card">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Proventos por mês</div><span class="prov-legend"><i class="pl-bar"></i>recebido<i class="pl-avg"></i>média</span></div>
+    <div class="prov-chart"><canvas id="provMonthChart" role="img" aria-label="Proventos recebidos por mês nos últimos 12 meses"></canvas></div>
   </div>
-  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Cada pagamento é o <strong>valor por cota realmente declarado</strong> pelo ativo, multiplicado pelas cotas que você já tinha na <strong>data-com</strong> — nada é projetado. Janela de 12 meses corridos, a mesma da <a href="javascript:nav('agenda')" style="color:var(--brand)">Agenda de Dividendos</a>.${d.semData?' Aportes <strong>sem data</strong> foram contados como anteriores a todos os pagamentos — informe a data para a conta ficar exata.':''}${d.semFonte.length?` Ainda sem fonte de proventos para: <strong>${d.semFonte.slice(0,6).join(', ')}</strong> — esses ativos não entram no total.`:''} Resultados passados não garantem retornos futuros.</div>`;
+  <div class="card card-pad prov-card">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-trophy"></i></span> Quem mais paga</div><span class="card-sub">12 meses</span></div>
+    <div class="prank">${rankRows}</div>${rankMais}
+  </div>
+  ${provFootNote(d)}`;
 }
 function chartUnavail(c){ if(c) c.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; }
 function initProventosCharts(){
-  const d=proventosData(), c1=$('#provMonthChart');
-  if(c1 && HAS_CHART){ const br=cssVar('--brand'); if(charts.provMonth) charts.provMonth.destroy();
-    charts.provMonth=new Chart(c1,{ type:'bar', data:{ labels:d.months.map(m=>m.label), datasets:[{ data:d.months.map(m=>m.val), backgroundColor:br+'cc', borderRadius:5, maxBarThickness:34 }] },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>brl(c.parsed.y)}} },
-        scales:{ x:{grid:{display:false},ticks:{color:cssVar('--ink-3'),font:{size:10}},border:{display:false}}, y:{grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>'R$'+v.toFixed(0)},border:{display:false}} } } });
-  } else chartUnavail(c1);
-  const c2=$('#provAssetChart');
-  if(c2 && HAS_CHART){ if(charts.provAsset) charts.provAsset.destroy(); const rank=d.ranking.slice(0,8), rest=d.ranking.slice(8).reduce((s,x)=>s+x[1],0);
-    const labels=rank.map(x=>x[0]).concat(rest>0?['Outros']:[]), data=rank.map(x=>x[1]).concat(rest>0?[rest]:[]);
-    charts.provAsset=new Chart(c2,{ type:'doughnut', data:{ labels, datasets:[{ data, backgroundColor:labels.map((_,i)=>ALLOC_COLORS[i%ALLOC_COLORS.length]), borderWidth:0, hoverOffset:7 }] },
-      options:{ responsive:true, maintainAspectRatio:false, cutout:'62%', plugins:{ legend:{position:'bottom', labels:{color:cssVar('--ink-2'),font:{size:11,family:'IBM Plex Mono'},padding:10,usePointStyle:true,pointStyleWidth:9,boxHeight:7}}, tooltip:{callbacks:{label:c=>{const tot=c.dataset.data.reduce((s,v)=>s+v,0); return c.label+': '+(tot?(c.parsed/tot*100).toFixed(1):0)+'% · '+brl(c.parsed);}}} } } });
-  } else chartUnavail(c2);
+  const c1=$('#provMonthChart');
+  if(charts.provAsset){ try{ charts.provAsset.destroy(); }catch(e){} delete charts.provAsset; }
+  if(!(c1 && HAS_CHART)){ chartUnavail(c1); return; }
+  const d=proventosData();
+  if(charts.provMonth) charts.provMonth.destroy();
+  const br=cssVar('--brand'), ink3=cssVar('--ink-3'), ink4=cssVar('--ink-4');
+  const vals=d.months.map(m=>m.val), lastIx=d.months.length-1;
+  const MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const fmtY=v=> v>=1000 ? 'R$ '+(v/1000).toFixed(v%1000?1:0).replace('.',',')+'k' : 'R$ '+Math.round(v);
+  // gradiente vertical na cor da marca (mês em curso mais claro — ainda pode receber mais)
+  const barBg = ctx => { const {chart, dataIndex}=ctx; const area=chart.chartArea;
+    const a = dataIndex===lastIx ? ['80','cc'] : ['aa','f2'];
+    if(!area) return br+a[1];
+    const g=chart.ctx.createLinearGradient(0, area.bottom, 0, area.top);
+    g.addColorStop(0, br+a[0]); g.addColorStop(1, br+a[1]); return g; };
+  charts.provMonth=new Chart(c1,{ type:'bar', data:{ labels:d.months.map(m=>m.label), datasets:[
+      { type:'bar', label:'recebido', data:vals, backgroundColor:barBg, hoverBackgroundColor:br, borderRadius:{topLeft:6,topRight:6,bottomLeft:2,bottomRight:2}, borderSkipped:false, maxBarThickness:30, order:2 },
+      { type:'line', label:'média', data:vals.map(()=>d.media), borderColor:ink4, borderWidth:1.2, borderDash:[4,4], pointRadius:0, pointHoverRadius:0, pointHitRadius:0, tension:0, order:1 } ] },
+    options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:6}},
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{display:false},
+        tooltip:{ filter:i=>i.datasetIndex===0, displayColors:false, padding:10, cornerRadius:8,
+          backgroundColor:cssVar('--ink'), titleColor:cssVar('--canvas'), bodyColor:cssVar('--canvas'), footerColor:cssVar('--ink-4'),
+          titleFont:{size:11,weight:'600'}, bodyFont:{size:13,weight:'700'}, footerFont:{size:10.5,weight:'500'},
+          callbacks:{ title:it=>{ const k=(d.months[it[0].dataIndex]||{}).key||''; const [y,m]=k.split('-'); return (MES[+m]||'')+' de '+y; },
+            label:c=>c.parsed.y>0?brl(c.parsed.y):'nenhum provento no mês',
+            footer:it=>it[0].dataIndex===lastIx?'mês em curso':'média do período: '+brl(d.media) } } },
+      scales:{ x:{ type:'category', offset:true, grid:{display:false,offset:true}, ticks:{color:ink3,font:{size:10.5,weight:'500'},autoSkip:false,maxRotation:0}, border:{display:false} },
+        y:{ beginAtZero:true, grid:{color:cssVar('--line'),drawTicks:false}, ticks:{color:ink4,font:{size:10},padding:8,maxTicksLimit:4,callback:fmtY}, border:{display:false} } } } });
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -11558,6 +11692,7 @@ const TERMS={
 function hlp(k){ const t=(TERMS&&TERMS[k])||k; return `<span class="hlp" data-tip="${esc(t)}">?</span>`; }
 /* termos com card rico (mesmo modelo dos indicadores dos ativos) — tocar abre a definição */
 const TERM_CARDS={
+  datacom:{ nome:'Data-com', icon:'fa-calendar-check', descricao:'O último dia em que é preciso ter o ativo em carteira para ter direito ao provento anunciado.', formula:'Quem compra depois da data-com (já "ex") não recebe aquele pagamento', interpretacao:'É por isso que só contam as cotas que você já tinha na data-com — comprar às vésperas do pagamento não dá direito ao provento.' },
   mrr:{ nome:'Receita Mensal', icon:'fa-sack-dollar', descricao:'A receita recorrente que entra todos os meses com as assinaturas ativas.', formula:'Soma das mensalidades de todos os assinantes ativos', interpretacao:'É o principal termômetro do negócio: quanto maior e mais estável, melhor. Cresce com novos assinantes e cai com cancelamentos.', faixaIdeal:'Deve subir mês a mês.', pontosAtencao:'Uma queda indica cancelamentos (churn) — investigue o motivo.' },
   arr:{ nome:'Receita Anual', icon:'fa-arrow-trend-up', descricao:'A receita recorrente projetada para 12 meses, mantendo os assinantes atuais.', formula:'Receita Mensal × 12', interpretacao:'Mostra o tamanho anual do negócio em regime recorrente — útil para planejar metas.', faixaIdeal:'Cresce junto com a Receita Mensal.' },
   ticket:{ nome:'Ticket médio', icon:'fa-receipt', descricao:'O valor médio que cada cliente pagante rende por mês.', formula:'Receita Mensal ÷ nº de clientes pagantes', interpretacao:'Sobe quando mais gente assina o plano mais caro (Investidor Pro).', faixaIdeal:'Quanto maior, mais cada cliente contribui.' },
