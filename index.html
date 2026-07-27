@@ -4068,7 +4068,9 @@ function provPerCotaMonth(tk, base, y, m){ return base>0 ? base : 0; }
    `valor` é NATIVO (US$ p/ dolarizado); `total` já vem convertido em BRL. */
 function realPaymentsFor(g){
   if(!g || !g.f) return null;
-  if(!(typeof LIVE_ASSET_KINDS!=='undefined' && LIVE_ASSET_KINDS.has(g.f.k))){ const e=[]; e.src='na'; return e; }
+  // sem fonte de proventos: classe não coberta OU ativo dolarizado (o /api/asset é proxy brapi/B3 —
+  // stock/ETF internacional falharia sempre e contaminaria o estado "pendente" da carteira inteira).
+  if(!(typeof LIVE_ASSET_KINDS!=='undefined' && LIVE_ASSET_KINDS.has(g.f.k)) || (typeof isUsAsset==='function' && isUsAsset(g.f))){ const e=[]; e.src='na'; return e; }
   const dd=agendaDivs(g.tk); if(!dd) return null;
   const rate = g.cur==='usd' ? usdBrlRate() : 1;
   const out=[];
@@ -4110,7 +4112,8 @@ function ensurePortfolioDividends(force){
   if(typeof loadAssetLive!=='function' || typeof ASSET_LIVE==='undefined') return;
   const now=Date.now();
   if(force) _provTried.clear();
-  const want=[...new Set(portfolioByTicker().filter(g=>LIVE_ASSET_KINDS.has(g.f.k)).map(g=>g.tk))];
+  // não busca dolarizado: /api/asset é proxy brapi/B3 e a chamada falharia sempre
+  const want=[...new Set(portfolioByTicker().filter(g=>LIVE_ASSET_KINDS.has(g.f.k) && !(typeof isUsAsset==='function' && isUsAsset(g.f))).map(g=>g.tk))];
   const todo=want.filter(tk=>!Array.isArray((ASSET_LIVE[tk]||{}).dividends) && !(now-(_provTried.get(tk)||0) < 300000));
   if(!todo.length) return;
   todo.forEach(tk=>{ _provTried.set(tk, now); _provFail.delete(tk); });
@@ -4129,6 +4132,8 @@ function provFetchDown(groups){
   return gs.length>0 && gs.every(g=>_provFail.has(g.tk));
 }
 function provPendLabel(g){ return (g && _provFail.has(g.tk)) ? 'indisponível' : 'apurando…'; }
+/* tickers cujo histórico de proventos ainda não veio (para o aviso de total parcial) */
+function provPendTickers(groups){ return (groups||portfolioByTicker()).filter(g=>g.provPend).map(g=>g.tk).slice(0,4); }
 /* parse de data de lote 'YYYY-MM-DD' como data LOCAL (evita erro de fuso ao comparar com data-com) */
 function parseLotDate(iso){
   if(!iso) return null;
@@ -4625,8 +4630,12 @@ function portfolioStats(lots){
   return { invest, atual, renda, dyMed, prov, caixa:M.fromCents(caixaCents),
     lucro: M.fromCents(lucroCents), lucroP: investCents ? M.pctCents(lucroCents, investCents) : 0,
     lucroProv: M.fromCents(lucroProvCents), lucroProvP: investCents ? M.pctCents(lucroProvCents, investCents) : 0,
-    // provPend: algum ativo ainda apurando o histórico real de proventos → prov/lucroProv são PARCIAIS
-    provPend: byT.some(g=>g.provPend), provReal: byT.some(g=>g.provSrc==='real'),
+    // provPend = ainda APURANDO (transitório, some sozinho). provPartial = algum ativo FALHOU:
+    // aí mostramos o total já apurado com aviso de parcialidade, em vez de apagar o número de
+    // todas as telas por causa de um ticker (o antigo some() global fazia isso).
+    provPend: byT.some(g=>g.provPend && !(typeof _provFail!=='undefined' && _provFail.has(g.tk))),
+    provPartial: byT.some(g=>g.provPend && (typeof _provFail!=='undefined' && _provFail.has(g.tk))),
+    provReal: byT.some(g=>g.provSrc==='real'),
     nAtivos: byT.length, _byT: byT };
 }
 /* peso (%) de um ativo no patrimônio — aceita um grupo agregado ou um lote */
@@ -7883,7 +7892,10 @@ function viewProventos(){
     return `<div class="card card-pad">${head}
     ${emptyState('fa-coins','Você ainda não tem proventos','Adicione aportes em FIIs ou ações pagadoras para acompanhar o histórico, o crescimento e o Yield on Cost da sua renda passiva.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   }
-  if(d.pend){   // histórico REAL a caminho — nada de preencher a tela com estimativa
+  // histórico REAL a caminho — nada de preencher a tela com estimativa. Mas só apaga a tela quando
+  // ainda NÃO há nada apurado: havendo pagamentos reais, mostramos o que já temos com aviso de
+  // parcialidade (antes, um único ticker com falha escondia todos os proventos reais da carteira).
+  if(d.pend && !d.ranking.length){
     if(provFetchDown()){
       return `<div class="card card-pad">${head}
       ${emptyState('fa-plug-circle-exclamation','Proventos indisponíveis agora','Não conseguimos buscar o histórico <strong>real</strong> de proventos dos seus ativos. Preferimos não mostrar nada a mostrar um número estimado — tente novamente em instantes.',`<button class="btn btn-primary" onclick="ensurePortfolioDividends(true);render('proventos')"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>`)}</div>`;
@@ -7901,7 +7913,10 @@ function viewProventos(){
   const gr = d.growth==null? '—' : (d.growth>=0?'+':'')+pc(d.growth,1)+'%';
   const rankRows = d.ranking.slice(0,8).map(([tk,v],i)=>{ const col=ALLOC_COLORS[i%ALLOC_COLORS.length], pctv=d.total12? v/d.total12*100:0;
     return `<div class="pex-row" onclick="quickView('${tk}')"><div class="pex-l"><span style="display:inline-flex;width:22px;height:22px;border-radius:6px;background:${col}22;color:${col};align-items:center;justify-content:center;font-size:11px;font-weight:700">${i+1}</span><div class="pex-id"><div class="pex-tk">${tk}</div><div class="pex-d">${pc(pctv,1)}% do total</div></div></div><div class="pex-r"><div class="pex-v up priv-blur">${brl(v)}</div><div class="pex-s">12 meses</div></div></div>`; }).join('');
-  return `
+  // parcial: há proventos reais apurados, mas algum ativo ainda não respondeu → mostra o número
+  // com aviso, em vez de esconder tudo.
+  const parcial = d.pend ? `<div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Total <strong>parcial</strong>: ainda não conseguimos o histórico de ${provPendTickers().join(', ')||'alguns ativos'}. O valor abaixo tende a subir quando a apuração terminar.</div>` : '';
+  return `${parcial}
   <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Recebido (12m)</div><div class="vl priv-blur up">${brl(d.total12)}</div><div class="dl faint">renda passiva</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Média mensal</div><div class="vl priv-blur">${brl(d.media)}</div><div class="dl faint">por mês</div></div>
@@ -8129,12 +8144,15 @@ function viewIR(){
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-hand-holding-dollar"></i></span> Rendimentos isentos <span class="card-sub" style="margin-left:6px">· ${ano}</span></div></div>
       <div style="display:flex;flex-direction:column;gap:2px;margin-top:8px">
-        <div class="metric"><div class="ml">FIIs — rendimentos (cód. 26)</div><div class="mv priv-blur up">${brl(rend.fii)}</div></div>
-        <div class="metric"><div class="ml">Ações — dividendos (cód. 09)</div><div class="mv priv-blur up">${brl(rend.acoes)}</div></div>
+        <div class="metric"><div class="ml">FIIs — rendimentos (cód. 26)</div><div class="mv ${rend.pend?'':'priv-blur up'}">${rend.pend?'<span style="color:var(--ink-3);font-size:13px">apurando…</span>':brl(rend.fii)}</div></div>
+        <div class="metric"><div class="ml">Ações — dividendos (cód. 09)</div><div class="mv ${rend.pend?'':'priv-blur up'}">${rend.pend?'<span style="color:var(--ink-3);font-size:13px">apurando…</span>':brl(rend.acoes)}</div></div>
         <div class="divider"></div>
-        <div class="metric"><div class="ml" style="font-weight:700">Total isento no ano</div><div class="mv priv-blur" style="font-weight:700">${brl(rend.total)}</div></div>
+        <div class="metric"><div class="ml" style="font-weight:700">Total isento no ano</div><div class="mv ${rend.pend?'':'priv-blur'}" style="font-weight:700">${rend.pend?'<span style="color:var(--ink-3);font-size:13px">apurando…</span>':brl(rend.total)}</div></div>
       </div>
-      <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Estimado a partir dos proventos da carteira em ${ano}.</div>
+      <!-- IR é a tela mais sensível do app: nunca imprimir R$ 0,00 como se fosse apuração concluída -->
+      <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> ${rend.pend
+        ? 'Ainda apurando os proventos reais da carteira — nenhum valor é exibido antes de fechar a conta.'
+        : `Somente proventos com data-com no histórico da fonte (cerca de 2 anos), em ${ano} — pode estar incompleto. Confira sempre com os informes de rendimentos.`}</div>
     </div>
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-calculator"></i></span> Calculadora de DARF (venda)</div></div>
@@ -9549,7 +9567,10 @@ function wealthPeriodKPI(period){
   const pv=portfolioPeriodVar(days);
   let val, pct, ok=false;
   if(pv && Math.abs(pv.base)>0){ val=pv.val; pct=pv.pct; ok=true; }
-  else { const p=(typeof portfolioStats==='function')?portfolioStats():null; val=p?p.lucroProv:0; pct=p?p.lucroProvP:0; }   // sem cotação ao vivo: cai no resultado total
+  // sem cotação ao vivo: cai no resultado total. Com proventos ainda não apurados, usa o resultado
+  // SEM proventos — senão exibiria "resultado c/ proventos" contando provento que ainda não chegou.
+  else { const p=(typeof portfolioStats==='function')?portfolioStats():null;
+    const semProv=!!(p&&p.provPend); val=p?(semProv?p.lucro:p.lucroProv):0; pct=p?(semProv?p.lucroP:p.lucroProvP):0; }
   let label;
   if(period==='MAX') label='máximo';
   else if(first && invDays < days-1) label='desde '+first.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});   // ainda não completou o período
