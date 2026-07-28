@@ -7366,6 +7366,15 @@ function toggleCartMenu(e){ if(e) e.stopPropagation(); const m=document.getEleme
   const open=m.classList.toggle('open');
   if(open){ setTimeout(()=>document.addEventListener('click', closeCartMenu, {once:true}), 0); } }
 function closeCartMenu(){ const m=document.getElementById('cartMenu'); if(m) m.classList.remove('open'); }
+/* Abas da área CARTEIRA: Resumo · Proventos · Agenda · Raio-X.
+   Ficam no TOPO das quatro telas (antes eram cards de atalho no rodapé da Carteira),
+   para o usuário alternar com um toque sem procurar. Reusa .stabs/.atab do app. */
+const CART_TABS=[['carteira','Resumo','fa-wallet'],['proventos','Proventos','fa-coins'],['agenda','Agenda','fa-regular fa-calendar'],['raiox','Raio-X','fa-chart-pie']];
+function cartTabsHTML(active){
+  return `<div class="stabs cart-tabs"><div class="stabs-inner">${CART_TABS.map(([v,l,ic])=>
+    `<button class="atab ${v===active?'on':''}" onclick="${v===active?'':`goView('${v}')`}"><i class="fa-solid ${ic}"></i> ${l}</button>`
+  ).join('')}</div></div>`;
+}
 function viewCarteira(){
   const p = portfolioStats();
   const byT = p._byT;
@@ -7400,6 +7409,7 @@ function viewCarteira(){
 
   return `
   ${demoMode?`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--gold-l);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);border-radius:var(--r);padding:12px 14px;margin-bottom:14px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold);font-size:16px"></i><div style="flex:1;min-width:180px;font-size:12.5px;color:var(--ink-2);line-height:1.5">Você está vendo uma <strong>carteira de demonstração</strong> — ela some ao fechar o app. Crie a sua para acompanhar de verdade, com sincronização na nuvem.</div><button class="btn btn-premium btn-sm" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Desbloquear minha carteira</button></div>`:''}
+  ${cartTabsHTML('carteira')}
   <div class="cart-sum-head"><div class="sec-title" style="margin:0;font-size:19px">Minha carteira${demoMode?' <span class="chip ilus" style="vertical-align:middle"><i class="fa-solid fa-flask"></i> demonstração</span>':''}</div><button class="priv-eye" onclick="togglePriv()" title="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
   <!-- resumo em bloco único (mesmo componente do hero de Proventos) — antes eram 4 células em 2 linhas -->
   <div class="prov-hero cart-hero">
@@ -7419,12 +7429,6 @@ function viewCarteira(){
     <div class="pos-grid">${holdings}</div>
   </div>
 
-  <!-- Atalhos: o que saiu daqui vive em telas próprias (renda passiva, calendário, raio-X) -->
-  <div class="cart-links">
-    <button class="cart-link" onclick="goView('proventos')"><span class="cl-ic" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-coins"></i></span><span class="cl-tx"><b>Meus proventos</b><small>Renda recebida, por mês e por ativo</small></span><i class="fa-solid fa-chevron-right cl-cv"></i></button>
-    <button class="cart-link" onclick="goView('agenda')"><span class="cl-ic"><i class="fa-regular fa-calendar"></i></span><span class="cl-tx"><b>Agenda de dividendos</b><small>O que já foi anunciado a receber</small></span><i class="fa-solid fa-chevron-right cl-cv"></i></button>
-    <button class="cart-link" onclick="goView('raiox')"><span class="cl-ic"><i class="fa-solid fa-chart-pie"></i></span><span class="cl-tx"><b>Raio-X da carteira</b><small>Alocação, evolução e comparação com CDI/IBOV</small></span><i class="fa-solid fa-chevron-right cl-cv"></i></button>
-  </div>
 
 
 
@@ -8385,7 +8389,8 @@ function viewProventos(){
   const d=proventosData(), p=portfolioStats();
   const head=`<div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Meus Proventos</div></div>`;
   if(!d.nPos){
-    return `<div class="card card-pad prov-state">${head}
+    return `
+  ${cartTabsHTML('proventos')}<div class="card card-pad prov-state">${head}
     ${emptyState('fa-coins','Você ainda não tem proventos','Adicione aportes em FIIs ou ações pagadoras para acompanhar o histórico, o crescimento e o Yield on Cost da sua renda passiva.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   }
   // histórico REAL a caminho — nada de preencher a tela com estimativa. Mas só apaga a tela quando
@@ -8393,16 +8398,16 @@ function viewProventos(){
   // parcialidade (antes, um único ticker com falha escondia todos os proventos reais da carteira).
   if(d.pend && !d.ranking.length){
     if(provFetchDown()){
-      return `<div class="card card-pad prov-state">${head}
+      return `${cartTabsHTML('proventos')}<div class="card card-pad prov-state">${head}
       ${emptyState('fa-plug-circle-exclamation','Proventos indisponíveis agora','Não conseguimos buscar o histórico <strong>real</strong> de proventos dos seus ativos. Preferimos não mostrar nada a mostrar um número estimado — tente novamente em instantes.',`<button class="btn btn-primary" onclick="ensurePortfolioDividends(true);render('proventos')"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>`)}</div>`;
     }
-    return `<div class="prov-loading">
+    return `${cartTabsHTML('proventos')}<div class="prov-loading">
       <div class="prov-loading-h"><span class="spin"></span><span>Apurando os proventos <strong>realmente pagos</strong> dos seus ativos — valor por cota declarado × cotas que você tinha na ${termLabel('datacom','data-com')}.</span></div>
       ${provSkeleton()}</div>`;
   }
   if(!d.ranking.length){
     const semFonte = d.semFonte.length? ` Ativos de classes sem fonte de proventos no Lastro (${d.semFonte.slice(0,4).join(', ')}${d.semFonte.length>4?'…':''}) não entram nesta conta.`:'';
-    return `<div class="card card-pad prov-state">${head}
+    return `${cartTabsHTML('proventos')}<div class="card card-pad prov-state">${head}
     ${emptyState('fa-coins','Nenhum provento recebido nos últimos 12 meses',`Só entram aqui pagamentos <strong>realmente declarados</strong> pelos ativos, contando as cotas que você já tinha na data-com.${d.totalAll>0?` Você tem ${brl(d.totalAll)} recebidos em datas anteriores a este período.`:''}${semFonte}`,`<button class="btn btn-ghost" onclick="nav('agenda')"><i class="fa-regular fa-calendar"></i> Ver agenda de dividendos</button>`)}</div>`;
   }
   const yoc = p.invest? d.total12/p.invest*100 : 0;   // YoC REAL: 12m recebidos ÷ custo (sem projeção por DY)
@@ -8415,7 +8420,7 @@ function viewProventos(){
   // cor por posição via TOKENS (ouro no líder, marca nos demais, esmaecendo) — legível no claro E no escuro
   const rankRows = d.ranking.slice(0,8).map(([tk,v],i)=>{ const pctv=d.total12? v/d.total12*100:0, lead=i===0;
     const lk=(typeof assetLookup==='function')?assetLookup(tk):null, nm=(lk&&lk.a&&lk.a.nm)?lk.a.nm:'';
-    return `<div class="prank-row${lead?' prank-lead':''}" onclick="quickView('${tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();quickView('${tk}')}" style="--pk:${Math.max(.42, 1-i*.11).toFixed(2)}">
+    return `${cartTabsHTML('proventos')}<div class="prank-row${lead?' prank-lead':''}" onclick="quickView('${tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();quickView('${tk}')}" style="--pk:${Math.max(.42, 1-i*.11).toFixed(2)}">
       <span class="prank-n">${i+1}</span>
       <div class="prank-id"><div class="prank-tk">${tk}</div><div class="prank-nm">${nm?esc(nm):'&nbsp;'}</div></div>
       <div class="prank-v"><div class="v up priv-blur">${brl(v)}</div><div class="s">${pc(pctv,1)}% da renda</div></div>
@@ -8429,7 +8434,7 @@ function viewProventos(){
     <div class="pa-tx"><strong>Total parcial.</strong> Ainda não conseguimos o histórico de ${provPendTickers().join(', ')||'alguns ativos'}. Os valores desta tela tendem a subir quando a apuração terminar.</div>
     <button class="btn btn-ghost btn-sm pa-btn" onclick="ensurePortfolioDividends(true);render('proventos')"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>
   </div>` : '';
-  return `${parcial}
+  return `${cartTabsHTML('proventos')}${parcial}
   <section class="prov-hero">
     <div class="ph-top">
       <span class="ph-eyebrow">Renda passiva · 12m</span>
@@ -8452,7 +8457,7 @@ function viewProventos(){
     <div class="prank">${rankRows}</div>${rankMais}
   </div>
   ${(()=>{ const sal=salaryProjection(); if(!(sal.totalAno>0)) return ''; const meta=getRendaMeta(); const prog=Math.min(100, sal.media/meta*100);
-    return `<div class="card card-pad" style="margin-top:16px">
+    return `${cartTabsHTML('proventos')}<div class="card card-pad" style="margin-top:16px">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Salário de dividendos</div><div class="pex-total"><div class="pex-total-v priv-blur">${brl(sal.media)}</div><div class="pex-total-l">média/mês · 12 meses</div></div></div>
       <div style="position:relative;height:200px;margin:8px 0 16px"><canvas id="salaryChart" role="img" aria-label="Projeção de proventos mensais"></canvas></div>
       <div class="sim-control" style="margin-bottom:6px">
@@ -8969,6 +8974,7 @@ function agendaDate(d){ return `<div class="tl-date"><div class="d">${String(d.g
 
 function viewAgenda(){
   return `
+  ${cartTabsHTML('agenda')}
   <div class="sec-title">Agenda de Dividendos</div>
   <div class="sec-desc">Proventos com <strong>data real</strong> — a data-com e a data de pagamento declaradas por cada empresa e fundo. O Lastro não inventa datas: o que é projeção aparece sempre marcado como <strong>estimado</strong>.</div>
   <div id="agBody">${agendaBodyHTML()}</div>`;
@@ -10613,7 +10619,8 @@ function rxRecommendations(lots){
   return { buy:buy.slice(0,4), sell:sell.slice(0,4) };
 }
 function viewRaioX(){
-  if(!isProTier()) return `<div class="card premium-gate">${premiumPresentation('raiox')}</div>`;
+  if(!isProTier()) return `
+  ${cartTabsHTML('raiox')}<div class="card premium-gate">${premiumPresentation('raiox')}</div>`;
   const head = `<div class="sec-title">Raio-X da carteira</div>
   <div class="sec-desc">O retrato completo da carteira: patrimônio, diversificação por setor, ativo e classe, a Nota de Diversificação Lastro e sugestões de melhoria.</div>`;
   const lots = null; _rxLots = lots;
@@ -10629,7 +10636,7 @@ function viewRaioX(){
   const sgBars=sgEnt.map(([k,v],i)=>rxBar(k,v,pal[i%pal.length])).join('');
   const atRows=d.pos.slice().sort((a,b)=>b.w-a.w).map(x=>{
     const alta=x.w>25, media=x.w>15&&x.w<=25;
-    return `<div class="rx-asset" onclick="quickView('${x.tk}')">
+    return `${cartTabsHTML('raiox')}<div class="rx-asset" onclick="quickView('${x.tk}')">
       ${assetLogo(x.tk,x.k,'sm')}
       <div class="rx-as-id"><div class="rx-as-tk">${x.tk}${alta?` <span class="rx-flag neg">concentrado</span>`:media?` <span class="rx-flag warn">atenção</span>`:''}</div><div class="rx-as-nm">${esc((x.a&&x.a.nm)||'')} · ${x.setor}</div></div>
       <div class="rx-as-bar"><i style="width:${Math.min(100,x.w*2.5).toFixed(1)}%;background:${alta?'var(--down)':media?'var(--gold)':'var(--brand)'}"></i></div>
@@ -10645,7 +10652,7 @@ function viewRaioX(){
     || '<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>Carteira equilibrada — sem ajustes urgentes no momento.</span></li>';
   const eqColor = sc.equilibrio>=80?'#0B2E5E':sc.equilibrio>=65?'#1E56A6':sc.equilibrio>=50?'#A87C2A':sc.equilibrio>=35?'#E2761B':'#DC2626';
   const eqMsg = sc.equilibrio>=80?'Carteira muito bem equilibrada entre diversificação, qualidade e renda.' : sc.equilibrio>=65?'Bom equilíbrio geral — pequenos ajustes podem elevar o índice.' : sc.equilibrio>=50?'Equilíbrio mediano: revise concentração e mix de qualidade.' : 'Carteira desequilibrada — priorize diversificação e qualidade dos ativos.';
-  const divSegRows = sc.divSeg.map(x=>{ const c=x.sc>=7?'var(--brand)':x.sc>=4?'var(--gold)':'var(--down)'; return `<div class="rx-asset" onclick="quickView('${x.tk}')">${assetLogo(x.tk,x.k,'sm')}<div class="rx-as-id"><div class="rx-as-tk">${x.tk}</div><div class="rx-as-nm">${esc(x.nm)} · DY ${pc(x.dy,1)}%</div></div><div class="rx-as-bar"><i style="width:${(x.sc*10).toFixed(0)}%;background:${c}"></i></div><span class="rx-as-w mono" style="color:${c}">${x.sc.toFixed(1)}/10</span></div>`; }).join('') || '<div class="faint" style="font-size:12.5px;padding:6px">Nenhum ativo pagador de dividendos na carteira.</div>';
+  const divSegRows = sc.divSeg.map(x=>{ const c=x.sc>=7?'var(--brand)':x.sc>=4?'var(--gold)':'var(--down)'; return `${cartTabsHTML('raiox')}<div class="rx-asset" onclick="quickView('${x.tk}')">${assetLogo(x.tk,x.k,'sm')}<div class="rx-as-id"><div class="rx-as-tk">${x.tk}</div><div class="rx-as-nm">${esc(x.nm)} · DY ${pc(x.dy,1)}%</div></div><div class="rx-as-bar"><i style="width:${(x.sc*10).toFixed(0)}%;background:${c}"></i></div><span class="rx-as-w mono" style="color:${c}">${x.sc.toFixed(1)}/10</span></div>`; }).join('') || '<div class="faint" style="font-size:12.5px;padding:6px">Nenhum ativo pagador de dividendos na carteira.</div>';
   const recs=rxRecommendations(lots);
   const recRow=x=>`<div class="rx-rec" onclick="quickView('${x.tk}')">${assetLogo(x.tk,x.k,'sm')}<div class="rx-rec-id"><div class="rx-rec-tk">${x.tk} <span class="rx-rec-act ${x.cls}">${x.acao}</span></div><div class="rx-rec-why">${x.reason}</div></div></div>`;
   const buyRows = recs.buy.map(recRow).join('') || '<div class="faint" style="font-size:12px;padding:6px">Carteira bem coberta — sem compras prioritárias agora.</div>';
