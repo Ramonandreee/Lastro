@@ -2728,11 +2728,14 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .perfil-hero-id { flex:1; min-width:0; }
 .perfil-hero-nm { font-size:19px; font-weight:650; letter-spacing:-.01em; line-height:1.2; }
 .perfil-hero-em { font-size:13px; color:var(--ink-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.perfil-hero-meta { margin-top:8px; }
+.perfil-hero-plan { flex:none; align-self:flex-start; margin-left:8px; }
 .perfil-card { margin-top:14px; }
 .perfil-card-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
 .perfil-card-t i { color:var(--ink-4); font-size:13px; }
-.perfil .prof-out { display:flex; margin-top:18px; }
+.perfil-foot { margin-top:18px; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.perfil-help { background:none; border:none; color:var(--ink-3); font-size:13px; font-weight:500; cursor:pointer; padding:6px 10px; display:inline-flex; align-items:center; gap:7px; transition:color .14s var(--ease); }
+.perfil-help:hover { color:var(--brand); }
+.perfil-foot .prof-out { width:100%; margin-top:0; }
 @media (max-width:560px){ .perfil-av-lg { width:60px; height:60px; } .perfil-av-lg .prof-av-inner { font-size:22px; } .perfil-hero-nm { font-size:17px; } }
 /* central de ajuda (suporte) */
 .sup-hero { display:flex; align-items:center; gap:13px; padding:14px 16px; border-radius:var(--r); background:linear-gradient(120deg, color-mix(in srgb,var(--brand) 12%,transparent), transparent 72%); border:1px solid color-mix(in srgb,var(--brand) 18%,transparent); margin-bottom:14px; }
@@ -3549,7 +3552,7 @@ body.pdf-lock { overflow:hidden; }
 @media (max-width:760px){
   .tabbar {
     display:flex; align-items:center; position:fixed; left:14px; right:14px; z-index:60;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 4px);  /* ilha flutuante, mais baixa (era +10px) */
+    bottom:max(6px, env(safe-area-inset-bottom,0px));    /* ilha flutuante, o mais baixa possível (logo acima da área segura) */
     height:62px; padding:0 8px;
     background:var(--surface); border:1px solid var(--line);
     border-radius:34px;                                  /* cápsula arredondada */
@@ -5291,27 +5294,25 @@ function viewPerfil(){
   const twofaSwitch=(kind,on)=>`<button class="prof-switch ${on?'on':''}" data-2fa="${kind}" role="switch" aria-checked="${!!on}" onclick="toggle2FA('${kind}')"><span></span></button>`;
   const themePref=(typeof getThemePref==='function')?getThemePref():'auto';
   const themeLbl = themePref==='dark'?'Escuro':themePref==='light'?'Claro':'Automático';
-  // renovação/assinatura
-  let planRow = `<div class="prof-row"><span><i class="fa-solid fa-crown"></i> Plano atual</span>${planChip}</div>`;
-  if(isPremium() && sub && sub.since){ const nx=addDays(sub.since, sub.cycle==='anual'?365:30); planRow += `<div class="prof-row sub"><span><i class="fa-solid fa-calendar-check"></i> ${sub.canceled?'Acesso até':'Renova em'}</span><b>${nx.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</b></div>`; }
+  const renew = (isPremium() && sub && sub.since) ? addDays(sub.since, sub.cycle==='anual'?365:30) : null;
   return `
   <div class="perfil" id="perfilPage">
     <div class="card card-pad perfil-hero">
       <button class="prof-av prof-av-edit perfil-av-lg" onclick="photoOptions()" title="Foto de perfil"><span class="prof-av-inner">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</span><span class="prof-av-cam"><i class="fa-solid fa-camera"></i></span></button>
-      <div class="perfil-hero-id"><div class="perfil-hero-nm">${esc(profileName())}</div><div class="perfil-hero-em">${esc(u.email)}</div><div class="perfil-hero-meta">${planChip}</div></div>
+      <div class="perfil-hero-id"><div class="perfil-hero-nm">${esc(profileName())}</div><div class="perfil-hero-em">${esc(u.email)}</div></div>
+      <div class="perfil-hero-plan">${planChip}</div>
     </div>
 
     <div class="card card-pad perfil-card">
-      <div class="perfil-card-t"><i class="fa-solid fa-id-card"></i> Dados cadastrais</div>
+      <div class="perfil-card-t"><i class="fa-solid fa-user"></i> Dados pessoais</div>
       <div class="fld-grid">
-        <label class="fld"><span>Nome completo</span><input id="profName" value="${esc(profileName())}" maxlength="60" placeholder="Seu nome completo"></label>
+        <label class="fld"><span>Nome</span><input id="profName" value="${esc(profileName())}" maxlength="60" placeholder="Seu nome"></label>
         <label class="fld"><span>E-mail</span><input id="profEmail" type="email" value="${esc(u.email)}" placeholder="voce@email.com"></label>
         <label class="fld"><span>Celular / WhatsApp</span><input id="prof_phone" type="tel" inputmode="tel" value="${esc(maskPhoneBR(profField('phone')))}" placeholder="(47) 99246-4048" oninput="maskPhone(this)"></label>
-        <label class="fld"><span>Data de nascimento</span><input id="prof_birth" type="date" value="${esc(profField('birth'))}"></label>
-        <label class="fld"><span>Estado</span><select id="prof_uf" onchange="onProfUfChange()"><option value="">Selecione o estado…</option>${BR_UF.map(uf=>`<option ${profField('uf')===uf?'selected':''} value="${uf}">${uf}</option>`).join('')}</select></label>
+        <label class="fld"><span>Estado</span><select id="prof_uf" onchange="onProfUfChange()"><option value="">Selecione…</option>${BR_UF.map(uf=>`<option ${profField('uf')===uf?'selected':''} value="${uf}">${uf}</option>`).join('')}</select></label>
         <label class="fld"><span>Cidade</span><select id="prof_city" ${profField('uf')?'':'disabled'}>${cityOptions(profField('uf'), profField('city'))}</select></label>
       </div>
-      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileCadastro()"><i class="fa-solid fa-check"></i> Salvar dados cadastrais</button></div>
+      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileCadastro()"><i class="fa-solid fa-check"></i> Salvar</button></div>
       <div id="profMsg" class="fld-err" style="margin-top:4px"></div>
     </div>
 
@@ -5326,21 +5327,15 @@ function viewPerfil(){
         <label class="fld"><span>Experiência</span><select id="prof_exp">${['','Iniciante','Intermediário','Avançado'].map(o=>`<option ${profField('exp')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
         <label class="fld"><span>Patrimônio para investir</span><select id="prof_wealth">${['','Até R$ 10 mil','R$ 10 mil – R$ 50 mil','R$ 50 mil – R$ 250 mil','R$ 250 mil – R$ 1 mi','Acima de R$ 1 mi'].map(o=>`<option ${profField('wealth')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
       </div>
-      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileInvestidor()"><i class="fa-solid fa-check"></i> Salvar perfil de investidor</button></div>
+      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileInvestidor()"><i class="fa-solid fa-check"></i> Salvar</button></div>
     </div>
 
     <div class="card card-pad perfil-card">
-      <div class="perfil-card-t"><i class="fa-solid fa-crown"></i> Plano e assinatura</div>
-      ${planRow}
-      <div class="prof-actions" style="margin-top:12px">
-        ${isPremium()?`<button class="btn btn-ghost btn-sm prof-btn" onclick="nav('assinatura')"><i class="fa-solid fa-receipt"></i> Gerenciar assinatura</button>`:`<button class="btn btn-premium btn-sm prof-btn" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Conhecer o Premium</button>`}
+      <div class="perfil-card-t"><i class="fa-solid fa-crown"></i> Assinatura</div>
+      ${renew?`<div class="prof-row sub"><span><i class="fa-solid fa-calendar-check"></i> ${sub.canceled?'Acesso até':'Renova em'}</span><b>${renew.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</b></div>`:''}
+      <div class="prof-actions" style="margin-top:${renew?'12px':'2px'}">
+        ${isPremium()?`<button class="btn btn-ghost btn-sm prof-btn" onclick="nav('assinatura')"><i class="fa-solid fa-receipt"></i> Gerenciar assinatura</button>`:`<button class="btn btn-premium btn-sm prof-btn" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Assinar o Premium</button>`}
       </div>
-    </div>
-
-    <div class="card card-pad perfil-card">
-      <div class="perfil-card-t"><i class="fa-solid fa-sliders"></i> Preferências</div>
-      <div class="prof-row"><span><i class="fa-solid fa-circle-half-stroke"></i> Tema</span><button class="prof-conn-btn" onclick="toggleTheme();render('perfil',true)">${themeLbl}</button></div>
-      <div class="prof-row"><span><i class="fa-solid fa-eye-slash"></i> Ocultar valores por padrão</span>${twofaSwitchPriv()}</div>
     </div>
 
     <div class="card card-pad perfil-card">
@@ -5349,24 +5344,19 @@ function viewPerfil(){
       <div class="prof-lbl" style="margin-top:14px">Verificação em duas etapas (2FA)</div>
       <div class="prof-row"><span><i class="fa-solid fa-envelope"></i> Confirmação por e-mail</span>${twofaSwitch('email', g.twofaEmail)}</div>
       <div class="prof-row"><span><i class="fa-brands fa-whatsapp"></i> Confirmação por WhatsApp</span>${twofaSwitch('wa', g.twofaWa)}</div>
-      <div class="prof-note"><i class="fa-solid fa-circle-info"></i> Alterações de e-mail, senha ou 2FA exigem um código de confirmação enviado a você.</div>
       <div class="prof-row sub"><span><i class="fa-solid fa-mobile-screen"></i> Sessão atual</span><b>este dispositivo</b></div>
     </div>
 
     <div class="card card-pad perfil-card">
-      <div class="perfil-card-t"><i class="fa-solid fa-plug"></i> Contas conectadas</div>
-      <div class="prof-conn"><span class="prof-conn-ic pc-google">${LOGO_GOOGLE}</span><div class="prof-conn-tx"><b>Google</b><small>Login e sincronização</small></div><button class="prof-conn-btn" onclick="connectAccount('Google')">Conectar</button></div>
-      <div class="prof-conn"><span class="prof-conn-ic pc-apple">${LOGO_APPLE}</span><div class="prof-conn-tx"><b>Apple</b><small>Login com Apple ID</small></div><button class="prof-conn-btn" onclick="connectAccount('Apple')">Conectar</button></div>
-      <div class="prof-conn"><span class="prof-conn-ic pc-b3">${LOGO_B3}</span><div class="prof-conn-tx"><b>B3</b><small>Importar sua carteira da bolsa</small></div><button class="prof-conn-btn" onclick="connectAccount('B3')">Conectar</button></div>
+      <div class="perfil-card-t"><i class="fa-solid fa-sliders"></i> Preferências</div>
+      <div class="prof-row"><span><i class="fa-solid fa-circle-half-stroke"></i> Tema</span><button class="prof-conn-btn" onclick="toggleTheme();render('perfil',true)">${themeLbl}</button></div>
+      <div class="prof-row"><span><i class="fa-solid fa-eye-slash"></i> Ocultar valores por padrão</span>${twofaSwitchPriv()}</div>
     </div>
 
-    <div class="card card-pad perfil-card">
-      <div class="perfil-card-t"><i class="fa-solid fa-circle-question"></i> Ajuda e suporte</div>
-      <button class="btn btn-ghost prof-btn" onclick="openSupport()"><i class="fa-solid fa-headset"></i> Central de ajuda</button>
-      <button class="btn btn-ghost prof-btn" onclick="nav('indicar')"><i class="fa-solid fa-gift"></i> Indique e ganhe</button>
+    <div class="perfil-foot">
+      <button class="perfil-help" onclick="openSupport()"><i class="fa-solid fa-circle-question"></i> Central de ajuda</button>
+      <button class="btn btn-danger prof-out" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>
     </div>
-
-    <button class="btn btn-danger prof-out" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>
   </div>`;
 }
 /* switch de privacidade (ocultar valores) para a página de perfil */
