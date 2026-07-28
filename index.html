@@ -2770,7 +2770,7 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .quiz-res-t { font-size:23px; font-weight:700; letter-spacing:-.025em; color:var(--ink); }
 .quiz-res-d { font-size:13.5px; color:var(--ink-2); line-height:1.62; margin:9px 8px 0; max-width:340px; margin-left:auto; margin-right:auto; }
 .quiz-actions { display:flex; gap:10px; margin-top:22px; }
-.quiz-actions .btn { flex:1; justify-content:center; }
+.quiz-actions .btn { flex:1; justify-content:center; white-space:nowrap; }
 .perfil-foot { margin-top:18px; display:flex; flex-direction:column; align-items:center; gap:12px; }
 .perfil-help { background:none; border:none; color:var(--ink-3); font-size:13px; font-weight:500; cursor:pointer; padding:6px 10px; display:inline-flex; align-items:center; gap:7px; transition:color .14s var(--ease); }
 .perfil-help:hover { color:var(--brand); }
@@ -5652,7 +5652,7 @@ function renderQuiz(){
   const Q=QUIZ_Q[i];
   const tt=document.getElementById('quizTitle'); if(tt) tt.textContent=`Pergunta ${i+1} de ${total}`;
   body.innerHTML=`
-    <div class="quiz-prog"><span style="width:${Math.round(i/total*100)}%"></span></div>
+    <div class="quiz-prog"><span style="width:${Math.round((i+1)/total*100)}%"></span></div>
     <div class="quiz-q">${Q.q}</div>
     <div class="quiz-opts">${Q.opts.map((o,oi)=>`<button class="quiz-opt${_quiz.ans[i]&&_quiz.ans[i].t===o.t?' on':''}" onclick="quizAnswer(${oi})">${o.t}</button>`).join('')}</div>
     ${i>0?`<button class="quiz-back" onclick="quizBack()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>`:''}`;
@@ -5680,7 +5680,7 @@ function renderQuizResult(){
     </div>
     <div class="quiz-actions">
       <button class="btn btn-ghost btn-sm" onclick="openInvestorQuiz()"><i class="fa-solid fa-rotate"></i> Refazer</button>
-      <button class="btn btn-primary btn-sm" onclick="quizSave()"><i class="fa-solid fa-check"></i> Salvar meu perfil</button>
+      <button class="btn btn-primary btn-sm" onclick="quizSave()"><i class="fa-solid fa-check"></i> Salvar perfil</button>
     </div>`;
 }
 async function quizSave(){
@@ -10047,11 +10047,11 @@ function viewMais(){
   const authed=isAuthed(), pref=getThemePref(), pro=isPro();
   const GROUPS=[
     {t:'Minha Carteira', items:[
-      ['proventos','fa-coins','Meus Proventos',1,'Histórico, Yield on Cost e projeção de 12 meses'],
+      ['proventos','fa-coins','Meus Proventos',1,'Yield on Cost, histórico e projeção'],
       ['acompanhar','fa-star','Acompanhar',0,'Watchlist e alertas de preço num só lugar'],
-      ['agenda','fa-calendar-day','Agenda de Dividendos',0,'Quando caem os proventos dos seus ativos'],
-      ['aporte','fa-scale-balanced','Aporte Inteligente',1,'Onde investir o próximo aporte para rebalancear'],
-      ['ir','fa-file-invoice-dollar','Imposto de Renda',1,'DARF e informe anual prontos para a declaração'],
+      ['agenda','fa-calendar-day','Agenda de Dividendos',0,'Datas dos proventos dos seus ativos'],
+      ['aporte','fa-scale-balanced','Aporte Inteligente',1,'Onde aplicar seu próximo aporte'],
+      ['ir','fa-file-invoice-dollar','Imposto de Renda',1,'DARF e informe anual da declaração'],
     ]},
     {t:'Análises Pro', items:[
       ['raiox','fa-magnifying-glass-chart','Raio-X da Carteira',1,'Diversificação, concentração e Nota Lastro'],
@@ -10060,7 +10060,7 @@ function viewMais(){
     ]},
     {t:'Ferramentas', items:[
       ['comparador','fa-code-compare','Comparador',0,'Ativos lado a lado pelos fundamentos'],
-      ['recomendadas','fa-layer-group','Carteiras Recomendadas',0,'Estratégias montadas pela inteligência Lastro'],
+      ['recomendadas','fa-layer-group','Carteiras Recomendadas',0,'Estratégias montadas pela Lastro'],
       ['simulador','fa-calculator','Simuladores',0,'Juros compostos, renda passiva e FIRE'],
     ]},
   ];   // Internacional (Stocks/BDRs/ETFs int.) sai do menu — já vive no hub Mercado
