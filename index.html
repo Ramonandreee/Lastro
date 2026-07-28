@@ -5312,6 +5312,13 @@ async function saveProfileInvestidor(silent){
   const okSync = await flushCloudState();
   if(!silent) toast(okSync ? 'Perfil de investidor salvo e sincronizado ✓' : 'Salvo neste aparelho — não foi possível sincronizar agora. Tente novamente com internet.');
 }
+/* salva a página de perfil inteira (dados pessoais + perfil de investidor) num único botão */
+async function saveProfileAll(){
+  await saveProfileCadastro(true);
+  await saveProfileInvestidor(true);
+  const okSync = !_dirty;
+  toast(okSync ? 'Perfil salvo e sincronizado ✓' : 'Salvo neste aparelho — sincroniza quando houver internet.');
+}
 /* aviso de alterações não salvas ao fechar o perfil */
 let _profileOpen=false;
 function profileDirty(){
@@ -5356,7 +5363,6 @@ function viewPerfil(){
         <label class="fld"><span>Estado</span><select id="prof_uf" onchange="onProfUfChange()"><option value="">Selecione…</option>${BR_UF.map(uf=>`<option ${profField('uf')===uf?'selected':''} value="${uf}">${uf}</option>`).join('')}</select></label>
         <label class="fld"><span>Cidade</span><select id="prof_city" ${profField('uf')?'':'disabled'}>${cityOptions(profField('uf'), profField('city'))}</select></label>
       </div>
-      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileCadastro()"><i class="fa-solid fa-check"></i> Salvar</button></div>
       <div id="profMsg" class="fld-err" style="margin-top:4px"></div>
     </div>
 
@@ -5371,8 +5377,9 @@ function viewPerfil(){
         <label class="fld"><span>Experiência</span><select id="prof_exp">${['','Iniciante','Intermediário','Avançado'].map(o=>`<option ${profField('exp')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
         <label class="fld"><span>Patrimônio para investir</span><select id="prof_wealth">${['','Até R$ 10 mil','R$ 10 mil – R$ 50 mil','R$ 50 mil – R$ 250 mil','R$ 250 mil – R$ 1 mi','Acima de R$ 1 mi'].map(o=>`<option ${profField('wealth')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
       </div>
-      <div class="prof-actions"><button class="btn btn-primary btn-sm" onclick="saveProfileInvestidor()"><i class="fa-solid fa-check"></i> Salvar</button></div>
     </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveProfileAll()"><i class="fa-solid fa-check"></i> Salvar alterações</button>
 
     <div class="card card-pad perfil-card">
       <div class="perfil-card-t"><i class="fa-solid fa-crown"></i> Assinatura</div>
@@ -5387,8 +5394,6 @@ function viewPerfil(){
       <button class="btn btn-ghost prof-btn" onclick="changePassword()"><i class="fa-solid fa-key"></i> Alterar senha</button>
       <div class="prof-row sub" style="margin-top:8px"><span><i class="fa-solid fa-mobile-screen"></i> Sessão atual</span><b>este dispositivo</b></div>
     </div>
-
-    <button class="btn btn-danger prof-out" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>
   </div>`;
 }
 
