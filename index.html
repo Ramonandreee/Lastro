@@ -2749,6 +2749,33 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .priv-eye { width:32px; height:32px; border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:13px; transition:all .14s var(--ease); flex:none; }
 .priv-eye:hover { color:var(--ink); border-color:var(--line-2); }
 .cart-sum-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+/* ── Carteira: contador, ordenação das posições e atalhos ── */
+/* resumo compacto do card de posição */
+.pc-sum { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding:12px 0 10px; border-top:1px solid var(--line); }
+.pcs-k { display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-4); margin-bottom:4px; }
+.pcs-v { font-family:var(--mono); font-size:19px; font-weight:700; color:var(--ink); letter-spacing:-.02em; }
+.pc-sum-r { text-align:right; display:flex; flex-direction:column; gap:2px; }
+.pcs-res { font-size:14px; font-weight:700; }
+.pcs-pct { font-size:11.5px; font-weight:600; opacity:.85; }
+.pc-mini { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:10px 0 2px; border-top:1px solid var(--line); }
+.pc-mini > div { min-width:0; }
+.pc-mini span { display:block; font-size:10.5px; color:var(--ink-4); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pc-mini b { display:block; font-size:13px; font-weight:600; color:var(--ink-2); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.cart-count { display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:20px; padding:0 6px; margin-left:8px; border-radius:999px; background:var(--surface-3); color:var(--ink-3); font-family:var(--mono); font-size:11px; font-weight:700; }
+.cart-sort { display:flex; gap:4px; margin:0 0 12px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+.cart-sort::-webkit-scrollbar { display:none; }
+.cs-btn { flex:none; padding:5px 12px; border:none; border-radius:999px; background:transparent; color:var(--ink-4); font-family:var(--sans); font-size:11.5px; font-weight:600; cursor:pointer; white-space:nowrap; transition:background .18s var(--ease), color .18s var(--ease); -webkit-tap-highlight-color:transparent; }
+.cs-btn:hover { color:var(--ink-3); }
+.cs-btn.on { background:color-mix(in srgb, var(--brand) 12%, transparent); color:var(--brand); }
+.cart-links { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+.cart-link { display:flex; align-items:center; gap:13px; padding:14px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; transition:border-color .18s var(--ease), box-shadow .18s var(--ease), transform .12s var(--ease); }
+.cart-link:hover { border-color:var(--line-2); box-shadow:var(--sh); }
+.cart-link:active { transform:scale(.99); }
+.cl-ic { width:40px; height:40px; flex:none; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:16px; background:var(--brand-l); color:var(--brand); }
+.cl-tx { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.cl-tx b { font-size:14.5px; font-weight:600; color:var(--ink); letter-spacing:-.01em; }
+.cl-tx small { font-size:12px; color:var(--ink-3); line-height:1.35; }
+.cl-cv { color:var(--ink-4); font-size:13px; flex:none; }
 /* carteiras recomendadas */
 .rec-filters { margin-bottom:16px; position:sticky; position:-webkit-sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); padding:10px 0 12px; box-shadow:0 1px 0 var(--line); }
 .rec-filters-inner { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
@@ -7008,17 +7035,23 @@ function posCard(g){
       <div class="pc-id"><div class="pc-nm">${esc(a.nm||g.tk)}</div><div class="pc-tk">${g.tk}${g.lots.length>1?` · ${g.lots.length} aportes`:''}</div></div>
       <div class="pc-px"><div class="pc-cot mono">${fmtPx({px:pxEff,usd:a.usd},k)}</div><div class="pc-var mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</div></div>
     </div>
-    <div class="pc-rows">
-      ${row('Categoria', ASSET_CLASS[k].label)}
-      ${row('Quantidade', `<span class="mono">${g.cotas}</span>`)}
-      ${row('Preço médio', `<span class="mono priv-blur">${fmtCur(g.pm,g.cur)}</span>`)}
-      ${row('Proventos da posição', g.provPend?`<span class="faint" style="font-size:12px">${provPendLabel(g)}</span>`:`<span class="mono up priv-blur">${brl(g.prov)}</span>`)}
-      ${row('Resultado com proventos', g.provPend?`<span class="faint" style="font-size:12px">${provPendLabel(g)}</span>`:`<span class="mono ${g.lucroProv>=0?'up':'down'} priv-blur">${g.lucroProv>=0?'+':''}${brl(g.lucroProv)} · ${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</span>`)}
-      ${row('Saldo bruto', `<span class="mono priv-blur">${brl(g.val)}</span>`)}
+    <!-- linha-resumo: saldo e resultado (o que o investidor procura) em destaque; o resto vira
+         uma grade compacta de 3 colunas. Antes eram 6 linhas empilhadas por ativo. -->
+    <div class="pc-sum">
+      <div class="pc-sum-l"><span class="pcs-k">Saldo bruto</span><b class="pcs-v priv-blur">${brl(g.val)}</b></div>
+      <div class="pc-sum-r">${g.provPend
+        ? `<span class="faint" style="font-size:12px">${provPendLabel(g)}</span>`
+        : `<b class="pcs-res mono ${g.lucroProv>=0?'up':'down'} priv-blur">${g.lucroProv>=0?'+':''}${brl(g.lucroProv)}</b><span class="pcs-pct mono ${g.lucroProv>=0?'up':'down'}">${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</span>`}</div>
+    </div>
+    <div class="pc-mini">
+      <div><span>Cotas</span><b class="mono">${g.cotas}</b></div>
+      <div><span>Preço médio</span><b class="mono priv-blur">${fmtCur(g.pm,g.cur)}</b></div>
+      <div><span>Proventos</span>${g.provPend?`<b class="faint" style="font-size:12px">${provPendLabel(g)}</b>`:`<b class="mono up priv-blur">${brl(g.prov)}</b>`}</div>
     </div>
     <button class="pc-more" onclick="togglePosMore('${g.tk}')"><span>Mais detalhes</span> <i class="fa-solid fa-chevron-down"></i></button>
     <div class="pc-extra" id="more-${g.tk}" hidden>
       <div class="pc-extra-t">Dados complementares</div>
+      ${row('Categoria', ASSET_CLASS[k].label)}
       ${row('Valor investido', `<span class="mono priv-blur">${brl(g.custo)}</span>`)}
       ${row(termLabel('pmProv','Preço médio com proventos'), g.provPend?`<span class="faint" style="font-size:12px">${provPendLabel(g)}</span>`:`<span class="mono priv-blur">${fmtCur(pmProv,g.cur)}</span>`)}
       ${row('Resultado sem proventos', `<span class="mono ${g.lucro>=0?'up':'down'} priv-blur">${g.lucro>=0?'+':''}${brl(g.lucro)} · ${g.lucro>=0?'+':''}${pc(g.lp,1)}%</span>`)}
@@ -7033,9 +7066,12 @@ function posCard(g){
   </div>`;
 }
 function togglePosMore(tk){ const m=document.getElementById('more-'+tk); if(!m) return; m.hidden=!m.hidden; const c=document.querySelector(`.pos-card[data-tk="${tk}"] .pc-more`); if(c) c.classList.toggle('open', !m.hidden); }
+/* ordenação das posições (só apresentação — não altera nenhum cálculo) */
+const CART_SORTS=[['valor','Valor'],['result','Resultado'],['part','Participação'],['nome','A-Z']];
+let cartSort='valor';
+function setCartSort(s){ if(!CART_SORTS.some(x=>x[0]===s)||s===cartSort) return; cartSort=s; render('carteira'); }
 function viewCarteira(){
   const p = portfolioStats();
-  const _pev = (typeof patrimonioEvolution==='function')?patrimonioEvolution():null;   // real? p/ o rótulo do gráfico
   const byT = p._byT;
   const n = byT.length;
   const concentracao = n ? Math.max(...byT.map(g=>p.atual? g.val/p.atual*100 : 0)) : 0;
@@ -7056,7 +7092,13 @@ function viewCarteira(){
     </div>`;
   }
 
-  const holdings = byT.map(posCard).join('');
+  // ordena uma CÓPIA (byT é o array de portfolioStats — não pode ser mutado aqui)
+  const sorted = byT.slice().sort((a,b)=>{
+    if(cartSort==='nome')   return a.tk.localeCompare(b.tk);
+    if(cartSort==='result') return (b.lucroProv||0)-(a.lucroProv||0);
+    return (b.val||0)-(a.val||0);   // 'valor' e 'part' ordenam pelo mesmo critério (part = val/total)
+  });
+  const holdings = sorted.map(posCard).join('');
   const _provDown = p.provPend && provFetchDown(byT);   // busca falhou → dizer "indisponível", nunca estimar
 
   return `
@@ -7070,30 +7112,17 @@ function viewCarteira(){
   </div>
 
   <div class="pos-section">
-    <div class="card-head pos-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições</div><div class="pos-actions"><button class="btn btn-ghost btn-sm" onclick="openReportConfig()" title="Relatório mensal da carteira (Investidor Pro)"><i class="fa-solid fa-file-lines"></i> Relatório${isProTier()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:10px"></i>'}</button><button class="btn btn-ghost btn-sm" onclick="importCarteiraCSV()" title="Importar aportes de um arquivo CSV"><i class="fa-solid fa-file-import"></i> Importar</button><button class="btn btn-ghost btn-sm" onclick="openExportConfig()" title="Exportar carteira em CSV"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">Premium</span>'}</button>${addBtn}</div></div>
+    <div class="card-head pos-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="cart-count">${n}</span></div><div class="pos-actions"><button class="btn btn-ghost btn-sm" onclick="openReportConfig()" title="Relatório mensal da carteira (Investidor Pro)"><i class="fa-solid fa-file-lines"></i> Relatório${isProTier()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:10px"></i>'}</button><button class="btn btn-ghost btn-sm" onclick="importCarteiraCSV()" title="Importar aportes de um arquivo CSV"><i class="fa-solid fa-file-import"></i> Importar</button><button class="btn btn-ghost btn-sm" onclick="openExportConfig()" title="Exportar carteira em CSV"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">Premium</span>'}</button>${addBtn}</div></div>
+    ${n>1?`<div class="cart-sort" role="tablist" aria-label="Ordenar posições">${CART_SORTS.map(s=>`<button class="cs-btn${s[0]===cartSort?' on':''}" role="tab" aria-selected="${s[0]===cartSort}" onclick="setCartSort('${s[0]}')">${s[1]}</button>`).join('')}</div>`:''}
     <div class="pos-grid">${holdings}</div>
   </div>
 
-  <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-chart-pie"></i></span> Alocação da carteira</div></div>
-    <div style="position:relative;height:220px"><canvas id="allocChart" role="img" aria-label="Alocação da carteira"></canvas></div>
+  <!-- Atalhos: o que saiu daqui vive em telas próprias (renda passiva, calendário, raio-X) -->
+  <div class="cart-links">
+    <button class="cart-link" onclick="goView('proventos')"><span class="cl-ic" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-coins"></i></span><span class="cl-tx"><b>Meus proventos</b><small>Renda recebida, por mês e por ativo</small></span><i class="fa-solid fa-chevron-right cl-cv"></i></button>
+    <button class="cart-link" onclick="goView('agenda')"><span class="cl-ic"><i class="fa-regular fa-calendar"></i></span><span class="cl-tx"><b>Agenda de dividendos</b><small>O que já foi anunciado a receber</small></span><i class="fa-solid fa-chevron-right cl-cv"></i></button>
+    <button class="cart-link" onclick="goView('raiox')"><span class="cl-ic"><i class="fa-solid fa-chart-pie"></i></span><span class="cl-tx"><b>Raio-X da carteira</b><small>Alocação, evolução e comparação com CDI/IBOV</small></span><i class="fa-solid fa-chevron-right cl-cv"></i></button>
   </div>
-
-  <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Evolução do patrimônio <span class="card-sub" style="margin-left:6px">· vs CDI e IBOV</span></div>${(_pev&&_pev.real)?`<span class="chip" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-circle-check"></i> fechamentos reais</span>`:`<span class="chip ilus"><i class="fa-solid fa-flask"></i> aguardando histórico</span>`}</div>
-    <div style="position:relative;height:240px;margin-top:6px"><canvas id="patrEvolChart" role="img" aria-label="Evolução do patrimônio comparada a CDI e IBOV"></canvas></div>
-    <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> <span>Valor da carteira mês a mês pelos <strong>fechamentos reais</strong> dos seus ativos, comparado a aplicar os mesmos aportes no CDI (pela Selic vigente) e no IBOV (BOVA11). Onde ainda falta o fechamento de um ativo, ele entra pelo custo.</span></div>
-  </div>
-
-  ${(()=>{ const pays=provPayments(byT); if(!pays.length) return ''; const total=pays.reduce((s,p)=>s+(p.valorBRL||0),0);
-    const rows=pays.slice(0,18).map(p=>{ const yoc=p.pm?p.perCota/p.pm*100:0; return `<div class="pex-row" onclick="quickView('${p.tk}')">
-      <div class="pex-l">${assetLogo(p.tk,p.k,'sm')}<div class="pex-id"><div class="pex-tk">${p.tk}</div><div class="pex-d"><i class="fa-regular fa-calendar"></i> ${fmtDateBR(_patDay(p.date))}</div></div></div>
-      <div class="pex-r"><div class="pex-v up">${brl(p.valorBRL!=null?p.valorBRL:p.valor)}</div><div class="pex-s">${p.cotas} cota${p.cotas!==1?'s':''} · YoC ${pc(yoc,2)}%</div></div></div>`; }).join('');
-    return `<div class="card card-pad" style="margin-top:16px">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Extrato de proventos</div><div class="pex-total"><div class="pex-total-v">${brl(total)}</div><div class="pex-total-l">recebido no total</div></div></div>
-      <div class="prov-extract">${rows}</div>
-      <div class="illus-note"><i class="fa-solid fa-circle-info"></i> <span>Pagamentos <strong>realmente declarados</strong> por cada ativo (valor por cota oficial), contando as cotas que você tinha na <strong>data-com</strong>. Nada é projetado.</span></div>
-    </div>`; })()}
 
   ${(()=>{ const sal=salaryProjection(); if(!(sal.totalAno>0)) return ''; const meta=getRendaMeta(); const prog=Math.min(100, sal.media/meta*100);
     return `<div class="card card-pad" style="margin-top:16px">
@@ -9228,7 +9257,8 @@ function afterRender(v, soft){
     if(us.length) loadUsQuotes(us);
     if(typeof loadPortfolioHistory==='function') loadPortfolioHistory();   // fechamentos reais p/ reconstruir a evolução
   }
-  if(v==='carteira'){ initAlloc(); initPatrEvol(); initSalary(); if(!soft){ diagnose(); if(typeof loadBacktestHistory==='function') loadBacktestHistory(); } }
+  // alocação e evolução saíram da Carteira (vivem na Home e no Raio-X) — só o salário ficou aqui
+  if(v==='carteira'){ initSalary(); if(!soft){ diagnose(); if(typeof loadBacktestHistory==='function') loadBacktestHistory(); } }
   // telas que exibem proventos recebidos: garante o histórico REAL (a UI mostra "apurando" até chegar)
   if(!soft && ['painel','carteira','proventos','raiox','ir'].includes(v) && typeof ensurePortfolioDividends==='function') ensurePortfolioDividends();
   if(v==='proventos'){ initProventosCharts(); }
