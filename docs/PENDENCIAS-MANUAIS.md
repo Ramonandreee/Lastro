@@ -36,10 +36,11 @@
 ## 🟣 Decisão de infra (quando puder, para eu implementar)
 
 - [ ] **Rate-limiting nos proxies** (`/api/*`): hoje não há limite por IP → risco de terceiros
-      queimarem a cota **paga** da brapi/FMP. Recomendo um **Edge middleware** (não conta no
-      limite de 12 funções da Vercel) ou **Upstash/KV**. Preciso do seu OK (e, se for Upstash,
-      da conta/variáveis) para implementar com review/teste. Detalhes em
-      `docs/auditoria-seguranca-2026-07.md`.
+      queimarem a cota **paga** da brapi/FMP. **Rascunho pronto** em `middleware.example.js`
+      (inerte — a Vercel só ativa `middleware.js`). Para ligar: (1) criar Redis grátis no
+      **Upstash**; (2) setar `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` na Vercel;
+      (3) renomear o arquivo para `middleware.js`. **Antes de ativar**, passar a `lastro-review`
+      (não foi testado ao vivo). É *fail-open* (se o Upstash falhar, não derruba o app).
 
 ## 🔵 Dado da sua conta (dentro do app)
 
