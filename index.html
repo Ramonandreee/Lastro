@@ -3668,7 +3668,9 @@ button.mp-cell:active { background:var(--surface-3); }
 .ph-stat { position:relative; min-width:0; padding:12px 14px 13px; display:flex; flex-direction:column; gap:3px; }
 .ph-stat + .ph-stat::before { content:''; position:absolute; left:0; top:24%; bottom:24%; width:1px; background:var(--line); }
 .ph-stat .l { display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:600; color:var(--ink-4); letter-spacing:.01em; }
-.ph-stat .v { font-family:var(--mono); font-size:15px; font-weight:600; letter-spacing:-.01em; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* dinheiro NUNCA pode ser truncado em silêncio (…): mantém em 1 linha, mas deixa encolher junto
+   com a caixa em vez de cortar dígitos. tabular-nums evita o número "dançar" entre re-renders. */
+.ph-stat .v { font-family:var(--mono); font-size:15px; font-weight:600; letter-spacing:-.01em; color:var(--ink); white-space:nowrap; font-variant-numeric:tabular-nums; }
 .ph-stat .v.ph-v-brand { color:var(--brand); }
 .ph-stat .s { font-size:10.5px; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ph-stat[data-term] { cursor:pointer; transition:background .18s var(--ease); }
@@ -3691,7 +3693,9 @@ button.mp-cell:active { background:var(--surface-3); }
 .prank-row:hover { background:var(--surface-2); }
 .prank-row:active { background:var(--surface-3); transform:scale(.994); }
 .prank-row:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l); }
-.prank-n { width:22px; height:22px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; font-weight:700; color:var(--brand); background:var(--brand-l); opacity:var(--pk,1); }
+/* --pk esmaece só a BARRA; aplicar no badge levava o número da 8ª posição a 42% de opacidade
+   (contraste insuficiente para ler a posição). */
+.prank-n { width:22px; height:22px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; font-weight:700; color:var(--brand); background:var(--brand-l); }
 .prank-lead .prank-n { color:var(--gold); background:var(--gold-l); opacity:1; }
 .prank-id { min-width:0; }
 .prank-tk { font-family:var(--mono); font-size:13.5px; font-weight:600; color:var(--ink); }
@@ -3720,6 +3724,9 @@ button.mp-cell:active { background:var(--surface-3); }
 .prov-state .card-head { margin-bottom:2px; }
 @media (max-width:520px){
   .prov-hero { --php:16px; }
+  /* 3 colunas em 390px dão ~100px úteis e cortariam valores de 7 dígitos: vira 2+1 no mobile */
+  .ph-foot { grid-template-columns:repeat(2,1fr); }
+  .ph-foot > .ph-stat:nth-child(3) { grid-column:1 / -1; }
   .ph-stat { padding:11px 10px 12px; }
   .ph-stat .v { font-size:13.5px; }
   .ph-stat .l, .ph-stat .s { font-size:10px; }
@@ -8136,7 +8143,10 @@ function initProventosCharts(){
   const br=cssVar('--brand'), ink3=cssVar('--ink-3'), ink4=cssVar('--ink-4');
   const vals=d.months.map(m=>m.val), lastIx=d.months.length-1;
   const MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-  const fmtY=v=> v>=1000 ? 'R$ '+(v/1000).toFixed(v%1000?1:0).replace('.',',')+'k' : 'R$ '+Math.round(v);
+  // privacidade: texto desenhado no <canvas> é inalcançável pelo applyPriv() (que só varre nós de
+  // texto), então o eixo e o tooltip precisam se mascarar sozinhos — mesmo padrão do wspark.
+  const _priv=(typeof privOn==='function'&&privOn());
+  const fmtY=v=> _priv ? '' : (v>=1000 ? 'R$ '+(v/1000).toFixed(v%1000?1:0).replace('.',',')+'k' : 'R$ '+Math.round(v));
   // gradiente vertical na cor da marca (mês em curso mais claro — ainda pode receber mais)
   const barBg = ctx => { const {chart, dataIndex}=ctx; const area=chart.chartArea;
     const a = dataIndex===lastIx ? ['80','cc'] : ['aa','f2'];
@@ -8153,8 +8163,8 @@ function initProventosCharts(){
           backgroundColor:cssVar('--ink'), titleColor:cssVar('--canvas'), bodyColor:cssVar('--canvas'), footerColor:cssVar('--ink-4'),
           titleFont:{size:11,weight:'600'}, bodyFont:{size:13,weight:'700'}, footerFont:{size:10.5,weight:'500'},
           callbacks:{ title:it=>{ const k=(d.months[it[0].dataIndex]||{}).key||''; const [y,m]=k.split('-'); return (MES[+m]||'')+' de '+y; },
-            label:c=>c.parsed.y>0?brl(c.parsed.y):'nenhum provento no mês',
-            footer:it=>it[0].dataIndex===lastIx?'mês em curso':'média do período: '+brl(d.media) } } },
+            label:c=>c.parsed.y>0?(_priv?'•••':brl(c.parsed.y)):'nenhum provento no mês',
+            footer:it=>it[0].dataIndex===lastIx?'mês em curso':(_priv?'':'média do período: '+brl(d.media)) } } },
       scales:{ x:{ type:'category', offset:true, grid:{display:false,offset:true}, ticks:{color:ink3,font:{size:10.5,weight:'500'},autoSkip:false,maxRotation:0}, border:{display:false} },
         y:{ beginAtZero:true, grid:{color:cssVar('--line'),drawTicks:false}, ticks:{color:ink4,font:{size:10},padding:8,maxTicksLimit:4,callback:fmtY}, border:{display:false} } } } });
 }
