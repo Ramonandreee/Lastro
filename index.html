@@ -5355,9 +5355,8 @@ function updateHeaderAction(){
   const el = document.getElementById('hdrActions'); if(!el) return;
   const authed=isAuthed(), pro=isPremium();
   let html='';
-  // Free → coroa (assinar); plano pago → presente (Indique e Ganhe)
-  if(pro){ html += `<button class="icon-btn hdr-gift" title="Indique e Ganhe" aria-label="Indique e Ganhe" onclick="nav('indicar')"><i class="fa-solid fa-gift" aria-hidden="true"></i></button>`; }
-  else { html += `<button class="icon-btn hdr-crown" title="Seja Premium" aria-label="Assinar Premium" onclick="goPricing()"><i class="fa-solid fa-crown" aria-hidden="true"></i></button>`; }
+  // Free → coroa (assinar). Pro → sem ícone extra (Indique vive no menu, sem redundância no topo).
+  if(!pro){ html += `<button class="icon-btn hdr-crown" title="Seja Premium" aria-label="Assinar Premium" onclick="goPricing()"><i class="fa-solid fa-crown" aria-hidden="true"></i></button>`; }
   html += `<div class="acct-wrap"><button class="icon-btn hdr-profile" title="Conta" aria-label="Menu da conta" aria-haspopup="menu" onclick="toggleAcctMenu(event)"><i class="fa-${authed?'solid':'regular'} fa-circle-user" aria-hidden="true"></i></button><div class="acct-menu" id="acctMenu" role="menu"></div></div>`;
   el.innerHTML = html;
 }
@@ -10490,10 +10489,15 @@ function viewMais(){
     head=`<div class="mais-acct mais-anon"><span class="mais-av"><i class="fa-regular fa-circle-user"></i></span><span class="mais-acct-id"><span class="mais-nm">Bem-vindo à Lastro</span><span class="mais-subt">Entre para sincronizar sua carteira</span></span></div>
     <button class="btn btn-primary" style="width:100%;justify-content:center;margin:2px 0 4px" onclick="openAuth('login')"><i class="fa-solid fa-right-to-bracket"></i> Entrar ou criar conta</button>`;
   }
+  const _sub=(typeof getSub==='function')?getSub():null;
+  const _renew=(isPremium()&&_sub&&_sub.since)?`Renova em ${addDays(_sub.since,_sub.cycle==='anual'?365:30).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}`:null;
+  const planItem = isPremium()
+    ? `<button class="mais-row" onclick="nav('assinatura')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-txt"><span class="mais-lbl">Minha assinatura</span><span class="mais-sub">${_renew||'Gerencie seu plano e cobranças'}</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`
+    : `<button class="mais-row" onclick="nav('planos')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-txt"><span class="mais-lbl">Planos e assinatura</span><span class="mais-sub">Compare os planos e assine</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`;
   const conta=`<div class="mais-sec-t">Conta</div><div class="mais-grp">
-    <button class="mais-row" onclick="nav('planos')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-txt"><span class="mais-lbl">Planos e assinatura</span><span class="mais-sub"></span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
-    ${authed?`<button class="mais-row" onclick="nav('indicar')"><span class="mais-ic"><i class="fa-solid fa-gift"></i></span><span class="mais-txt"><span class="mais-lbl">Indique e Ganhe</span><span class="mais-sub"></span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
-    <button class="mais-row" onclick="openSupport()"><span class="mais-ic"><i class="fa-solid fa-headset"></i></span><span class="mais-txt"><span class="mais-lbl">Ajuda &amp; Suporte</span><span class="mais-sub"></span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
+    ${planItem}
+    ${authed?`<button class="mais-row" onclick="nav('indicar')"><span class="mais-ic"><i class="fa-solid fa-gift"></i></span><span class="mais-txt"><span class="mais-lbl">Indique e Ganhe</span><span class="mais-sub">Ganhe 20% de cada amigo, via PIX</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
+    <button class="mais-row" onclick="openSupport()"><span class="mais-ic"><i class="fa-solid fa-headset"></i></span><span class="mais-txt"><span class="mais-lbl">Ajuda &amp; Suporte</span><span class="mais-sub">Central de ajuda e FAQ</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
   </div>`;
   const upsell=(authed&&!isPremium())?`<button class="mais-upsell" onclick="nav('planos')"><span class="mu-ic"><i class="fa-solid fa-crown"></i></span><span class="mu-tx"><b>${trialActive()?`Teste Premium · ${trialDaysLeft()} dias`:'Desbloqueie o Investidor Pro'}</b><small>Raio-X, Stress Test, Backtest, Aporte e IR</small></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:'';
   const searchBox=`<div class="mais-search"><i class="fa-solid fa-magnifying-glass"></i><input id="maisFilter" placeholder="Buscar no menu…" oninput="filterMais(this.value)" autocomplete="off"></div>`;
