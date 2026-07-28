@@ -3546,15 +3546,17 @@ body.pdf-lock { overflow:hidden; }
 .tabbar { display:none; }
 @media (max-width:760px){
   .tabbar {
-    display:flex; align-items:center; position:fixed; left:0; right:0; bottom:0; z-index:60;
-    padding:0 4px env(safe-area-inset-bottom,0px);       /* encostada no fundo; estende na safe-area (home indicator) */
-    background:var(--surface); border-top:1px solid var(--line);   /* barra cheia estilo Instagram, não mais ilha flutuante */
-    box-shadow:0 -2px 12px rgba(15,20,25,.05);
+    display:flex; align-items:center; position:fixed; left:14px; right:14px; z-index:60;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 4px);  /* ilha flutuante, mais baixa (era +10px) */
+    height:62px; padding:0 8px;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:34px;                                  /* cápsula arredondada */
+    box-shadow:0 8px 28px rgba(15,20,25,.14), 0 2px 8px rgba(15,20,25,.06);
   }
-  [data-theme="dark"] .tabbar { border-color:rgba(255,255,255,.08); box-shadow:0 -2px 14px rgba(0,0,0,.35); }
+  [data-theme="dark"] .tabbar { border-color:rgba(255,255,255,.09); box-shadow:0 8px 30px rgba(0,0,0,.5); }
   .tab-item {
     flex:1 1 20%; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:3px; min-height:58px; padding:0; color:var(--ink-3); background:none; border:none;
+    gap:3px; height:100%; padding:0; color:var(--ink-3); background:none; border:none;
     cursor:pointer; position:relative; font-family:var(--sans); -webkit-tap-highlight-color:transparent;
     transition:transform .12s var(--ease), color .16s var(--ease);
   }
@@ -3568,7 +3570,7 @@ body.pdf-lock { overflow:hidden; }
   .tab-item:active { transform:scale(.9); }
   .menu-btn { display:none !important; }                 /* hambúrguer sai no mobile — aba "Mais" abre o menu */
   .acct-wrap { display:none !important; }                 /* ícone de perfil sai no mobile — conta/tema vivem na aba "Mais" */
-  .content { padding-bottom:calc(72px + env(safe-area-inset-bottom,0px)) !important; }  /* espaço p/ a barra inferior cheia */
+  .content { padding-bottom:calc(88px + env(safe-area-inset-bottom,0px)) !important; }  /* conteúdo não fica atrás da ilha flutuante */
 }
 /* ════════ Hub Mercado (vitrine de análise) ════════ */
 .mkt-sec-t { display:flex; align-items:baseline; gap:8px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin:22px 2px 11px; }
