@@ -9141,12 +9141,7 @@ function viewMais(){
       ['recomendadas','fa-layer-group','Carteiras Recomendadas',0],
       ['simulador','fa-calculator','Simuladores',0],
     ]},
-    {t:'Internacional', items:[
-      ['stocks','fa-flag-usa','Stocks (EUA)',0],
-      ['bdrs','fa-globe','BDRs',0],
-      ['etfsint','fa-layer-group','ETFs internacionais',0],
-    ]},
-  ];
+  ];   // Internacional (Stocks/BDRs/ETFs int.) sai do menu — já vive no hub Mercado
   const grpHTML = GROUPS.map(g=>`
     <div class="mais-sec-t">${g.t}</div>
     <div class="mais-grp">${g.items.map(([v,ic,label,prem])=>{
@@ -9166,7 +9161,6 @@ function viewMais(){
     <button class="btn btn-primary" style="width:100%;justify-content:center;margin:2px 0 4px" onclick="openAuth('login')"><i class="fa-solid fa-right-to-bracket"></i> Entrar ou criar conta</button>`;
   }
   const conta=`<div class="mais-sec-t">Conta</div><div class="mais-grp">
-    ${authed?`<button class="mais-row" onclick="openProfile()"><span class="mais-ic"><i class="fa-solid fa-user"></i></span><span class="mais-lbl">Meu perfil</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
     <button class="mais-row" onclick="nav('planos')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-lbl">Planos e assinatura</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
     ${authed?`<button class="mais-row" onclick="nav('indicar')"><span class="mais-ic"><i class="fa-solid fa-gift"></i></span><span class="mais-lbl">Indique e Ganhe</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
     <button class="mais-row" onclick="openSupport()"><span class="mais-ic"><i class="fa-solid fa-headset"></i></span><span class="mais-lbl">Ajuda &amp; Suporte</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
