@@ -1102,6 +1102,7 @@ img, svg, canvas, video { max-width: 100%; }
       </div>
       <label class="fld"><span>Data do aporte <small style="color:var(--ink-4);font-weight:400">· contabiliza os proventos</small></span><input id="posDt" type="date" required onchange="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
       <div id="posPreview" class="pos-preview"></div>
+      <div id="posHint" class="pos-hint"><i class="fa-solid fa-circle-info"></i> <span>Digite o ativo para ver a cotação atual, o Score Lastro e o custo do aporte antes de salvar.</span></div>
       <div id="posErr" class="fld-err"></div>
     </div>
     <div class="modal-foot"><button class="btn btn-ghost" onclick="closePosModal()">Cancelar</button><button class="btn btn-primary" onclick="savePos()"><i class="fa-solid fa-check"></i> Salvar</button></div>
@@ -1946,13 +1947,13 @@ table.tbl tbody tr.no-hover td { border:none; }
 /* ao interagir com um gráfico, a página não rola (fica travada no gesto) */
 canvas { touch-action:none; }
 .modal-card { width:440px; max-width:94vw; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-lg); box-shadow:var(--sh-xl); overflow:hidden; animation:panelIn .28s var(--ease-out); }
-.modal-head { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--line); font-size:15px; font-weight:600; }
+.modal-head { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--line); font-size:16px; font-weight:700; letter-spacing:-.01em; }
 .modal-body { padding:20px; display:flex; flex-direction:column; gap:14px; }
 .modal-foot { display:flex; gap:10px; justify-content:flex-end; padding:16px 20px; border-top:1px solid var(--line); }
 .fld { display:flex; flex-direction:column; gap:6px; }
-.fld > span { font-size:12px; font-weight:500; color:var(--ink-2); }
-.fld input { padding:11px 13px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2); color:var(--ink); font-size:14px; font-family:var(--mono); transition:border-color .15s var(--ease); }
-.fld input:focus { border-color:var(--accent); background:var(--surface); }
+.fld > span { font-size:12px; font-weight:600; color:var(--ink-2); letter-spacing:.005em; }
+.fld input { padding:13px 14px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface-2); color:var(--ink); font-size:15px; font-family:var(--mono); font-variant-numeric:tabular-nums; transition:border-color .15s var(--ease); }
+.fld input:focus { border-color:var(--brand); background:var(--surface); box-shadow:0 0 0 3px var(--brand-l); outline:none; }
 .fld input:disabled { opacity:.7; cursor:not-allowed; }
 .fld-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .fld-err { font-size:12.5px; color:var(--down); min-height:16px; }
@@ -2548,8 +2549,8 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .prof-actions { display:flex; gap:8px; margin-top:12px; }
 .fld-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .fld-grid .fld:first-child, .fld-grid .fld:nth-child(2) { grid-column:1 / -1; }
-.fld select { padding:11px 13px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2); color:var(--ink); font-size:14px; cursor:pointer; transition:border-color .15s var(--ease); }
-.fld select:focus { border-color:var(--accent); background:var(--surface); }
+.fld select { padding:13px 14px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface-2); color:var(--ink); font-size:15px; cursor:pointer; transition:border-color .15s var(--ease); }
+.fld select:focus { border-color:var(--brand); background:var(--surface); box-shadow:0 0 0 3px var(--brand-l); outline:none; }
 @media (max-width:460px){ .fld-grid { grid-template-columns:1fr; } }
 .prof-lbl { font-size:12px; font-weight:500; color:var(--ink-2); margin-bottom:8px; }
 .prof-chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
@@ -3790,6 +3791,9 @@ button.mp-cell:active { background:var(--surface-3); }
   .pa-btn { margin-left:0; width:100%; justify-content:center; }
 }
 @media (prefers-reduced-motion:reduce){ .prank-track i { animation:none; } }
+.pos-hint { display:flex; align-items:flex-start; gap:8px; margin-top:4px; padding:11px 13px; border-radius:var(--r); background:var(--surface-2); border:1px solid var(--line); font-size:12px; line-height:1.5; color:var(--ink-4); }
+.pos-hint i { margin-top:2px; flex:none; }
+.pos-hint.hide { display:none; }
 .pos-preview { display:none; margin-top:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:13px 15px; }
 .pos-preview.on { display:block; animation:fadeIn .2s var(--ease); }
 .pp-h { display:flex; align-items:center; gap:10px; padding-bottom:10px; margin-bottom:8px; border-bottom:1px solid var(--line); }
@@ -4438,7 +4442,9 @@ function posPreview(){
   const el=$('#posPreview'); if(!el) return;
   const tk=($('#posTk').value||'').toUpperCase().trim(); const f=assetLookup(tk);
   const cur=curOf(tk); const lblc=$('#posCurLbl'); if(lblc) lblc.textContent = cur==='usd'?'Valor (US$)':'Valor (R$)';
-  if(!f){ el.innerHTML=''; el.classList.remove('on'); return; }
+  const hint=$('#posHint');
+  if(!f){ el.innerHTML=''; el.classList.remove('on'); if(hint) hint.classList.remove('hide'); return; }
+  if(hint) hint.classList.add('hide');
   const a=f.a,k=f.k;
   // pré-preenche o preço com a cotação atual (editável) e ACOMPANHA o ativo resolvido enquanto o
   // usuário não editar à mão — evita travar no preço de um ticker parcial (ex.: 'V' → Visa) ao digitar.
@@ -7217,10 +7223,7 @@ function viewCarteira(){
       <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Projeção dos próximos 12 meses mantendo as cotas atuais, a partir do rendimento corrente. Reinvestir os proventos acelera o crescimento — simule no Simulador de Renda.</div>
     </div>`; })()}
 
-  <div class="card card-pad" style="margin-top:16px">
-    <div class="card-h" style="margin-bottom:14px"><span class="ico" style="background:linear-gradient(135deg,var(--brand),var(--accent));color:#fff"><i class="fa-solid fa-stethoscope"></i></span> Diagnóstico da carteira</div>
-    <div id="diagBody" style="font-size:13.5px;line-height:1.7;color:var(--ink-2)"><span class="faint">Diagnosticando sua carteira…</span></div>
-  </div>`;
+  `;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -9338,7 +9341,7 @@ function afterRender(v, soft){
     if(typeof loadPortfolioHistory==='function') loadPortfolioHistory();   // fechamentos reais p/ reconstruir a evolução
   }
   // alocação e evolução saíram da Carteira (vivem na Home e no Raio-X) — só o salário ficou aqui
-  if(v==='carteira'){ initSalary(); if(!soft){ diagnose(); if(typeof loadBacktestHistory==='function') loadBacktestHistory(); } }
+  if(v==='carteira'){ initSalary(); if(!soft){ if(typeof loadBacktestHistory==='function') loadBacktestHistory(); } }   /* diagnóstico saiu da tela */
   // telas que exibem proventos recebidos: garante o histórico REAL (a UI mostra "apurando" até chegar)
   if(!soft && ['painel','carteira','proventos','raiox','ir'].includes(v) && typeof ensurePortfolioDividends==='function') ensurePortfolioDividends();
   if(v==='proventos'){ initProventosCharts(); }
