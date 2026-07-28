@@ -3824,32 +3824,6 @@ button.mp-cell:active { background:var(--surface-3); }
 .ph-stat[data-term]:active { background:var(--surface-3); }
 /* variante de 3 colunas (Proventos): valores curtos, cabe até em 390px sem quebrar linha */
 .ph-foot-3 { grid-template-columns:repeat(3,1fr); }
-/* próximo pagamento, dentro do card principal — faixa de destaque acima do rodapé */
-.ph-next { position:relative; display:flex; align-items:center; gap:12px; width:100%; text-align:left;
-  margin:15px calc(var(--php)*-1) 0; padding:12px var(--php); border:0; border-top:1px solid var(--line);
-  background:var(--surface-2); font:inherit; color:inherit; cursor:pointer; transition:background .18s var(--ease); }
-.ph-next:hover { background:var(--surface-3); }
-.ph-next:active { background:var(--surface-3); transform:scale(.997); }
-.ph-next:focus-visible { outline:none; box-shadow:inset 0 0 0 2px var(--brand); }
-.ph-next-d { flex:none; width:44px; height:46px; border-radius:11px; background:var(--up-l); color:var(--up);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.ph-next.is-prev .ph-next-d { background:var(--surface-3); color:var(--ink-3); box-shadow:inset 0 0 0 1.5px var(--line-2); }
-.ph-next-d .d { font-family:var(--mono); font-size:17px; font-weight:700; line-height:1; }
-.ph-next-d .m { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-top:3px; }
-.ph-next-id { flex:1; min-width:0; }
-.ph-next-k { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-4); white-space:nowrap; }
-.ph-next-tag { display:inline-flex; align-items:center; gap:4px; margin-bottom:4px; padding:2px 6px; border-radius:5px; font-size:9px; font-weight:700;
-  letter-spacing:.03em; color:var(--up); background:var(--up-l); }
-.ph-next.is-prev .ph-next-tag { color:var(--ink-3); background:var(--surface-3); }
-.ph-next-tk { display:flex; align-items:baseline; gap:7px; min-width:0; margin-top:4px; font-family:var(--mono); font-size:14px; font-weight:700; color:var(--ink); }
-.ph-next-tk em { font-style:normal; font-family:var(--sans); font-size:11px; font-weight:500; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.ph-next-s { font-size:11px; color:var(--ink-3); margin-top:2px; }
-.ph-next-v { flex:none; text-align:right; }
-.ph-next-v b { display:block; font-family:var(--mono); font-size:15px; font-weight:700; color:var(--up); white-space:nowrap; }
-.ph-next.is-prev .ph-next-v b { color:var(--ink-2); }
-.ph-next-lb { display:block; font-size:10px; color:var(--ink-4); }
-.ph-next .fa-chevron-right { flex:none; font-size:11px; color:var(--ink-4); }
-@media (max-width:430px){ .ph-next-tk em { display:none; } .ph-next { gap:10px; } }
 /* cartões da tela */
 .prov-card { margin-top:16px; }
 .prov-card .card-head { margin-bottom:8px; }
@@ -3946,6 +3920,50 @@ button.mp-cell:active { background:var(--surface-3); }
 .pnext-v .pnext-tag { margin-bottom:5px; }
 .pnext-lb { display:block; font-size:10px; color:var(--ink-4); }
 @media (max-width:430px){ .pnext-tk em { display:none; } }
+
+/* ── lista "Proventos a receber" — mesmo card (.pnext), escalado para N itens ── */
+.prc { display:block; }
+.prc-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-top:18px; }
+.prc-h-t { font-size:16.5px; font-weight:700; letter-spacing:-.015em; color:var(--ink); }
+.prc-h-s { margin-top:3px; font-size:12px; color:var(--ink-3); }
+.prc-h-s b { font-family:var(--mono); font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+.prc-nav { flex:none; display:inline-flex; align-items:center; gap:2px; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:2px; }
+.prc-arrow { width:28px; height:28px; border:none; border-radius:50%; background:transparent; color:var(--ink-2); font-size:11px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:background .16s var(--ease); }
+.prc-arrow:hover:not(:disabled) { background:var(--surface-3); }
+.prc-arrow:disabled { color:var(--ink-4); opacity:.4; cursor:default; }
+.prc-mes { font-family:var(--mono); font-size:11.5px; font-weight:700; color:var(--ink-2); padding:0 4px; white-space:nowrap; }
+.prc-chips { display:flex; gap:7px; margin-top:12px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+.prc-chips::-webkit-scrollbar { display:none; }
+.prc-chip { flex:none; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); font-family:var(--sans);
+  font-size:12px; font-weight:600; padding:6px 13px; border-radius:999px; cursor:pointer; transition:all .16s var(--ease); }
+.prc-chip:hover { background:var(--surface-2); color:var(--ink-2); }
+.prc-chip.on { background:var(--ink); border-color:var(--ink); color:var(--surface); }
+[data-theme="dark"] .prc-chip.on { background:var(--brand-d); border-color:var(--brand-d); color:#fff; }
+.prc-list > .pnext:first-child { margin-top:12px; }
+/* mesma data → o bloco não repete; um ponto mantém o alinhamento e os cards ficam colados,
+   para ler como um bloco só daquele dia em vez de dois cartões soltos */
+.pnext-date.is-same { background:transparent; box-shadow:none; align-items:center; }
+.pnext-date.is-same .dot { width:5px; height:5px; border-radius:50%; background:var(--line-2); }
+.prc-list > .pnext.has-same { margin-top:5px; }
+.prc-tipo { flex:none; font-family:var(--sans); font-size:9px; font-weight:700; letter-spacing:.03em; text-transform:uppercase;
+  padding:2px 6px; border-radius:5px; color:var(--ink-3); background:var(--surface-3); }
+.prc-tipo.t-jcp { color:var(--warn); background:var(--warn-l); }
+.prc-tipo.t-amortizacao { color:var(--ink-3); background:var(--surface-3); box-shadow:inset 0 0 0 1px var(--line-2); }
+.prc-cap { display:flex; align-items:center; gap:5px; margin-top:4px; font-size:10.5px; color:var(--ink-4); }
+.prc-bruto { display:block; margin-top:3px; font-size:9.5px; color:var(--ink-4); white-space:nowrap; }
+.pnext.is-cap::before { background:var(--ink-4); opacity:.35; }
+/* expansão 0fr→1fr: anima a altura real sem max-height mágico e sem layout shift */
+.prc-collapse { display:grid; grid-template-rows:0fr; transition:grid-template-rows .22s var(--ease); }
+.prc-collapse.open { grid-template-rows:1fr; }
+.prc-collapse-in { overflow:hidden; min-height:0; }
+.prc-more { display:flex; align-items:center; justify-content:center; gap:7px; width:100%; margin-top:12px; padding:11px;
+  border:1px dashed var(--line-2); border-radius:var(--r-lg); background:transparent; color:var(--ink-3);
+  font-family:var(--sans); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .16s var(--ease); }
+.prc-more:hover { background:var(--surface-2); color:var(--ink-2); border-color:var(--ink-4); }
+.prc-more i { font-size:10px; }
+.prc-state { margin-top:12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); padding:6px 16px 16px; }
+.prc-skel { cursor:default; }
+@media (prefers-reduced-motion:reduce){ .prc-collapse { transition:none; } }
 
 /* ── meta de renda ── */
 .pmeta-top { display:flex; align-items:center; gap:12px; margin-bottom:15px; }
@@ -4560,7 +4578,7 @@ function realPaymentsFor(g){
     g.lots.forEach(l=>{ const dt=parseLotDate(l.date); if(!dt) semData=true; if(!dt || dt<=d.com) cotas+=l.cotas; });
     if(cotas<=0) return;
     out.push({ tk:g.tk, k:g.f.k, pay:d.pay, com:d.com, comReal:!!d.comReal, perCota:d.value, cotas,
-               valor:d.value*cotas, total:d.value*cotas*rate, semData });
+               valor:d.value*cotas, total:d.value*cotas*rate, semData, label:d.label||'' });
   });
   out.sort((a,b)=>b.pay-a.pay);
   out.src='real';
@@ -8911,22 +8929,145 @@ function provInsightsHTML(d, p, rk){
 }
 
 /* ── blocos da tela ─────────────────────────────────────────────────────── */
-/* 4) PRÓXIMO PAGAMENTO — confirmado (data anunciada) ou previsto (ciclo apurado) */
-function provNextHTML(groups){
-  const nx=provNextPayment(groups);
-  if(!nx) return '';
-  const dias=provDaysTo(nx.date);
-  return `<section class="pnext prov-in ${nx.conf?'is-conf':'is-prev'}" style="--d:40ms" onclick="quickView('${nx.tk}')" role="button" tabindex="0"
-    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();quickView('${nx.tk}')}">
-    <div class="pnext-date"><span class="d">${String(nx.date.getDate()).padStart(2,'0')}</span><span class="m">${PROV_MES[nx.date.getMonth()]}</span></div>
-    <div class="pnext-id">
-      <div class="pnext-h">Próximo pagamento</div>
-      <div class="pnext-tk">${nx.tk}<em>${esc(nx.nm)}</em></div>
-      <div class="pnext-s">${provDaysLabel(dias)} · <span style="white-space:nowrap">${nx.cotas} × <span class="priv-blur">${brl(nx.perCota)}</span></span>${nx.conf&&nx.comReal?` · data-com ${provDateShort(nx.com)}`:''}</div>
-    </div>
-    <div class="pnext-v"><span class="pnext-tag">${nx.conf?'<i class="fa-solid fa-circle-check"></i> confirmado':'<i class="fa-regular fa-clock"></i> previsto'}</span><b class="priv-blur">${brl(nx.valor)}</b><span class="pnext-lb">${nx.conf?'a receber':'estimado'}</span></div>
-  </section>`;
+/* ── PROVENTOS A RECEBER ──────────────────────────────────────────────────
+   Lista dos proventos futuros da carteira: confirmados (data declarada pelo
+   ativo) e previstos (próximo ciclo apurado do histórico real, sempre rotulado).
+   Nada aqui é inventado — se a fonte não publicou, o item não existe. */
+const PROV_TIPOS={
+  rendimento : { nome:'Rendimento',  ir:0    },
+  dividendo  : { nome:'Dividendo',   ir:0    },
+  jcp        : { nome:'JCP',         ir:0.15 },   // IR retido na fonte
+  amortizacao: { nome:'Amortização', ir:0, cap:true },   // devolução de capital, não é renda
+};
+/* rótulo da fonte (brapi/B3) → tipo. Sem rótulo NÃO adivinhamos o tipo:
+   chutar "dividendo" onde é JCP mostraria um líquido 15% maior do que o real. */
+function provTipoOf(label){
+  const s=String(label||'').toUpperCase();
+  if(!s) return null;
+  if(/AMORTIZ/.test(s))            return 'amortizacao';
+  if(/JCP|JRS|JUROS/.test(s))      return 'jcp';
+  if(/RENDIMENT/.test(s))          return 'rendimento';
+  if(/DIVIDEND/.test(s))           return 'dividendo';
+  return null;
 }
+function provClasseKey(k){ return k==='fiis'?'fiis' : (k==='etfs'||k==='etfsint')?'etfs' : k==='acoes'?'acoes' : k; }
+function provItem(g, o){
+  const tipo = o.tipo || provTipoOf(o.label);
+  const t    = tipo ? PROV_TIPOS[tipo] : null;
+  const ir   = t ? t.ir : 0;
+  const bruto= o.total;
+  return { id:`${g.tk}-${+o.pay}`, tk:g.tk, nm:(g.f.a&&g.f.a.nm)||'', k:g.f.k, ck:provClasseKey(classKeyOf(g)),
+           tipo, tipoNome:t?t.nome:null, capital:!!(t&&t.cap), ir,
+           pay:o.pay, com:o.com, comReal:!!o.comReal, cotas:o.cotas, perCota:o.perCota,
+           bruto, liquido: bruto*(1-ir), conf:!!o.conf };
+}
+function provAReceber(groups){
+  groups = groups || portfolioByTicker();
+  const now=new Date(), out=[];
+  groups.forEach(g=>{ const r=realPaymentsFor(g); if(!r) return;
+    r.forEach(p=>{ if(p.pay>now) out.push(provItem(g, {...p, conf:true})); }); });
+  // previsto: só para quem NÃO tem nada confirmado à frente, e só com ciclo apurado do histórico
+  groups.forEach(g=>{
+    if(out.some(x=>x.tk===g.tk)) return;
+    const nx=nextProventoFor(g); if(!nx || !nx.real) return;
+    out.push(provItem(g, { pay:nx.date, com:nx.com, comReal:false, cotas:nx.cotas, perCota:nx.perCota,
+                           total:nx.total, conf:false, tipo:(nx.tipo==='Rendimento'?'rendimento':'dividendo') }));
+  });
+  return out.sort((a,b)=> a.pay-b.pay || a.tk.localeCompare(b.tk));
+}
+/* estado da seção (mês exibido, filtro de classe e "ver mais") */
+/* _prcMes: offset em meses a partir do mês corrente. null = ainda não escolhido → a seção abre
+   no mês do PRÓXIMO pagamento. Abrir sempre no mês corrente deixaria a lista vazia no fim do mês,
+   quando tudo que havia já foi pago. */
+let _prcMes=null, _prcCls='todos', _prcOpen=false;
+function prcMesRef(){ const n=new Date(); return new Date(n.getFullYear(), n.getMonth()+(_prcMes||0), 1); }
+function prcMesInicial(lista){
+  const f=lista[0]; if(!f) return 0;
+  const n=new Date();
+  return Math.max(0, Math.min(11, (f.pay.getFullYear()-n.getFullYear())*12 + (f.pay.getMonth()-n.getMonth())));
+}
+function setPrcMes(d){ const n=(_prcMes||0)+d; if(n<0 || n>11) return; _prcMes=n; _prcOpen=false; renderPrc(); }
+function setPrcCls(c){ _prcCls=c; _prcOpen=false; renderPrc(); }
+function togglePrc(){
+  _prcOpen=!_prcOpen;
+  const box=document.getElementById('prcMore'), btn=document.getElementById('prcBtn');
+  if(!box||!btn) return renderPrc();
+  box.classList.toggle('open', _prcOpen);           // grid-template-rows 0fr→1fr: anima sem layout shift
+  btn.innerHTML = _prcOpen
+    ? '<i class="fa-solid fa-chevron-up"></i> Ver menos'
+    : `<i class="fa-solid fa-chevron-down"></i> Ver mais (${btn.dataset.n})`;
+}
+function renderPrc(){ const el=document.getElementById('prcBody');
+  if(el){ el.innerHTML=prcBodyHTML(); if(typeof applyPriv==='function') applyPriv(); } }
+function prcRow(it, first, mesmaData){
+  const dias=provDaysTo(it.pay);
+  const tag = it.conf ? '<i class="fa-solid fa-circle-check"></i> confirmado' : '<i class="fa-regular fa-clock"></i> previsto';
+  const bruto = it.ir>0 ? `<span class="prc-bruto">bruto <span class="priv-blur">${brl(it.bruto)}</span> · IR ${pc(it.ir*100,0)}%</span>` : '';
+  return `<div class="pnext prc-row ${it.conf?'is-conf':'is-prev'}${it.capital?' is-cap':''}${mesmaData?' has-same':''}" onclick="quickView('${it.tk}')" role="button" tabindex="0"
+    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();quickView('${it.tk}')}">
+    ${mesmaData
+      ? '<div class="pnext-date is-same" aria-hidden="true"><span class="dot"></span></div>'
+      : `<div class="pnext-date"><span class="d">${String(it.pay.getDate()).padStart(2,'0')}</span><span class="m">${PROV_MES[it.pay.getMonth()]}</span></div>`}
+    <div class="pnext-id">
+      ${first?'<div class="pnext-h">Próximo pagamento</div>':''}
+      <div class="pnext-tk">${it.tk}<em>${esc(it.nm)}</em>${it.tipoNome?`<span class="prc-tipo t-${it.tipo}">${it.tipoNome}</span>`:''}</div>
+      <div class="pnext-s">${provDaysLabel(dias)} · <span style="white-space:nowrap">${it.cotas} × <span class="priv-blur">${brl(it.perCota)}</span></span></div>
+      ${it.capital?'<div class="prc-cap"><i class="fa-solid fa-rotate-left"></i> devolução de capital — não é renda</div>':''}
+    </div>
+    <div class="pnext-v"><span class="pnext-tag">${tag}</span><b class="priv-blur">${brl(it.liquido)}</b><span class="pnext-lb">${it.conf?'a receber':'estimado'}</span>${bruto}</div>
+  </div>`;
+}
+function prcBodyHTML(){
+  const groups=portfolioByTicker();
+  // erro e carregamento vêm do MESMO estado do resto da tela (nada de spinner próprio mentindo)
+  if(provFetchDown())
+    return `<div class="prc-state">${emptyState('fa-plug-circle-exclamation','Não conseguimos buscar os proventos','A fonte de dados não respondeu agora. Preferimos não mostrar nada a mostrar um número estimado.',`<button class="btn btn-primary btn-sm" onclick="ensurePortfolioDividends(true);render('proventos')"><i class="fa-solid fa-rotate-right"></i> Tentar novamente</button>`)}</div>`;
+  if(groups.some(g=>g.provPend) && !groups.some(g=>Array.isArray((ASSET_LIVE[g.tk]||{}).dividends)))
+    return `<div class="prc-list">${[0,1,2].map(()=>`<div class="pnext prc-row prc-skel"><div class="skeleton" style="width:50px;height:52px;border-radius:12px"></div><div style="flex:1"><div class="skeleton skel-line sk-40"></div><div class="skeleton skel-line sk-75" style="height:9px;margin-top:8px"></div></div><div class="skeleton skel-line sk-55" style="width:70px"></div></div>`).join('')}</div>`;
+
+  const futuros=provAReceber(groups);
+  if(_prcMes===null) _prcMes=prcMesInicial(futuros);
+  const ref=prcMesRef(), todos=futuros.filter(it=> it.pay.getFullYear()===ref.getFullYear() && it.pay.getMonth()===ref.getMonth());
+  // chips só das classes que a carteira realmente tem (chip vazio é ruído)
+  const cls=[...new Set(todos.map(it=>it.ck))];
+  const CHIP={fiis:'FIIs', acoes:'Ações', etfs:'ETFs', bdrs:'BDRs', stocks:'Stocks', cripto:'Cripto'};
+  if(_prcCls!=='todos' && !cls.includes(_prcCls)) _prcCls='todos';
+  const lista = _prcCls==='todos' ? todos : todos.filter(it=>it.ck===_prcCls);
+  const total = lista.reduce((s,it)=>s+it.liquido,0);
+  const chips = cls.length>1 ? `<div class="prc-chips" role="tablist">
+    ${[['todos','Todos'],...cls.map(c=>[c,CHIP[c]||c])].map(([c,l])=>
+      `<button class="prc-chip${c===_prcCls?' on':''}" role="tab" aria-selected="${c===_prcCls}" onclick="setPrcCls('${c}')">${l}</button>`).join('')}
+  </div>` : '';
+
+  const mesNome=`${PROV_MESL[ref.getMonth()]} de ${ref.getFullYear()}`;
+  const head=`<div class="prc-head">
+    <div class="prc-h-l">
+      <div class="prc-h-t">Proventos a receber</div>
+      <div class="prc-h-s">${PROV_MESL[ref.getMonth()][0].toUpperCase()+PROV_MESL[ref.getMonth()].slice(1)} · <b class="priv-blur">${brl(total)}</b></div>
+    </div>
+    <div class="prc-nav">
+      <button class="prc-arrow" onclick="setPrcMes(-1)" ${(_prcMes||0)<=0?'disabled':''} aria-label="Mês anterior"><i class="fa-solid fa-chevron-left"></i></button>
+      <span class="prc-mes">${PROV_MES[ref.getMonth()]} ${String(ref.getFullYear()).slice(2)}</span>
+      <button class="prc-arrow" onclick="setPrcMes(1)" ${(_prcMes||0)>=11?'disabled':''} aria-label="Próximo mês"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+  </div>${chips}`;
+
+  if(!lista.length) return `${head}<div class="prc-state">${emptyState('fa-regular fa-calendar','Nenhum provento previsto para '+PROV_MESL[ref.getMonth()],'Só entram aqui pagamentos já declarados pelo ativo ou o próximo ciclo apurado do histórico real. Nada é chutado.')}</div>`;
+
+  const vis=lista.slice(0,3), resto=lista.slice(3);
+  let last='';
+  // "PRÓXIMO PAGAMENTO" só no 1º item da lista completa (sem filtro) do 1º mês com pagamento
+  const ehProx = _prcCls==='todos' && futuros.length && +futuros[0].pay===+lista[0].pay && futuros[0].tk===lista[0].tk;
+  const linha=(it,i)=>{ const key=it.pay.toDateString(); const mesma=key===last; last=key; return prcRow(it, i===0 && ehProx, mesma); };
+  const btn = resto.length ? `<button class="prc-more" id="prcBtn" data-n="${resto.length}" onclick="togglePrc()">${_prcOpen
+      ? '<i class="fa-solid fa-chevron-up"></i> Ver menos'
+      : `<i class="fa-solid fa-chevron-down"></i> Ver mais (${resto.length})`}</button>` : '';
+  return `${head}
+    <div class="prc-list">${vis.map((it,i)=>linha(it,i)).join('')}</div>
+    ${resto.length?`<div class="prc-collapse${_prcOpen?' open':''}" id="prcMore"><div class="prc-collapse-in"><div class="prc-list">${resto.map(it=>linha(it,1)).join('')}</div></div></div>`:''}
+    ${btn}`;
+}
+function provAReceberHTML(){ return `<section class="prc prov-in" style="--d:40ms" id="prcBody">${prcBodyHTML()}</section>`; }
 /* 9) META DE RENDA — única casa da meta (getRendaMeta/updateRendaMeta) */
 function provMetaHTML(d, yoc){
   const meta=getRendaMeta(), media=d.media;
@@ -9110,7 +9251,7 @@ function viewProventos(){
   }
   if(!d.ranking.length){
     const semFonte = d.semFonte.length? ` Ativos de classes sem fonte de proventos no Lastro (${d.semFonte.slice(0,4).join(', ')}${d.semFonte.length>4?'…':''}) não entram nesta conta.`:'';
-    const prox = provNextHTML(groups);
+    const prox = provAReceberHTML();
     return `${cartTabsHTML('proventos')}${prox}<div class="card card-pad prov-state">${head}
     ${emptyState('fa-coins','Nenhum provento recebido nos últimos 12 meses',`Só entram aqui pagamentos <strong>realmente declarados</strong> pelos ativos, contando as cotas que você já tinha na data-com.${d.totalAll>0?` Você tem ${brl(d.totalAll)} recebidos em datas anteriores a este período.`:''}${semFonte}`,`<button class="btn btn-ghost" onclick="nav('agenda')"><i class="fa-regular fa-calendar"></i> Ver agenda de dividendos</button>`)}</div>`;
   }
@@ -9126,20 +9267,9 @@ function viewProventos(){
     : deltaHTML(gDelta, d.growth, 'nos últimos 12 meses');
   const nAtivos = rk.length;
   const desde = d.firstPay ? `${PROV_MES[d.firstPay.getMonth()]}/${String(d.firstPay.getFullYear()).slice(2)}` : '—';
-  // 6 métricas do card principal: média mensal (destaque), crescimento 12m (pílula),
-  // próximo pagamento (faixa), acumulado, melhor mês da história e ativos pagadores (rodapé).
+  // card principal: média mensal (destaque), crescimento 12m, acumulado, melhor mês da história
+  // e ativos pagadores. O próximo pagamento virou a lista "Proventos a receber" logo abaixo.
   const rec = provRecords(groups);
-  const nx = provNextPayment(groups);
-  const proxHTML = !nx ? '' : `<button type="button" class="ph-next ${nx.conf?'is-conf':'is-prev'}" onclick="quickView('${nx.tk}')">
-      <span class="ph-next-d"><span class="d">${String(nx.date.getDate()).padStart(2,'0')}</span><span class="m">${PROV_MES[nx.date.getMonth()]}</span></span>
-      <span class="ph-next-id">
-        <span class="ph-next-k">Próximo pagamento</span>
-        <span class="ph-next-tk">${nx.tk}<em>${esc(nx.nm)}</em></span>
-        <span class="ph-next-s">${provDaysLabel(provDaysTo(nx.date))}${nx.conf&&nx.comReal?` · data-com ${provDateShort(nx.com)}`:''}</span>
-      </span>
-      <span class="ph-next-v"><span class="ph-next-tag">${nx.conf?'<i class="fa-solid fa-circle-check"></i> confirmado':'<i class="fa-regular fa-clock"></i> previsto'}</span><b class="priv-blur">${brl(nx.valor)}</b><span class="ph-next-lb">${nx.conf?'a receber':'estimado'}</span></span>
-      <i class="fa-solid fa-chevron-right"></i>
-    </button>`;
   const mm = rec.melhorMes;
   const mmLabel = mm ? `${PROV_MESL[mm.m]} de ${mm.y}` : 'sem histórico';
   // parcial: há proventos reais apurados, mas algum ativo ainda não respondeu → mostra o número
@@ -9157,13 +9287,13 @@ function viewProventos(){
     </div>
     <div class="ph-val priv-blur" data-count="${d.media.toFixed(2)}" data-fmt="brl">${brl(d.media)}</div>
     <div class="ph-meta">${growth}</div>
-    ${proxHTML}
     <div class="ph-foot ph-foot-3">
       <div class="ph-stat"><span class="l">Acumulado</span><span class="v priv-blur">${brl(d.totalAll)}</span><span class="s">desde ${desde}</span></div>
       <div class="ph-stat"><span class="l">Melhor mês</span><span class="v priv-blur">${mm?brl(mm.val):'—'}</span><span class="s">${mmLabel}</span></div>
       <div class="ph-stat"><span class="l">Pagadores</span><span class="v">${nAtivos}</span><span class="s">ativo${nAtivos===1?'':'s'}</span></div>
     </div>
   </section>
+  ${provAReceberHTML()}
   ${provMetaHTML(d, yoc)}
   ${provChartCard(groups)}
   ${provPair(provMonthCard(groups), provDistCard(groups))}
