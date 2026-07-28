@@ -3827,19 +3827,27 @@ button.mp-cell:active { background:var(--surface-3); }
 /* cartões da tela */
 .prov-card { margin-top:16px; }
 .prov-card .card-head { margin-bottom:8px; }
-.prov-chart-box { position:relative; margin:12px -6px 0; }
-.prov-chart { position:relative; height:228px; }
-/* 24m/36m/tudo: trilho com rolagem horizontal e snap; a altura NÃO muda com o período */
-.prov-chart.is-scroll { overflow-x:auto; overflow-y:hidden; scroll-snap-type:x proximity;
-  scrollbar-width:none; -webkit-overflow-scrolling:touch; }
-.prov-chart.is-scroll::-webkit-scrollbar { display:none; }
-.prov-chart-in { position:relative; height:100%; min-width:100%; }
-/* eixo Y preso à esquerda enquanto as barras rolam */
-.pev-yaxis { position:absolute; left:0; top:0; bottom:0; width:44px; pointer-events:none; z-index:2;
-  background:linear-gradient(to right, var(--surface) 72%, transparent); }
-.pev-yaxis span { position:absolute; left:0; transform:translateY(-50%); font-size:11px; color:var(--ink-4);
-  font-family:var(--mono); white-space:nowrap; }
-.prov-chart canvas { touch-action:pan-y; }        /* arrastar no gráfico não trava o scroll da página */
+/* ── layout do card de evolução (medidas fixas: nada se sobrepõe e a altura não dança) ── */
+.pev-card { padding:20px; }
+.pev-card > * { margin:0; }
+.pev-t { margin-bottom:16px !important; }
+.pev-ctrls { margin-bottom:16px !important; }
+.pev-valbox { height:56px; margin-bottom:12px !important; overflow:hidden; }
+.pev-plot { position:relative; }
+.pev-scroll { overflow-x:hidden; overflow-y:hidden; }
+.pev-scroll.is-scroll { overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+.pev-scroll.is-scroll::-webkit-scrollbar { display:none; }
+.pev-inner { position:relative; min-width:100%; }
+/* faixa exclusiva do ano, ACIMA do gráfico: dentro dele fica só a linha vertical */
+.pev-years { position:relative; height:16px; }
+.pev-years span { position:absolute; top:0; line-height:14px; font-size:10px; font-weight:600; color:var(--ink-4); white-space:nowrap; }
+/* 16 (respiro do rótulo de estouro) + 180 (plotagem) + 20 (faixa dos meses) */
+.pev-canvas { position:relative; height:216px; }
+.pev-plot canvas { touch-action:pan-y; display:block; }
+.pev-yaxis { position:absolute; left:0; top:16px; height:calc(100% - 16px); width:44px; pointer-events:none; z-index:2;
+  background:linear-gradient(to right, var(--surface) 78%, transparent); }
+.pev-yaxis span { position:absolute; left:0; width:44px; text-align:right; transform:translateY(-50%);
+  font-size:11px; color:var(--ink-4); font-family:var(--mono); white-space:nowrap; }
 /* cabeçalho com leitura (substitui a tooltip sobreposta) */
 .pev-t { font-size:17px; font-weight:700; letter-spacing:-.015em; color:var(--ink); }
 /* controles em pílula: ícone + rótulo + chevron */
@@ -3854,13 +3862,13 @@ button.mp-cell:active { background:var(--surface-3); }
 .pev-sel:focus-within { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-l); }
 .pev-sel-c { position:absolute; right:11px; font-size:9px; color:var(--ink-4); pointer-events:none; }
 /* legenda no topo, centralizada */
-.pev-leg { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:6px 18px; margin-top:14px;
-  font-size:12px; color:var(--ink-3); }
+.pev-leg { display:flex; justify-content:flex-start; align-items:center; flex-wrap:wrap; gap:6px 18px;
+  margin-top:8px !important; margin-bottom:16px !important; font-size:12px; color:var(--ink-3); }
 .pev-leg > span { display:inline-flex; align-items:center; gap:7px; }
 .pev-leg .pl-dot { width:13px; height:13px; border-radius:50%; background:var(--brand); }
 .pev-leg .pl-dot.pl-fut { background:color-mix(in srgb, var(--brand) 25%, transparent); }
 .pev-leg .pl-mm { width:15px; height:0; border-top:2px solid color-mix(in srgb, var(--brand) 60%, transparent); }
-.pev-val { margin-top:16px; font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:-.02em;
+.pev-val { font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:-.02em;
   color:var(--ink); font-variant-numeric:tabular-nums; line-height:1.15;
   transition:color .15s var(--ease), opacity .15s var(--ease); }
 .pev-sub { margin-top:2px; font-size:11.5px; color:var(--ink-4); line-height:1.45; }
@@ -3916,8 +3924,6 @@ button.mp-cell:active { background:var(--surface-3); }
   .ph-stat { padding:11px 10px 12px; }
   .ph-stat .v { font-size:13.5px; }
   .ph-stat .l, .ph-stat .s { font-size:10px; }
-  .prov-chart-box { margin:10px -8px 0; }
-  .prov-chart { height:205px; }
   .pa-btn { margin-left:0; width:100%; justify-content:center; }
 }
 @media (prefers-reduced-motion:reduce){ .prank-track i { animation:none; } }
@@ -9146,11 +9152,11 @@ function provChartCard(groups){
   const fopts=[['todos','Todos']].concat(cls.map(c=>[c,CHIP[c]||c]))
     .map(([v,l])=>`<option value="${v}"${v===_pevCls?' selected':''}>${l}</option>`).join('');
 
-  const scroll = n>13;                                  // 24m/36m/tudo: rolagem horizontal com snap
-  const larg   = scroll ? (n*PEV_CAT + 46) : 0;         // 46px reservados para o eixo Y
+  const scroll = n>13;                                  // 24m/36m/tudo: rolagem horizontal
+  const larg   = scroll ? (PEV_GUT+PEV_GAP+n*PEV_CAT+PEV_PAD) : 0;
   const curto  = cd.nReal<3;
   const temFut = cd.areceber.some(v=>v>0);
-  return `<div class="card card-pad prov-card prov-in" style="--d:160ms">
+  return `<div class="card prov-card prov-in pev-card" style="--d:160ms">
     <div class="pev-t">Evolução de Proventos</div>
     <div class="pev-ctrls">
       <label class="pev-sel"><i class="fa-regular fa-calendar"></i>
@@ -9160,20 +9166,24 @@ function provChartCard(groups){
         <select id="provClsSel" onchange="setProvCls(this.value)" aria-label="Filtrar por classe">${fopts}</select>
         <i class="fa-solid fa-chevron-down pev-sel-c"></i></label>`:''}
     </div>
+    <!-- altura fixa: o scrub troca o texto sem mexer na altura do card -->
+    <div class="pev-valbox">
+      <div class="pev-val priv-blur" id="pevVal">${brl(pevUltimoFechado(cd))}</div>
+      <div class="pev-sub" id="pevSub">${pevSubPadrao(cd)}</div>
+    </div>
+    <div class="pev-plot">
+      <div class="pev-scroll${scroll?' is-scroll':''}" id="pevWrap">
+        <div class="pev-inner"${scroll?` style="width:${larg}px"`:''}>
+          <div class="pev-years" id="pevYears"></div>
+          <div class="pev-canvas"><canvas id="provMonthChart" role="img" aria-label="Proventos recebidos por mês"></canvas></div>
+        </div>
+      </div>
+      ${scroll?'<div class="pev-yaxis" id="pevY" aria-hidden="true"></div>':''}
+    </div>
     <div class="pev-leg">
       <span><i class="pl-dot"></i>Recebidos</span>
       ${temFut?'<span><i class="pl-dot pl-fut"></i>A receber</span>':''}
       ${curto?'':`<span><i class="pl-mm"></i>tendência ${cd.mmW}m</span>`}
-    </div>
-    <div class="pev-val priv-blur" id="pevVal">${brl(pevUltimoFechado(cd))}</div>
-    <div class="pev-sub" id="pevSub">${pevSubPadrao(cd)}</div>
-    <div class="prov-chart-box">
-      <div class="prov-chart${scroll?' is-scroll':''}" id="pevWrap">
-        <div class="prov-chart-in"${scroll?` style="width:${larg}px"`:''}>
-          <canvas id="provMonthChart" role="img" aria-label="Proventos recebidos por mês"></canvas>
-        </div>
-      </div>
-      ${scroll?'<div class="pev-yaxis" id="pevY" aria-hidden="true"></div>':''}
     </div>
     ${curto?'<div class="prov-cap"><i class="fa-solid fa-circle-info"></i> Histórico curto — a média fica mais confiável a partir de 6 meses.</div>':''}
     <div class="prov-cap" id="provChartCap">${provChartCap(cd)}</div>
@@ -9410,8 +9420,12 @@ function pevFuturos(groups){
     out.get(k).val+=it.liquido; });
   return [...out.values()].sort((a,b)=> a.y-b.y || a.m-b.m);
 }
-const PEV_BAR=16, PEV_CAT=24;             // largura da barra e da faixa (gap = 8px = 50% da barra)
+const PEV_CAT=24;                         // largura da faixa de cada mês no modo rolagem
 const PEV_FUT=3;                          // meses à frente que o gráfico projeta
+/* geometria fixa do gráfico (spec de layout): 44px de eixo Y + 8px até a 1ª barra,
+   16px de folga na direita, faixa de meses de 20px e 16px de respiro para o rótulo de estouro.
+   A área de plotagem fica com exatamente 180px. */
+const PEV_GUT=44, PEV_GAP=8, PEV_PAD=16, PEV_XH=20, PEV_TOP=16, PEV_PLOT=180;
 /* dados do gráfico de evolução.
    A média móvel é calculada sobre o histórico INTEIRO e só depois recortada para a janela — assim
    a curva de 12m existe mesmo na visão de 12 meses (calculá-la só dentro da janela daria 1 ponto). */
@@ -9475,12 +9489,14 @@ function provChartData(n){
     mmW: Math.min(12, months.filter(m=>!m.fut).length),
     labels: months.map(m=> longo ? PROV_MES[m.m]+'/'+String(m.y).slice(2) : PROV_MES[m.m]) };
 }
-/* topo do eixo num número redondo — com o teto cru o Chart.js escreve "R$ 488" lá em cima */
-function pevNiceMax(v){
-  if(!(v>0)) return undefined;
-  const e=Math.pow(10, Math.floor(Math.log10(v))), f=v/e;
-  const passos=[1,1.2,1.5,2,2.5,3,4,5,6,7,8,9,10];
-  return (passos.find(p=>f<=p+1e-9)||10)*e;
+/* escala do eixo Y: 3 passos iguais (4 marcas com o zero), sempre em número redondo.
+   Sem isso o Chart.js escreve o teto cru lá em cima ("R$ 488", "R$ 865"). */
+function pevScaleY(need){
+  if(!(need>0)) return { max:100, step:100/3 };
+  const alvo=need/3, e=Math.pow(10, Math.floor(Math.log10(alvo)));
+  const passos=[1,2,2.5,5,10];
+  const step=(passos.find(p=>alvo<=p*e+1e-9)||10)*e;
+  return { max:step*3, step };
 }
 /* rótulo curto de dinheiro no eixo/estouro: R$ 0 · R$ 1k · R$ 2,9k */
 function pevShort(v){ return v>=1000 ? 'R$ '+(v/1000).toFixed(v%1000?1:0).replace('.',',')+'k' : 'R$ '+Math.round(v); }
@@ -9524,20 +9540,13 @@ const pevPlugin={
   beforeDatasetsDraw(chart){
     const cd=_provSerie; if(!cd) return;
     const {ctx, chartArea:a, scales:{x}}=chart; if(!a) return;
-    const line=cssVar('--line-2'), ink4=cssVar('--ink-4');
     ctx.save();
-    // índices com rótulo de estouro — o ano não pode ser escrito por cima deles
-    const est=new Set();
-    if(cd.cap!=null) cd.vals.forEach((v,i)=>{ if(v>chart.scales.y.max) est.add(i); });
+    // dentro do gráfico o ano é SÓ uma linha; o rótulo vive na faixa de 16px acima (HTML)
+    ctx.strokeStyle=cssVar('--line-2'); ctx.lineWidth=1;
     cd.months.forEach((m,i)=>{
-      if(m.m!==0 || i===0) return;                       // virada de ano = janeiro (menos o 1º ponto)
-      const px=x.getPixelForValue(i)-PEV_CAT/2;
-      ctx.strokeStyle=line; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(px, a.top-2); ctx.lineTo(px, a.bottom); ctx.stroke();
-      if(est.has(i) || est.has(i-1) || est.has(i+1)) return;
-      ctx.fillStyle=ink4; ctx.font='600 9.5px '+getComputedStyle(document.body).fontFamily;
-      ctx.textAlign='left'; ctx.textBaseline='top';
-      ctx.fillText(String(m.y), px+4, a.top-11);
+      if(m.m!==0 || i===0) return;
+      const px=Math.round(x.getPixelForValue(i)-(x.width/cd.months.length)/2)+.5;
+      ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke();
     });
     ctx.restore();
   },
@@ -9546,25 +9555,28 @@ const pevPlugin={
     const {ctx, chartArea:a, scales:{x,y}}=chart; if(!a) return;
     const br=cssVar('--brand'), ink3=cssVar('--ink-3');
     const priv=(typeof privOn==='function'&&privOn());
+    const larg=Math.min(PEV_CAT, (x.width/cd.months.length)*.7);
     ctx.save();
     cd.months.forEach((m,i)=>{
       const cx=x.getPixelForValue(i), v=cd.vals[i];
-      // estouro do teto: serrilha no topo + valor real, para não mentir a altura
-      if(cd.cap!=null && v>y.max){
-        const x0=cx-PEV_BAR/2, yy=a.top+5, step=PEV_BAR/4;
+      // mês sem provento: barra fantasma de 3px, para o eixo não ter buraco
+      if(!v){ ctx.fillStyle=cssVar('--line-2'); ctx.fillRect(cx-larg/2, a.bottom-3, larg, 3); return; }
+      // estouro do teto: serrilha no topo + valor real 6px acima, para não mentir a altura
+      if(v>y.max){
+        const x0=cx-larg/2, yy=a.top+5, step=larg/4;
         ctx.strokeStyle=cssVar('--surface'); ctx.lineWidth=3; ctx.lineJoin='round';
         ctx.beginPath(); ctx.moveTo(x0-1, yy);
         for(let k=0;k<4;k++){ ctx.lineTo(x0+step*(k+0.5), yy-3.5); ctx.lineTo(x0+step*(k+1), yy+1); }
         ctx.stroke();
-        if(!priv){ ctx.fillStyle=ink3; ctx.font='700 9px '+getComputedStyle(document.body).fontFamily;
-          ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(pevShort(v), cx, a.top-2); }
+        if(!priv){ ctx.fillStyle=ink3; ctx.font='700 10px '+getComputedStyle(document.body).fontFamily;
+          ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(pevShort(v), cx, a.top-6); }
       }
     });
     // linha do scrub
     if(_pevHover!=null && cd.months[_pevHover]){
       const cx=x.getPixelForValue(_pevHover);
       ctx.strokeStyle=br+'4d'; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(cx, a.top-4); ctx.lineTo(cx, a.bottom); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, a.top); ctx.lineTo(cx, a.bottom); ctx.stroke();
     }
     ctx.restore();
   }
@@ -9621,34 +9633,60 @@ function initProventosCharts(){
   // texto), então o eixo precisa se mascarar sozinho — mesmo padrão do wspark.
   const _priv=(typeof privOn==='function'&&privOn());
   const fmtY=v=> _priv ? '' : pevShort(v);
-  const ghost=cssVar('--line-2');
+  const ghost=cssVar('--line-2'), surf=cssVar('--surface');
   const dimOf = i => (_pevHover!=null && _pevHover!==i);        // scrub: as outras caem para 35%
   const barRec = ctx => { const i=ctx.dataIndex;
-    if(!cd.recv[i]) return cd.areceber[i]?'transparent':ghost;  // mês sem nada: barra fantasma
+    if(!cd.recv[i]) return 'transparent';
     return br + (dimOf(i)?'59':'ff'); };
   const barFut = ctx => { const i=ctx.dataIndex;
     if(!cd.areceber[i]) return 'transparent';
     return br + (dimOf(i)?'26':'40'); };
-  const maxY = cd.cap!=null ? pevNiceMax(cd.cap*1.06) : undefined;
+  // ESCALA: 4 marcas com intervalo igual (0 · s · 2s · 3s) e teto 16% acima do necessário,
+  // o que garante ao menos 24px livres entre a barra mais alta e o topo da área de plotagem.
+  const need = (cd.cap!=null ? cd.cap : Math.max(0,...cd.vals)) * 1.16;
+  const sc = pevScaleY(need);
   charts.provMonth=new Chart(c1,{ type:'bar', plugins:[pevPlugin], data:{ labels:cd.labels, datasets:[
       { type:'bar', label:'Recebidos', data:cd.recv, backgroundColor:barRec, hoverBackgroundColor:barRec,
-        stack:'p', borderRadius:0, borderSkipped:false, barThickness:PEV_BAR, minBarLength:0, order:1 },
+        stack:'p', borderRadius:0, borderSkipped:false, categoryPercentage:1, barPercentage:.7,
+        maxBarThickness:PEV_CAT, minBarLength:0, order:1 },
       { type:'bar', label:'A receber', data:cd.areceber, backgroundColor:barFut, hoverBackgroundColor:barFut,
         stack:'p', borderRadius:{topLeft:4,topRight:4,bottomLeft:0,bottomRight:0}, borderSkipped:false,
-        barThickness:PEV_BAR, minBarLength:0, order:1 },
-      { type:'line', label:'média móvel', data:cd.nReal<3?[]:cd.mm, borderColor:br+'99', borderWidth:2,
-        pointRadius:0, pointHoverRadius:0, pointHitRadius:0, tension:.35, spanGaps:true, order:2 } ] },
-    options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:16}},
+        categoryPercentage:1, barPercentage:.7, maxBarThickness:PEV_CAT, minBarLength:0, order:1 },
+      // halo: contorno claro por baixo da linha, para ela não sumir sobre as barras
+      { type:'line', label:'_halo', data:cd.nReal<3?[]:cd.mm, borderColor:surf, borderWidth:4,
+        pointRadius:0, pointHoverRadius:0, pointHitRadius:0, tension:.35, spanGaps:true, order:2 },
+      { type:'line', label:'tendência', data:cd.nReal<3?[]:cd.mm, borderColor:br+'99', borderWidth:2,
+        pointRadius:0, pointHoverRadius:0, pointHitRadius:0, tension:.35, spanGaps:true, order:3 } ] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ top:PEV_TOP, right:PEV_PAD, left:0, bottom:0 } },
       animation: reduce?false:{ duration:400, easing:'easeOutCubic', delay:c=>c.type==='data'&&c.mode==='default'?c.dataIndex*12:0 },
       interaction:{ mode:'index', intersect:false },
       plugins:{ legend:{display:false}, tooltip:{enabled:false} },   // a leitura vive no cabeçalho
       scales:{ x:{ type:'category', stacked:true, offset:true, grid:{display:false}, border:{display:false},
-          ticks:{ color:ink3, font:{size:10.5,weight:'500'}, autoSkip:false, maxRotation:0,
-            callback:(v,i)=>{ const m=cd.months[i]; if(!m) return '';
-              if(!cd.longo) return PROV_MES[m.m];
-              return (m.m%2===0) ? PROV_MES[m.m]+'/'+String(m.y).slice(2) : ''; } } },
-        y:{ beginAtZero:true, stacked:true, max:maxY, grid:{color:cssVar('--line'),drawTicks:false}, border:{display:false},
-            ticks:{color:(n>13?'transparent':ink4),font:{size:11},padding:8,maxTicksLimit:3,callback:fmtY} } } } });
+          // faixa dos meses: 20px fixos. A fonte e o padding abaixo mantêm a altura NATURAL
+          // menor que isso — forçar para menos que o natural corta o texto pela metade.
+          afterFit:s=>{ s.height=Math.max(s.height, PEV_XH); },
+          ticks:{ color:ink3, font:{size:10,weight:'500'}, autoSkip:false, maxRotation:0, padding:2,
+            // função normal (não arrow): precisa do `this` da escala para saber a largura da fatia
+            // AQUI, durante a construção — charts.provMonth ainda não existe neste momento.
+            callback:function(v,i){ const m=cd.months[i]; if(!m) return '';
+              const fatia=(this&&this.width)?this.width/cd.months.length:99;
+              const alt = cd.longo || fatia<22;              // sem espaço p/ todos → meses alternados
+              if(!alt) return PROV_MES[m.m];
+              return (i%2===(cd.months.length-1)%2) ? (cd.longo?PROV_MES[m.m]+'/'+String(m.y).slice(2):PROV_MES[m.m]) : ''; } } },
+        y:{ beginAtZero:true, stacked:true, min:0, max:sc.max,
+            afterFit:s=>{ s.width=PEV_GUT+PEV_GAP; },                // 44px de rótulo + 8px até a barra
+            afterBuildTicks:s=>{ s.ticks=[0,1,2,3].map(k=>({value:k*sc.step})); },
+            grid:{color:cssVar('--line'),drawTicks:false}, border:{display:false},
+            ticks:{color:(n>13?'transparent':ink4),font:{size:11},padding:PEV_GAP,callback:fmtY} } } } });
+  // A faixa dos meses tem altura mínima de 20px, mas pode precisar de mais para o texto não
+  // cortar. Ajusta a altura do canvas ao que ela realmente ocupou, para a ÁREA DE PLOTAGEM
+  // ficar em 180px exatos em qualquer largura.
+  (function(){ const ch=charts.provMonth, box=c1.parentElement;
+    const xh=ch.scales.x?ch.scales.x.height:PEV_XH;
+    const alvo=PEV_TOP+PEV_PLOT+Math.ceil(xh);
+    if(box && Math.abs(box.clientHeight-alvo)>0.5){ box.style.height=alvo+'px'; ch.resize(); }
+  })();
   pevBind(charts.provMonth);
   pevYAxis(charts.provMonth);
   const wrap=document.getElementById('pevWrap');
@@ -9657,13 +9695,25 @@ function initProventosCharts(){
 /* eixo Y fixo: no modo scroll o eixo desenhado no canvas rolaria para fora da tela junto com as
    barras. Aqui ele vira um overlay HTML preso à esquerda, alinhado pelos pixels da escala real. */
 function pevYAxis(chart){
-  const box=document.getElementById('pevY'); if(!box) return;
-  const y=chart.scales.y, a=chart.chartArea; if(!y||!a) { box.innerHTML=''; return; }
-  const priv=(typeof privOn==='function'&&privOn());
-  box.innerHTML = priv ? '' : y.ticks.map(t=>{
-    const py=y.getPixelForValue(t.value);
-    return `<span style="top:${py.toFixed(1)}px">${pevShort(t.value)}</span>`;
-  }).join('');
+  const box=document.getElementById('pevY');
+  if(box){
+    const y=chart.scales.y, a=chart.chartArea;
+    const priv=(typeof privOn==='function'&&privOn());
+    box.innerHTML = (!y||!a||priv) ? '' : y.ticks.map(t=>{
+      const py=y.getPixelForValue(t.value);
+      return `<span style="top:${py.toFixed(1)}px">${pevShort(t.value)}</span>`;
+    }).join('');
+  }
+  // faixa do ano: rótulo na tira de 16px acima do gráfico, alinhado à linha divisória
+  const yb=document.getElementById('pevYears'); const cd=_provSerie;
+  if(yb && cd){
+    const x=chart.scales.x;
+    yb.innerHTML = !x ? '' : cd.months.map((m,i)=>{
+      if(m.m!==0 || i===0) return '';
+      const px=x.getPixelForValue(i)-(x.width/cd.months.length)/2;
+      return `<span style="left:${(px+4).toFixed(1)}px">${m.y}</span>`;
+    }).join('');
+  }
 }
 /* donut da distribuição por classe */
 function initProvClassChart(){
