@@ -4095,7 +4095,7 @@ button.mp-cell:active { background:var(--surface-3); }
 .ri-s { font-size:12px; color:var(--ink-3); margin-top:2px; line-height:1.4; }
 .ri-bar { display:block; height:4px; border-radius:3px; background:var(--surface-3); overflow:hidden; margin-top:9px; }
 .ri-bar i { display:block; height:100%; border-radius:3px; transition:width .6s var(--ease-out); }
-@media (min-width:620px){ .ri-grid { grid-template-columns:1fr 1fr; gap:0 22px; } .ph-foot { grid-template-columns:repeat(4,1fr); } }
+@media (min-width:620px){ .ri-grid { grid-template-columns:1fr 1fr; gap:0 22px; } .ph-foot { grid-template-columns:repeat(3,1fr); } }
 /* seletor Compra/Venda do modal de movimento */
 .pos-mode { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; background:var(--surface-3); border-radius:12px; margin-bottom:4px; }
 .pm-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:10px 0; border:none; border-radius:9px; background:transparent; color:var(--ink-3); font-family:var(--sans); font-size:13.5px; font-weight:600; cursor:pointer; transition:background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease); -webkit-tap-highlight-color:transparent; }
@@ -9128,7 +9128,6 @@ function viewProventos(){
     <div class="ph-val priv-blur" data-count="${d.total12.toFixed(2)}" data-fmt="brl">${brl(d.total12)}</div>
     <div class="ph-meta">${growth}</div>
     <div class="ph-foot">
-      <div class="ph-stat" data-term="yoc"><span class="l">Yield on Cost</span><span class="v ph-v-brand">${pc(yoc,1)}%</span><span class="s">sobre o custo</span></div>
       <div class="ph-stat"><span class="l">Acumulado</span><span class="v priv-blur">${brl(d.totalAll)}</span><span class="s">desde ${desde}</span></div>
       <div class="ph-stat"><span class="l">Pagamentos</span><span class="v">${d.nPays}</span><span class="s">recebidos no total</span></div>
       <div class="ph-stat"><span class="l">Ativos pagando</span><span class="v">${nAtivos}</span><span class="s">na sua carteira</span></div>
