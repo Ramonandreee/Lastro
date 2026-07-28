@@ -8420,7 +8420,7 @@ function viewProventos(){
   // cor por posição via TOKENS (ouro no líder, marca nos demais, esmaecendo) — legível no claro E no escuro
   const rankRows = d.ranking.slice(0,8).map(([tk,v],i)=>{ const pctv=d.total12? v/d.total12*100:0, lead=i===0;
     const lk=(typeof assetLookup==='function')?assetLookup(tk):null, nm=(lk&&lk.a&&lk.a.nm)?lk.a.nm:'';
-    return `${cartTabsHTML('proventos')}<div class="prank-row${lead?' prank-lead':''}" onclick="quickView('${tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();quickView('${tk}')}" style="--pk:${Math.max(.42, 1-i*.11).toFixed(2)}">
+    return `<div class="prank-row${lead?' prank-lead':''}" onclick="quickView('${tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();quickView('${tk}')}" style="--pk:${Math.max(.42, 1-i*.11).toFixed(2)}">
       <span class="prank-n">${i+1}</span>
       <div class="prank-id"><div class="prank-tk">${tk}</div><div class="prank-nm">${nm?esc(nm):'&nbsp;'}</div></div>
       <div class="prank-v"><div class="v up priv-blur">${brl(v)}</div><div class="s">${pc(pctv,1)}% da renda</div></div>
@@ -8457,7 +8457,7 @@ function viewProventos(){
     <div class="prank">${rankRows}</div>${rankMais}
   </div>
   ${(()=>{ const sal=salaryProjection(); if(!(sal.totalAno>0)) return ''; const meta=getRendaMeta(); const prog=Math.min(100, sal.media/meta*100);
-    return `${cartTabsHTML('proventos')}<div class="card card-pad" style="margin-top:16px">
+    return `<div class="card card-pad" style="margin-top:16px">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Salário de dividendos</div><div class="pex-total"><div class="pex-total-v priv-blur">${brl(sal.media)}</div><div class="pex-total-l">média/mês · 12 meses</div></div></div>
       <div style="position:relative;height:200px;margin:8px 0 16px"><canvas id="salaryChart" role="img" aria-label="Projeção de proventos mensais"></canvas></div>
       <div class="sim-control" style="margin-bottom:6px">
@@ -10621,7 +10621,7 @@ function rxRecommendations(lots){
 function viewRaioX(){
   if(!isProTier()) return `
   ${cartTabsHTML('raiox')}<div class="card premium-gate">${premiumPresentation('raiox')}</div>`;
-  const head = `<div class="sec-title">Raio-X da carteira</div>
+  const head = `${cartTabsHTML('raiox')}<div class="sec-title">Raio-X da carteira</div>
   <div class="sec-desc">O retrato completo da carteira: patrimônio, diversificação por setor, ativo e classe, a Nota de Diversificação Lastro e sugestões de melhoria.</div>`;
   const lots = null; _rxLots = lots;
   const p=portfolioStats(lots), d=diversificationGrade(lots);
@@ -10636,7 +10636,7 @@ function viewRaioX(){
   const sgBars=sgEnt.map(([k,v],i)=>rxBar(k,v,pal[i%pal.length])).join('');
   const atRows=d.pos.slice().sort((a,b)=>b.w-a.w).map(x=>{
     const alta=x.w>25, media=x.w>15&&x.w<=25;
-    return `${cartTabsHTML('raiox')}<div class="rx-asset" onclick="quickView('${x.tk}')">
+    return `<div class="rx-asset" onclick="quickView('${x.tk}')">
       ${assetLogo(x.tk,x.k,'sm')}
       <div class="rx-as-id"><div class="rx-as-tk">${x.tk}${alta?` <span class="rx-flag neg">concentrado</span>`:media?` <span class="rx-flag warn">atenção</span>`:''}</div><div class="rx-as-nm">${esc((x.a&&x.a.nm)||'')} · ${x.setor}</div></div>
       <div class="rx-as-bar"><i style="width:${Math.min(100,x.w*2.5).toFixed(1)}%;background:${alta?'var(--down)':media?'var(--gold)':'var(--brand)'}"></i></div>
