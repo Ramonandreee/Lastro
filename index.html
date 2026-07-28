@@ -3702,11 +3702,24 @@ button.mp-cell:active { background:var(--surface-3); }
 .mais-row { display:flex; align-items:center; gap:13px; width:100%; padding:13px 15px; background:none; border:none; border-top:1px solid var(--line); cursor:pointer; text-align:left; }
 .mais-row:first-child { border-top:none; }
 .mais-row:active { background:var(--surface-3); }
-.mais-ic { width:34px; height:34px; flex:none; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:14px; background:var(--brand-l); color:var(--brand); }
+.mais-ic { width:34px; height:34px; flex:none; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:14px; background:var(--brand-l); color:var(--brand); margin-top:1px; }
 .mais-ic-gold { background:var(--gold-l); color:var(--gold); }
-.mais-lbl { flex:1; font-size:14.5px; font-weight:500; color:var(--ink); }
-.mais-crown { color:var(--gold); font-size:10px; margin-left:5px; }
-.mais-cv { color:var(--ink-4); font-size:13px; }
+.mais-txt { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.mais-lbl { font-size:14.5px; font-weight:600; color:var(--ink); }
+.mais-sub { font-size:12px; color:var(--ink-3); line-height:1.35; }
+.mais-sub:empty { display:none; }
+.mais-pro { font-size:9px; font-weight:700; letter-spacing:.04em; padding:2px 6px; border-radius:6px; background:var(--gold-l); color:var(--gold); align-self:center; margin-left:6px; }
+.mais-cv { color:var(--ink-4); font-size:13px; align-self:center; }
+.mais-upsell { display:flex; align-items:center; gap:13px; width:100%; padding:13px 15px; margin-bottom:2px; background:var(--gold-l); border:1px solid color-mix(in srgb,var(--gold) 26%,transparent); border-radius:var(--r-lg); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; }
+.mais-upsell:active { transform:scale(.99); }
+.mu-ic { width:34px; height:34px; flex:none; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:15px; background:var(--surface); color:var(--gold); box-shadow:var(--sh-sm); }
+.mu-tx { flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.mu-tx b { font-size:14.5px; font-weight:700; color:var(--ink); letter-spacing:-.01em; }
+.mu-tx small { font-size:12px; color:var(--ink-3); line-height:1.35; }
+.mais-search { display:flex; align-items:center; gap:10px; padding:11px 14px; margin:10px 0 2px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); }
+.mais-search i { color:var(--ink-4); font-size:14px; }
+.mais-search input { flex:1; border:none; background:none; outline:none; font-size:16px; color:var(--ink); font-family:inherit; }
+.mais-search input::placeholder { color:var(--ink-4); }
 .mais-theme { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; margin-top:14px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); }
 .mais-theme > span { font-size:14px; font-weight:500; color:var(--ink); }
 .mais-theme-btns { display:flex; gap:6px; }
@@ -9225,28 +9238,29 @@ function viewMais(){
   const authed=isAuthed(), pref=getThemePref(), pro=isPro();
   const GROUPS=[
     {t:'Minha Carteira', items:[
-      ['proventos','fa-coins','Meus Proventos',1],
-      ['acompanhar','fa-star','Acompanhar',0],
-      ['aporte','fa-scale-balanced','Aporte Inteligente',1],
-      ['ir','fa-file-invoice-dollar','Imposto de Renda',1],
-      ['agenda','fa-calendar-day','Agenda de Dividendos',0],
+      ['proventos','fa-coins','Meus Proventos',1,'Histórico, Yield on Cost e projeção de 12 meses'],
+      ['acompanhar','fa-star','Acompanhar',0,'Watchlist e alertas de preço num só lugar'],
+      ['agenda','fa-calendar-day','Agenda de Dividendos',0,'Quando caem os proventos dos seus ativos'],
+      ['aporte','fa-scale-balanced','Aporte Inteligente',1,'Onde investir o próximo aporte para rebalancear'],
+      ['ir','fa-file-invoice-dollar','Imposto de Renda',1,'DARF e informe anual prontos para a declaração'],
     ]},
     {t:'Análises Pro', items:[
-      ['raiox','fa-magnifying-glass-chart','Raio-X da Carteira',1],
-      ['stress','fa-heart-pulse','Stress Test',1],
-      ['backtest','fa-chart-line','Backtest da Carteira',1],
+      ['raiox','fa-magnifying-glass-chart','Raio-X da Carteira',1,'Diversificação, concentração e Nota Lastro'],
+      ['stress','fa-heart-pulse','Stress Test',1,'Impacto estimado de cenários de crise'],
+      ['backtest','fa-chart-line','Backtest da Carteira',1,'Sua carteira vs CDI e IBOV no histórico'],
     ]},
     {t:'Ferramentas', items:[
-      ['comparador','fa-code-compare','Comparador',0],
-      ['recomendadas','fa-layer-group','Carteiras Recomendadas',0],
-      ['simulador','fa-calculator','Simuladores',0],
+      ['comparador','fa-code-compare','Comparador',0,'Ativos lado a lado pelos fundamentos'],
+      ['recomendadas','fa-layer-group','Carteiras Recomendadas',0,'Estratégias montadas pela inteligência Lastro'],
+      ['simulador','fa-calculator','Simuladores',0,'Juros compostos, renda passiva e FIRE'],
     ]},
   ];   // Internacional (Stocks/BDRs/ETFs int.) sai do menu — já vive no hub Mercado
   const grpHTML = GROUPS.map(g=>`
     <div class="mais-sec-t">${g.t}</div>
-    <div class="mais-grp">${g.items.map(([v,ic,label,prem])=>{
-      const crown=(prem&&!pro)?' <i class="fa-solid fa-crown mais-crown"></i>':'';
-      return `<button class="mais-row" onclick="nav('${v}')"><span class="mais-ic"><i class="fa-solid ${ic}"></i></span><span class="mais-lbl">${label}${crown}</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`;
+    <div class="mais-grp">${g.items.map(it=>{
+      const [v,ic,label,prem,sub]=it; const desc=sub||(PAGES[v]?PAGES[v].s:'');
+      const pill=(prem&&!pro)?'<span class="mais-pro">PRO</span>':'';
+      return `<button class="mais-row" onclick="nav('${v}')"><span class="mais-ic"><i class="fa-solid ${ic}"></i></span><span class="mais-txt"><span class="mais-lbl">${label}</span><span class="mais-sub">${desc}</span></span>${pill}<i class="fa-solid fa-chevron-right mais-cv"></i></button>`;
     }).join('')}</div>`).join('');
 
   let head;
@@ -9261,16 +9275,23 @@ function viewMais(){
     <button class="btn btn-primary" style="width:100%;justify-content:center;margin:2px 0 4px" onclick="openAuth('login')"><i class="fa-solid fa-right-to-bracket"></i> Entrar ou criar conta</button>`;
   }
   const conta=`<div class="mais-sec-t">Conta</div><div class="mais-grp">
-    <button class="mais-row" onclick="nav('planos')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-lbl">Planos e assinatura</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
-    ${authed?`<button class="mais-row" onclick="nav('indicar')"><span class="mais-ic"><i class="fa-solid fa-gift"></i></span><span class="mais-lbl">Indique e Ganhe</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
-    <button class="mais-row" onclick="openSupport()"><span class="mais-ic"><i class="fa-solid fa-headset"></i></span><span class="mais-lbl">Ajuda &amp; Suporte</span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
+    <button class="mais-row" onclick="nav('planos')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-txt"><span class="mais-lbl">Planos e assinatura</span><span class="mais-sub"></span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
+    ${authed?`<button class="mais-row" onclick="nav('indicar')"><span class="mais-ic"><i class="fa-solid fa-gift"></i></span><span class="mais-txt"><span class="mais-lbl">Indique e Ganhe</span><span class="mais-sub"></span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
+    <button class="mais-row" onclick="openSupport()"><span class="mais-ic"><i class="fa-solid fa-headset"></i></span><span class="mais-txt"><span class="mais-lbl">Ajuda &amp; Suporte</span><span class="mais-sub"></span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
   </div>`;
+  const upsell=(authed&&!isPremium())?`<button class="mais-upsell" onclick="nav('planos')"><span class="mu-ic"><i class="fa-solid fa-crown"></i></span><span class="mu-tx"><b>${trialActive()?`Teste Premium · ${trialDaysLeft()} dias`:'Desbloqueie o Investidor Pro'}</b><small>Raio-X, Stress Test, Backtest, Aporte e IR</small></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:'';
+  const searchBox=`<div class="mais-search"><i class="fa-solid fa-magnifying-glass"></i><input id="maisFilter" placeholder="Buscar no menu…" oninput="filterMais(this.value)" autocomplete="off"></div>`;
   const themeRow=`<div class="mais-theme"><span>Tema</span><div class="mais-theme-btns">
     <button class="${pref==='light'?'on':''}" onclick="setThemePref('light')" aria-label="Tema claro"><i class="fa-solid fa-sun"></i></button>
     <button class="${pref==='dark'?'on':''}" onclick="setThemePref('dark')" aria-label="Tema escuro"><i class="fa-solid fa-moon"></i></button>
     <button class="${pref==='auto'?'on':''}" onclick="setThemePref('auto')" aria-label="Tema automático"><i class="fa-solid fa-circle-half-stroke"></i></button>
   </div></div>`;
-  return `${head}${grpHTML}${conta}${themeRow}${authed?`<button class="mais-logout" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>`:''}`;
+  return `${head}${upsell}${searchBox}${grpHTML}${conta}${themeRow}${authed?`<button class="mais-logout" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>`:''}`;
+}
+function filterMais(q){ q=(q||'').trim().toLowerCase();
+  document.querySelectorAll('.mais-grp').forEach(grp=>{ let any=false;
+    grp.querySelectorAll('.mais-row').forEach(r=>{ const hit=!q||r.textContent.toLowerCase().includes(q); r.style.display=hit?'':'none'; if(hit)any=true; });
+    grp.style.display=any?'':'none'; const t=grp.previousElementSibling; if(t&&t.classList.contains('mais-sec-t')) t.style.display=any?'':'none'; });
 }
 
 /* ══════════════════════════════════════════════════════════
