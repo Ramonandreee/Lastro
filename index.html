@@ -5338,9 +5338,6 @@ function viewPerfil(){
   if(!u) return `<div class="card card-pad" style="text-align:center">${emptyState('fa-user','Entre na sua conta','Faça login para ver e editar seu perfil.', `<button class="btn btn-primary" onclick="openAuth('login')"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>`)}</div>`;
   const tier=planTier(), g=getProfile(), sub=getSub();
   const planChip = tier==='pro'?'<span class="acct-plan pro"><i class="fa-solid fa-crown"></i> Investidor Pro</span>':tier==='premium'?'<span class="acct-plan prem"><i class="fa-solid fa-crown"></i> Premium</span>':'<span class="acct-plan free">Gratuito</span>';
-  const twofaSwitch=(kind,on)=>`<button class="prof-switch ${on?'on':''}" data-2fa="${kind}" role="switch" aria-checked="${!!on}" onclick="toggle2FA('${kind}')"><span></span></button>`;
-  const themePref=(typeof getThemePref==='function')?getThemePref():'auto';
-  const themeLbl = themePref==='dark'?'Escuro':themePref==='light'?'Claro':'Automático';
   const renew = (isPremium() && sub && sub.since) ? addDays(sub.since, sub.cycle==='anual'?365:30) : null;
   return `
   <div class="perfil" id="perfilPage">
@@ -5388,26 +5385,12 @@ function viewPerfil(){
     <div class="card card-pad perfil-card">
       <div class="perfil-card-t"><i class="fa-solid fa-shield-halved"></i> Segurança</div>
       <button class="btn btn-ghost prof-btn" onclick="changePassword()"><i class="fa-solid fa-key"></i> Alterar senha</button>
-      <div class="prof-lbl" style="margin-top:14px">Verificação em duas etapas (2FA)</div>
-      <div class="prof-row"><span><i class="fa-solid fa-envelope"></i> Confirmação por e-mail</span>${twofaSwitch('email', g.twofaEmail)}</div>
-      <div class="prof-row"><span><i class="fa-brands fa-whatsapp"></i> Confirmação por WhatsApp</span>${twofaSwitch('wa', g.twofaWa)}</div>
-      <div class="prof-row sub"><span><i class="fa-solid fa-mobile-screen"></i> Sessão atual</span><b>este dispositivo</b></div>
+      <div class="prof-row sub" style="margin-top:8px"><span><i class="fa-solid fa-mobile-screen"></i> Sessão atual</span><b>este dispositivo</b></div>
     </div>
 
-    <div class="card card-pad perfil-card">
-      <div class="perfil-card-t"><i class="fa-solid fa-sliders"></i> Preferências</div>
-      <div class="prof-row"><span><i class="fa-solid fa-circle-half-stroke"></i> Tema</span><button class="prof-conn-btn" onclick="toggleTheme();render('perfil',true)">${themeLbl}</button></div>
-      <div class="prof-row"><span><i class="fa-solid fa-eye-slash"></i> Ocultar valores por padrão</span>${twofaSwitchPriv()}</div>
-    </div>
-
-    <div class="perfil-foot">
-      <button class="perfil-help" onclick="openSupport()"><i class="fa-solid fa-circle-question"></i> Central de ajuda</button>
-      <button class="btn btn-danger prof-out" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>
-    </div>
+    <button class="btn btn-danger prof-out" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>
   </div>`;
 }
-/* switch de privacidade (ocultar valores) para a página de perfil */
-function twofaSwitchPriv(){ const on=(typeof privOn==='function')&&privOn(); return `<button class="prof-switch ${on?'on':''}" role="switch" aria-checked="${!!on}" onclick="togglePriv();render('perfil',true)"><span></span></button>`; }
 
 function goPricing(){
   currentView='planos';
