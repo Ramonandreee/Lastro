@@ -2825,12 +2825,6 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .cart-menu button:hover { background:var(--surface-2); color:var(--ink); }
 .cart-menu button i { width:15px; text-align:center; color:var(--ink-4); }
 /* resumo compacto do card de posição */
-.pc-sum { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding:12px 0 10px; border-top:1px solid var(--line); }
-.pcs-k { display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-4); margin-bottom:4px; }
-.pcs-v { font-family:var(--mono); font-size:19px; font-weight:700; color:var(--ink); letter-spacing:-.02em; }
-.pc-sum-r { text-align:right; display:flex; flex-direction:column; gap:2px; }
-.pcs-res { font-size:14px; font-weight:700; }
-.pcs-pct { font-size:11.5px; font-weight:600; opacity:.85; }
 .pc-mini { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:10px 0 2px; border-top:1px solid var(--line); }
 .pc-mini > div { min-width:0; }
 .pc-mini span { display:block; font-size:10.5px; color:var(--ink-4); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -3806,19 +3800,14 @@ button.mp-cell:active { background:var(--surface-3); }
 .ph-pill.up { color:var(--up); background:var(--up-l); }
 .ph-pill.down { color:var(--down); background:var(--down-l); }
 .ph-pill.faint { color:var(--ink-4); background:var(--surface-3); font-weight:500; }
-/* crescimento em 12m: dinheiro primeiro, % e período em seguida — linha limpa, sem chip */
-.ph-growth { display:block; font-size:13.5px; line-height:1.35; letter-spacing:-.005em; }
-.ph-growth b { font-family:var(--mono); font-weight:700; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
-.ph-growth em { font-style:normal; font-weight:500; }
-.ph-growth.up { color:var(--up); } .ph-growth.down { color:var(--down); }
-@media (max-width:400px){ .ph-growth { font-size:12.5px; } }
-.ph-delta { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; }
-.ph-delta i { font-size:11px; }
-.ph-delta em { font-style:normal; font-weight:500; color:var(--ink-3); }
-.ph-delta.up { color:var(--up); } .ph-delta.down { color:var(--down); }
-.ph-delta.faint { color:var(--ink-4); font-weight:500; }
-.ph-sep { width:3px; height:3px; border-radius:50%; background:var(--ink-4); opacity:.55; flex:none; }
-.ph-n { color:var(--ink-3); }
+/* LINHA DE VARIAÇÃO PADRÃO DO APP — dinheiro primeiro, % e período em seguida, sem chip.
+   Usada na Home (patrimônio), na Carteira e em Proventos para tudo ler igual. */
+.delta-line { display:block; font-size:13.5px; line-height:1.35; letter-spacing:-.005em; }
+.delta-line b { font-family:var(--mono); font-weight:700; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+.delta-line em { font-style:normal; font-weight:500; }
+.delta-line.up { color:var(--up); } .delta-line.down { color:var(--down); }
+.delta-line.sm { font-size:12px; } .delta-line.inline { display:inline; }
+@media (max-width:400px){ .delta-line { font-size:12.5px; } .delta-line.sm { font-size:11.5px; } }
 .ph-foot { position:relative; display:grid; grid-template-columns:repeat(2,1fr); margin:15px calc(var(--php)*-1) 0; border-top:1px solid var(--line); }
 .ph-stat { position:relative; min-width:0; padding:12px 14px 13px; display:flex; flex-direction:column; gap:3px; }
 .ph-stat + .ph-stat::before { content:''; position:absolute; left:0; top:24%; bottom:24%; width:1px; background:var(--line); }
@@ -7043,6 +7032,28 @@ function viewPainel(){
    ══════════════════════════════════════════════════════════ */
 const pc = (v,d=2)=> (typeof v==='number' && isFinite(v)) ? v.toFixed(d).replace('.',',') : '—'; // número pt-BR (tolerante)
 const usd = v => '$'+pc(v);
+/* FORMATO ÚNICO DE VARIAÇÃO EM TODO O APP:
+   "+ R$ 912,19 (+20,64%) nos últimos 12 meses"
+   O dinheiro vem primeiro (é o que o investidor sente), o % entre parênteses e o período no fim.
+   `periodo` é opcional (em cartão compacto entra só valor e %). `fmt` troca o formatador de moeda
+   (ex.: fmtHomeCur, que respeita a moeda base escolhida na Home). */
+function deltaMoney(val, fmt){
+  if(!(typeof val==='number' && isFinite(val))) return '—';
+  return `${val>=0?'+':'−'} ${(fmt||brl)(Math.abs(val))}`;
+}
+function deltaTail(pct, periodo){
+  const p = (typeof pct==='number' && isFinite(pct)) ? `(${pct>=0?'+':'−'}${pc(Math.abs(pct),2)}%)` : '';
+  return [p, periodo||''].filter(Boolean).join(' ');
+}
+/* a frase inteira, já embrulhada na linha verde/vermelha padrão.
+   o.fmt: formatador de moeda · o.blur:false quando o valor não é dinheiro do usuário · o.cls/o.id extras. */
+function deltaHTML(val, pct, periodo, o){
+  o = o || {};
+  const up = (typeof val==='number' && isFinite(val)) ? val>=0 : true;
+  const tail = deltaTail(pct, periodo);
+  return `<span class="delta-line ${up?'up':'down'}${o.cls?' '+o.cls:''}"${o.id?` id="${o.id}"`:''}>`+
+    `<b${o.blur===false?'':' class="priv-blur"'}>${deltaMoney(val,o.fmt)}</b>${tail?` <em>${tail}</em>`:''}</span>`;
+}
 const scoreCell = a => (typeof a.score==='number')
   ? `<td><span class="score-pill" style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)}"></span>${a.score}</span></td>`
   : `<td><span class="muted" style="font-size:12px">—</span></td>`;
@@ -7569,19 +7580,13 @@ function posCard(g){
   return `<div class="pos-card" data-tk="${g.tk}">
     <div class="pc-head" onclick="togglePosMore('${g.tk}')">
       ${assetLogo(g.tk,k,'md')}
-      <div class="pc-id"><div class="pc-tk">${g.tk}</div><div class="pc-nm">${g.cotas} cota${g.cotas===1?'':'s'} · ${fmtCur(g.pm,g.cur)}</div></div>
-      <div class="pc-px"><div class="pc-cot mono priv-blur">${brl(g.val)}</div>${g.provPend?`<div class="pc-var faint" style="font-size:11px">${provPendLabel(g)}</div>`:`<div class="pc-var mono ${g.lucroProv>=0?'up':'down'}">${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</div>`}</div>
+      <div class="pc-id"><div class="pc-tk">${g.tk}</div><div class="pc-nm">${g.cotas} cota${g.cotas===1?'':'s'}</div></div>
+      <div class="pc-px"><div class="pc-cot mono priv-blur">${brl(g.val)}</div>${g.provPend?`<div class="pc-var faint" style="font-size:11px">${provPendLabel(g)}</div>`:`<div class="pc-var">${deltaHTML(g.lucroProv, g.lpProv, null, {cls:'sm'})}</div>`}</div>
       <i class="fa-solid fa-chevron-down pc-caret"></i>
     </div>
     <div class="pc-extra" id="more-${g.tk}" hidden>
-    <!-- linha-resumo: saldo e resultado (o que o investidor procura) em destaque; o resto vira
-         uma grade compacta de 3 colunas. Antes eram 6 linhas empilhadas por ativo. -->
-    <div class="pc-sum">
-      <div class="pc-sum-l"><span class="pcs-k">Saldo bruto</span><b class="pcs-v priv-blur">${brl(g.val)}</b></div>
-      <div class="pc-sum-r">${g.provPend
-        ? `<span class="faint" style="font-size:12px">${provPendLabel(g)}</span>`
-        : `<b class="pcs-res mono ${g.lucroProv>=0?'up':'down'} priv-blur">${g.lucroProv>=0?'+':''}${brl(g.lucroProv)}</b><span class="pcs-pct mono ${g.lucroProv>=0?'up':'down'}">${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</span>`}</div>
-    </div>
+    <!-- o cabeçalho do card (sempre visível) já traz saldo e resultado; aqui entra só o que
+         ele NÃO mostra, numa grade compacta de 3 colunas. -->
     <div class="pc-mini">
       <div><span>Cotas</span><b class="mono">${g.cotas}</b></div>
       <div><span>Preço médio</span><b class="mono priv-blur">${fmtCur(g.pm,g.cur)}</b></div>
@@ -7592,7 +7597,7 @@ function posCard(g){
       ${row('Categoria', ASSET_CLASS[k].label)}
       ${row('Valor investido', `<span class="mono priv-blur">${brl(g.custo)}</span>`)}
       ${row(termLabel('pmProv','Preço médio com proventos'), g.provPend?`<span class="faint" style="font-size:12px">${provPendLabel(g)}</span>`:`<span class="mono priv-blur">${fmtCur(pmProv,g.cur)}</span>`)}
-      ${row('Resultado sem proventos', `<span class="mono ${g.lucro>=0?'up':'down'} priv-blur">${g.lucro>=0?'+':''}${brl(g.lucro)} · ${g.lucro>=0?'+':''}${pc(g.lp,1)}%</span>`)}
+      ${row('Resultado sem proventos', deltaHTML(g.lucro, g.lp, null, {cls:'sm inline'}))}
       <div class="pc-extra-t" style="margin-top:14px">Histórico de aportes</div>
       ${lotsHtml}
       <div class="pc-actions">
@@ -7662,9 +7667,15 @@ function viewCarteira(){
   <div class="prov-hero cart-hero">
     <div class="ph-top"><span class="ph-eyebrow">Patrimônio</span>${p.provPend?`<span class="ag-tag" style="background:var(--surface-3);color:var(--ink-3)"><i class="fa-solid fa-hourglass-half"></i> ${_provDown?'proventos indisponíveis':'apurando proventos'}</span>`:`<span class="ag-tag ag-tag-real"><i class="fa-solid fa-circle-check"></i> proventos reais</span>`}</div>
     <div class="ph-val priv-blur">${brl(p.atual)}</div>
-    <div class="ph-meta"><span class="ph-delta ${p.lucroP>=0?'up':'down'}"><i class="fa-solid fa-arrow-trend-${p.lucroP>=0?'up':'down'}"></i> ${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}%</span><span class="ph-sep">·</span><span>${n} ativo${n!==1?'s':''}</span></div>
+    <!-- linha de variação: o resultado COM proventos é o número-título da tela. Enquanto os
+         proventos não fecham, mostra a valorização e diz que é só ela — nunca um total incompleto. -->
+    <div class="ph-meta">${p.provPend
+      ? deltaHTML(p.lucro, p.lucroP, 'de valorização desde o 1º aporte')
+      : deltaHTML(p.lucroProv, p.lucroProvP, 'desde o 1º aporte')}</div>
     <div class="ph-foot">
-      <div class="ph-stat"><span class="l">Resultado c/ proventos</span>${p.provPend?`<b class="v faint" style="font-size:13px">${_provDown?'indisponível':'apurando…'}</b>`:`<b class="v priv-blur ${p.lucroProv>=0?'up':'down'}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</b><span class="s ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</span>`}</div>
+      <!-- o resultado c/ proventos subiu para a linha de variação; aqui fica a valorização pura,
+           que é a outra metade da conta (preço × proventos) e antes não aparecia em lugar nenhum -->
+      <div class="ph-stat"><span class="l">Valorização</span><b class="v priv-blur ${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':''}${brl(p.lucro)}</b><span class="s ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}% <span style="color:var(--ink-4)">sem proventos</span></span></div>
       <div class="ph-stat"><span class="l">Proventos recebidos</span>${p.provPend?`<b class="v faint" style="font-size:13px">${_provDown?'indisponível':'apurando…'}</b>`:`<b class="v priv-blur up">${brl(p.prov)}</b><span class="s">~${brl(p.renda)}/mês (est.)</span>`}</div>
       <div class="ph-stat"><span class="l">Saúde da carteira</span><b class="v" style="color:${scoreColor(saude)}">${saude}<span style="font-size:11px;color:var(--ink-4)">/100</span></b><span class="s" style="color:${scoreColor(saude)}">${scoreTier(saude)}</span></div>
     </div>
@@ -9112,7 +9123,7 @@ function viewProventos(){
   const gDelta = d.total12 - (d.prior12||0);
   const growth = d.growth==null
     ? `<span class="ph-pill faint"><i class="fa-regular fa-clock"></i> primeiro ano de renda</span>`
-    : `<span class="ph-growth ${gUp?'up':'down'}"><b class="priv-blur">${gUp?'+':'−'} ${brl(Math.abs(gDelta))}</b> <em>(${gUp?'+':''}${pc(d.growth,2)}%) nos últimos 12 meses</em></span>`;
+    : deltaHTML(gDelta, d.growth, 'nos últimos 12 meses');
   const nAtivos = rk.length;
   const desde = d.firstPay ? `${PROV_MES[d.firstPay.getMonth()]}/${String(d.firstPay.getFullYear()).slice(2)}` : '—';
   // 6 métricas do card principal: média mensal (destaque), crescimento 12m (pílula),
@@ -10582,7 +10593,7 @@ function renderHomeDashboard(p){
       </div>
       <div class="whero-val priv-blur">${fmtHomeCur(p.atual)}</div>
       <div class="whero-chips">
-        <span id="wHeroChip" class="whero-chip priv-blur ${_pr.up?'up':'down'}"><i class="fa-solid fa-arrow-${_pr.up?'up':'down'}"></i> ${_pr.up?'+':'−'}${fmtHomeCur(Math.abs(_pr.val))} · ${_pr.up?'+':'−'}${Math.abs(_pr.pct).toFixed(2).replace('.',',')}% · ${_pr.label}</span>
+        ${deltaHTML(_pr.val, _pr.pct, _pr.label, {id:'wHeroChip', fmt:fmtHomeCur})}
       </div>
       <div class="whero-periods" id="wPeriods" role="tablist" aria-label="Período do gráfico de patrimônio">
         ${WEALTH_PERIODS.map(pp=>`<button class="wper${pp===homeWealthPeriod?' active':''}" role="tab" aria-selected="${pp===homeWealthPeriod?'true':'false'}" onclick="setWealthPeriod('${pp}',this)">${pp}</button>`).join('')}
@@ -10771,7 +10782,7 @@ function periodProfitAsOf(days, asOfStr, isToday){
 function wealthPeriodKPI(period){
   period = WEALTH_PERIODS.includes(period) ? period : (WEALTH_PERIODS.includes(homeWealthPeriod)?homeWealthPeriod:'7D');
   const PDAYS={'7D':7,'30D':30,'3M':91,'6M':182,'1A':365,'MAX':1000000};
-  const PLBL={'7D':'7 dias','30D':'30 dias','3M':'3 meses','6M':'6 meses','1A':'1 ano','MAX':'máximo'};
+  const PLBL={'7D':'nos últimos 7 dias','30D':'nos últimos 30 dias','3M':'nos últimos 3 meses','6M':'nos últimos 6 meses','1A':'nos últimos 12 meses','MAX':'desde o 1º aporte'};
   const days=PDAYS[period]||7;
   const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const groups=(typeof portfolioByTicker==='function')?portfolioByTicker():[];
@@ -10786,7 +10797,9 @@ function wealthPeriodKPI(period){
   else { const p=(typeof portfolioStats==='function')?portfolioStats():null;
     const semProv=!!(p&&p.provPend); val=p?(semProv?p.lucro:p.lucroProv):0; pct=p?(semProv?p.lucroP:p.lucroProvP):0; }
   let label;
-  if(period==='MAX') label='máximo';
+  // sem série do período (caiu no resultado total), o rótulo NÃO pode dizer "nos últimos 7 dias":
+  // o número é o acumulado desde o início. Rótulo honesto > rótulo bonito.
+  if(period==='MAX' || !ok) label=PLBL.MAX;
   else if(first && invDays < days-1) label='desde '+first.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});   // ainda não completou o período
   else label=PLBL[period];
   return { val, pct, up: val>=0, label, ok, invDays };
@@ -10953,11 +10966,12 @@ function updateWealthKPIs(d){
   // período). Chip, rodapé e o 1º paint (SSR) usam o MESMO wealthPeriodKPI → tudo bate.
   const period=(d&&d.period)||homeWealthPeriod;
   const k=wealthPeriodKPI(period); const up=k.up;
-  const money=(typeof fmtHomeCur==='function')?fmtHomeCur(Math.abs(k.val)):Math.round(Math.abs(k.val));
-  const pctTxt=`${up?'+':'−'}${Math.abs(k.pct).toFixed(2).replace('.',',')}%`;
+  const fmtC=(typeof fmtHomeCur==='function')?fmtHomeCur:null;
+  const money=fmtC?fmtC(Math.abs(k.val)):String(Math.round(Math.abs(k.val)));
   const chip=document.getElementById('wHeroChip');
-  if(chip){ chip.className='whero-chip priv-blur '+(up?'up':'down');
-    chip.innerHTML=`<i class="fa-solid fa-arrow-${up?'up':'down'}"></i> ${up?'+':'−'}${money} · ${pctTxt} · ${k.label}`; }
+  if(chip){ chip.className='delta-line '+(up?'up':'down');
+    chip.innerHTML=`<b class="priv-blur">${deltaMoney(k.val,fmtC)}</b> <em>${deltaTail(k.pct,k.label)}</em>`;
+    if(typeof applyPriv==='function') applyPriv(); }   // re-render fora do render(): o borrão precisa voltar
   const lbl=document.getElementById('wFootResLbl'); if(lbl) lbl.textContent='Resultado';
   const val=document.getElementById('wFootResVal'); if(val){ val.style.color=up?'var(--up)':'var(--down)'; val.textContent=`${up?'+':'−'}${money}`; }
 }
