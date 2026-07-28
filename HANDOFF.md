@@ -36,14 +36,26 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 > - **Testes + observabilidade:** `node:test` em `test/*.mjs` (22 testes) + CI em
 >   `.github/workflows/test.yml`; proxies logam com request-id (`lib/log.js`).
 >
-> **Pendências desta frente (próximos passos, decididos com o dono):**
-> - **Persistência do Premium (bug de confiabilidade):** hoje o plano vive só em
->   `localStorage`, é zerado no logout e não restaura no relogin → assinante perde o
->   Premium. Decisão: **servidor é a fonte da verdade** — tabela `user_entitlement`
->   (gravável só por `service_role`, cliente só lê) + RPC provisória `grant_entitlement`
->   até haver gateway de pagamento. **A implementar.**
-> - **Perfil como página cheia** (hoje é modal `#authBody`): foto, nome, e-mail, plano,
->   assinatura, renovação, configurações, segurança, dispositivos, suporte, sair.
+> **Entregue nesta frente (ago/2026):**
+> - **Persistência do Premium — FEITO (server-side).** Tabela `user_entitlement` (só o
+>   dono lê; sem policy de escrita p/ `authenticated`) + RPC provisória `grant_entitlement`
+>   (checkout simulado). `ENT` hidratado no login/boot; `getPlan/planTier/isPremium`
+>   derivam do servidor, `localStorage` só cache visual (não forjável). Regra pura testada
+>   em `vendor/entitlement.js` (+ `test/entitlement.mjs`). Auditoria: **seguro na fase
+>   provisória**; travas antes de pagamento real em `docs/PENDENCIAS-MANUAIS.md`.
+>   **Setup manual:** rodar o `schema.sql` atualizado no Supabase p/ ativar.
+> - **Perfil virou PÁGINA cheia — FEITO** (view `perfil`, `viewPerfil`). Hero (avatar/nome/
+>   e-mail/plano), Dados pessoais (1 botão Salvar), **Perfil de investidor por QUIZ**
+>   (`openInvestorQuiz`, 5 perguntas → Conservador/Moderado/Arrojado), Assinatura,
+>   Segurança. Removidos (vivem no menu): Preferências, 2FA, Contas conectadas, Sair.
+> - **Menu "Mais" reformado — FEITO:** subdescrições por item, card de upgrade (free/trial),
+>   pílula "PRO", **busca** (`filterMais`); Internacional e "Meu perfil" duplicados removidos.
+> - **Barra inferior (mobile):** ilha flutuante mais baixa (`max(6px, safe-area)`).
+>
+> **Pendências (próximos passos):**
+> - **Livro de Movimentações — Fase 1 UI:** o NÚCLEO já está no ar (MOVS como fonte de
+>   verdade, migração, sync — `vendor/movs.js`, sem mudança visível). Falta a **interface**:
+>   botão "Registrar" (Compra/Venda/Provento/Caixa) + extrato + saldo em caixa na Carteira.
 > - **Carteiras Recomendadas reais:** substituir os números fabricados por **carteiras
 >   públicas de corretoras** que publicam mensalmente (feature de dados a planejar).
 >
