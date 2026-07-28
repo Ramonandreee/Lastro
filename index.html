@@ -3796,13 +3796,19 @@ button.mp-cell:active { background:var(--surface-3); }
 .ph-val { position:relative; margin-top:13px; font-family:var(--mono); font-size:clamp(31px,9vw,41px); font-weight:700; line-height:1.04; letter-spacing:-.025em; color:var(--up); font-variant-numeric:tabular-nums; }
 .ph-meta { position:relative; display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin-top:12px; font-size:12px; }
 /* crescimento como PÍLULA: vira métrica, não texto solto sob o valor */
-.ph-pill { display:inline-flex; align-items:baseline; gap:7px; padding:6px 13px; border-radius:999px; font-size:12px; font-weight:600; line-height:1.2; }
+.ph-pill { display:inline-flex; align-items:baseline; flex-wrap:wrap; max-width:100%; row-gap:2px; gap:7px; padding:6px 13px; border-radius:999px; font-size:12px; font-weight:600; line-height:1.2; }
 .ph-pill i { font-size:11px; align-self:center; }
 .ph-pill b { font-family:var(--mono); font-size:14.5px; font-weight:700; letter-spacing:-.01em; }
 .ph-pill em { font-style:normal; font-weight:500; opacity:.72; }
 .ph-pill.up { color:var(--up); background:var(--up-l); }
 .ph-pill.down { color:var(--down); background:var(--down-l); }
 .ph-pill.faint { color:var(--ink-4); background:var(--surface-3); font-weight:500; }
+/* crescimento em 12m: dinheiro primeiro, % e período em seguida — linha limpa, sem chip */
+.ph-growth { display:block; font-size:13.5px; line-height:1.35; letter-spacing:-.005em; }
+.ph-growth b { font-family:var(--mono); font-weight:700; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+.ph-growth em { font-style:normal; font-weight:500; }
+.ph-growth.up { color:var(--up); } .ph-growth.down { color:var(--down); }
+@media (max-width:400px){ .ph-growth { font-size:12.5px; } }
 .ph-delta { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; }
 .ph-delta i { font-size:11px; }
 .ph-delta em { font-style:normal; font-weight:500; color:var(--ink-3); }
@@ -8592,7 +8598,7 @@ function proventosData(){
       total12+=v; byTk[p.tk]=(byTk[p.tk]||0)+v; }
     else if(p.date>=lim24 && p.date<lim12) prior12+=v;
   });
-  return { months, total12, totalAll, media:total12/12, growth: prior12>0?(total12/prior12-1)*100:null,
+  return { months, total12, totalAll, prior12, media:total12/12, growth: prior12>0?(total12/prior12-1)*100:null,
            ranking:Object.entries(byTk).sort((a,b)=>b[1]-a[1]),
            pend:!!pays.pend, nPos:groups.length, nPays:pays.length,
            semFonte:groups.filter(g=>g.provSrc==='na').map(g=>g.tk),
@@ -9087,9 +9093,11 @@ function viewProventos(){
   _provMetaCtx={ media:d.media, yoc };                // contexto do slider da meta (sem recalcular tudo a cada arrasto)
   const gUp = d.growth!=null && d.growth>=0;
   // crescimento como PÍLULA (métrica), não como texto solto abaixo do valor
+  // valor EM DINHEIRO primeiro, o % entre parênteses: "quanto a mais eu recebi" é a leitura direta
+  const gDelta = d.total12 - (d.prior12||0);
   const growth = d.growth==null
     ? `<span class="ph-pill faint"><i class="fa-regular fa-clock"></i> primeiro ano de renda</span>`
-    : `<span class="ph-pill ${gUp?'up':'down'}"><i class="fa-solid fa-arrow-trend-${gUp?'up':'down'}"></i> <b>${gUp?'+':''}${pc(d.growth,1)}%</b> <em>em 12 meses</em></span>`;
+    : `<span class="ph-growth ${gUp?'up':'down'}"><b class="priv-blur">${gUp?'+':'−'} ${brl(Math.abs(gDelta))}</b> <em>(${gUp?'+':''}${pc(d.growth,2)}%) nos últimos 12 meses</em></span>`;
   const nAtivos = rk.length;
   const desde = d.firstPay ? `${PROV_MES[d.firstPay.getMonth()]}/${String(d.firstPay.getFullYear()).slice(2)}` : '—';
   // 6 métricas do card principal: média mensal (destaque), crescimento 12m (pílula),
