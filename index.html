@@ -3042,11 +3042,13 @@ body.report-open { overflow:hidden; }
 .pos-section { margin-top:16px; }
 .pos-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
 @media (max-width:760px){ .pos-grid { grid-template-columns:1fr; } }
-.pos-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:16px 18px; }
-.pc-head { display:flex; align-items:center; gap:12px; padding-bottom:13px; border-bottom:1px solid var(--line); margin-bottom:4px; cursor:pointer; }
-.pc-id { flex:1; min-width:0; }
-.pc-nm { font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.pc-tk { font-family:var(--mono); font-size:12px; color:var(--ink-3); margin-top:1px; }
+.pos-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); padding:16px 18px; transition:border-color .18s var(--ease), box-shadow .18s var(--ease); }
+.pos-card:hover { border-color:var(--line-2); box-shadow:var(--sh); }
+.pc-head { display:flex; align-items:center; gap:12px; padding-bottom:13px; border-bottom:1px solid var(--line); margin-bottom:4px; cursor:pointer; border-radius:10px; margin-inline:-4px; padding-inline:4px; transition:background .15s var(--ease); -webkit-tap-highlight-color:transparent; }
+.pc-head:active { background:var(--surface-2); }
+.pc-id { flex:1; min-width:0; display:flex; flex-direction:column; }   /* order nos filhos põe o TICKER acima do nome */
+.pc-nm { font-weight:600; font-size:13px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; order:2; }
+.pc-tk { font-family:var(--mono); font-size:15px; font-weight:700; color:var(--ink); letter-spacing:-.01em; order:1; }
 .pc-px { text-align:right; flex:none; }
 .pc-cot { font-weight:600; font-size:14.5px; }
 .pc-var { font-size:12px; margin-top:1px; }
@@ -7210,18 +7212,7 @@ function viewCarteira(){
     <button class="cart-link" onclick="goView('raiox')"><span class="cl-ic"><i class="fa-solid fa-chart-pie"></i></span><span class="cl-tx"><b>Raio-X da carteira</b><small>Alocação, evolução e comparação com CDI/IBOV</small></span><i class="fa-solid fa-chevron-right cl-cv"></i></button>
   </div>
 
-  ${(()=>{ const sal=salaryProjection(); if(!(sal.totalAno>0)) return ''; const meta=getRendaMeta(); const prog=Math.min(100, sal.media/meta*100);
-    return `<div class="card card-pad" style="margin-top:16px">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Salário de dividendos</div><div class="pex-total"><div class="pex-total-v priv-blur">${brl(sal.media)}</div><div class="pex-total-l">média/mês · 12 meses</div></div></div>
-      <div style="position:relative;height:200px;margin:8px 0 16px"><canvas id="salaryChart" role="img" aria-label="Projeção de proventos mensais"></canvas></div>
-      <div class="sim-control" style="margin-bottom:6px">
-        <div class="lbl"><span class="n">Meta de salário mensal</span><span class="v" id="metaRendaV">${brl0(meta)}</span></div>
-        <input type="range" id="metaRenda" min="500" max="30000" step="250" value="${meta}" oninput="updateRendaMeta()">
-      </div>
-      <div style="height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:10px 0 8px"><div id="metaProgBar" style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .4s"></div></div>
-      <div id="metaProgTxt" style="font-size:12.5px;color:var(--ink-2);line-height:1.6">${metaProgText(sal.media,meta)}</div>
-      <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Projeção dos próximos 12 meses mantendo as cotas atuais, a partir do rendimento corrente. Reinvestir os proventos acelera o crescimento — simule no Simulador de Renda.</div>
-    </div>`; })()}
+
 
   `;
 }
@@ -8246,6 +8237,18 @@ function viewProventos(){
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-trophy"></i></span> Quem mais paga</div><span class="card-sub">12 meses</span></div>
     <div class="prank">${rankRows}</div>${rankMais}
   </div>
+  ${(()=>{ const sal=salaryProjection(); if(!(sal.totalAno>0)) return ''; const meta=getRendaMeta(); const prog=Math.min(100, sal.media/meta*100);
+    return `<div class="card card-pad" style="margin-top:16px">
+      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-money-bill-trend-up"></i></span> Salário de dividendos</div><div class="pex-total"><div class="pex-total-v priv-blur">${brl(sal.media)}</div><div class="pex-total-l">média/mês · 12 meses</div></div></div>
+      <div style="position:relative;height:200px;margin:8px 0 16px"><canvas id="salaryChart" role="img" aria-label="Projeção de proventos mensais"></canvas></div>
+      <div class="sim-control" style="margin-bottom:6px">
+        <div class="lbl"><span class="n">Meta de salário mensal</span><span class="v" id="metaRendaV">${brl0(meta)}</span></div>
+        <input type="range" id="metaRenda" min="500" max="30000" step="250" value="${meta}" oninput="updateRendaMeta()">
+      </div>
+      <div style="height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:10px 0 8px"><div id="metaProgBar" style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .4s"></div></div>
+      <div id="metaProgTxt" style="font-size:12.5px;color:var(--ink-2);line-height:1.6">${metaProgText(sal.media,meta)}</div>
+      <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> Projeção dos próximos 12 meses mantendo as cotas atuais, a partir do rendimento corrente. Reinvestir os proventos acelera o crescimento — simule no Simulador de Renda.</div>
+    </div>`; })()}
   ${provFootNote(d)}`;
 }
 function chartUnavail(c){ if(c) c.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; }
@@ -9341,10 +9344,10 @@ function afterRender(v, soft){
     if(typeof loadPortfolioHistory==='function') loadPortfolioHistory();   // fechamentos reais p/ reconstruir a evolução
   }
   // alocação e evolução saíram da Carteira (vivem na Home e no Raio-X) — só o salário ficou aqui
-  if(v==='carteira'){ initSalary(); if(!soft){ if(typeof loadBacktestHistory==='function') loadBacktestHistory(); } }   /* diagnóstico saiu da tela */
+  if(v==='carteira'){ if(!soft){ if(typeof loadBacktestHistory==='function') loadBacktestHistory(); } }   /* diagnóstico e salário saíram da tela */
   // telas que exibem proventos recebidos: garante o histórico REAL (a UI mostra "apurando" até chegar)
   if(!soft && ['painel','carteira','proventos','raiox','ir'].includes(v) && typeof ensurePortfolioDividends==='function') ensurePortfolioDividends();
-  if(v==='proventos'){ initProventosCharts(); }
+  if(v==='proventos'){ initSalary(); initProventosCharts(); }
   if(v==='aporte'){ runAporte(); }
   if(v==='backtest'){ initBacktest(); if(!soft && typeof loadBacktestHistory==='function') loadBacktestHistory(); }
   if(v==='raiox'){ initRaioX(); }
