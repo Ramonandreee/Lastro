@@ -654,7 +654,10 @@ body.acct-open .topbar .acct-menu { pointer-events:auto; }
 .card-sub { font-size: 12px; color: var(--ink-3); }
 /* cabeçalho de Posições (carteira) — organizado no mobile */
 .pos-head { flex-wrap: wrap; gap: 12px; }
-.pos-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* "Adicionar aporte" ocupa o espaço e o "⋯" fica ao lado, na MESMA linha (sem wrap órfão) */
+.pos-actions { display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; }
+.pos-actions > .btn { flex: 1 1 auto; justify-content: center; }
+.pos-actions .cart-more-wrap { flex: none; }
 @media (max-width: 640px){
   .pos-head { flex-direction: column; align-items: stretch; }
   .pos-head .card-h { gap: 7px; }
@@ -2750,6 +2753,18 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .priv-eye:hover { color:var(--ink); border-color:var(--line-2); }
 .cart-sum-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
 /* ── Carteira: contador, ordenação das posições e atalhos ── */
+/* hero da carteira: reusa .prov-hero/.ph-* (mesmo componente de Proventos) */
+.cart-hero { margin-bottom:16px; }
+.cart-hero .ph-val { color:var(--ink); }
+/* ações secundárias em menu "⋯" — só "Adicionar aporte" fica visível */
+.cart-more-wrap { position:relative; display:inline-flex; }
+.cart-more-btn { width:38px; height:38px; border:1px solid var(--line); border-radius:11px; background:var(--surface); color:var(--ink-3); font-size:15px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:border-color .18s var(--ease), color .18s var(--ease); -webkit-tap-highlight-color:transparent; }
+.cart-more-btn:hover { border-color:var(--line-2); color:var(--ink); }
+.cart-menu { position:absolute; right:0; top:calc(100% + 6px); z-index:40; min-width:196px; display:none; flex-direction:column; padding:6px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-lg,0 12px 32px rgba(15,20,25,.16)); }
+.cart-menu.open { display:flex; }
+.cart-menu button { display:flex; align-items:center; gap:10px; width:100%; padding:10px 11px; border:none; border-radius:9px; background:transparent; color:var(--ink-2); font-family:var(--sans); font-size:13px; font-weight:500; text-align:left; cursor:pointer; white-space:nowrap; transition:background .15s var(--ease); }
+.cart-menu button:hover { background:var(--surface-2); color:var(--ink); }
+.cart-menu button i { width:15px; text-align:center; color:var(--ink-4); }
 /* resumo compacto do card de posição */
 .pc-sum { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding:12px 0 10px; border-top:1px solid var(--line); }
 .pcs-k { display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-4); margin-bottom:4px; }
@@ -7070,6 +7085,11 @@ function togglePosMore(tk){ const m=document.getElementById('more-'+tk); if(!m) 
 const CART_SORTS=[['valor','Valor'],['result','Resultado'],['part','Participação'],['nome','A-Z']];
 let cartSort='valor';
 function setCartSort(s){ if(!CART_SORTS.some(x=>x[0]===s)||s===cartSort) return; cartSort=s; render('carteira'); }
+/* menu "⋯" das ações secundárias da carteira (relatório/importar/exportar) */
+function toggleCartMenu(e){ if(e) e.stopPropagation(); const m=document.getElementById('cartMenu'); if(!m) return;
+  const open=m.classList.toggle('open');
+  if(open){ setTimeout(()=>document.addEventListener('click', closeCartMenu, {once:true}), 0); } }
+function closeCartMenu(){ const m=document.getElementById('cartMenu'); if(m) m.classList.remove('open'); }
 function viewCarteira(){
   const p = portfolioStats();
   const byT = p._byT;
@@ -7104,15 +7124,20 @@ function viewCarteira(){
   return `
   ${demoMode?`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--gold-l);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);border-radius:var(--r);padding:12px 14px;margin-bottom:14px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold);font-size:16px"></i><div style="flex:1;min-width:180px;font-size:12.5px;color:var(--ink-2);line-height:1.5">Você está vendo uma <strong>carteira de demonstração</strong> — ela some ao fechar o app. Crie a sua para acompanhar de verdade, com sincronização na nuvem.</div><button class="btn btn-premium btn-sm" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Desbloquear minha carteira</button></div>`:''}
   <div class="cart-sum-head"><div class="sec-title" style="margin:0;font-size:19px">Minha carteira${demoMode?' <span class="chip ilus" style="vertical-align:middle"><i class="fa-solid fa-flask"></i> demonstração</span>':''}</div><button class="priv-eye" onclick="togglePriv()" title="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
-  <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl priv-blur">${brl(p.atual)}</div><div class="dl priv-blur ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}% s/ prov.</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Resultado c/ proventos</div>${p.provPend?`<div class="vl faint" style="font-size:15px">${_provDown?'indisponível':'apurando…'}</div><div class="dl faint">${_provDown?'proventos reais fora do ar':'buscando proventos reais'}</div>`:`<div class="vl priv-blur ${p.lucroProv>=0?'up':'down'}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</div><div class="dl priv-blur ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div>`}</div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos recebidos</div>${p.provPend?`<div class="vl faint" style="font-size:15px">${_provDown?'indisponível':'apurando…'}</div><div class="dl faint">${_provDown?'proventos reais fora do ar':'buscando proventos reais'}</div>`:`<div class="vl priv-blur up">${brl(p.prov)}</div><div class="dl priv-blur faint">renda ~${brl(p.renda)}/mês <span class="faint">(est.)</span></div>`}</div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Saúde da carteira</div><div class="vl" style="color:${scoreColor(saude)}">${saude}<span style="font-size:12px;color:var(--ink-3)">/100</span></div><div class="dl" style="color:${scoreColor(saude)}">${scoreTier(saude)}</div></div>
+  <!-- resumo em bloco único (mesmo componente do hero de Proventos) — antes eram 4 células em 2 linhas -->
+  <div class="prov-hero cart-hero">
+    <div class="ph-top"><span class="ph-eyebrow">Patrimônio</span>${p.provPend?`<span class="ag-tag" style="background:var(--surface-3);color:var(--ink-3)"><i class="fa-solid fa-hourglass-half"></i> ${_provDown?'proventos indisponíveis':'apurando proventos'}</span>`:`<span class="ag-tag ag-tag-real"><i class="fa-solid fa-circle-check"></i> proventos reais</span>`}</div>
+    <div class="ph-val priv-blur">${brl(p.atual)}</div>
+    <div class="ph-meta"><span class="ph-delta ${p.lucroP>=0?'up':'down'}"><i class="fa-solid fa-arrow-trend-${p.lucroP>=0?'up':'down'}"></i> ${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}%</span><span class="ph-sep">·</span><span>${n} ativo${n!==1?'s':''}</span></div>
+    <div class="ph-foot">
+      <div class="ph-stat"><span class="l">Resultado c/ proventos</span>${p.provPend?`<b class="v faint" style="font-size:13px">${_provDown?'indisponível':'apurando…'}</b>`:`<b class="v priv-blur ${p.lucroProv>=0?'up':'down'}">${p.lucroProv>=0?'+':''}${brl(p.lucroProv)}</b><span class="s ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</span>`}</div>
+      <div class="ph-stat"><span class="l">Proventos recebidos</span>${p.provPend?`<b class="v faint" style="font-size:13px">${_provDown?'indisponível':'apurando…'}</b>`:`<b class="v priv-blur up">${brl(p.prov)}</b><span class="s">~${brl(p.renda)}/mês (est.)</span>`}</div>
+      <div class="ph-stat"><span class="l">Saúde da carteira</span><b class="v" style="color:${scoreColor(saude)}">${saude}<span style="font-size:11px;color:var(--ink-4)">/100</span></b><span class="s" style="color:${scoreColor(saude)}">${scoreTier(saude)}</span></div>
+    </div>
   </div>
 
   <div class="pos-section">
-    <div class="card-head pos-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="cart-count">${n}</span></div><div class="pos-actions"><button class="btn btn-ghost btn-sm" onclick="openReportConfig()" title="Relatório mensal da carteira (Investidor Pro)"><i class="fa-solid fa-file-lines"></i> Relatório${isProTier()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:10px"></i>'}</button><button class="btn btn-ghost btn-sm" onclick="importCarteiraCSV()" title="Importar aportes de um arquivo CSV"><i class="fa-solid fa-file-import"></i> Importar</button><button class="btn btn-ghost btn-sm" onclick="openExportConfig()" title="Exportar carteira em CSV"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">Premium</span>'}</button>${addBtn}</div></div>
+    <div class="card-head pos-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="cart-count">${n}</span></div><div class="pos-actions">${addBtn}<div class="cart-more-wrap"><button class="cart-more-btn" onclick="toggleCartMenu(event)" aria-label="Mais ações da carteira" aria-haspopup="true"><i class="fa-solid fa-ellipsis"></i></button><div class="cart-menu" id="cartMenu"><button onclick="closeCartMenu();openReportConfig()"><i class="fa-solid fa-file-lines"></i> Relatório${isProTier()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:10px"></i>'}</button><button onclick="closeCartMenu();importCarteiraCSV()"><i class="fa-solid fa-file-import"></i> Importar CSV</button><button onclick="closeCartMenu();openExportConfig()"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">Premium</span>'}</button></div></div></div></div>
     ${n>1?`<div class="cart-sort" role="tablist" aria-label="Ordenar posições">${CART_SORTS.map(s=>`<button class="cs-btn${s[0]===cartSort?' on':''}" role="tab" aria-selected="${s[0]===cartSort}" onclick="setCartSort('${s[0]}')">${s[1]}</button>`).join('')}</div>`:''}
     <div class="pos-grid">${holdings}</div>
   </div>
