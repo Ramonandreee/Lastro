@@ -2742,6 +2742,9 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .perfil-hero-em { font-size:13px; color:var(--ink-3); word-break:break-word; margin-top:3px; line-height:1.3; }
 .perfil-hero-plan { margin-top:11px; }
 .perfil-card { margin-top:12px; }
+.prof-autosave { font-size:12px; color:var(--ink-4); display:flex; align-items:center; gap:6px; margin-top:8px; }
+.prof-autosave i { font-size:12px; }
+#profMsg.ok { color:var(--up); font-size:12.5px; font-weight:500; display:flex; align-items:center; gap:6px; }
 .perfil-card-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
 .perfil-card-t i { color:var(--brand); font-size:12px; opacity:.85; }
 /* Resultado do perfil de investidor no card */
@@ -5632,6 +5635,18 @@ function closeAuthGuarded(){
   }
   _profileOpen=false; closeAuth();
 }
+/* Auto-save do perfil (sem botão): grava sozinho ~0,6s após a última alteração dos dados pessoais. */
+let _autoSaveT=null;
+function autoSaveProfile(){
+  clearTimeout(_autoSaveT);
+  _autoSaveT=setTimeout(async ()=>{ try{ await saveProfileCadastro(true); }catch(e){} profSavedHint(); }, 600);
+}
+function profSavedHint(){
+  const m=document.getElementById('profMsg'); if(!m) return;
+  if(m.textContent && m.textContent.trim()) return;   // não sobrescreve mensagem de e-mail em andamento
+  m.classList.add('ok'); m.innerHTML='<i class="fa-solid fa-circle-check"></i> Salvo';
+  clearTimeout(m._t); m._t=setTimeout(()=>{ if(m){ m.classList.remove('ok'); m.textContent=''; } }, 1900);
+}
 /* Meu perfil agora é uma PÁGINA cheia (view 'perfil'), não mais um modal. openProfile só navega. */
 function openProfile(){ const u=currentUser(); if(!u){ openAuth('login'); return; } if(typeof closeAcctMenu==='function') closeAcctMenu(); nav('perfil'); }
 /* ── Quiz de perfil de investidor (suitability): 5 perguntas → Conservador/Moderado/Arrojado ── */
@@ -5723,14 +5738,14 @@ function viewPerfil(){
     <div class="card card-pad perfil-card">
       <div class="perfil-card-t"><i class="fa-solid fa-user"></i> Dados pessoais</div>
       <div class="fld-grid">
-        <label class="fld"><span>Nome</span><input id="profName" value="${esc(profileName())}" maxlength="60" placeholder="Seu nome"></label>
-        <label class="fld"><span>E-mail</span><input id="profEmail" type="email" value="${esc(u.email)}" placeholder="voce@email.com"></label>
-        <label class="fld"><span>Celular / WhatsApp</span><input id="prof_phone" type="tel" inputmode="tel" value="${esc(maskPhoneBR(profField('phone')))}" placeholder="(47) 99246-4048" oninput="maskPhone(this)"></label>
-        <label class="fld"><span>Estado</span><select id="prof_uf" onchange="onProfUfChange()"><option value="">Selecione…</option>${BR_UF.map(uf=>`<option ${profField('uf')===uf?'selected':''} value="${uf}">${uf}</option>`).join('')}</select></label>
-        <label class="fld"><span>Cidade</span><select id="prof_city" ${profField('uf')?'':'disabled'}>${cityOptions(profField('uf'), profField('city'))}</select></label>
+        <label class="fld"><span>Nome</span><input id="profName" value="${esc(profileName())}" maxlength="60" placeholder="Seu nome" oninput="autoSaveProfile()"></label>
+        <label class="fld"><span>E-mail</span><input id="profEmail" type="email" value="${esc(u.email)}" placeholder="voce@email.com" onchange="saveProfileCadastro(true)"></label>
+        <label class="fld"><span>Celular / WhatsApp</span><input id="prof_phone" type="tel" inputmode="tel" value="${esc(maskPhoneBR(profField('phone')))}" placeholder="(47) 99246-4048" oninput="maskPhone(this);autoSaveProfile()"></label>
+        <label class="fld"><span>Estado</span><select id="prof_uf" onchange="onProfUfChange();autoSaveProfile()"><option value="">Selecione…</option>${BR_UF.map(uf=>`<option ${profField('uf')===uf?'selected':''} value="${uf}">${uf}</option>`).join('')}</select></label>
+        <label class="fld"><span>Cidade</span><select id="prof_city" ${profField('uf')?'':'disabled'} onchange="autoSaveProfile()">${cityOptions(profField('uf'), profField('city'))}</select></label>
       </div>
-      <div class="prof-actions" style="margin-top:20px"><button class="btn btn-primary btn-sm" onclick="saveProfileCadastro()"><i class="fa-solid fa-check"></i> Salvar alterações</button></div>
-      <div id="profMsg" class="fld-err" style="margin-top:4px"></div>
+      <div id="profMsg" class="fld-err" style="margin-top:8px"></div>
+      <div class="prof-autosave"><i class="fa-solid fa-cloud-arrow-up"></i> As alterações são salvas automaticamente</div>
     </div>
 
     <div class="card card-pad perfil-card">
