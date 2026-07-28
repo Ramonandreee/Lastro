@@ -1138,6 +1138,13 @@ img, svg, canvas, video { max-width: 100%; }
   <div class="modal-card premium-modal" role="dialog" aria-modal="true" aria-label="Recurso Premium"></div>
 </div>
 
+<div class="modal-scrim" id="quizModal" onclick="if(event.target===this)closeQuiz()">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Perfil de investidor" style="width:420px">
+    <div class="modal-head"><span id="quizTitle">Descobrir seu perfil</span><button class="drawer-close" onclick="closeQuiz()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body" id="quizBody"></div>
+  </div>
+</div>
+
 <div class="modal-scrim" id="authModal" onclick="if(event.target===this)closeAuthGuarded()">
   <div class="modal-card" role="dialog" aria-modal="true" aria-label="Conta">
     <div class="modal-head"><span id="authTitle">Entrar na Lastro</span><button class="drawer-close" onclick="closeAuthGuarded()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
@@ -2736,6 +2743,29 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .perfil-card { margin-top:14px; }
 .perfil-card-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
 .perfil-card-t i { color:var(--ink-4); font-size:13px; }
+/* Resultado do perfil de investidor no card */
+.perfil-invest-res { display:flex; align-items:center; gap:13px; }
+.perfil-invest-badge { width:46px; height:46px; flex:none; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:19px; color:#fff; }
+.perfil-invest-t { font-size:16px; font-weight:650; letter-spacing:-.01em; }
+.perfil-invest-s { font-size:12.5px; color:var(--ink-3); margin-top:1px; }
+/* Quiz (modal de perfil de investidor) */
+.quiz-prog { height:5px; border-radius:3px; background:var(--surface-3); overflow:hidden; margin-bottom:18px; }
+.quiz-prog span { display:block; height:100%; background:var(--brand); border-radius:3px; transition:width .28s var(--ease-out); }
+.quiz-q { font-size:16.5px; font-weight:650; line-height:1.35; letter-spacing:-.01em; margin-bottom:16px; }
+.quiz-opts { display:flex; flex-direction:column; gap:9px; }
+.quiz-opt { text-align:left; padding:13px 15px; border:1px solid var(--line); border-radius:13px; background:var(--surface); color:var(--ink); font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; transition:border-color .14s var(--ease), background .14s var(--ease); }
+.quiz-opt:hover, .quiz-opt.on { border-color:var(--brand); background:var(--brand-l); color:var(--brand); }
+.quiz-back { margin-top:15px; background:none; border:none; color:var(--ink-3); font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; padding:6px 4px; }
+.quiz-back:hover { color:var(--ink); }
+.quiz-result { text-align:center; padding:6px 0 2px; }
+.quiz-badge { width:66px; height:66px; border-radius:50%; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; font-size:27px; color:#fff; }
+.quiz-conservador { background:linear-gradient(150deg,#2E8B6E,#1C6F5A); }
+.quiz-moderado { background:linear-gradient(150deg,#2E6FB0,#1E4E86); }
+.quiz-arrojado { background:linear-gradient(150deg,#C8911F,#9C6C18); }
+.quiz-res-t { font-size:22px; font-weight:700; letter-spacing:-.02em; }
+.quiz-res-d { font-size:13.5px; color:var(--ink-2); line-height:1.6; margin:8px 6px 0; }
+.quiz-actions { display:flex; gap:10px; margin-top:20px; }
+.quiz-actions .btn { flex:1; justify-content:center; }
 .perfil-foot { margin-top:18px; display:flex; flex-direction:column; align-items:center; gap:12px; }
 .perfil-help { background:none; border:none; color:var(--ink-3); font-size:13px; font-weight:500; cursor:pointer; padding:6px 10px; display:inline-flex; align-items:center; gap:7px; transition:color .14s var(--ease); }
 .perfil-help:hover { color:var(--brand); }
@@ -5312,13 +5342,6 @@ async function saveProfileInvestidor(silent){
   const okSync = await flushCloudState();
   if(!silent) toast(okSync ? 'Perfil de investidor salvo e sincronizado ✓' : 'Salvo neste aparelho — não foi possível sincronizar agora. Tente novamente com internet.');
 }
-/* salva a página de perfil inteira (dados pessoais + perfil de investidor) num único botão */
-async function saveProfileAll(){
-  await saveProfileCadastro(true);
-  await saveProfileInvestidor(true);
-  const okSync = !_dirty;
-  toast(okSync ? 'Perfil salvo e sincronizado ✓' : 'Salvo neste aparelho — sincroniza quando houver internet.');
-}
 /* aviso de alterações não salvas ao fechar o perfil */
 let _profileOpen=false;
 function profileDirty(){
@@ -5340,6 +5363,79 @@ function closeAuthGuarded(){
 }
 /* Meu perfil agora é uma PÁGINA cheia (view 'perfil'), não mais um modal. openProfile só navega. */
 function openProfile(){ const u=currentUser(); if(!u){ openAuth('login'); return; } if(typeof closeAcctMenu==='function') closeAcctMenu(); nav('perfil'); }
+/* ── Quiz de perfil de investidor (suitability): 5 perguntas → Conservador/Moderado/Arrojado ── */
+const QUIZ_Q=[
+  { q:'Qual seu principal objetivo ao investir?', opts:[
+    {t:'Preservar o que tenho, com segurança', s:1, goal:'Reserva de emergência'},
+    {t:'Gerar renda passiva com dividendos', s:2, goal:'Renda passiva / dividendos'},
+    {t:'Fazer o patrimônio crescer no longo prazo', s:2, goal:'Crescimento do patrimônio'},
+    {t:'Buscar o maior retorno possível, aceitando risco', s:3, goal:'Especulação de curto prazo'},
+  ]},
+  { q:'Por quanto tempo pretende manter esses investimentos?', opts:[
+    {t:'Menos de 1 ano', s:1},{t:'De 1 a 5 anos', s:2},{t:'Mais de 5 anos', s:3},
+  ]},
+  { q:'Se sua carteira caísse 20% em um mês, você...', opts:[
+    {t:'Venderia tudo para não perder mais', s:1},
+    {t:'Manteria e esperaria a recuperação', s:2},
+    {t:'Aproveitaria para comprar mais', s:3},
+  ]},
+  { q:'Qual sua experiência com investimentos?', opts:[
+    {t:'Estou começando agora', s:1, exp:'Iniciante'},
+    {t:'Invisto há algum tempo', s:2, exp:'Intermediário'},
+    {t:'Invisto com confiança e conheço os riscos', s:3, exp:'Avançado'},
+  ]},
+  { q:'Quanto do seu patrimônio pretende investir em renda variável?', opts:[
+    {t:'Uma pequena parte', s:1},{t:'Cerca de metade', s:2},{t:'A maior parte', s:3},
+  ]},
+];
+let _quiz=null;
+function openInvestorQuiz(){ if(!isAuthed()){ openAuth('login'); return; } _quiz={step:0, ans:[], result:null}; const m=document.getElementById('quizModal'); if(m) m.classList.add('open'); renderQuiz(); }
+function closeQuiz(){ const m=document.getElementById('quizModal'); if(m) m.classList.remove('open'); _quiz=null; }
+function renderQuiz(){
+  const body=document.getElementById('quizBody'); if(!body||!_quiz) return;
+  const i=_quiz.step, total=QUIZ_Q.length;
+  if(i>=total){ return renderQuizResult(); }
+  const Q=QUIZ_Q[i];
+  const tt=document.getElementById('quizTitle'); if(tt) tt.textContent=`Pergunta ${i+1} de ${total}`;
+  body.innerHTML=`
+    <div class="quiz-prog"><span style="width:${Math.round(i/total*100)}%"></span></div>
+    <div class="quiz-q">${Q.q}</div>
+    <div class="quiz-opts">${Q.opts.map((o,oi)=>`<button class="quiz-opt${_quiz.ans[i]&&_quiz.ans[i].t===o.t?' on':''}" onclick="quizAnswer(${oi})">${o.t}</button>`).join('')}</div>
+    ${i>0?`<button class="quiz-back" onclick="quizBack()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>`:''}`;
+}
+function quizAnswer(oi){ if(!_quiz) return; const Q=QUIZ_Q[_quiz.step]; _quiz.ans[_quiz.step]=Q.opts[oi]; _quiz.step++; renderQuiz(); }
+function quizBack(){ if(!_quiz||_quiz.step<=0) return; _quiz.step--; renderQuiz(); }
+function renderQuizResult(){
+  const body=document.getElementById('quizBody'); if(!body||!_quiz) return;
+  const ans=_quiz.ans, n=QUIZ_Q.length;
+  const score=ans.reduce((s,a)=>s+((a&&a.s)||0),0);
+  const t=(score-n)/((n*3)-n);   // 0..1
+  const risk = t<0.34?'Conservador':t<0.67?'Moderado':'Arrojado';
+  let goal=null, exp=null; ans.forEach(a=>{ if(a&&a.goal) goal=a.goal; if(a&&a.exp) exp=a.exp; });
+  _quiz.result={risk, goal, exp};
+  const ic = risk==='Conservador'?'fa-shield-halved':risk==='Moderado'?'fa-scale-balanced':'fa-rocket';
+  const desc = risk==='Conservador'?'Você prioriza segurança e previsibilidade — foco em preservar o capital e ter renda estável.'
+    : risk==='Moderado'?'Você equilibra segurança e crescimento, aceitando oscilações moderadas por mais retorno.'
+    : 'Você tolera bem o risco em troca de maior potencial de retorno no longo prazo.';
+  const tt=document.getElementById('quizTitle'); if(tt) tt.textContent='Seu perfil de investidor';
+  body.innerHTML=`
+    <div class="quiz-result">
+      <div class="quiz-badge quiz-${risk.toLowerCase()}"><i class="fa-solid ${ic}"></i></div>
+      <div class="quiz-res-t">${risk}</div>
+      <p class="quiz-res-d">${desc}</p>
+    </div>
+    <div class="quiz-actions">
+      <button class="btn btn-ghost btn-sm" onclick="openInvestorQuiz()"><i class="fa-solid fa-rotate"></i> Refazer</button>
+      <button class="btn btn-primary btn-sm" onclick="quizSave()"><i class="fa-solid fa-check"></i> Salvar meu perfil</button>
+    </div>`;
+}
+async function quizSave(){
+  if(!_quiz||!_quiz.result) return; const r=_quiz.result;
+  const p=getProfile(); p.risk=r.risk; if(r.goal) p.goal=r.goal; if(r.exp) p.exp=r.exp; saveProfile(p);
+  try{ await flushCloudState(); }catch(e){}
+  closeQuiz(); toast(`Perfil definido: ${r.risk} ✓`);
+  if(currentView==='perfil') render('perfil', true);
+}
 function viewPerfil(){
   const u=currentUser();
   if(!u) return `<div class="card card-pad" style="text-align:center">${emptyState('fa-user','Entre na sua conta','Faça login para ver e editar seu perfil.', `<button class="btn btn-primary" onclick="openAuth('login')"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>`)}</div>`;
@@ -5363,23 +5459,23 @@ function viewPerfil(){
         <label class="fld"><span>Estado</span><select id="prof_uf" onchange="onProfUfChange()"><option value="">Selecione…</option>${BR_UF.map(uf=>`<option ${profField('uf')===uf?'selected':''} value="${uf}">${uf}</option>`).join('')}</select></label>
         <label class="fld"><span>Cidade</span><select id="prof_city" ${profField('uf')?'':'disabled'}>${cityOptions(profField('uf'), profField('city'))}</select></label>
       </div>
+      <div class="prof-actions" style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveProfileCadastro()"><i class="fa-solid fa-check"></i> Salvar</button></div>
       <div id="profMsg" class="fld-err" style="margin-top:4px"></div>
     </div>
 
     <div class="card card-pad perfil-card">
       <div class="perfil-card-t"><i class="fa-solid fa-chart-pie"></i> Perfil de investidor</div>
-      <div class="prof-lbl">Perfil de risco</div>
-      <div class="prof-chips">
-        ${['Conservador','Moderado','Arrojado'].map(r=>`<button class="prof-chip ${g.risk===r?'on':''}" data-risk="${r}" onclick="selectProfRisk(this)">${r}</button>`).join('')}
+      ${g.risk ? `
+      <div class="perfil-invest-res">
+        <span class="perfil-invest-badge quiz-${g.risk.toLowerCase()}"><i class="fa-solid ${g.risk==='Conservador'?'fa-shield-halved':g.risk==='Moderado'?'fa-scale-balanced':'fa-rocket'}"></i></span>
+        <div><div class="perfil-invest-t">${esc(g.risk)}</div>${g.goal?`<div class="perfil-invest-s">${esc(g.goal)}</div>`:''}</div>
       </div>
-      <div class="fld-grid">
-        <label class="fld"><span>Objetivo principal</span><select id="prof_goal">${['','Renda passiva / dividendos','Crescimento do patrimônio','Aposentadoria','Reserva de emergência','Especulação de curto prazo'].map(o=>`<option ${profField('goal')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
-        <label class="fld"><span>Experiência</span><select id="prof_exp">${['','Iniciante','Intermediário','Avançado'].map(o=>`<option ${profField('exp')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
-        <label class="fld"><span>Patrimônio para investir</span><select id="prof_wealth">${['','Até R$ 10 mil','R$ 10 mil – R$ 50 mil','R$ 50 mil – R$ 250 mil','R$ 250 mil – R$ 1 mi','Acima de R$ 1 mi'].map(o=>`<option ${profField('wealth')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
-      </div>
+      <div class="prof-actions" style="margin-top:12px"><button class="btn btn-ghost btn-sm prof-btn" onclick="openInvestorQuiz()"><i class="fa-solid fa-rotate"></i> Refazer o teste</button></div>
+      ` : `
+      <p style="font-size:13.5px;color:var(--ink-3);line-height:1.55;margin:0 0 14px">Responda um teste rápido de 5 perguntas e a Lastro define seu perfil — conservador, moderado ou arrojado — para personalizar as análises.</p>
+      <button class="btn btn-primary btn-sm prof-btn" onclick="openInvestorQuiz()"><i class="fa-solid fa-clipboard-question"></i> Descobrir meu perfil</button>
+      `}
     </div>
-
-    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveProfileAll()"><i class="fa-solid fa-check"></i> Salvar alterações</button>
 
     <div class="card card-pad perfil-card">
       <div class="perfil-card-t"><i class="fa-solid fa-crown"></i> Assinatura</div>
