@@ -3916,6 +3916,7 @@ button.mp-cell:active { background:var(--surface-3); }
 <script src="/vendor/chart.umd.js"></script>
 <script src="/vendor/money.js"></script>
 <script src="/vendor/movs.js"></script>
+<script src="/vendor/entitlement.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════
    LASTRO — DADOS
@@ -4780,6 +4781,8 @@ let ENT = null;   // {plan,tier,status,periodEnd} do servidor; null = ainda não
 function entEffective(){
   if(typeof testModeOn==='function' && testModeOn()) return null;   // modo dev → usa cache local
   if(!ENT) return null;                                             // ainda não hidratado → usa cache local
+  if(window.LastroEnt) return window.LastroEnt.effectivePlan(ENT, Date.now());   // derivação pura (testada)
+  // fallback inline (se /vendor/entitlement.js não carregar)
   const plan = ENT.plan || 'free';
   if(plan==='free') return { plan:'free', tier:null };
   if(ENT.status && ENT.status!=='active') return { plan:'free', tier:null };            // cancelado/inadimplente
