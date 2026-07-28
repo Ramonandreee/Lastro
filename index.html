@@ -2737,9 +2737,9 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .perfil-av-lg { width:72px; height:72px; }
 .perfil-av-lg .prof-av-inner { font-size:26px; }
 .perfil-hero-id { flex:1; min-width:0; }
-.perfil-hero-nm { font-size:19px; font-weight:650; letter-spacing:-.01em; line-height:1.2; }
-.perfil-hero-em { font-size:13px; color:var(--ink-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.perfil-hero-plan { flex:none; align-self:flex-start; margin-left:8px; }
+.perfil-hero-nm { font-size:18px; font-weight:650; letter-spacing:-.01em; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.perfil-hero-em { font-size:13px; color:var(--ink-3); word-break:break-word; margin-top:1px; }
+.perfil-hero-plan { margin-top:9px; }
 .perfil-card { margin-top:14px; }
 .perfil-card-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
 .perfil-card-t i { color:var(--ink-4); font-size:13px; }
@@ -2754,7 +2754,8 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .quiz-q { font-size:16.5px; font-weight:650; line-height:1.35; letter-spacing:-.01em; margin-bottom:16px; }
 .quiz-opts { display:flex; flex-direction:column; gap:9px; }
 .quiz-opt { text-align:left; padding:13px 15px; border:1px solid var(--line); border-radius:13px; background:var(--surface); color:var(--ink); font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; transition:border-color .14s var(--ease), background .14s var(--ease); }
-.quiz-opt:hover, .quiz-opt.on { border-color:var(--brand); background:var(--brand-l); color:var(--brand); }
+.quiz-opt.on { border-color:var(--brand); background:var(--brand-l); color:var(--brand); }
+@media (hover:hover){ .quiz-opt:hover { border-color:var(--brand); background:var(--brand-l); color:var(--brand); } }
 .quiz-back { margin-top:15px; background:none; border:none; color:var(--ink-3); font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; padding:6px 4px; }
 .quiz-back:hover { color:var(--ink); }
 .quiz-result { text-align:center; padding:6px 0 2px; }
@@ -5446,8 +5447,7 @@ function viewPerfil(){
   <div class="perfil" id="perfilPage">
     <div class="card card-pad perfil-hero">
       <button class="prof-av prof-av-edit perfil-av-lg" onclick="photoOptions()" title="Foto de perfil"><span class="prof-av-inner">${avatarInner((profileName()[0]||u.email[0]||'?').toUpperCase())}</span><span class="prof-av-cam"><i class="fa-solid fa-camera"></i></span></button>
-      <div class="perfil-hero-id"><div class="perfil-hero-nm">${esc(profileName())}</div><div class="perfil-hero-em">${esc(u.email)}</div></div>
-      <div class="perfil-hero-plan">${planChip}</div>
+      <div class="perfil-hero-id"><div class="perfil-hero-nm">${esc(profileName())}</div><div class="perfil-hero-em">${esc(u.email)}</div><div class="perfil-hero-plan">${planChip}</div></div>
     </div>
 
     <div class="card card-pad perfil-card">
@@ -5459,7 +5459,7 @@ function viewPerfil(){
         <label class="fld"><span>Estado</span><select id="prof_uf" onchange="onProfUfChange()"><option value="">Selecione…</option>${BR_UF.map(uf=>`<option ${profField('uf')===uf?'selected':''} value="${uf}">${uf}</option>`).join('')}</select></label>
         <label class="fld"><span>Cidade</span><select id="prof_city" ${profField('uf')?'':'disabled'}>${cityOptions(profField('uf'), profField('city'))}</select></label>
       </div>
-      <div class="prof-actions" style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveProfileCadastro()"><i class="fa-solid fa-check"></i> Salvar</button></div>
+      <div class="prof-actions" style="margin-top:20px"><button class="btn btn-primary btn-sm" onclick="saveProfileCadastro()"><i class="fa-solid fa-check"></i> Salvar alterações</button></div>
       <div id="profMsg" class="fld-err" style="margin-top:4px"></div>
     </div>
 
