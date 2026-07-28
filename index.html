@@ -3793,8 +3793,16 @@ button.mp-cell:active { background:var(--surface-3); }
   background:radial-gradient(120% 100% at 86% 0%, color-mix(in srgb, var(--up) 12%, transparent), transparent 62%); }
 .ph-top { position:relative; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 10px; }
 .ph-eyebrow { white-space:nowrap; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-4); }
-.ph-val { position:relative; margin-top:11px; font-family:var(--mono); font-size:clamp(29px,8.4vw,38px); font-weight:700; line-height:1.04; letter-spacing:-.025em; color:var(--up); font-variant-numeric:tabular-nums; }
-.ph-meta { position:relative; display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin-top:9px; font-size:12px; }
+.ph-val { position:relative; margin-top:13px; font-family:var(--mono); font-size:clamp(31px,9vw,41px); font-weight:700; line-height:1.04; letter-spacing:-.025em; color:var(--up); font-variant-numeric:tabular-nums; }
+.ph-meta { position:relative; display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin-top:12px; font-size:12px; }
+/* crescimento como PÍLULA: vira métrica, não texto solto sob o valor */
+.ph-pill { display:inline-flex; align-items:baseline; gap:7px; padding:6px 13px; border-radius:999px; font-size:12px; font-weight:600; line-height:1.2; }
+.ph-pill i { font-size:11px; align-self:center; }
+.ph-pill b { font-family:var(--mono); font-size:14.5px; font-weight:700; letter-spacing:-.01em; }
+.ph-pill em { font-style:normal; font-weight:500; opacity:.72; }
+.ph-pill.up { color:var(--up); background:var(--up-l); }
+.ph-pill.down { color:var(--down); background:var(--down-l); }
+.ph-pill.faint { color:var(--ink-4); background:var(--surface-3); font-weight:500; }
 .ph-delta { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; }
 .ph-delta i { font-size:11px; }
 .ph-delta em { font-style:normal; font-weight:500; color:var(--ink-3); }
@@ -3802,7 +3810,7 @@ button.mp-cell:active { background:var(--surface-3); }
 .ph-delta.faint { color:var(--ink-4); font-weight:500; }
 .ph-sep { width:3px; height:3px; border-radius:50%; background:var(--ink-4); opacity:.55; flex:none; }
 .ph-n { color:var(--ink-3); }
-.ph-foot { position:relative; display:grid; grid-template-columns:repeat(3,1fr); margin:15px calc(var(--php)*-1) 0; border-top:1px solid var(--line); }
+.ph-foot { position:relative; display:grid; grid-template-columns:repeat(2,1fr); margin:15px calc(var(--php)*-1) 0; border-top:1px solid var(--line); }
 .ph-stat { position:relative; min-width:0; padding:12px 14px 13px; display:flex; flex-direction:column; gap:3px; }
 .ph-stat + .ph-stat::before { content:''; position:absolute; left:0; top:24%; bottom:24%; width:1px; background:var(--line); }
 .ph-stat .l { display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:600; color:var(--ink-4); letter-spacing:.01em; }
@@ -4087,7 +4095,7 @@ button.mp-cell:active { background:var(--surface-3); }
 .ri-s { font-size:12px; color:var(--ink-3); margin-top:2px; line-height:1.4; }
 .ri-bar { display:block; height:4px; border-radius:3px; background:var(--surface-3); overflow:hidden; margin-top:9px; }
 .ri-bar i { display:block; height:100%; border-radius:3px; transition:width .6s var(--ease-out); }
-@media (min-width:620px){ .ri-grid { grid-template-columns:1fr 1fr; gap:0 22px; } }
+@media (min-width:620px){ .ri-grid { grid-template-columns:1fr 1fr; gap:0 22px; } .ph-foot { grid-template-columns:repeat(4,1fr); } }
 /* seletor Compra/Venda do modal de movimento */
 .pos-mode { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; background:var(--surface-3); border-radius:12px; margin-bottom:4px; }
 .pm-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:10px 0; border:none; border-radius:9px; background:transparent; color:var(--ink-3); font-family:var(--sans); font-size:13.5px; font-weight:600; cursor:pointer; transition:background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease); -webkit-tap-highlight-color:transparent; }
@@ -9098,9 +9106,10 @@ function viewProventos(){
   const rk = provRankFull(groups);
   _provMetaCtx={ media:d.media, yoc };                // contexto do slider da meta (sem recalcular tudo a cada arrasto)
   const gUp = d.growth!=null && d.growth>=0;
+  // crescimento como PÍLULA (métrica), não como texto solto abaixo do valor
   const growth = d.growth==null
-    ? `<span class="ph-delta faint"><i class="fa-regular fa-clock"></i> sem 12 meses anteriores para comparar</span>`
-    : `<span class="ph-delta ${gUp?'up':'down'}"><i class="fa-solid fa-arrow-trend-${gUp?'up':'down'}"></i> ${gUp?'+':''}${pc(d.growth,1)}% <em>vs 12m anteriores</em></span>`;
+    ? `<span class="ph-pill faint"><i class="fa-regular fa-clock"></i> primeiro ano de renda</span>`
+    : `<span class="ph-pill ${gUp?'up':'down'}"><i class="fa-solid fa-arrow-trend-${gUp?'up':'down'}"></i> <b>${gUp?'+':''}${pc(d.growth,1)}%</b> <em>no ano</em></span>`;
   const nAtivos = rk.length;
   const desde = d.firstPay ? `${PROV_MES[d.firstPay.getMonth()]}/${String(d.firstPay.getFullYear()).slice(2)}` : '—';
   // parcial: há proventos reais apurados, mas algum ativo ainda não respondeu → mostra o número
@@ -9117,11 +9126,12 @@ function viewProventos(){
       <span class="ag-tag ag-tag-real" data-tip="Valor por cota declarado pelo ativo × cotas que você tinha na data-com. Nada é estimado."><i class="fa-solid fa-circle-check"></i> pagamentos reais</span>
     </div>
     <div class="ph-val priv-blur" data-count="${d.total12.toFixed(2)}" data-fmt="brl">${brl(d.total12)}</div>
-    <div class="ph-meta">${growth}<span class="ph-sep"></span><span class="ph-n">${nAtivos} ativo${nAtivos===1?'':'s'} pagando</span></div>
+    <div class="ph-meta">${growth}</div>
     <div class="ph-foot">
       <div class="ph-stat" data-term="yoc"><span class="l">Yield on Cost</span><span class="v ph-v-brand">${pc(yoc,1)}%</span><span class="s">sobre o custo</span></div>
       <div class="ph-stat"><span class="l">Acumulado</span><span class="v priv-blur">${brl(d.totalAll)}</span><span class="s">desde ${desde}</span></div>
       <div class="ph-stat"><span class="l">Pagamentos</span><span class="v">${d.nPays}</span><span class="s">recebidos no total</span></div>
+      <div class="ph-stat"><span class="l">Ativos pagando</span><span class="v">${nAtivos}</span><span class="s">na sua carteira</span></div>
     </div>
   </section>
   ${provNextHTML(groups)}
