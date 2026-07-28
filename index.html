@@ -3873,6 +3873,18 @@ button.mp-cell:active { background:var(--surface-3); }
   .pa-btn { margin-left:0; width:100%; justify-content:center; }
 }
 @media (prefers-reduced-motion:reduce){ .prank-track i { animation:none; } }
+/* Raio-X da renda: leituras próprias do Lastro */
+.ri-grid { display:grid; grid-template-columns:1fr; gap:2px; margin-top:6px; }
+.ri-item { display:flex; align-items:flex-start; gap:12px; padding:13px 2px; border-top:1px solid var(--line); }
+.ri-grid .ri-item:first-child { border-top:none; }
+.ri-ic { width:36px; height:36px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+.ri-tx { flex:1; min-width:0; display:flex; flex-direction:column; }
+.ri-k { font-size:11px; color:var(--ink-4); text-transform:uppercase; letter-spacing:.04em; }
+.ri-v { font-family:var(--mono); font-size:19px; font-weight:700; color:var(--ink); letter-spacing:-.02em; margin-top:3px; }
+.ri-s { font-size:12px; color:var(--ink-3); margin-top:2px; line-height:1.4; }
+.ri-bar { display:block; height:4px; border-radius:3px; background:var(--surface-3); overflow:hidden; margin-top:9px; }
+.ri-bar i { display:block; height:100%; border-radius:3px; transition:width .6s var(--ease-out); }
+@media (min-width:620px){ .ri-grid { grid-template-columns:1fr 1fr; gap:0 22px; } }
 /* seletor Compra/Venda do modal de movimento */
 .pos-mode { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; background:var(--surface-3); border-radius:12px; margin-bottom:4px; }
 .pm-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:10px 0; border:none; border-radius:9px; background:transparent; color:var(--ink-3); font-family:var(--sans); font-size:13.5px; font-weight:600; cursor:pointer; transition:background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease); -webkit-tap-highlight-color:transparent; }
@@ -8385,6 +8397,50 @@ function provSkeleton(){
     </div>
   </div>`;
 }
+/* ── "Raio-X da sua renda": leituras que os apps de carteira não mostram ──
+   Tudo derivado de pagamentos REAIS (realPaymentsFor) + dados que o usuário já forneceu.
+   Nada de projeção aqui: o que é estimativa vive no card de Salário, rotulado. */
+function rendaInsights(d, p){
+  const out=[];
+  // 1) PAYBACK — quanto do que você investiu os proventos já devolveram. Quase nenhum app mostra,
+  //    e é a pergunta que o investidor de renda realmente faz: "quando meu custo volta?"
+  if(p && p.invest>0 && d.totalAll>0){
+    const pct=d.totalAll/p.invest*100;
+    // ritmo dos últimos 12m → quantos anos para devolver os 100% restantes
+    const faltam=Math.max(0, p.invest-d.totalAll);
+    const anos=(d.total12>0)? faltam/d.total12 : null;
+    out.push({ ic:'fa-rotate-left', cor:'var(--up)', k:'Já voltou pra você',
+      v:pc(pct,1)+'%', s: anos!=null ? (pct>=100?'custo integralmente pago':`no ritmo atual, ~${anos<1?pc(anos*12,0)+' meses':pc(anos,1)+' anos'} para 100%`) : 'do total investido',
+      bar: Math.min(100,pct) });
+  }
+  // 2) RENDA POR DIA — o número que torna a renda passiva tangível
+  if(d.total12>0) out.push({ ic:'fa-sun', cor:'var(--gold)', k:'Sua carteira te paga',
+    v:brl(d.total12/365)+'/dia', s:`${brl(d.total12/52)} por semana` });
+  // 3) DIAS DE CUSTO DE VIDA COBERTOS — só se o usuário informou a despesa (dado dele, real)
+  const desp=(typeof getDespesa==='function')?getDespesa():0;
+  if(desp>0 && d.media>0){
+    const dias=Math.min(30, d.media/(desp/30));
+    out.push({ ic:'fa-calendar-check', cor:'var(--brand)', k:'Do seu mês, já está pago',
+      v:pc(dias,1)+' dias', s:`de ${brl(desp)}/mês de custo de vida`, bar: dias/30*100 });
+  }
+  // 4) SEQUÊNCIA — meses seguidos recebendo (consistência é o que o investidor de renda persegue)
+  const ms=d.months||[]; let streak=0;
+  for(let i=ms.length-1;i>=0;i--){ if((ms[i].val||0)>0) streak++; else break; }
+  if(streak>=2) out.push({ ic:'fa-fire', cor:'var(--down)', k:'Sequência',
+    v:streak+(streak===12?'+':'')+' meses', s:'seguidos recebendo proventos' });
+  return out;
+}
+function rendaInsightsHTML(d, p){
+  const its=rendaInsights(d,p); if(!its.length) return '';
+  return `<div class="card card-pad" style="margin-top:16px">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-lightbulb"></i></span> Raio-X da sua renda</div></div>
+    <div class="ri-grid">${its.map(x=>`<div class="ri-item">
+      <span class="ri-ic" style="color:${x.cor};background:color-mix(in srgb, ${x.cor} 13%, transparent)"><i class="fa-solid ${x.ic}"></i></span>
+      <div class="ri-tx"><span class="ri-k">${x.k}</span><b class="ri-v priv-blur">${x.v}</b><span class="ri-s">${x.s}</span>
+      ${x.bar!=null?`<span class="ri-bar"><i style="width:${Math.min(100,x.bar).toFixed(1)}%;background:${x.cor}"></i></span>`:''}</div>
+    </div>`).join('')}</div>
+  </div>`;
+}
 function viewProventos(){
   const d=proventosData(), p=portfolioStats();
   const head=`<div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Meus Proventos</div></div>`;
@@ -8452,6 +8508,7 @@ function viewProventos(){
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Proventos por mês</div><span class="prov-legend"><i class="pl-bar"></i>recebido<i class="pl-avg"></i>média</span></div>
     <div class="prov-chart"><canvas id="provMonthChart" role="img" aria-label="Proventos recebidos por mês nos últimos 12 meses"></canvas></div>
   </div>
+  ${rendaInsightsHTML(d,p)}
   <div class="card card-pad prov-card">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-trophy"></i></span> Quem mais paga</div><span class="card-sub">12 meses</span></div>
     <div class="prank">${rankRows}</div>${rankMais}
