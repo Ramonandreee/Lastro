@@ -3082,8 +3082,28 @@ body.report-open { overflow:hidden; }
 @media (max-width:640px){ .as-grid { grid-template-columns:1fr; } }
 /* posições em cartões (estilo app financeiro) */
 .pos-section { margin-top:16px; }
-/* estilo lista (Investidor10): uma coluna contínua, linhas densas */
-.pos-grid { display:flex; flex-direction:column; gap:8px; }
+/* ── Carteira agrupada por classe ── */
+.cls-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); padding:14px 16px 12px; transition:border-color .18s var(--ease), box-shadow .18s var(--ease); }
+.cls-card:hover { border-color:var(--line-2); box-shadow:var(--sh); }
+.cls-head { display:flex; align-items:center; gap:11px; width:100%; padding:0; border:none; background:transparent; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; }
+.cls-ic { width:36px; height:36px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:15px; background:var(--brand-l); color:var(--brand); }
+.cls-nm { flex:1; min-width:0; font-size:15px; font-weight:700; color:var(--ink); letter-spacing:-.01em; }
+.cls-n { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:19px; padding:0 6px; margin-left:6px; border-radius:999px; background:var(--surface-3); color:var(--ink-3); font-family:var(--mono); font-size:10.5px; font-weight:700; vertical-align:1px; }
+.cls-val { font-family:var(--mono); font-size:15px; font-weight:700; color:var(--ink); letter-spacing:-.01em; }
+.cls-caret { flex:none; font-size:11px; color:var(--ink-4); transition:transform .2s var(--ease); }
+.cls-card.open .cls-caret { transform:rotate(180deg); }
+.cls-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+.cls-metrics > div { min-width:0; }
+.cls-metrics span { display:block; font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-4); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cls-metrics b { display:block; font-size:13px; font-weight:600; color:var(--ink-2); font-variant-numeric:tabular-nums; }
+/* barra de participação: nosso diferencial — mostra o peso da classe, em vez de só o número */
+.cls-bar { height:4px; border-radius:3px; background:var(--surface-3); overflow:hidden; margin-top:11px; }
+.cls-bar i { display:block; height:100%; border-radius:3px; background:linear-gradient(90deg,var(--brand),var(--accent)); transition:width .5s var(--ease-out); }
+.cls-body { margin-top:10px; padding-top:4px; border-top:1px solid var(--line); }
+.cls-body .pos-card { border:none; box-shadow:none; border-radius:0; padding:0 0; background:transparent; }
+.cls-body .pos-card + .pos-card { border-top:1px solid var(--line); }
+/* estilo lista: uma coluna contínua, linhas densas */
+.pos-grid { display:flex; flex-direction:column; gap:10px; }
 @media (max-width:760px){ .pos-grid { grid-template-columns:1fr; } }
 .pos-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:4px 14px; transition:border-color .18s var(--ease), box-shadow .18s var(--ease); }
 .pos-card:hover { border-color:var(--line-2); box-shadow:var(--sh); }
@@ -7226,6 +7246,60 @@ function tblSort(kind, field){
    VIEW: CARTEIRA
    ══════════════════════════════════════════════════════════ */
 /* cartão de posição (estilo app financeiro) */
+/* ── Agrupamento por CLASSE (Ações, FIIs, ETFs, ETFs int., BDRs, Stocks, Cripto) ──
+   ETF internacional é separado do ETF da B3 (classes diferentes p/ o investidor). */
+const CLASS_META={
+  acoes:  {nome:'Ações',            ic:'fa-chart-column'},
+  fiis:   {nome:'FIIs',             ic:'fa-building'},
+  etfs:   {nome:'ETFs (B3)',        ic:'fa-layer-group'},
+  etfsint:{nome:'ETFs internacionais', ic:'fa-globe'},
+  bdrs:   {nome:'BDRs',             ic:'fa-certificate'},
+  stocks: {nome:'Stocks (EUA)',     ic:'fa-flag-usa'},
+  cripto: {nome:'Cripto',           ic:'fa-bitcoin', br:true},
+};
+function classKeyOf(g){ const k=g.f.k; return (k==='etfs' && (typeof isUsAsset==='function' && isUsAsset(g.f))) ? 'etfsint' : k; }
+/* agrega por classe: valor, custo, resultado c/ proventos, variação do dia (ponderada) e % da carteira */
+function groupByClass(byT, total){
+  const map=new Map();
+  byT.forEach(g=>{ const ck=classKeyOf(g);
+    if(!map.has(ck)) map.set(ck,{ck, meta:CLASS_META[ck]||{nome:ck,ic:'fa-circle'}, itens:[], val:0, custo:0, lucroProv:0, diaVal:0, diaBase:0, pend:false});
+    const c=map.get(ck); c.itens.push(g); c.val+=g.val||0; c.custo+=g.custo||0; c.lucroProv+=g.lucroProv||0;
+    if(g.provPend) c.pend=true;
+    const a=g.f.a, live=!!(a.live&&a.px>0);
+    const v=(g.f.k==='cripto')?a.v24:a.var;
+    if(live && typeof v==='number'){ const prev=a.px/(1+v/100); const rate=(g.cur==='usd')?usdBrlRate():1;
+      c.diaVal += g.cotas*(a.px-prev)*rate; c.diaBase += g.cotas*prev*rate; }
+  });
+  const out=[...map.values()];
+  out.forEach(c=>{ c.rent = c.custo? c.lucroProv/c.custo*100 : 0;
+                   c.dia  = c.diaBase? c.diaVal/c.diaBase*100 : null;
+                   c.part = total? c.val/total*100 : 0; });
+  return out.sort((a,b)=>b.val-a.val);
+}
+function toggleClass(ck){
+  const card=document.querySelector(`.cls-card[data-ck="${ck}"]`); const body=document.getElementById('cls-'+ck);
+  if(!card||!body) return; body.hidden=!body.hidden; card.classList.toggle('open', !body.hidden);
+}
+function classCard(c){
+  const m=c.meta, up=c.lucroProv>=0;
+  const diaTxt = (c.dia==null) ? '<span class="faint">—</span>'
+    : `<span class="${c.dia>=0?'up':'down'}">${c.dia>=0?'+':''}${pc(c.dia,2)}%</span>`;
+  return `<div class="cls-card" data-ck="${c.ck}">
+    <button class="cls-head" onclick="toggleClass('${c.ck}')" aria-expanded="false">
+      <span class="cls-ic"><i class="fa-${m.br?'brands':'solid'} ${m.ic}"></i></span>
+      <span class="cls-nm">${m.nome} <span class="cls-n">${c.itens.length}</span></span>
+      <span class="cls-val priv-blur">${brl(c.val)}</span>
+      <i class="fa-solid fa-chevron-down cls-caret"></i>
+    </button>
+    <div class="cls-metrics">
+      <div><span>Variação hoje</span><b class="mono">${diaTxt}</b></div>
+      <div><span>Rentabilidade</span><b class="mono ${c.pend?'faint':(up?'up':'down')}">${c.pend?'apurando…':`${up?'+':''}${pc(c.rent,1)}%`}</b></div>
+      <div><span>% da carteira</span><b class="mono">${pc(c.part,1)}%</b></div>
+    </div>
+    <div class="cls-bar"><i style="width:${Math.min(100,c.part).toFixed(1)}%"></i></div>
+    <div class="cls-body" id="cls-${c.ck}" hidden>${c.itens.map(posCard).join('')}</div>
+  </div>`;
+}
 function posCard(g){
   const a=g.f.a, k=g.f.k;
   const live=!!(a.live && a.px>0);                 // sem cotação real → avalia ao custo
@@ -7320,7 +7394,8 @@ function viewCarteira(){
     if(cartSort==='result') return (b.lucroProv||0)-(a.lucroProv||0);
     return (b.val||0)-(a.val||0);   // 'valor' e 'part' ordenam pelo mesmo critério (part = val/total)
   });
-  const holdings = sorted.map(posCard).join('');
+  // agrupado por CLASSE (padrão de carteira do investidor); a ordenação vale dentro de cada grupo
+  const holdings = groupByClass(sorted, p.atual).map(classCard).join('');
   const _provDown = p.provPend && provFetchDown(byT);   // busca falhou → dizer "indisponível", nunca estimar
 
   return `
