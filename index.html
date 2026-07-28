@@ -3043,16 +3043,21 @@ body.report-open { overflow:hidden; }
 @media (max-width:640px){ .as-grid { grid-template-columns:1fr; } }
 /* posições em cartões (estilo app financeiro) */
 .pos-section { margin-top:16px; }
-.pos-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+/* estilo lista (Investidor10): uma coluna contínua, linhas densas */
+.pos-grid { display:flex; flex-direction:column; gap:8px; }
 @media (max-width:760px){ .pos-grid { grid-template-columns:1fr; } }
-.pos-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); padding:16px 18px; transition:border-color .18s var(--ease), box-shadow .18s var(--ease); }
+.pos-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:4px 14px; transition:border-color .18s var(--ease), box-shadow .18s var(--ease); }
 .pos-card:hover { border-color:var(--line-2); box-shadow:var(--sh); }
-.pc-head { display:flex; align-items:center; gap:12px; padding-bottom:13px; border-bottom:1px solid var(--line); margin-bottom:4px; cursor:pointer; border-radius:10px; margin-inline:-4px; padding-inline:4px; transition:background .15s var(--ease); -webkit-tap-highlight-color:transparent; }
+.pc-head { display:flex; align-items:center; gap:12px; padding:12px 4px; margin-inline:-4px; border-radius:10px; cursor:pointer; transition:background .15s var(--ease); -webkit-tap-highlight-color:transparent; }
 .pc-head:active { background:var(--surface-2); }
 .pc-id { flex:1; min-width:0; display:flex; flex-direction:column; }   /* order nos filhos põe o TICKER acima do nome */
-.pc-nm { font-weight:600; font-size:13px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; order:2; }
-.pc-tk { font-family:var(--mono); font-size:15px; font-weight:700; color:var(--ink); letter-spacing:-.01em; order:1; }
+.pc-nm { font-weight:500; font-size:11.5px; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; order:2; margin-top:2px; font-family:var(--mono); }
+.pc-tk { font-family:var(--mono); font-size:14.5px; font-weight:700; color:var(--ink); letter-spacing:-.01em; order:1; }
 .pc-px { text-align:right; flex:none; }
+.pc-caret { flex:none; font-size:11px; color:var(--ink-4); transition:transform .2s var(--ease); }
+.pos-card.open .pc-caret { transform:rotate(180deg); }
+.pos-card.open .pc-head { background:var(--surface-2); }
+.pc-extra { padding-bottom:6px; }
 .pc-cot { font-weight:600; font-size:14.5px; }
 .pc-var { font-size:12px; margin-top:1px; }
 .pc-rows, .pc-extra { display:flex; flex-direction:column; }
@@ -7098,11 +7103,13 @@ function posCard(g){
   }).join('');
   const row=(lbl,val,cls)=>`<div class="pc-row"><span>${lbl}</span><b class="${cls||''}">${val}</b></div>`;
   return `<div class="pos-card" data-tk="${g.tk}">
-    <div class="pc-head" onclick="quickView('${g.tk}')">
+    <div class="pc-head" onclick="togglePosMore('${g.tk}')">
       ${assetLogo(g.tk,k,'md')}
-      <div class="pc-id"><div class="pc-nm">${esc(a.nm||g.tk)}</div><div class="pc-tk">${g.tk}${g.lots.length>1?` · ${g.lots.length} aportes`:''}</div></div>
-      <div class="pc-px"><div class="pc-cot mono">${fmtPx({px:pxEff,usd:a.usd},k)}</div><div class="pc-var mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</div></div>
+      <div class="pc-id"><div class="pc-tk">${g.tk}</div><div class="pc-nm">${g.cotas} cota${g.cotas===1?'':'s'} · ${fmtCur(g.pm,g.cur)}</div></div>
+      <div class="pc-px"><div class="pc-cot mono priv-blur">${brl(g.val)}</div>${g.provPend?`<div class="pc-var faint" style="font-size:11px">${provPendLabel(g)}</div>`:`<div class="pc-var mono ${g.lucroProv>=0?'up':'down'}">${g.lucroProv>=0?'+':''}${pc(g.lpProv,1)}%</div>`}</div>
+      <i class="fa-solid fa-chevron-down pc-caret"></i>
     </div>
+    <div class="pc-extra" id="more-${g.tk}" hidden>
     <!-- linha-resumo: saldo e resultado (o que o investidor procura) em destaque; o resto vira
          uma grade compacta de 3 colunas. Antes eram 6 linhas empilhadas por ativo. -->
     <div class="pc-sum">
@@ -7116,9 +7123,8 @@ function posCard(g){
       <div><span>Preço médio</span><b class="mono priv-blur">${fmtCur(g.pm,g.cur)}</b></div>
       <div><span>Proventos</span>${g.provPend?`<b class="faint" style="font-size:12px">${provPendLabel(g)}</b>`:`<b class="mono up priv-blur">${brl(g.prov)}</b>`}</div>
     </div>
-    <button class="pc-more" onclick="togglePosMore('${g.tk}')"><span>Mais detalhes</span> <i class="fa-solid fa-chevron-down"></i></button>
-    <div class="pc-extra" id="more-${g.tk}" hidden>
       <div class="pc-extra-t">Dados complementares</div>
+      ${row('Cotação atual', `<span class="mono">${fmtPx({px:pxEff,usd:a.usd},k)}</span> <span class="mono ${vv>=0?'up':'down'}" style="font-size:11.5px">${vv>=0?'+':''}${pc(vv)}%</span>`)}
       ${row('Categoria', ASSET_CLASS[k].label)}
       ${row('Valor investido', `<span class="mono priv-blur">${brl(g.custo)}</span>`)}
       ${row(termLabel('pmProv','Preço médio com proventos'), g.provPend?`<span class="faint" style="font-size:12px">${provPendLabel(g)}</span>`:`<span class="mono priv-blur">${fmtCur(pmProv,g.cur)}</span>`)}
@@ -7133,7 +7139,7 @@ function posCard(g){
     </div>
   </div>`;
 }
-function togglePosMore(tk){ const m=document.getElementById('more-'+tk); if(!m) return; m.hidden=!m.hidden; const c=document.querySelector(`.pos-card[data-tk="${tk}"] .pc-more`); if(c) c.classList.toggle('open', !m.hidden); }
+function togglePosMore(tk){ const card=document.querySelector(`.pos-card[data-tk="${tk}"]`); const m=document.getElementById('more-'+tk); if(!m||!card) return; m.hidden=!m.hidden; card.classList.toggle('open', !m.hidden); const c=card.querySelector('.pc-more'); if(c) c.classList.toggle('open', !m.hidden); }
 /* ordenação das posições (só apresentação — não altera nenhum cálculo) */
 const CART_SORTS=[['valor','Valor'],['result','Resultado'],['part','Participação'],['nome','A-Z']];
 let cartSort='valor';
