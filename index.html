@@ -1091,6 +1091,10 @@ img, svg, canvas, video { max-width: 100%; }
   <div class="modal-card" role="dialog" aria-modal="true" aria-label="Posição da carteira">
     <div class="modal-head"><span id="posTitle">Adicionar posição</span><button class="drawer-close" onclick="closePosModal()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
+      <div class="pos-mode" id="posMode" role="tablist" aria-label="Tipo de movimento">
+        <button type="button" class="pm-btn on" data-m="compra" role="tab" aria-selected="true" onclick="setPosMode('compra')"><i class="fa-solid fa-arrow-down"></i> Compra</button>
+        <button type="button" class="pm-btn" data-m="venda" role="tab" aria-selected="false" onclick="setPosMode('venda')"><i class="fa-solid fa-arrow-up"></i> Venda</button>
+      </div>
       <div class="fld fld-rel">
         <span>Ativo</span>
         <input id="posTk" placeholder="Ex.: PETR4, HGLG11, IVV" autocomplete="off" oninput="this.value=this.value.toUpperCase();posSuggest()" onfocus="posSuggest()" onblur="hidePosSug()" onkeydown="posSugKey(event)">
@@ -1100,7 +1104,7 @@ img, svg, canvas, video { max-width: 100%; }
         <label class="fld"><span>Quantidade</span><input id="posQt" type="number" min="0" step="any" inputmode="decimal" placeholder="0" oninput="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
         <label class="fld"><span><span id="posCurLbl">Valor (R$)</span> <small style="color:var(--ink-4);font-weight:400">por unidade</small></span><input id="posPm" type="text" inputmode="decimal" placeholder="0,00" oninput="_pmTouched=true;maskBRL(this)" onkeydown="if(event.key==='Enter')savePos()"></label>
       </div>
-      <label class="fld"><span>Data do aporte <small style="color:var(--ink-4);font-weight:400">· contabiliza os proventos</small></span><input id="posDt" type="date" required onchange="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
+      <label class="fld"><span><span id="posDtLbl">Data do aporte</span> <small style="color:var(--ink-4);font-weight:400">· contabiliza os proventos</small></span><input id="posDt" type="date" required onchange="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
       <div id="posPreview" class="pos-preview"></div>
       <div id="posHint" class="pos-hint"><i class="fa-solid fa-circle-info"></i> <span>Digite o ativo para ver a cotação atual, o Score Lastro e o custo do aporte antes de salvar.</span></div>
       <div id="posErr" class="fld-err"></div>
@@ -3801,6 +3805,14 @@ button.mp-cell:active { background:var(--surface-3); }
   .pa-btn { margin-left:0; width:100%; justify-content:center; }
 }
 @media (prefers-reduced-motion:reduce){ .prank-track i { animation:none; } }
+/* seletor Compra/Venda do modal de movimento */
+.pos-mode { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; background:var(--surface-3); border-radius:12px; margin-bottom:4px; }
+.pm-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:10px 0; border:none; border-radius:9px; background:transparent; color:var(--ink-3); font-family:var(--sans); font-size:13.5px; font-weight:600; cursor:pointer; transition:background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease); -webkit-tap-highlight-color:transparent; }
+.pm-btn i { font-size:11px; }
+.pm-btn.on { background:var(--surface); color:var(--up); box-shadow:var(--sh-sm); }
+.pm-btn[data-m="venda"].on { color:var(--down); }
+/* na venda, o botão salvar assume a cor de baixa — o gesto é o oposto do aporte */
+#posModal.is-venda .modal-foot .btn-primary { background:var(--down); border-color:var(--down); }
 .pos-hint { display:flex; align-items:flex-start; gap:8px; margin-top:4px; padding:11px 13px; border-radius:var(--r); background:var(--surface-2); border:1px solid var(--line); font-size:12px; line-height:1.5; color:var(--ink-4); }
 .pos-hint i { margin-top:2px; flex:none; }
 .pos-hint.hide { display:none; }
@@ -4182,6 +4194,22 @@ function editMov(id, patch){ if(!hasMovs()) return { ok:false }; const m=MOVS.fi
 function removeMov(id){ if(!hasMovs()) return { ok:false }; MOVS=MOVS.filter(x=>x.id!==id); movsSave(MOVS); _movsAfterMutate(); return { ok:true }; }
 
 /* cada aporte é um lote (lot) com data própria — preço médio é ponderado */
+/* VENDA: baixa cotas da posição pelo livro de movimentos (o motor em vendor/movs.js já
+   calcula PM, caixa e resultado realizado). Exige o livro ativo — na carteira legada, sem
+   histórico de movimentos, não há como registrar venda com integridade. */
+function sellPosition(tk, cotas, preco, date){
+  tk=String(tk||'').toUpperCase().trim(); cotas=+cotas; preco=+preco;
+  if(!tk || !assetLookup(tk)) return { ok:false, msg:'Ticker não encontrado' };
+  if(!(cotas>0) || !(preco>0)) return { ok:false, msg:'Informe quantidade e preço de venda válidos' };
+  if(!validDate(date)) return { ok:false, msg:'Informe a data da venda (não futura)' };
+  const g=(typeof portfolioByTicker==='function'?portfolioByTicker():[]).find(x=>x.tk===tk);
+  const tem=g?g.cotas:0;
+  if(!(tem>0)) return { ok:false, msg:`Você não tem ${tk} na carteira` };
+  if(cotas>tem+1e-9) return { ok:false, msg:`Você tem ${pc(tem,0)} cota(s) de ${tk} — não dá para vender ${pc(cotas,0)}` };
+  if(!movsActive()) return { ok:false, msg:'Registro de venda indisponível nesta carteira. Adicione um novo aporte para ativar o livro de movimentos.' };
+  addMov({ id:uid(), type:'venda', tk, cotas, preco, date, cur:curOf(tk) });
+  return { ok:true };
+}
 function addPosition(tk, cotas, pm, date){
   tk=String(tk||'').toUpperCase().trim(); cotas=+cotas; pm=+pm;
   if(!tk || !assetLookup(tk)) return { ok:false, msg:'Ticker não encontrado' };
@@ -4468,6 +4496,17 @@ function posPreview(){
   el.innerHTML=`<div class="pp-h">${assetLogo(tk,k,'sm')}<div class="pp-id"><div class="pp-tk">${tk}</div><div class="pp-nm">${esc(a.nm||'')}</div></div></div>${rows.join('')}`;
   el.classList.add('on');
 }
+let posMode='compra';
+function setPosMode(m){
+  posMode=(m==='venda')?'venda':'compra';
+  document.querySelectorAll('#posMode .pm-btn').forEach(b=>{ const on=b.dataset.m===posMode; b.classList.toggle('on',on); b.setAttribute('aria-selected',on?'true':'false'); });
+  const md=document.getElementById('posModal'); if(md) md.classList.toggle('is-venda', posMode==='venda');
+  const t=document.getElementById('posTitle'); if(t && !md.dataset.lot) t.textContent = posMode==='venda'?'Registrar venda':'Adicionar aporte';
+  const dl=document.getElementById('posDtLbl'); if(dl) dl.textContent = posMode==='venda'?'Data da venda':'Data do aporte';
+  const vl=document.getElementById('posCurLbl'); if(vl && posMode==='venda') vl.textContent='Preço de venda (R$)';
+  const err=document.getElementById('posErr'); if(err) err.textContent='';
+  if(typeof posPreview==='function') posPreview();
+}
 function openPosModal(tk, lotId){
   // carteira real é Premium — anônimo cria conta (teste 7 dias); teste expirado vai para assinatura
   if(!proGate('carteira')) return;
@@ -4481,6 +4520,7 @@ function openPosModal(tk, lotId){
   $('#posModal').dataset.lot = lot? lot.id : '';
   $('#posTitle').textContent = lot? `Editar aporte · ${lot.tk}` : (tk?`Novo aporte · ${tk}`:'Adicionar aporte');
   $('#posErr').textContent = '';
+  setPosMode('compra');   // sempre abre em compra
   posPreview();
   $('#posModal').classList.add('open');
   setTimeout(()=>{ const el = (lockTk?$('#posQt'):$('#posTk')); el && el.focus(); }, 60);
@@ -4489,13 +4529,15 @@ function closePosModal(){ $('#posModal').classList.remove('open'); $('#posModal'
 function savePos(){
   const lotId=$('#posModal').dataset.lot; const pm=parseBRL($('#posPm').value);
   const r = lotId ? editLot(lotId, $('#posQt').value, pm, $('#posDt').value)
-                  : addPosition($('#posTk').value, $('#posQt').value, pm, $('#posDt').value);
+                  : (posMode==='venda'
+                      ? sellPosition($('#posTk').value, $('#posQt').value, pm, $('#posDt').value)
+                      : addPosition($('#posTk').value, $('#posQt').value, pm, $('#posDt').value));
   if(!r.ok){
     const err=$('#posErr');
     err.innerHTML = r.premium ? `${r.msg} <a onclick="closePosModal();goPricing()" style="color:var(--accent);cursor:pointer;font-weight:600">Ver planos →</a>` : r.msg;
     return;
   }
-  closePosModal(); toast(lotId?'Aporte atualizado ✓':'Aporte adicionado ✓');
+  closePosModal(); toast(lotId?'Aporte atualizado ✓':(posMode==='venda'?'Venda registrada ✓':'Aporte adicionado ✓'));
   if(currentView==='carteira') render('carteira');
 }
 
