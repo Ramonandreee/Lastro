@@ -5132,7 +5132,7 @@ function posWeight(g){ const p=portfolioStats(); if(!p.atual) return 0; const gr
 const PAGES = {
   painel:       { t:'Início',                s:'Mercado, oportunidades e inteligência Lastro' },
   mercado:      { t:'Mercado',               s:'Explore ativos por classe, veja o pulso do dia e descubra oportunidades' },
-  mais:         { t:'Mais',                   s:'Análises, ferramentas, internacional e sua conta' },
+  mais:         { t:'Mais',                   s:'Ferramentas, planos e sua conta' },
   acoes:        { t:'Ações',                 s:'Análise fundamentalista das principais ações da B3' },
   fiis:         { t:'Fundos Imobiliários',   s:'Indicadores e Score Lastro de FIIs' },
   bdrs:         { t:'BDRs',                   s:'Recibos de ações estrangeiras negociados na B3' },
@@ -6756,8 +6756,8 @@ function syncNavGroups(){
 /* ── Tab bar inferior (mobile): acende a aba da SEÇÃO da tela atual ── */
 const VIEW_TAB = {
   painel:'painel',
-  mercado:'mercado', acoes:'mercado', fiis:'mercado', etfs:'mercado', etfsint:'mercado', bdrs:'mercado', stocks:'mercado', cripto:'mercado', score:'mercado', agenda:'mercado',
-  carteira:'carteira', proventos:'carteira', aporte:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira',
+  mercado:'mercado', acoes:'mercado', fiis:'mercado', etfs:'mercado', etfsint:'mercado', bdrs:'mercado', stocks:'mercado', cripto:'mercado', score:'mercado',
+  carteira:'carteira', proventos:'carteira', agenda:'carteira', aporte:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira',
   noticias:'noticias',
   mais:'mais', simulador:'mais', comparador:'mais', recomendadas:'mais', recdetail:'mais', planos:'mais', indicar:'mais', assinatura:'mais', perfil:'mais', admin:'mais'
 };
@@ -7645,7 +7645,14 @@ function viewCarteira(){
     <div class="pos-grid">${holdings}</div>
   </div>
 
-
+  <div class="mkt-sec-t" style="margin-top:22px">Ferramentas da carteira</div>
+  <div class="mkt-shortcuts">
+    <button class="mkt-short" onclick="nav('aporte')"><span class="ms-ic"><i class="fa-solid fa-scale-balanced"></i></span><span class="ms-tx"><b>Aporte Inteligente</b><small>Onde aplicar seu próximo aporte</small></span>${isPro()?'':'<span class="mais-pro">PRO</span>'}<i class="fa-solid fa-chevron-right ms-cv"></i></button>
+    <button class="mkt-short" onclick="nav('ir')"><span class="ms-ic"><i class="fa-solid fa-file-invoice-dollar"></i></span><span class="ms-tx"><b>Imposto de Renda</b><small>DARF e informe anual da declaração</small></span>${isPro()?'':'<span class="mais-pro">PRO</span>'}<i class="fa-solid fa-chevron-right ms-cv"></i></button>
+    <button class="mkt-short" onclick="nav('backtest')"><span class="ms-ic"><i class="fa-solid fa-chart-line"></i></span><span class="ms-tx"><b>Backtest da Carteira</b><small>Sua carteira vs CDI e IBOV no histórico</small></span>${isProTier()?'':'<span class="mais-pro">PRO</span>'}<i class="fa-solid fa-chevron-right ms-cv"></i></button>
+    <button class="mkt-short" onclick="nav('stress')"><span class="ms-ic"><i class="fa-solid fa-heart-pulse"></i></span><span class="ms-tx"><b>Stress Test</b><small>Impacto estimado de cenários de crise</small></span>${isProTier()?'':'<span class="mais-pro">PRO</span>'}<i class="fa-solid fa-chevron-right ms-cv"></i></button>
+    <button class="mkt-short" onclick="nav('acompanhar')"><span class="ms-ic"><i class="fa-solid fa-star"></i></span><span class="ms-tx"><b>Acompanhar</b><small>Watchlist e alertas num só lugar</small></span><i class="fa-solid fa-chevron-right ms-cv"></i></button>
+  </div>
 
 
   `;
@@ -10046,18 +10053,6 @@ function renderNewsAlta(){ const el=$('#newsAlta'); if(el) el.innerHTML=newsAlta
 function viewMais(){
   const authed=isAuthed(), pref=getThemePref(), pro=isPro();
   const GROUPS=[
-    {t:'Minha Carteira', items:[
-      ['proventos','fa-coins','Meus Proventos',1,'Yield on Cost, histórico e projeção'],
-      ['acompanhar','fa-star','Acompanhar',0,'Watchlist e alertas de preço num só lugar'],
-      ['agenda','fa-calendar-day','Agenda de Dividendos',0,'Datas dos proventos dos seus ativos'],
-      ['aporte','fa-scale-balanced','Aporte Inteligente',1,'Onde aplicar seu próximo aporte'],
-      ['ir','fa-file-invoice-dollar','Imposto de Renda',1,'DARF e informe anual da declaração'],
-    ]},
-    {t:'Análises Pro', items:[
-      ['raiox','fa-magnifying-glass-chart','Raio-X da Carteira',1,'Diversificação, concentração e Nota Lastro'],
-      ['stress','fa-heart-pulse','Stress Test',1,'Impacto estimado de cenários de crise'],
-      ['backtest','fa-chart-line','Backtest da Carteira',1,'Sua carteira vs CDI e IBOV no histórico'],
-    ]},
     {t:'Ferramentas', items:[
       ['comparador','fa-code-compare','Comparador',0,'Ativos lado a lado pelos fundamentos'],
       ['recomendadas','fa-layer-group','Carteiras Recomendadas',0,'Estratégias montadas pela Lastro'],
