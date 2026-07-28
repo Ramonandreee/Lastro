@@ -42,6 +42,19 @@
       (3) renomear o arquivo para `middleware.js`. **Antes de ativar**, passar a `lastro-review`
       (não foi testado ao vivo). É *fail-open* (se o Upstash falhar, não derruba o app).
 
+## 🟤 Antes de plugar pagamento REAL (travas de segurança do entitlement)
+
+> A auditoria aprovou o entitlement para a fase atual (checkout **simulado**). Estes itens
+> precisam ser feitos **antes** de existir cobrança de verdade — senão, no dia do pagamento,
+> qualquer um vira Pro de graça. (Detalhe no parecer da review.)
+
+- [ ] **Revogar a RPC provisória:** `REVOKE EXECUTE ON FUNCTION public.grant_entitlement FROM authenticated;`
+      (ou dropar a função). Fecha o auto-serviço (hoje qualquer logado poderia se conceder Pro).
+- [ ] **Webhook do gateway** (Stripe/Mercado Pago/etc.) rodando com **`service_role`** como a
+      ÚNICA fonte de escrita em `user_entitlement`.
+- [ ] (Opcional) Restringir o **modo desenvolvedor** (`lastro_testmode`) para não liberar plano
+      via cache quando houver cobrança — hoje é só UX client-side, sem acesso a recurso de custo.
+
 ## 🔵 Dado da sua conta (dentro do app)
 
 - [ ] **Corrigir a posição antiga do `VALE3`** salva com preço **R$ 312,50** (era o bug do
