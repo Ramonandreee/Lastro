@@ -5652,7 +5652,7 @@ const QUIZ_Q=[
     {t:'Preservar o que tenho, com segurança', s:1, goal:'Reserva de emergência'},
     {t:'Gerar renda passiva com dividendos', s:2, goal:'Renda passiva / dividendos'},
     {t:'Fazer o patrimônio crescer no longo prazo', s:2, goal:'Crescimento do patrimônio'},
-    {t:'Buscar o maior retorno possível, aceitando risco', s:3, goal:'Especulação de curto prazo'},
+    {t:'Buscar o maior retorno possível, aceitando risco', s:3, goal:'Máximo retorno no curto prazo'},
   ]},
   { q:'Por quanto tempo pretende manter esses investimentos?', opts:[
     {t:'Menos de 1 ano', s:1},{t:'De 1 a 5 anos', s:2},{t:'Mais de 5 anos', s:3},
@@ -5696,7 +5696,7 @@ function renderQuizResult(){
   const risk = t<0.34?'Conservador':t<0.67?'Moderado':'Arrojado';
   let goal=null, exp=null; ans.forEach(a=>{ if(a&&a.goal) goal=a.goal; if(a&&a.exp) exp=a.exp; });
   _quiz.result={risk, goal, exp};
-  const ic = risk==='Conservador'?'fa-shield-halved':risk==='Moderado'?'fa-scale-balanced':'fa-rocket';
+  const ic = risk==='Conservador'?'fa-shield-halved':risk==='Moderado'?'fa-scale-balanced':'fa-arrow-trend-up';
   const desc = risk==='Conservador'?'Você prioriza segurança e previsibilidade — foco em preservar o capital e ter renda estável.'
     : risk==='Moderado'?'Você equilibra segurança e crescimento, aceitando oscilações moderadas por mais retorno.'
     : 'Você tolera bem o risco em troca de maior potencial de retorno no longo prazo.';
@@ -5749,7 +5749,7 @@ function viewPerfil(){
       <div class="perfil-card-t"><i class="fa-solid fa-chart-pie"></i> Perfil de investidor</div>
       ${g.risk ? `
       <div class="perfil-invest-res">
-        <span class="perfil-invest-badge quiz-${g.risk.toLowerCase()}"><i class="fa-solid ${g.risk==='Conservador'?'fa-shield-halved':g.risk==='Moderado'?'fa-scale-balanced':'fa-rocket'}"></i></span>
+        <span class="perfil-invest-badge quiz-${g.risk.toLowerCase()}"><i class="fa-solid ${g.risk==='Conservador'?'fa-shield-halved':g.risk==='Moderado'?'fa-scale-balanced':'fa-arrow-trend-up'}"></i></span>
         <div><div class="perfil-invest-t">${esc(g.risk)}</div>${g.goal?`<div class="perfil-invest-s">${esc(g.goal)}</div>`:''}</div>
       </div>
       <div class="prof-actions" style="margin-top:12px"><button class="btn btn-ghost btn-sm prof-btn" onclick="openInvestorQuiz()"><i class="fa-solid fa-rotate"></i> Refazer o teste</button></div>
@@ -6286,7 +6286,7 @@ function renderSignup(){
       <div class="prof-lbl" style="margin:14px 0 8px">Perfil de risco</div>
       <div class="prof-chips">${['Conservador','Moderado','Arrojado'].map(r=>`<button class="prof-chip ${_signup.risk===r?'on':''}" data-risk="${r}" onclick="selectProfRisk(this)">${r}</button>`).join('')}</div>
       <div class="fld-grid" style="margin-top:14px">
-        <label class="fld"><span>Objetivo principal</span><select id="suGoal">${['','Renda passiva / dividendos','Crescimento do patrimônio','Aposentadoria','Reserva de emergência','Especulação de curto prazo'].map(o=>`<option ${(_signup.goal||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
+        <label class="fld"><span>Objetivo principal</span><select id="suGoal">${['','Renda passiva / dividendos','Crescimento do patrimônio','Aposentadoria','Reserva de emergência','Máximo retorno no curto prazo'].map(o=>`<option ${(_signup.goal||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
         <label class="fld"><span>Experiência</span><select id="suExp">${['','Iniciante','Intermediário','Avançado'].map(o=>`<option ${(_signup.exp||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
         <label class="fld"><span>Patrimônio para investir</span><select id="suWealth">${['','Até R$ 10 mil','R$ 10 mil – R$ 50 mil','R$ 50 mil – R$ 250 mil','R$ 250 mil – R$ 1 mi','Acima de R$ 1 mi'].map(o=>`<option ${(_signup.wealth||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
       </div>
