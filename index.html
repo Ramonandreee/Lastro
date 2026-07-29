@@ -3827,55 +3827,6 @@ button.mp-cell:active { background:var(--surface-3); }
 /* cartões da tela */
 .prov-card { margin-top:16px; }
 .prov-card .card-head { margin-bottom:8px; }
-/* ── layout do card de evolução (medidas fixas: nada se sobrepõe e a altura não dança) ── */
-.pev-card { padding:20px; }
-.pev-card > * { margin:0; }
-.pev-t { margin-bottom:16px !important; }
-.pev-ctrls { margin-bottom:16px !important; }
-.pev-valbox { height:56px; margin-bottom:12px !important; overflow:hidden; }
-.pev-plot { position:relative; }
-.pev-scroll { overflow-x:hidden; overflow-y:hidden; }
-.pev-scroll.is-scroll { overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
-.pev-scroll.is-scroll::-webkit-scrollbar { display:none; }
-.pev-inner { position:relative; min-width:100%; }
-/* faixa exclusiva do ano, ACIMA do gráfico: dentro dele fica só a linha vertical */
-.pev-years { position:relative; height:16px; }
-.pev-years span { position:absolute; top:0; line-height:14px; font-size:10px; font-weight:600; color:var(--ink-4); white-space:nowrap; }
-/* 16 (respiro do rótulo de estouro) + 180 (plotagem) + 20 (faixa dos meses) */
-.pev-canvas { position:relative; height:216px; }
-.pev-plot canvas { touch-action:pan-y; display:block; }
-.pev-yaxis { position:absolute; left:0; top:16px; height:calc(100% - 16px); width:44px; pointer-events:none; z-index:2;
-  background:linear-gradient(to right, var(--surface) 78%, transparent); }
-.pev-yaxis span { position:absolute; left:0; width:44px; text-align:right; transform:translateY(-50%);
-  font-size:11px; color:var(--ink-4); font-family:var(--mono); white-space:nowrap; }
-/* cabeçalho com leitura (substitui a tooltip sobreposta) */
-.pev-t { font-size:17px; font-weight:700; letter-spacing:-.015em; color:var(--ink); }
-/* controles em pílula: ícone + rótulo + chevron */
-.pev-ctrls { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
-.pev-sel { position:relative; display:inline-flex; align-items:center; gap:8px; padding:8px 30px 8px 12px;
-  border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); color:var(--ink-2);
-  font-size:13px; font-weight:600; cursor:pointer; transition:border-color .16s var(--ease); }
-.pev-sel:hover { border-color:var(--line-2); }
-.pev-sel > i:first-child { font-size:12px; color:var(--ink-4); }
-.pev-sel select { appearance:none; -webkit-appearance:none; border:0; background:transparent; padding:0;
-  font-family:var(--sans); font-size:13px; font-weight:600; color:var(--ink-2); cursor:pointer; outline:none; }
-.pev-sel:focus-within { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-l); }
-.pev-sel-c { position:absolute; right:11px; font-size:9px; color:var(--ink-4); pointer-events:none; }
-/* legenda no topo, centralizada */
-.pev-leg { display:flex; justify-content:flex-start; align-items:center; flex-wrap:wrap; gap:6px 18px;
-  margin-top:8px !important; margin-bottom:16px !important; font-size:12px; color:var(--ink-3); }
-.pev-leg > span { display:inline-flex; align-items:center; gap:7px; }
-.pev-leg .pl-dot { width:13px; height:13px; border-radius:50%; background:var(--brand); }
-.pev-leg .pl-dot.pl-fut { background:color-mix(in srgb, var(--brand) 25%, transparent); }
-.pev-leg .pl-mm { width:15px; height:0; border-top:2px solid color-mix(in srgb, var(--brand) 60%, transparent); }
-.pev-val { font-family:var(--mono); font-size:22px; font-weight:700; letter-spacing:-.02em;
-  color:var(--ink); font-variant-numeric:tabular-nums; line-height:1.15;
-  transition:color .15s var(--ease), opacity .15s var(--ease); }
-.pev-sub { margin-top:2px; font-size:11.5px; color:var(--ink-4); line-height:1.45; }
-.pev-sub b { font-family:var(--mono); font-weight:700; color:var(--ink-3); }
-.pev-sub em { font-style:normal; }
-.pev-chip { display:inline-block; margin-left:6px; font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:999px; vertical-align:1px; }
-.pev-chip.up { color:var(--up); background:var(--up-l); } .pev-chip.down { color:var(--down); background:var(--down-l); }
 .prov-link { color:var(--brand); font-weight:600; }
 /* ranking "quem mais paga" */
 .prank { display:flex; flex-direction:column; }
@@ -4009,6 +3960,36 @@ button.mp-cell:active { background:var(--surface-3); }
 .prc-skel { cursor:default; }
 @media (prefers-reduced-motion:reduce){ .prc-collapse { transition:none; } }
 
+/* ── risco da renda ── */
+.pri-top { display:flex; align-items:baseline; gap:10px; margin-top:2px; }
+.pri-big { font-family:var(--mono); font-size:30px; font-weight:700; letter-spacing:-.03em; line-height:1; }
+.pri-lb { font-size:12.5px; color:var(--ink-3); line-height:1.4; }
+.pri-lb strong { font-family:var(--mono); color:var(--ink); }
+.pri-tag { display:inline-block; margin-left:7px; padding:1px 8px; border-radius:999px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+.pri-bar { display:flex; height:10px; border-radius:6px; overflow:hidden; margin-top:14px; background:var(--surface-3); }
+.pri-bar i { display:block; height:100%; }
+.pri-bar i + i { box-shadow:inset 1px 0 0 var(--surface); }
+.pri-legs { display:flex; flex-wrap:wrap; gap:5px 14px; margin-top:9px; }
+.pri-lg { display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--ink-4); }
+.pri-lg i { width:9px; height:9px; border-radius:3px; flex:none; }
+.pri-lg b { font-family:var(--mono); font-weight:700; color:var(--ink-3); }
+.pri-rows { margin-top:14px; padding-top:12px; border-top:1px solid var(--line); display:grid; gap:11px; }
+.pri-row { display:grid; grid-template-columns:1fr auto; align-items:baseline; column-gap:12px; }
+.pri-row .k { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink-2); min-width:0; }
+.pri-row .k i { font-size:11px; color:var(--ink-4); flex:none; }
+.pri-row .v { font-family:var(--mono); font-size:14px; font-weight:700; color:var(--ink); white-space:nowrap; text-align:right; }
+.pri-row .s { grid-column:2; font-size:10.5px; color:var(--ink-4); text-align:right; white-space:nowrap; }
+.pri-caiu { margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+.pri-caiu-t { display:flex; align-items:center; gap:7px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-4); margin-bottom:8px; }
+.pri-caiu-t i { color:var(--down); }
+.pri-c { display:flex; align-items:baseline; gap:9px; padding:7px 0; border-bottom:1px solid var(--line); cursor:pointer; }
+.pri-c:last-of-type { border-bottom:0; }
+.pri-c:hover { background:var(--surface-2); }
+.pri-c .tk { font-family:var(--mono); font-size:13px; font-weight:700; color:var(--ink); flex:none; }
+.pri-c .nm { flex:1; min-width:0; font-size:11.5px; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pri-c b { font-family:var(--mono); font-size:13px; font-weight:700; color:var(--down); flex:none; }
+.pri-nota { margin-top:8px; font-size:10px; color:var(--ink-4); line-height:1.5; }
+@media (max-width:400px){ .pri-big { font-size:26px; } .pri-lb { font-size:11.5px; } }
 /* ── meta de renda ── */
 .pmeta-top { display:flex; align-items:center; gap:12px; margin-bottom:15px; }
 .pmeta-top .k { display:block; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-4); }
@@ -4025,18 +4006,10 @@ button.mp-cell:active { background:var(--surface-3); }
 .pmeta-tx b { color:var(--ink); font-weight:700; }
 
 /* ── seletor de janela do gráfico (12/24/36 meses) ── */
-.pseg { display:inline-flex; gap:2px; padding:3px; border-radius:10px; background:var(--surface-3); }
-.pseg-b { border:0; padding:5px 9px; border-radius:7px; background:transparent; color:var(--ink-3);
-  font-family:var(--mono); font-size:11px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent;
-  transition:background .18s var(--ease), color .18s var(--ease); }
-.pseg-b:hover:not(.off):not(.on) { color:var(--ink); }
-.pseg-b.on { background:var(--surface); color:var(--brand); box-shadow:var(--sh-sm); }
-.pseg-b.off { opacity:.35; cursor:not-allowed; }
 .prov-cap { margin-top:11px; font-size:11px; line-height:1.55; color:var(--ink-4); }
 .prov-cap i { margin-right:5px; }
 .prov-cap strong { color:var(--ink-3); font-weight:600; }
 /* seletor de período: trilho cinza, pill branca com sombra e deslocamento suave */
-.pseg-b { transition:background .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease); }
 
 /* ── proventos do mês: calendário + lista ── */
 .pmon-tot { text-align:right; }
@@ -9112,6 +9085,68 @@ function prcBodyHTML(){
     ${btn}`;
 }
 function provAReceberHTML(){ return `<section class="prc prov-in" style="--d:40ms" id="prcBody">${prcBodyHTML()}</section>`; }
+/* 6) RISCO DA RENDA — a tela toda responde "quanto, de onde e quando eu recebo".
+   Este card responde a pergunta que falta: O QUE PODE DERRUBAR essa renda.
+   Tudo vem de pagamentos reais (provRankFull): concentração, impacto de perder o maior
+   pagador e quem já está pagando menos. Sem projeção. */
+function provRisco(rk, d){
+  rk = (rk||[]).filter(x=>x.tot>0);
+  if(!rk.length) return null;
+  const total = rk.reduce((s,x)=>s+x.tot,0);
+  const top = rk[0];
+  // quantos ativos somam metade da renda — concentração em uma medida que se explica sozinha
+  let acc=0, meia=0;
+  for(const x of rk){ acc+=x.tot; meia++; if(acc>=total*0.5) break; }
+  const semTop = (total-top.tot)/12;                       // média mensal sem o maior pagador
+  const quedaP = d.media>0 ? (1-semTop/d.media)*100 : 0;
+  // quem diminuiu: 6m recentes contra os 6m anteriores, só com pagamento real nos dois lados
+  const caiu = rk.filter(x=>x.trend==='down').sort((a,b)=>a.trendPct-b.trendPct).slice(0,3);
+  const nivel = rk.length===1 ? 'alto' : top.part>=50 ? 'alto' : top.part>=30 ? 'medio' : 'ok';
+  return { total, top, meia, semTop, quedaP, caiu, nivel, n:rk.length,
+           topo: rk.slice(0,4), resto: rk.slice(4).reduce((s,x)=>s+x.tot,0) };
+}
+function provRiscoCard(rk, d){
+  const r=provRisco(rk, d);
+  if(!r) return '';
+  const COR={alto:'var(--down)', medio:'var(--warn)', ok:'var(--up)'};
+  const BG ={alto:'var(--down-l)', medio:'var(--warn-l)', ok:'var(--up-l)'};
+  const TXT={alto:'concentrada', medio:'atenção', ok:'distribuída'};
+  const cor=COR[r.nivel], seg=['var(--brand)','color-mix(in srgb, var(--brand) 55%, transparent)','var(--gold)','var(--ink-3)'];
+  const barra = r.topo.map((x,i)=>`<i style="width:${(x.tot/r.total*100).toFixed(1)}%;background:${seg[i]||'var(--ink-4)'}" title="${x.tk}"></i>`).join('')
+    + (r.resto>0?`<i style="width:${(r.resto/r.total*100).toFixed(1)}%;background:var(--line-2)" title="demais"></i>`:'');
+  const leg = r.topo.map((x,i)=>`<span class="pri-lg"><i style="background:${seg[i]||'var(--ink-4)'}"></i>${x.tk} <b>${pc(x.part,0)}%</b></span>`).join('')
+    + (r.resto>0?`<span class="pri-lg"><i style="background:var(--line-2)"></i>demais <b>${pc(r.resto/r.total*100,0)}%</b></span>`:'');
+  return `<div class="card card-pad prov-in" style="--d:200ms">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:${BG[r.nivel]};color:${cor}"><i class="fa-solid fa-shield-halved"></i></span> Risco da sua renda</div><span class="card-sub">12 meses</span></div>
+    <div class="pri-top">
+      <div class="pri-big" style="color:${cor}">${pc(r.top.part,0)}%</div>
+      <div class="pri-lb">da sua renda vem de <strong>${r.top.tk}</strong><span class="pri-tag" style="color:${cor};background:${BG[r.nivel]}">${TXT[r.nivel]}</span></div>
+    </div>
+    <div class="pri-bar">${barra}</div>
+    <div class="pri-legs">${leg}</div>
+    <div class="pri-rows">
+      <div class="pri-row">
+        <span class="k"><i class="fa-solid fa-users-slash"></i> Se ${r.top.tk} parar de pagar</span>
+        <b class="v priv-blur">${brl(r.semTop)}/mês</b>
+        <span class="s" style="color:${r.quedaP>=30?'var(--down)':'var(--ink-4)'}">−${pc(r.quedaP,0)}% da sua média</span>
+      </div>
+      <div class="pri-row">
+        <span class="k"><i class="fa-solid fa-layer-group"></i> Metade da renda vem de</span>
+        <b class="v">${r.meia} ativo${r.meia===1?'':'s'}</b>
+        <span class="s">de ${r.n} que pagam</span>
+      </div>
+    </div>
+    ${r.caiu.length?`<div class="pri-caiu">
+      <div class="pri-caiu-t"><i class="fa-solid fa-arrow-trend-down"></i> Pagando menos que antes</div>
+      ${r.caiu.map(x=>`<div class="pri-c" onclick="quickView('${x.tk}')" role="button" tabindex="0"
+        onkeydown="if(event.key==='Enter'){quickView('${x.tk}')}"><span class="tk">${x.tk}</span><span class="nm">${esc(x.nm)}</span><b>${pc(x.trendPct,0)}%</b></div>`).join('')}
+      <div class="pri-nota">Últimos 6 meses contra os 6 anteriores, só com pagamento real nos dois períodos.</div>
+    </div>`:''}
+    ${illusNote(r.nivel==='ok'
+      ? 'Sua renda está distribuída: nenhum ativo sozinho responde por um terço do que você recebe.'
+      : `Renda concentrada em <strong>${r.top.tk}</strong>. Não é erro — é risco: se esse ativo cortar o provento, a queda vem inteira para você. Aportes nos demais pagadores diluem isso.`)}
+  </div>`;
+}
 /* 9) META DE RENDA — única casa da meta (getRendaMeta/updateRendaMeta) */
 function provMetaHTML(d, yoc){
   const meta=getRendaMeta(), media=d.media;
@@ -9129,81 +9164,6 @@ function provMetaHTML(d, yoc){
     <div id="metaProgTxt" class="pmeta-tx">${metaProgText(media, meta, yoc)}</div>
   </div>`;
 }
-/* 6) EVOLUÇÃO — gráfico com janela de 12/24/36 meses (limitada pela cobertura real) */
-function provChartCard(groups){
-  const cov=provCoverMonths(groups);
-  if(provRange!=='tudo' && provRange>12 && cov<=provRange-12) provRange=12;
-  const cd=provChartData(provRange); _provSerie=cd;
-  const n=cd.months.length;
-  if(!n) return `<div class="card card-pad prov-card prov-in" style="--d:160ms">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-column"></i></span> Evolução da renda</div></div>
-    ${emptyState('fa-chart-column','Sem proventos registrados ainda','Assim que o primeiro pagamento real for apurado, a evolução mês a mês aparece aqui.')}</div>`;
-
-  const PER=[[12,'12 meses'],[24,'24 meses'],[36,'36 meses']].concat(cov>36?[['tudo','Tudo']]:[]);
-  const opts=PER.map(([v,l])=>{
-    const off = v!=='tudo' && v>12 && cov<=v-12;
-    return `<option value="${v}"${v===provRange?' selected':''}${off?' disabled':''}>${l}${off?' (sem histórico)':''}</option>`;
-  }).join('');
-  // filtro por classe: só as que a carteira realmente tem (opção vazia é ruído)
-  const CHIP={fiis:'FIIs', acoes:'Ações', etfs:'ETFs', bdrs:'BDRs', stocks:'Stocks', cripto:'Cripto'};
-  const cls=[...new Set(portfolioByTicker().map(g=>provClasseKey(classKeyOf(g))))];
-  if(_pevCls!=='todos' && !cls.includes(_pevCls)) _pevCls='todos';
-  const fopts=[['todos','Todos']].concat(cls.map(c=>[c,CHIP[c]||c]))
-    .map(([v,l])=>`<option value="${v}"${v===_pevCls?' selected':''}>${l}</option>`).join('');
-
-  const scroll = n>13;                                  // 24m/36m/tudo: rolagem horizontal
-  const larg   = scroll ? (PEV_GUT+PEV_GAP+n*PEV_CAT+PEV_PAD) : 0;
-  const curto  = cd.nReal<3;
-  const temFut = cd.areceber.some(v=>v>0);
-  return `<div class="card prov-card prov-in pev-card" style="--d:160ms">
-    <div class="pev-t">Evolução de Proventos</div>
-    <div class="pev-ctrls">
-      <label class="pev-sel"><i class="fa-regular fa-calendar"></i>
-        <select id="provRangeSel" onchange="setProvRange(this.value)" aria-label="Período do gráfico">${opts}</select>
-        <i class="fa-solid fa-chevron-down pev-sel-c"></i></label>
-      ${cls.length>1?`<label class="pev-sel"><i class="fa-solid fa-sliders"></i>
-        <select id="provClsSel" onchange="setProvCls(this.value)" aria-label="Filtrar por classe">${fopts}</select>
-        <i class="fa-solid fa-chevron-down pev-sel-c"></i></label>`:''}
-    </div>
-    <!-- altura fixa: o scrub troca o texto sem mexer na altura do card -->
-    <div class="pev-valbox">
-      <div class="pev-val priv-blur" id="pevVal">${brl(pevUltimoFechado(cd))}</div>
-      <div class="pev-sub" id="pevSub">${pevSubPadrao(cd)}</div>
-    </div>
-    <div class="pev-plot">
-      <div class="pev-scroll${scroll?' is-scroll':''}" id="pevWrap">
-        <div class="pev-inner"${scroll?` style="width:${larg}px"`:''}>
-          <div class="pev-years" id="pevYears"></div>
-          <div class="pev-canvas"><canvas id="provMonthChart" role="img" aria-label="Proventos recebidos por mês"></canvas></div>
-        </div>
-      </div>
-      ${scroll?'<div class="pev-yaxis" id="pevY" aria-hidden="true"></div>':''}
-    </div>
-    <div class="pev-leg">
-      <span><i class="pl-dot"></i>Recebidos</span>
-      ${temFut?'<span><i class="pl-dot pl-fut"></i>A receber</span>':''}
-      ${curto?'':`<span><i class="pl-mm"></i>tendência ${cd.mmW}m</span>`}
-    </div>
-    ${curto?'<div class="prov-cap"><i class="fa-solid fa-circle-info"></i> Histórico curto — a média fica mais confiável a partir de 6 meses.</div>':''}
-    <div class="prov-cap" id="provChartCap">${provChartCap(cd)}</div>
-  </div>`;
-}
-function setProvCls(c){ _pevCls=c; setProvRange(provRange); }
-/* valor do último mês FECHADO (o mês em curso ainda pode receber mais — não serve de "último") */
-/* último mês FECHADO: nem o mês em curso (ainda pode receber mais) nem os meses à frente
-   (que são projeção) servem de "último" */
-function pevUltimoFechadoIx(cd){
-  const ms=cd.months; for(let i=ms.length-1;i>=0;i--) if(!ms[i].atual && !ms[i].fut) return i;
-  return -1;
-}
-function pevUltimoFechado(cd){ const i=pevUltimoFechadoIx(cd); return i<0?0:cd.recv[i]; }
-function pevSubPadrao(cd){
-  const i=pevUltimoFechadoIx(cd), ult=i<0?null:cd.months[i];
-  const jan = ult ? `${PROV_MES[ult.m]}/${String(ult.y).slice(2)} · ` : '';
-  const nReal = cd.months.filter(m=>!m.fut).length;      // a média não conta mês projetado
-  return `${jan}média ${nReal}m <b class="priv-blur">${brl(cd.media)}</b>`;
-}
-/* 2+5) PROVENTOS DO MÊS — calendário do mês + lista com logo, nome, valor, data e status */
 function provMonthCard(groups){
   const lst=provMonthAgenda(groups), now=new Date();
   const mesNome=PROV_MESL[now.getMonth()];
@@ -9396,7 +9356,7 @@ function viewProventos(){
   </section>
   ${provAReceberHTML()}
   ${provMetaHTML(d, yoc)}
-  ${provChartCard(groups)}
+  ${provRiscoCard(rk, d)}
   ${provPair(provMonthCard(groups), provDistCard(groups))}
   ${provRankCard(rk)}
   ${provHeatCard(groups)}
@@ -9405,119 +9365,7 @@ function viewProventos(){
 }
 function chartUnavail(c){ if(c) c.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; }
 /* ── gráfico de evolução: janela selecionável, sempre limitada ao histórico real ── */
-let provRange=12, _provSerie=null, _provMetaCtx={ media:0, yoc:null };
-let _pevHover=null;                       // índice sob o dedo (scrub) — null = estado padrão
-let _pevCls='todos';                      // filtro de classe do gráfico de evolução
-function pevGroups(){ const g=portfolioByTicker();
-  return _pevCls==='todos' ? g : g.filter(x=>provClasseKey(classKeyOf(x))===_pevCls); }
-/* meses FUTUROS com provento já anunciado (ou próximo ciclo apurado), somados por mês.
-   Mesma fonte da lista "Proventos a receber" — os dois números batem. */
-function pevFuturos(groups){
-  const out=new Map();
-  provAReceber(groups).forEach(it=>{ const k=it.pay.getFullYear()+'-'+it.pay.getMonth();
-    if(!out.has(k)) out.set(k,{ y:it.pay.getFullYear(), m:it.pay.getMonth(), val:0 });
-    out.get(k).val+=it.liquido; });
-  return [...out.values()].sort((a,b)=> a.y-b.y || a.m-b.m);
-}
-const PEV_CAT=24;                         // largura da faixa de cada mês no modo rolagem
-const PEV_FUT=3;                          // meses à frente que o gráfico projeta
-/* geometria fixa do gráfico (spec de layout): 44px de eixo Y + 8px até a 1ª barra,
-   16px de folga na direita, faixa de meses de 20px e 16px de respiro para o rótulo de estouro.
-   A área de plotagem fica com exatamente 180px. */
-const PEV_GUT=44, PEV_GAP=8, PEV_PAD=16, PEV_XH=20, PEV_TOP=16, PEV_PLOT=180;
-/* dados do gráfico de evolução.
-   A média móvel é calculada sobre o histórico INTEIRO e só depois recortada para a janela — assim
-   a curva de 12m existe mesmo na visão de 12 meses (calculá-la só dentro da janela daria 1 ponto). */
-function provChartData(n){
-  const gs=pevGroups();
-  const full=provMonthSeries(120, gs);
-  const fv=full.months.map(m=>m.val);
-  const med=a=>{ const s=a.slice().sort((x,y)=>x-y), k=s.length;
-    return k%2 ? s[(k-1)/2] : (s[k/2-1]+s[k/2])/2; };
-  const mmFull=fv.map((_,i)=>{ if(i+1<3) return null;          // <3 meses não sustenta tendência
-    const w=Math.min(12,i+1); return med(fv.slice(i-w+1,i+1)); });
-  const take = (n==='tudo') ? full.months.length : Math.min(n, full.months.length);
-  const st   = Math.max(0, full.months.length-take);
-  const months=full.months.slice(st).map(m=>({...m})), recv=fv.slice(st), mm=mmFull.slice(st);
-  // "A RECEBER": o que ainda vai entrar. No mês em curso empilha sobre o já recebido; nos meses
-  // à frente é a barra inteira. Um mês só entra no futuro se tem pagamento real na frente.
-  const fut=pevFuturos(gs);
-  const areceber=months.map(m=>{ const f=fut.find(x=>x.y===m.y&&x.m===m.m); return f?f.val:0; });
-  const ultimo=months.length?months[months.length-1]:null;
-  if(ultimo){
-    const k0=ultimo.y*12+ultimo.m;
-    // horizonte curto: um pagamento anunciado para daqui a 6 meses não pertence a um gráfico de
-    // "12 meses" — ele vive na lista Proventos a receber, que tem navegação por mês.
-    const alvo=fut.filter(f=>{ const k=f.y*12+f.m; return k>k0 && k<=k0+PEV_FUT; });
-    if(alvo.length){
-      const fim=Math.max(...alvo.map(f=>f.y*12+f.m));
-      // preenche TODOS os meses até lá, inclusive os vazios: sem isso o eixo pula meses e as
-      // barras ficam lado a lado como se fossem consecutivas — o gráfico mentiria o tempo.
-      for(let k=k0+1; k<=fim; k++){
-        const y=Math.floor(k/12), m=k%12, f=alvo.find(x=>x.y===y&&x.m===m);
-        months.push({ y, m, val:0, n:0, cov:true, atual:false, fut:true });
-        recv.push(0); areceber.push(f?f.val:0); mm.push(null);
-      }
-    }
-  }
-  const vals=recv.map((v,i)=>v+areceber[i]);                    // total do mês (para escala e scrub)
-  // a média do período só considera meses REALIZADOS — projeção não entra em média
-  const rl=months.map((m,i)=>m.fut?null:recv[i]).filter(v=>v!=null);
-  const media = rl.length ? rl.reduce((a,b)=>a+b,0)/rl.length : 0;
-  // TETO: um mês excepcional não pode achatar os outros contra a base.
-  const pos=vals.filter(v=>v>0).slice().sort((a,b)=>a-b);
-  let cap=null;
-  if(pos.length>=6){
-    // O p95 puro só funciona quando os outliers são menos de 5% da amostra — com 2 meses
-    // excepcionais em 11, o próprio p95 É o outlier e o teto nunca cortaria nada. Por isso o teto
-    // é o MENOR entre o p95 e a cerca de Tukey (Q3+1,5·IQR), que é robusta a vários outliers,
-    // com piso em Q3 para nunca cortar um mês normal.
-    const q=(p)=>pos[Math.min(pos.length-1, Math.max(0, Math.floor(p*(pos.length-1))))];
-    const q1=q(0.25), q3=q(0.75), iqr=q3-q1;
-    const teto=Math.min(q(0.95), Math.max(q3+1.5*iqr, q3*1.15));
-    if(teto>0 && pos[pos.length-1] > teto*1.35) cap=teto;
-  }
-  // a média móvel precisa CABER no teto: cortada, some justamente a leitura de tendência
-  const linhas=mm.filter(v=>v!=null);
-  if(cap!=null && linhas.length) cap=Math.max(cap, Math.max(...linhas)*1.05);
-  const longo=months.length>13;
-  return { s:{ months, cortados:full.cortados, cover:full.cover, pedidos:(n==='tudo'?months.length:n) },
-    months, vals, recv, areceber, mm, media, cap, longo, range:n,
-    nReal: months.filter(m=>!m.fut).length,             // meses REALIZADOS (o futuro não conta
-                                                        // para média, para "histórico curto" nem para a média móvel)
-    mmW: Math.min(12, months.filter(m=>!m.fut).length),
-    labels: months.map(m=> longo ? PROV_MES[m.m]+'/'+String(m.y).slice(2) : PROV_MES[m.m]) };
-}
-/* escala do eixo Y: 3 passos iguais (4 marcas com o zero), sempre em número redondo.
-   Sem isso o Chart.js escreve o teto cru lá em cima ("R$ 488", "R$ 865"). */
-function pevScaleY(need){
-  if(!(need>0)) return { max:100, step:100/3 };
-  const alvo=need/3, e=Math.pow(10, Math.floor(Math.log10(alvo)));
-  const passos=[1,2,2.5,5,10];
-  const step=(passos.find(p=>alvo<=p*e+1e-9)||10)*e;
-  return { max:step*3, step };
-}
-/* rótulo curto de dinheiro no eixo/estouro: R$ 0 · R$ 1k · R$ 2,9k */
-function pevShort(v){ return v>=1000 ? 'R$ '+(v/1000).toFixed(v%1000?1:0).replace('.',',')+'k' : 'R$ '+Math.round(v); }
-function provChartCap(cd){
-  const ms=cd.s.months.filter(m=>!m.fut), n=ms.length;   // mês projetado não é "histórico real"
-  if(!n) return '';
-  const ini=`${PROV_MESL[ms[0].m]} de ${ms[0].y}`;
-  const curto = cd.s.pedidos>n;
-  return `<i class="fa-solid fa-circle-info"></i> ${n} ${n===1?'mês':'meses'} de histórico real, desde ${ini}.` +
-    (curto?` Não temos ${cd.s.pedidos} meses de dado para você — mostramos só o período coberto, sem inventar meses zerados.`:'');
-}
-/* trocar o período reconstrói o card inteiro: a largura do trilho (scroll) e a legenda mudam
-   junto com a série. A ALTURA do card é fixa por CSS, então não há layout shift. */
-function setProvRange(n){
-  provRange = (n==='tudo') ? 'tudo' : (+n||12);      // o <select> devolve string
-  const card=document.querySelector('.prov-card'); if(!card) return initProventosCharts();
-  if(charts.provMonth){ try{ charts.provMonth.destroy(); }catch(e){} delete charts.provMonth; }
-  _pevHover=null;
-  card.outerHTML=provChartCard();
-  initProventosCharts();
-  if(typeof applyPriv==='function') applyPriv();
-}
+let _provMetaCtx={ media:0, yoc:null };   // contexto do slider da Meta de Renda
 /* contagem animada dos números-chave (respeita reduced-motion e a máscara de privacidade) */
 function provCountUp(){
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -9532,187 +9380,10 @@ function provCountUp(){
       el.textContent=fmt(target*e); if(t<1) requestAnimationFrame(tick); })(performance.now());
   });
 }
-/* plugin do gráfico de evolução: separadores de ano, topo serrilhado do outlier, contorno
-   tracejado do mês em curso e a linha vertical do scrub. Tudo o que o Chart.js não faz nativo. */
-const pevPlugin={
-  id:'pev',
-  beforeDatasetsDraw(chart){
-    const cd=_provSerie; if(!cd) return;
-    const {ctx, chartArea:a, scales:{x}}=chart; if(!a) return;
-    ctx.save();
-    // dentro do gráfico o ano é SÓ uma linha; o rótulo vive na faixa de 16px acima (HTML)
-    ctx.strokeStyle=cssVar('--line-2'); ctx.lineWidth=1;
-    cd.months.forEach((m,i)=>{
-      if(m.m!==0 || i===0) return;
-      const px=Math.round(x.getPixelForValue(i)-(x.width/cd.months.length)/2)+.5;
-      ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke();
-    });
-    ctx.restore();
-  },
-  afterDatasetsDraw(chart){
-    const cd=_provSerie; if(!cd) return;
-    const {ctx, chartArea:a, scales:{x,y}}=chart; if(!a) return;
-    const br=cssVar('--brand'), ink3=cssVar('--ink-3');
-    const priv=(typeof privOn==='function'&&privOn());
-    const larg=Math.min(PEV_CAT, (x.width/cd.months.length)*.7);
-    ctx.save();
-    cd.months.forEach((m,i)=>{
-      const cx=x.getPixelForValue(i), v=cd.vals[i];
-      // mês sem provento: barra fantasma de 3px, para o eixo não ter buraco
-      if(!v){ ctx.fillStyle=cssVar('--line-2'); ctx.fillRect(cx-larg/2, a.bottom-3, larg, 3); return; }
-      // estouro do teto: serrilha no topo + valor real 6px acima, para não mentir a altura
-      if(v>y.max){
-        const x0=cx-larg/2, yy=a.top+5, step=larg/4;
-        ctx.strokeStyle=cssVar('--surface'); ctx.lineWidth=3; ctx.lineJoin='round';
-        ctx.beginPath(); ctx.moveTo(x0-1, yy);
-        for(let k=0;k<4;k++){ ctx.lineTo(x0+step*(k+0.5), yy-3.5); ctx.lineTo(x0+step*(k+1), yy+1); }
-        ctx.stroke();
-        if(!priv){ ctx.fillStyle=ink3; ctx.font='700 10px '+getComputedStyle(document.body).fontFamily;
-          ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(pevShort(v), cx, a.top-6); }
-      }
-    });
-    // linha do scrub
-    if(_pevHover!=null && cd.months[_pevHover]){
-      const cx=x.getPixelForValue(_pevHover);
-      ctx.strokeStyle=br+'4d'; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(cx, a.top); ctx.lineTo(cx, a.bottom); ctx.stroke();
-    }
-    ctx.restore();
-  }
-};
-/* cabeçalho que troca com o dedo (substitui a tooltip sobreposta) */
-function pevScrub(i){
-  const cd=_provSerie; if(!cd) return;
-  const val=document.getElementById('pevVal'), sub=document.getElementById('pevSub');
-  if(!val||!sub) return;
-  if(i==null || !cd.months[i]){
-    val.className='pev-val priv-blur'; val.textContent=brl(pevUltimoFechado(cd));
-    sub.innerHTML=pevSubPadrao(cd);
-  } else {
-    const m=cd.months[i], v=cd.vals[i], ant=i>0?cd.vals[i-1]:null;
-    val.className='pev-val priv-blur'; val.textContent = v>0?brl(v):'sem provento';
-    let chip='';
-    if(ant!=null && ant>0 && v>0 && !m.fut){ const d=(v/ant-1)*100, up=d>=0;
-      chip=`<span class="pev-chip ${up?'up':'down'}">${up?'▲':'▼'} ${pc(Math.abs(d),1)}%</span>`; }
-    const nota = m.fut ? ' <em>(a receber)</em>' : (m.atual ? ' <em>(em curso)</em>' : '');
-    sub.innerHTML=`${PROV_MESL[m.m]} de ${m.y}${nota} ${chip}`;
-  }
-  if(typeof applyPriv==='function') applyPriv();
-}
-function pevBind(chart){
-  const cv=chart.canvas, wrap=document.getElementById('pevWrap');
-  if(!cv || cv._pevBound) return; cv._pevBound=true;
-  const idxAt=e=>{ const r=cv.getBoundingClientRect(); const px=(e.clientX-r.left)*(cv.width/window.devicePixelRatio/r.width);
-    const x=chart.scales.x; if(!x) return null;
-    let best=null, bd=1e9;
-    (_provSerie?_provSerie.months:[]).forEach((_,i)=>{ const d=Math.abs(x.getPixelForValue(i)-px); if(d<bd){bd=d;best=i;} });
-    return bd<=PEV_CAT ? best : null; };
-  const move=e=>{ const i=idxAt(e); if(i===_pevHover) return; _pevHover=i; pevScrub(i); chart.update('none'); };
-  const out =()=>{ if(_pevHover==null) return; _pevHover=null; pevScrub(null); chart.update('none'); };
-  cv.addEventListener('pointermove', move);
-  cv.addEventListener('pointerdown', move);
-  cv.addEventListener('pointerup', out);
-  cv.addEventListener('pointercancel', out);
-  cv.addEventListener('pointerleave', out);
-  if(wrap) wrap.addEventListener('scroll', out, {passive:true});
-}
 function initProventosCharts(){
-  const c1=$('#provMonthChart');
-  if(charts.provAsset){ try{ charts.provAsset.destroy(); }catch(e){} delete charts.provAsset; }
+  ['provAsset','provMonth'].forEach(k=>{ if(charts[k]){ try{ charts[k].destroy(); }catch(e){} delete charts[k]; } });
   provCountUp();
   initProvClassChart();
-  if(!(c1 && HAS_CHART)){ chartUnavail(c1); return; }
-  if(charts.provMonth) charts.provMonth.destroy();
-  _pevHover=null;
-  const br=cssVar('--brand'), ink3=cssVar('--ink-3'), ink4=cssVar('--ink-4');
-  const cd=provChartData(provRange); _provSerie=cd;
-  const n=cd.months.length;
-  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  // privacidade: texto desenhado no <canvas> é inalcançável pelo applyPriv() (que só varre nós de
-  // texto), então o eixo precisa se mascarar sozinho — mesmo padrão do wspark.
-  const _priv=(typeof privOn==='function'&&privOn());
-  const fmtY=v=> _priv ? '' : pevShort(v);
-  const ghost=cssVar('--line-2'), surf=cssVar('--surface');
-  const dimOf = i => (_pevHover!=null && _pevHover!==i);        // scrub: as outras caem para 35%
-  const barRec = ctx => { const i=ctx.dataIndex;
-    if(!cd.recv[i]) return 'transparent';
-    return br + (dimOf(i)?'59':'ff'); };
-  const barFut = ctx => { const i=ctx.dataIndex;
-    if(!cd.areceber[i]) return 'transparent';
-    return br + (dimOf(i)?'26':'40'); };
-  // ESCALA: 4 marcas com intervalo igual (0 · s · 2s · 3s) e teto 16% acima do necessário,
-  // o que garante ao menos 24px livres entre a barra mais alta e o topo da área de plotagem.
-  const need = (cd.cap!=null ? cd.cap : Math.max(0,...cd.vals)) * 1.16;
-  const sc = pevScaleY(need);
-  charts.provMonth=new Chart(c1,{ type:'bar', plugins:[pevPlugin], data:{ labels:cd.labels, datasets:[
-      { type:'bar', label:'Recebidos', data:cd.recv, backgroundColor:barRec, hoverBackgroundColor:barRec,
-        stack:'p', borderRadius:0, borderSkipped:false, categoryPercentage:1, barPercentage:.7,
-        maxBarThickness:PEV_CAT, minBarLength:0, order:1 },
-      { type:'bar', label:'A receber', data:cd.areceber, backgroundColor:barFut, hoverBackgroundColor:barFut,
-        stack:'p', borderRadius:{topLeft:4,topRight:4,bottomLeft:0,bottomRight:0}, borderSkipped:false,
-        categoryPercentage:1, barPercentage:.7, maxBarThickness:PEV_CAT, minBarLength:0, order:1 },
-      // halo: contorno claro por baixo da linha, para ela não sumir sobre as barras
-      { type:'line', label:'_halo', data:cd.nReal<3?[]:cd.mm, borderColor:surf, borderWidth:4,
-        pointRadius:0, pointHoverRadius:0, pointHitRadius:0, tension:.35, spanGaps:true, order:2 },
-      { type:'line', label:'tendência', data:cd.nReal<3?[]:cd.mm, borderColor:br+'99', borderWidth:2,
-        pointRadius:0, pointHoverRadius:0, pointHitRadius:0, tension:.35, spanGaps:true, order:3 } ] },
-    options:{ responsive:true, maintainAspectRatio:false,
-      layout:{ padding:{ top:PEV_TOP, right:PEV_PAD, left:0, bottom:0 } },
-      animation: reduce?false:{ duration:400, easing:'easeOutCubic', delay:c=>c.type==='data'&&c.mode==='default'?c.dataIndex*12:0 },
-      interaction:{ mode:'index', intersect:false },
-      plugins:{ legend:{display:false}, tooltip:{enabled:false} },   // a leitura vive no cabeçalho
-      scales:{ x:{ type:'category', stacked:true, offset:true, grid:{display:false}, border:{display:false},
-          // faixa dos meses: 20px fixos. A fonte e o padding abaixo mantêm a altura NATURAL
-          // menor que isso — forçar para menos que o natural corta o texto pela metade.
-          afterFit:s=>{ s.height=Math.max(s.height, PEV_XH); },
-          ticks:{ color:ink3, font:{size:10,weight:'500'}, autoSkip:false, maxRotation:0, padding:2,
-            // função normal (não arrow): precisa do `this` da escala para saber a largura da fatia
-            // AQUI, durante a construção — charts.provMonth ainda não existe neste momento.
-            callback:function(v,i){ const m=cd.months[i]; if(!m) return '';
-              const fatia=(this&&this.width)?this.width/cd.months.length:99;
-              const alt = cd.longo || fatia<22;              // sem espaço p/ todos → meses alternados
-              if(!alt) return PROV_MES[m.m];
-              return (i%2===(cd.months.length-1)%2) ? (cd.longo?PROV_MES[m.m]+'/'+String(m.y).slice(2):PROV_MES[m.m]) : ''; } } },
-        y:{ beginAtZero:true, stacked:true, min:0, max:sc.max,
-            afterFit:s=>{ s.width=PEV_GUT+PEV_GAP; },                // 44px de rótulo + 8px até a barra
-            afterBuildTicks:s=>{ s.ticks=[0,1,2,3].map(k=>({value:k*sc.step})); },
-            grid:{color:cssVar('--line'),drawTicks:false}, border:{display:false},
-            ticks:{color:(n>13?'transparent':ink4),font:{size:11},padding:PEV_GAP,callback:fmtY} } } } });
-  // A faixa dos meses tem altura mínima de 20px, mas pode precisar de mais para o texto não
-  // cortar. Ajusta a altura do canvas ao que ela realmente ocupou, para a ÁREA DE PLOTAGEM
-  // ficar em 180px exatos em qualquer largura.
-  (function(){ const ch=charts.provMonth, box=c1.parentElement;
-    const xh=ch.scales.x?ch.scales.x.height:PEV_XH;
-    const alvo=PEV_TOP+PEV_PLOT+Math.ceil(xh);
-    if(box && Math.abs(box.clientHeight-alvo)>0.5){ box.style.height=alvo+'px'; ch.resize(); }
-  })();
-  pevBind(charts.provMonth);
-  pevYAxis(charts.provMonth);
-  const wrap=document.getElementById('pevWrap');
-  if(wrap && wrap.classList.contains('is-scroll')) wrap.scrollLeft=wrap.scrollWidth;   // ancora no mês mais recente
-}
-/* eixo Y fixo: no modo scroll o eixo desenhado no canvas rolaria para fora da tela junto com as
-   barras. Aqui ele vira um overlay HTML preso à esquerda, alinhado pelos pixels da escala real. */
-function pevYAxis(chart){
-  const box=document.getElementById('pevY');
-  if(box){
-    const y=chart.scales.y, a=chart.chartArea;
-    const priv=(typeof privOn==='function'&&privOn());
-    box.innerHTML = (!y||!a||priv) ? '' : y.ticks.map(t=>{
-      const py=y.getPixelForValue(t.value);
-      return `<span style="top:${py.toFixed(1)}px">${pevShort(t.value)}</span>`;
-    }).join('');
-  }
-  // faixa do ano: rótulo na tira de 16px acima do gráfico, alinhado à linha divisória
-  const yb=document.getElementById('pevYears'); const cd=_provSerie;
-  if(yb && cd){
-    const x=chart.scales.x;
-    yb.innerHTML = !x ? '' : cd.months.map((m,i)=>{
-      if(m.m!==0 || i===0) return '';
-      const px=x.getPixelForValue(i)-(x.width/cd.months.length)/2;
-      return `<span style="left:${(px+4).toFixed(1)}px">${m.y}</span>`;
-    }).join('');
-  }
 }
 /* donut da distribuição por classe */
 function initProvClassChart(){
