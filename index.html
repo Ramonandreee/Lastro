@@ -3783,6 +3783,32 @@ button.mp-cell:active { background:var(--surface-3); }
 .cmp-x:hover { background:var(--down-l); color:var(--down); }
 .sel-locked.cmp-slot { display:inline-flex; align-items:center; justify-content:center; gap:8px; border-style:dashed; }
 @media (max-width:640px){ .cmp-slot { flex:1 1 100%; } }
+/* comparador: legenda (dot na cor do ativo), veredito, mini-barras transpostas e gráfico */
+.cmp-dot { width:9px; height:9px; border-radius:50%; flex:none; box-shadow:0 0 0 2px color-mix(in srgb,var(--surface) 70%,transparent); }
+.cmp-verdict { display:flex; align-items:center; gap:11px; padding:14px 16px; margin-bottom:14px; border-radius:var(--r); background:var(--brand-l); border:1px solid color-mix(in srgb,var(--brand) 20%,transparent); font-size:13px; line-height:1.45; color:var(--ink-2); }
+.cmp-verdict .cv-logo { flex:none; }
+.cmp-verdict b { color:var(--ink); font-weight:700; }
+.cmp-verdict .cv-dis { color:var(--ink-3); }
+.cmp-mrow { padding:14px 0 15px; border-top:1px solid var(--line); }
+.cmp-mrow:first-of-type { border-top:none; padding-top:2px; }
+.cmp-mrow-h { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:600; color:var(--ink-3); margin-bottom:11px; }
+.cmp-mbar { display:grid; grid-template-columns:46px 1fr auto; align-items:center; gap:11px; padding:4px 0; }
+.cmp-mbar .tk { font-family:var(--mono); font-size:12px; font-weight:500; color:var(--ink-3); white-space:nowrap; }
+.cmp-mbar .val { font-family:var(--mono); font-size:13px; font-weight:600; color:var(--ink); text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.cmp-mbar .val .muted { color:var(--ink-3); font-weight:500; }
+.cmp-mbar.best .tk, .cmp-mbar.best .val { color:var(--ink); font-weight:700; }
+.cmp-mbar .cmp-ok { color:var(--up); margin-left:5px; font-size:11px; }
+.cmp-mbar-track { min-width:0; }
+.cmp-mbar-empty { height:6px; }
+.cmp-mbar-na .gb-bar { background:repeating-linear-gradient(90deg, var(--surface-3) 0 5px, transparent 5px 9px); }
+.cmp-chart-card { margin-top:16px; }
+.cmp-chart-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.cmp-chart-ttl { font-size:13.5px; font-weight:700; color:var(--ink); }
+.cmp-per { display:flex; gap:2px; background:var(--surface-3); border-radius:9px; padding:3px; flex:none; }
+.cmp-per .wper { flex:0 0 auto; padding:4px 12px; }
+.cmp-chart-wrap { position:relative; height:220px; }
+.cmp-chart-note { margin-top:12px; font-size:11.5px; color:var(--ink-3); line-height:1.5; }
+.cmp-chart-note i { color:var(--ink-4); margin-right:5px; }
 /* extrato de proventos */
 .pex-total { text-align:right; }
 .pex-total-v { font-family:var(--mono); font-size:18px; font-weight:700; color:var(--up); }
@@ -9479,7 +9505,7 @@ function cmpSlot(i){
   if(i>=cap) return `<button class="sel sel-locked cmp-slot" onclick="upsell()" title="Premium"><i class="fa-solid fa-lock" style="font-size:10px"></i> + Ativo ${i+1} <span class="pro-tag">Premium</span></button>`;
   const tk=cmpSel[i];
   if(tk){ const lk=assetLookup(tk), k=lk?lk.k:'acoes', a=lk?lk.a:{};
-    return `<div class="cmp-chip cmp-slot">${assetLogo(tk,k,'sm')}<div class="cmp-chip-id"><div class="cmp-chip-tk">${tk}</div><div class="cmp-chip-nm">${esc(a.nm||'')}</div></div><button class="cmp-x" title="Remover" onclick="clearCmp(${i})"><i class="fa-solid fa-xmark"></i></button></div>`;
+    return `<div class="cmp-chip cmp-slot"><span class="cmp-dot" style="background:${cmpColor(i)}"></span>${assetLogo(tk,k,'sm')}<div class="cmp-chip-id"><div class="cmp-chip-tk">${tk}</div><div class="cmp-chip-nm">${esc(a.nm||'')}</div></div><button class="cmp-x" title="Remover" onclick="clearCmp(${i})"><i class="fa-solid fa-xmark"></i></button></div>`;
   }
   return `<div class="fld-rel cmp-slot"><input id="cmpIn${i}" class="cmp-input" placeholder="+ Ativo ${i+1}" autocomplete="off" oninput="this.value=this.value.toUpperCase();cmpSuggest(${i})" onfocus="cmpSuggest(${i})" onblur="cmpHide(${i})" onkeydown="cmpKey(event,${i})"><div id="cmpSug${i}" class="pos-sug"></div></div>`;
 }
@@ -9489,7 +9515,7 @@ function viewComparador(){
   <div class="sec-title">Comparador de ativos</div>
   <div class="sec-desc">Compare ativos lado a lado pelos principais fundamentos e pelo Score Lastro. ${pro?'Até 4 ativos.':'No plano Gratuito você compara 2 — faça upgrade para 4.'}</div>
   <div class="filters cmp-filters">${[0,1,2,3].map(cmpSlot).join('')}</div>
-  <div class="card card-pad"><div id="cmpBody"></div></div>`;
+  <div id="cmpBody"></div>`;
 }
 let _cmpSug=[], _cmpIdx=-1;
 function cmpSuggest(i){
@@ -9516,41 +9542,179 @@ function cmpKey(e,i){ const box=$('#cmpSug'+i), open=box&&box.classList.contains
 function pickCmp(i,tk){ setCmp(i,tk); }
 function clearCmp(i){ cmpSel.splice(i,1); cmpSel=cmpSel.filter(Boolean); render('comparador'); }
 function setCmp(i,v){ if(i>=PLAN_LIMITS.comparador && !isPro()){ upsell(); return; } cmpSel[i]=v||null; cmpSel=cmpSel.filter(Boolean); render('comparador'); }
+// paleta fixa de 4 cores — reusada na legenda (chips), nas mini-barras e no gráfico
+const CMP_COLORS=['var(--brand)','#2FB39A','#E0A43B','#8B6DEF'];
+function cmpColor(i){ return CMP_COLORS[i%CMP_COLORS.length]; }
+let _cmpHistKey='', _cmpHistAt=0, cmpPeriod='6M';
+
 function initComparador(){
   const cap = isPro()?4:PLAN_LIMITS.comparador;
   if(cmpSel.length>cap) cmpSel = cmpSel.slice(0,cap);
   ['cmp0','cmp1','cmp2','cmp3'].forEach((id,i)=>{ const el=$('#'+id); if(el&&cmpSel[i]) el.value=cmpSel[i]; });
   const items = cmpSel.slice(0,cap).map(tk=>ALL_ASSETS_FLAT().find(a=>a.tk===tk)).filter(Boolean);
   const body = $('#cmpBody'); if(!body) return;
-  if(items.length<2){ body.innerHTML=emptyState('fa-scale-balanced','Compare lado a lado','Selecione ao menos dois ativos acima para ver fundamentos, Score Lastro e o melhor valor de cada indicador destacado.'); return; }
+  // initComparador roda várias vezes (async de loadAssetLive reinvoca) — descarta a instância antes de rebuildar o DOM
+  if(charts.cmpPerf){ try{ charts.cmpPerf.destroy(); }catch(e){} charts.cmpPerf=null; }
+  if(items.length<2){ body.innerHTML=`<div class="card card-pad">${emptyState('fa-scale-balanced','Compare lado a lado','Selecione ao menos dois ativos acima para ver fundamentos, Score Lastro, o melhor valor de cada indicador e a performance no período.')}</div>`; return; }
   // busca fundamentos reais (brapi) dos ativos que ainda não têm — re-renderiza ao chegar
   let loading=false;
   cmpSel.slice(0,cap).forEach(tk=>{ const lk=assetLookup(tk); if(lk && LIVE_ASSET_KINDS.has(lk.k) && !ASSET_LIVE[tk]){ loading=true; loadAssetLive(tk).then(d=>{ if(d && currentView==='comparador') initComparador(); }); } });
   const anyFii = items.some(a=>{ const lk=assetLookup(a.tk); return lk&&lk.k==='fiis'; });
-  const dash = '<span class="muted">—</span>';
-  const numv = v => (typeof v==='number'&&isFinite(v)) ? v : null;
+  const num = v => (typeof v==='number'&&isFinite(v)) ? v : null;
+  // dir: 'max' | 'min' | 'none' (none = não é bom/ruim, sem barra de ranking).
+  // band: elegível a "melhor"/líder só se isFinite, dentro da banda e direcionalmente válido.
   const metrics = [
-    ['Score Lastro', a=>{ const s=ensureScore(a); return s!=null?`<span style="color:${scoreColor(s)};font-weight:600">${s}</span>`:dash; }, a=>numv(ensureScore(a)), true],
-    ['Cotação', a=>brl(a.px), a=>numv(a.px)!=null?-a.px:null, false],
-    ['DY 12M', a=> a.dy!=null?pc(a.dy,1)+'%':dash, a=>numv(a.dy), true],
-    ['P/L', a=> a.pl!=null?pc(a.pl,1)+'x':dash, a=>numv(a.pl)!=null?-a.pl:null, true],
-    ['P/VP', a=> a.pvp!=null?pc(a.pvp,2):dash, a=>numv(a.pvp)!=null?-a.pvp:null, true],
-    ['ROE', a=>a.roe!=null?pc(a.roe,1)+'%':dash, a=>numv(a.roe), true],
-    ['Margem líq.', a=>a.mgl!=null?pc(a.mgl,1)+'%':dash, a=>numv(a.mgl), true],
+    { key:'score', label:'Score Lastro', term:'scoreLastro', dir:'max', get:a=>num(ensureScore(a)),
+      band:v=>v>=0&&v<=100, fill:v=>v/100,
+      fmt:(a,v)=> v==null?'—':`<span style="color:${scoreColor(v)}">${v}</span>` },
+    { key:'px', label:'Cotação', dir:'none', get:a=>num(a.px), fmt:(a,v)=> v==null?'—':brl(v) },
+    { key:'dy', label:'DY 12M', dir:'max', get:a=>num(a.dy), band:v=>v>=0&&v<=30, fmt:(a,v)=> v==null?'—':pc(v,1)+'%' },
+    { key:'pl', label:'P/L', dir:'min', get:a=>num(a.pl), band:v=>v>0&&v<=200, fmt:(a,v)=> v==null?'—':pc(v,1)+'x' },
+    { key:'pvp', label:'P/VP', dir:'min', get:a=>num(a.pvp), band:v=>v>0&&v<=20, fmt:(a,v)=> v==null?'—':pc(v,2) },
+    { key:'roe', label:'ROE', dir:'max', get:a=>num(a.roe), band:v=>v>=-50&&v<=80, fmt:(a,v)=> v==null?'—':pc(v,1)+'%' },
+    { key:'mgl', label:'Margem líq.', dir:'max', get:a=>num(a.mgl), band:v=>v>=-50&&v<=100,
+      fmt:(a,v,ok)=> v==null?'—' : ok?pc(v,1)+'%' : `<span class="muted">${termLabel('margem-holding', pc(v,1)+'% *')}</span>` },
     ...(anyFii?[
-      ['Dividendo/mês', a=>a.div?brl(a.div):dash, a=>numv(a.div), true],
-      ['Vacância', a=>a.vac!=null?pc(a.vac,1)+'%':dash, a=>a.vac!=null?-a.vac:null, true],
+      { key:'div', label:'Dividendo/mês', dir:'max', get:a=>num(a.div), band:v=>v>=0, fmt:(a,v)=> v==null?'—':brl(v) },
+      { key:'vac', label:'Vacância', dir:'min', get:a=>num(a.vac), band:v=>v>=0&&v<=100, fmt:(a,v)=> v==null?'—':pc(v,1)+'%' },
     ]:[]),
-    ['Variação hoje', a=>`<span class="${a.var>=0?'up':'down'}">${a.var>=0?'+':''}${pc(a.var)}%</span>`, a=>numv(a.var), false],
+    { key:'var', label:'Variação hoje', dir:'none', get:a=>num(a.var),
+      fmt:(a,v)=> v==null?'—':`<span class="${v>=0?'up':'down'}">${v>=0?'+':''}${pc(v)}%</span>` },
   ];
-  const head = `<tr><th class="cell-left">Indicador</th>${items.map(a=>`<th style="text-align:right">${a.tk}</th>`).join('')}</tr>`;
-  const rows = metrics.map(([label,fmt,score,hl])=>{
-    let best=null;
-    if(hl){ const vals=items.map(score); const valid=vals.filter(v=>typeof v==='number'&&isFinite(v)); if(valid.length){ const mx=Math.max(...valid); best=vals.indexOf(mx); } }
-    return `<tr><td class="cell-left muted">${label}</td>${items.map((a,i)=>`<td class="mono" style="${i===best?'background:var(--brand-l);font-weight:600;border-radius:6px':''}">${fmt(a)}</td>`).join('')}</tr>`;
+
+  const wins = items.map(()=>0);
+  let contests = 0;   // indicadores destacáveis com pelo menos 2 concorrentes elegíveis
+  const rowsHTML = metrics.map(m=>{
+    const raw = items.map(m.get);
+    const ok  = raw.map(v=> v!=null && m.dir!=='none' && (m.band?m.band(v):true));   // elegível ao ranking
+    const eligN = ok.filter(Boolean).length;
+    const eligVals = raw.filter((v,i)=>ok[i]);
+    const maxSet = eligVals.length ? Math.max(...eligVals) : null;
+    const minSet = eligVals.length ? Math.min(...eligVals) : null;
+    // preenchimento normalizado (comprimento = "quão bom"; a mais longa = melhor) — rótulo mostra o valor REAL.
+    // 'max' usa base=min(0,minSet) p/ funcionar com valores NEGATIVOS (ROE/Margem neg.) sem inverter; guarda NaN.
+    const fillOf = v => {
+      if(maxSet==null || v==null) return 0;
+      if(m.fill) return Math.max(0, Math.min(1, m.fill(v)));
+      if(m.dir==='min') return maxSet>0 ? Math.max(0, Math.min(1, 1 - v/maxSet)) : 0;
+      const base = Math.min(0, minSet), den = maxSet - base;
+      return den>1e-9 ? Math.max(0, Math.min(1, (v-base)/den)) : 0;
+    };
+    // melhor barra elegível = maior preenchimento (bestG=0: não marca "melhor" quando todos zeram/empatam em 0)
+    let best=-1, bestG=0; ok.forEach((o,i)=>{ if(o){ const g=fillOf(raw[i]); if(g>bestG){ bestG=g; best=i; } } });
+    if(m.dir!=='none' && best>=0 && eligN>=2){ contests++; wins[best]++; }
+
+    const bars = items.map((a,i)=>{
+      const v = raw[i], isOk = ok[i];
+      const cls = ['cmp-mbar'];
+      let track;
+      if(m.dir==='none'){ track = '<div class="cmp-mbar-empty"></div>'; }
+      else if(v!=null && !isOk){ cls.push('cmp-mbar-na'); track = '<div class="gb-bar"></div>'; }   // fora da banda / outlier: hachura, nunca best
+      else if(v==null){ track = '<div class="gb-bar"></div>'; }
+      else { if(i===best) cls.push('best'); const w=(fillOf(v)*100).toFixed(1); track = `<div class="gb-bar"><i style="width:0%;background:${cmpColor(i)}" data-w="${w}%"></i></div>`; }
+      const valTxt = m.fmt(a, v, isOk) + (i===best && m.dir!=='none' ? ' <i class="fa-solid fa-check cmp-ok"></i>' : '');
+      return `<div class="${cls.join(' ')}"><span class="tk">${a.tk}</span><div class="cmp-mbar-track">${track}</div><span class="val">${valTxt}</span></div>`;
+    }).join('');
+    const head = m.term ? termLabel(m.term, m.label) : m.label;
+    return `<div class="cmp-mrow"><div class="cmp-mrow-h">${head}</div>${bars}</div>`;
   }).join('');
-  body.innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead>${head}</thead><tbody>${rows}</tbody></table></div>
-    ${loading?'<div style="font-size:12px;color:var(--ink-3);margin-top:14px"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando fundamentos reais…</div>':'<div style="font-size:12px;color:var(--ink-3);margin-top:14px"><i class="fa-solid fa-circle-info"></i> Destaque em verde indica o melhor valor de cada indicador entre os ativos comparados.</div>'}`;
+
+  // veredito honesto: líder = mais vitórias (desempate por Score); empate ou <2 disputas = equilibrada
+  const scores = items.map(a=>{ const s=num(ensureScore(a)); return (s!=null&&s>=0&&s<=100)?s:null; });
+  let topScoreI=-1; scores.forEach((s,i)=>{ if(s!=null && (topScoreI<0 || s>scores[topScoreI])) topScoreI=i; });
+  const order = items.map((a,i)=>i).sort((x,y)=> wins[y]-wins[x] || (scores[y]||-1)-(scores[x]||-1));
+  const lead = order[0], run = order[1];
+  const tie = run!=null && wins[lead]===wins[run] && (scores[lead]||-1)===(scores[run]||-1);
+  let verdictHTML;
+  if(contests<2 || wins[lead]===0 || tie){
+    verdictHTML = `<div id="cmpVerdict" class="cmp-verdict"><i class="fa-solid fa-scale-balanced cv-logo" style="color:var(--brand)"></i><div><b>Comparação equilibrada</b> — nenhum ativo domina os indicadores. <span class="cv-dis">Não é recomendação de compra.</span></div></div>`;
+  } else {
+    const la=items[lead], lk=assetLookup(la.tk), sTxt = topScoreI>=0 ? ` · Maior Score: <b>${items[topScoreI].tk}</b> (${scores[topScoreI]})` : '';
+    verdictHTML = `<div id="cmpVerdict" class="cmp-verdict"><span class="cv-logo">${assetLogo(la.tk, lk?lk.k:'acoes','sm')}</span><div><b>${la.tk}</b> lidera em <b>${wins[lead]}</b> de ${contests} indicadores${sTxt}. <span class="cv-dis">Não é recomendação de compra.</span></div></div>`;
+  }
+
+  const chartCard = `<div class="card card-pad cmp-chart-card">
+    <div class="cmp-chart-head"><div class="cmp-chart-ttl">Performance no período</div>
+      <div class="cmp-per">${['3M','6M','1A'].map(p=>`<button class="wper${p===cmpPeriod?' active':''}" onclick="cmpSetPeriod('${p}',this)">${p}</button>`).join('')}</div></div>
+    <div class="cmp-chart-wrap"><canvas id="cmpPerfChart" role="img" aria-label="Retorno percentual comparado no período"></canvas></div>
+    <div id="cmpChartNote" class="cmp-chart-note"></div></div>`;
+
+  const foot = loading
+    ? '<div style="font-size:12px;color:var(--ink-3);margin-top:14px"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando fundamentos reais…</div>'
+    : '<div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5"><i class="fa-solid fa-circle-info" style="color:var(--ink-4);margin-right:5px"></i> A barra mostra "quão bom" é cada valor entre os comparados (a mais longa é a melhor); o número exibido é sempre o valor real. Cotação e variação não entram no ranking.</div>';
+
+  body.innerHTML = `${verdictHTML}<div class="card card-pad">${rowsHTML}${foot}</div>${chartCard}`;
+  animateGauges();      // as barras nascem em 0% e só animam aqui (view 'comparador' não passa pelo animateGauges do asset)
+  loadCmpHistory();     // dispara a busca do histórico e desenha o gráfico
+  drawCmpChart();       // desenha já com o que houver em cache (placeholder se ainda não há dados)
+}
+
+/* histórico de fechamentos p/ o gráfico de performance — clone enxuto de loadPortfolioHistory,
+   escopo nos ativos do comparador. Cache 1h por (tickers + período). NUNCA fabrica dado. */
+async function loadCmpHistory(force){
+  const cap=isPro()?4:PLAN_LIMITS.comparador;
+  const tks=cmpSel.slice(0,cap).filter(Boolean);
+  if(tks.length<2 || typeof HIST_CLOSE==='undefined') return;
+  const cfg=WHIST_RANGE[cmpPeriod]||WHIST_RANGE['6M'];
+  const b3=[], us=[], cr=[]; let anyUsd=false;
+  tks.forEach(tk=>{ const lk=assetLookup(tk); if(!lk) return; if(lk.k==='cripto') cr.push(tk); else if(typeof isUsAsset==='function'&&isUsAsset(lk)){ us.push(tk); anyUsd=true; } else b3.push(tk); });
+  const key=tks.slice().sort().join(',')+'|'+cmpPeriod;
+  const now=Date.now(); if(!force && key===_cmpHistKey && now-_cmpHistAt<3600000) return;
+  _cmpHistKey=key; _cmpHistAt=now;
+  const qs=new URLSearchParams();
+  if(b3.length) qs.set('symbols', b3.join(',')); if(us.length) qs.set('us', us.join(',')); if(cr.length) qs.set('crypto', cr.join(','));
+  if(anyUsd) qs.set('fx','USDBRL');
+  qs.set('range', cfg.range); qs.set('interval','1d'); qs.set('days', String(cfg.days));
+  if(!qs.has('symbols')&&!qs.has('us')&&!qs.has('crypto')) return;
+  try{
+    const r=await fetch(`/api/market?fn=history&${qs.toString()}`); if(!r.ok){ _cmpHistAt=0; return; }
+    const d=await r.json(); const res=(d&&d.results)||{}; let any=false;
+    Object.keys(res).forEach(tk=>{ const ser=res[tk]; if(!Array.isArray(ser)||!ser.length) return; const m=HIST_CLOSE[tk]=HIST_CLOSE[tk]||{}; ser.forEach(x=>{ if(x&&x.d&&typeof x.c==='number'&&x.c>0) m[x.d]=x.c; }); any=true; });
+    if(any){ if(typeof histSaveClose==='function') histSaveClose(); if(currentView==='comparador') drawCmpChart(); }   // redraw SOFT, sem render()
+  }catch(e){ _cmpHistAt=0; }
+}
+function cmpSetPeriod(per, el){
+  if(!['3M','6M','1A'].includes(per) || per===cmpPeriod){ return; }
+  cmpPeriod=per;
+  const box=el&&el.closest('.cmp-per'); if(box) box.querySelectorAll('.wper').forEach(b=>b.classList.toggle('active', b===el));
+  drawCmpChart();       // redesenha já com cache; loadCmpHistory redesenha de novo se buscar dado novo
+  loadCmpHistory();
+}
+/* gráfico de retorno % normalizado (base = 1º fechamento da janela) por ativo. Degrada com honestidade:
+   ativo sem histórico não entra (nota); <2 com dados → placeholder. Destrói a instância antes de recriar. */
+function drawCmpChart(){
+  const cv=$('#cmpPerfChart'); if(!cv) return;
+  const note=$('#cmpChartNote');
+  if(charts.cmpPerf){ try{ charts.cmpPerf.destroy(); }catch(e){} charts.cmpPerf=null; }
+  const cap=isPro()?4:PLAN_LIMITS.comparador;
+  const tks=cmpSel.slice(0,cap).filter(Boolean);
+  const cfg=WHIST_RANGE[cmpPeriod]||WHIST_RANGE['6M'];
+  const cutoff=(function(){ const d=new Date(); d.setDate(d.getDate()-(cfg.days||190)); const p2=x=>String(x).padStart(2,'0'); return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`; })();
+  // união ordenada das datas dentro da janela, entre os ativos que têm histórico
+  const dateSet=new Set(); const have=[], missing=[];
+  tks.forEach((tk,i)=>{ const m=HIST_CLOSE[tk]; let n=0; if(m){ for(const dt in m){ if(dt>=cutoff){ dateSet.add(dt); n++; } } } if(n>=2) have.push({tk,i}); else missing.push(tk); });
+  const dates=[...dateSet].sort();
+  if(have.length<2 || dates.length<2){
+    if(note) note.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Carregando histórico de preços… <span style="color:var(--ink-4)">(indisponível se a fonte não cobrir os ativos)</span>`;
+    return;
+  }
+  const datasets = have.map(({tk,i})=>{
+    const series = dates.map(dt=>closeOn(tk,dt));
+    let base=null; for(const c of series){ if(c!=null){ base=c; break; } }
+    const data = series.map(c=> (c!=null&&base) ? (c/base-1)*100 : null);
+    const col=(cmpColor(i)+'').startsWith('var(') ? cssVar('--brand') : cmpColor(i);   // canvas não resolve var()
+    return { label:tk, data, borderColor:col, backgroundColor:col, pointRadius:0, tension:.35, borderWidth:2.4, spanGaps:true };
+  });
+  const p2=x=>String(x).padStart(2,'0'); const labels=dates.map(dt=>{ const p=dt.split('-'); return p2(p[2])+'/'+p2(p[1]); });
+  charts.cmpPerf = new Chart(cv.getContext('2d'),{ type:'line',
+    data:{ labels, datasets },
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{ display:true, position:'top', align:'end', labels:{ color:cssVar('--ink-2'), font:{size:11}, usePointStyle:true, pointStyleWidth:9, boxHeight:7 } },
+                tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+(c.parsed.y>=0?'+':'')+c.parsed.y.toFixed(1)+'%' } } },
+      scales:{ x:{ grid:{display:false}, ticks:{color:cssVar('--ink-3'),font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:7}, border:{display:false} },
+               y:{ grid:{color:cssVar('--line')}, ticks:{color:cssVar('--ink-3'),font:{size:10},callback:v=>(v>=0?'+':'')+v+'%'}, border:{display:false} } } }
+  });
+  if(note) note.innerHTML = `<i class="fa-solid fa-circle-info"></i> Retorno acumulado no período (base 100 no início da janela).` + (missing.length? ` <span style="color:var(--ink-4)">Sem histórico para ${missing.join(', ')}.</span>`:'');
 }
 
 /* Rastreador (screener) standalone aposentado — filtros incorporados às listagens de Ações/FIIs.
@@ -12684,7 +12848,8 @@ const TERM_CARDS={
   scoreLastro:{ nome:'Score Lastro™', icon:'fa-award', descricao:'Nota proprietária de 0 a 100 que resume a qualidade de um ativo combinando vários indicadores fundamentalistas.', formula:'Valuation + rentabilidade + endividamento + pagamento de proventos', interpretacao:'Quanto maior, mais sólido é o ativo pelos fundamentos.', faixaIdeal:'Acima de 70 é considerado forte.' },
   notaLastro:{ nome:'Nota de Diversificação Lastro™', icon:'fa-shield-halved', descricao:'Nota de 0 a 100 que resume o equilíbrio da sua carteira.', formula:'Diversificação entre classes e setores + concentração + qualidade dos ativos', interpretacao:'Quanto maior, mais equilibrada e resiliente a carteira.', faixaIdeal:'Acima de 70 indica boa diversificação.' },
   darf:{ nome:'DARF', icon:'fa-file-invoice-dollar', descricao:'Guia de pagamento do imposto sobre o lucro nas vendas de ativos.', formula:'Lucro tributável × alíquota (15% ações · 20% FIIs/day trade)', interpretacao:'Ações têm isenção até R$ 20 mil vendidos no mês; o que passa é tributado.', pontosAtencao:'Emitir e pagar até o último dia útil do mês seguinte à venda.' },
-  pmProv:{ nome:'Preço médio com proventos', icon:'fa-tags', descricao:'Seu preço médio descontando os proventos já recebidos daquele ativo.', formula:'Preço médio − proventos recebidos por cota', interpretacao:'Mostra o custo "líquido" da posição; pode até ficar negativo em ativos muito antigos.', faixaIdeal:'Quanto menor, mais a posição já se pagou.' }
+  pmProv:{ nome:'Preço médio com proventos', icon:'fa-tags', descricao:'Seu preço médio descontando os proventos já recebidos daquele ativo.', formula:'Preço médio − proventos recebidos por cota', interpretacao:'Mostra o custo "líquido" da posição; pode até ficar negativo em ativos muito antigos.', faixaIdeal:'Quanto menor, mais a posição já se pagou.' },
+  'margem-holding':{ nome:'Margem distorcida', icon:'fa-triangle-exclamation', descricao:'Margem acima de 100% costuma vir de lucro por equivalência patrimonial (holdings como a ITSAÚSA) — não é comparável à margem operacional de uma empresa.', interpretacao:'Por isso este valor não entra no ranking do comparador: seria injusto com empresas operacionais.' }
 };
 /* rótulo de termo clicável — abre a mesma ficha dos indicadores (sem "?") */
 function termLabel(key, text){ return `<span class="term" data-term="${key}">${text}</span>`; }
