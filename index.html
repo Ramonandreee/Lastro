@@ -3960,36 +3960,6 @@ button.mp-cell:active { background:var(--surface-3); }
 .prc-skel { cursor:default; }
 @media (prefers-reduced-motion:reduce){ .prc-collapse { transition:none; } }
 
-/* ── risco da renda ── */
-.pri-top { display:flex; align-items:baseline; gap:10px; margin-top:2px; }
-.pri-big { font-family:var(--mono); font-size:30px; font-weight:700; letter-spacing:-.03em; line-height:1; }
-.pri-lb { font-size:12.5px; color:var(--ink-3); line-height:1.4; }
-.pri-lb strong { font-family:var(--mono); color:var(--ink); }
-.pri-tag { display:inline-block; margin-left:7px; padding:1px 8px; border-radius:999px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
-.pri-bar { display:flex; height:10px; border-radius:6px; overflow:hidden; margin-top:14px; background:var(--surface-3); }
-.pri-bar i { display:block; height:100%; }
-.pri-bar i + i { box-shadow:inset 1px 0 0 var(--surface); }
-.pri-legs { display:flex; flex-wrap:wrap; gap:5px 14px; margin-top:9px; }
-.pri-lg { display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--ink-4); }
-.pri-lg i { width:9px; height:9px; border-radius:3px; flex:none; }
-.pri-lg b { font-family:var(--mono); font-weight:700; color:var(--ink-3); }
-.pri-rows { margin-top:14px; padding-top:12px; border-top:1px solid var(--line); display:grid; gap:11px; }
-.pri-row { display:grid; grid-template-columns:1fr auto; align-items:baseline; column-gap:12px; }
-.pri-row .k { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink-2); min-width:0; }
-.pri-row .k i { font-size:11px; color:var(--ink-4); flex:none; }
-.pri-row .v { font-family:var(--mono); font-size:14px; font-weight:700; color:var(--ink); white-space:nowrap; text-align:right; }
-.pri-row .s { grid-column:2; font-size:10.5px; color:var(--ink-4); text-align:right; white-space:nowrap; }
-.pri-caiu { margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
-.pri-caiu-t { display:flex; align-items:center; gap:7px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-4); margin-bottom:8px; }
-.pri-caiu-t i { color:var(--down); }
-.pri-c { display:flex; align-items:baseline; gap:9px; padding:7px 0; border-bottom:1px solid var(--line); cursor:pointer; }
-.pri-c:last-of-type { border-bottom:0; }
-.pri-c:hover { background:var(--surface-2); }
-.pri-c .tk { font-family:var(--mono); font-size:13px; font-weight:700; color:var(--ink); flex:none; }
-.pri-c .nm { flex:1; min-width:0; font-size:11.5px; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.pri-c b { font-family:var(--mono); font-size:13px; font-weight:700; color:var(--down); flex:none; }
-.pri-nota { margin-top:8px; font-size:10px; color:var(--ink-4); line-height:1.5; }
-@media (max-width:400px){ .pri-big { font-size:26px; } .pri-lb { font-size:11.5px; } }
 /* ── meta de renda ── */
 .pmeta-top { display:flex; align-items:center; gap:12px; margin-bottom:15px; }
 .pmeta-top .k { display:block; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-4); }
@@ -4112,30 +4082,7 @@ button.mp-cell:active { background:var(--surface-3); }
 .phm-off-lg { display:inline-flex; align-items:center; gap:5px; margin-left:auto; }
 .phm-off-lg i.phm-c { margin:0; }
 
-/* ── recordes ── */
-.prec { display:grid; grid-template-columns:1fr; gap:0; margin-top:4px; }
-.prec-i { display:flex; align-items:center; gap:12px; padding:11px 2px; border-top:1px solid var(--line); }
-.prec .prec-i:first-child { border-top:0; }
-.prec-ic { flex:none; width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:13px; }
-.prec-tx { min-width:0; display:flex; flex-direction:column; }
-.prec-tx .k { font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-4); }
-.prec-tx .v { margin-top:2px; font-family:var(--mono); font-size:16px; font-weight:700; letter-spacing:-.02em; color:var(--ink); }
-.prec-tx .s { margin-top:1px; font-size:11.5px; color:var(--ink-3); }
-/* selo "estimado" nos insights projetados */
-.ri-est { font-style:normal; margin-left:6px; padding:2px 5px; border-radius:5px; font-size:8.5px; font-weight:700;
-  text-transform:uppercase; letter-spacing:.04em; color:var(--warn); background:var(--warn-l); }
-/* Raio-X da renda: leituras próprias do Lastro */
-.ri-grid { display:grid; grid-template-columns:1fr; gap:2px; margin-top:6px; }
-.ri-item { display:flex; align-items:flex-start; gap:12px; padding:13px 2px; border-top:1px solid var(--line); }
-.ri-grid .ri-item:first-child { border-top:none; }
-.ri-ic { width:36px; height:36px; flex:none; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:14px; }
-.ri-tx { flex:1; min-width:0; display:flex; flex-direction:column; }
-.ri-k { font-size:11px; color:var(--ink-4); text-transform:uppercase; letter-spacing:.04em; }
-.ri-v { font-family:var(--mono); font-size:19px; font-weight:700; color:var(--ink); letter-spacing:-.02em; margin-top:3px; }
-.ri-s { font-size:12px; color:var(--ink-3); margin-top:2px; line-height:1.4; }
-.ri-bar { display:block; height:4px; border-radius:3px; background:var(--surface-3); overflow:hidden; margin-top:9px; }
-.ri-bar i { display:block; height:100%; border-radius:3px; transition:width .6s var(--ease-out); }
-@media (min-width:620px){ .ri-grid { grid-template-columns:1fr 1fr; gap:0 22px; } .ph-foot { grid-template-columns:repeat(3,1fr); } }
+@media (min-width:620px){ .ph-foot { grid-template-columns:repeat(3,1fr); } }
 /* seletor Compra/Venda do modal de movimento */
 .pos-mode { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; background:var(--surface-3); border-radius:12px; margin-bottom:4px; }
 .pm-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:10px 0; border:none; border-radius:9px; background:transparent; color:var(--ink-3); font-family:var(--sans); font-size:13.5px; font-weight:600; cursor:pointer; transition:background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease); -webkit-tap-highlight-color:transparent; }
@@ -8874,77 +8821,23 @@ function provDateShort(d){ return String(d.getDate()).padStart(2,'0')+' '+PROV_M
 /* ── "Raio-X da sua renda": leituras que os apps de carteira não mostram ──
    Tudo derivado de pagamentos REAIS (realPaymentsFor) + dados que o usuário já forneceu.
    O que for projeção entra com est:true e ganha o selo "estimado" na interface. */
-function rendaInsights(d, p){
-  const out=[];
-  // 1) PAYBACK — quanto do que você investiu os proventos já devolveram. Quase nenhum app mostra,
-  //    e é a pergunta que o investidor de renda realmente faz: "quando meu custo volta?"
-  if(p && p.invest>0 && d.totalAll>0){
-    const pct=d.totalAll/p.invest*100;
-    // ritmo dos últimos 12m → quantos anos para devolver os 100% restantes
-    const faltam=Math.max(0, p.invest-d.totalAll);
-    const anos=(d.total12>0)? faltam/d.total12 : null;
-    out.push({ ic:'fa-rotate-left', cor:'var(--up)', k:'Já voltou pra você',
-      v:pc(pct,1)+'%', s: anos!=null ? (pct>=100?'custo integralmente pago':`no ritmo atual, ~${anos<1?pc(anos*12,0)+' meses':pc(anos,1)+' anos'} para 100%`) : 'do total investido',
-      bar: Math.min(100,pct) });
-  }
-  // 2) RENDA POR DIA — o número que torna a renda passiva tangível
-  if(d.total12>0) out.push({ ic:'fa-sun', cor:'var(--gold)', k:'Sua carteira te paga',
-    v:brl(d.total12/365)+'/dia', s:`${brl(d.total12/52)} por semana` });
-  // 3) DIAS DE CUSTO DE VIDA COBERTOS — só se o usuário informou a despesa (dado dele, real)
-  const desp=(typeof getDespesa==='function')?getDespesa():0;
-  if(desp>0 && d.media>0){
-    const dias=Math.min(30, d.media/(desp/30));
-    out.push({ ic:'fa-calendar-check', cor:'var(--brand)', k:'Do seu mês, já está pago',
-      v:pc(dias,1)+' dias', s:`de ${brl(desp)}/mês de custo de vida`, bar: dias/30*100 });
-  }
-  // 4) SEQUÊNCIA — meses seguidos recebendo (consistência é o que o investidor de renda persegue)
-  const ms=d.months||[]; let streak=0;
-  for(let i=ms.length-1;i>=0;i--){ if((ms[i].val||0)>0) streak++; else break; }
-  if(streak>=2) out.push({ ic:'fa-fire', cor:'var(--down)', k:'Sequência',
-    v:streak+(streak===12?'+':'')+' meses', s:'seguidos recebendo proventos' });
-  return out;
-}
-/* insights numéricos — SÓ saem quando o dado real sustenta a frase (nada genérico) */
-function provInsights(d, p, rk){
-  const out=rendaInsights(d,p);
-  rk=rk||provRankFull();
-  // concentração da renda no maior pagador
-  if(rk.length>=2 && rk[0].part>=25){
-    const alto=rk[0].part>=40;
-    out.push({ ic:'fa-chart-pie', cor: alto?'var(--warn)':'var(--brand)', k:'Concentração da renda',
-      v: pc(rk[0].part,0)+'%', s:`${rk[0].tk} sozinho responde por ${pc(rk[0].part,1)}% do que você recebeu em 12 meses${alto?' — diversificar reduz o risco da sua renda':''}`,
-      bar: rk[0].part });
-  }
-  // acumulado desde o 1º pagamento real
-  if(d.totalAll>0 && d.firstPay){
-    out.push({ ic:'fa-piggy-bank', cor:'var(--up)', k:'Acumulado no Lastro',
-      v: brl(d.totalAll), s:`recebidos desde ${PROV_MESL[d.firstPay.getMonth()]} de ${d.firstPay.getFullYear()} — ${d.nPays} pagamento${d.nPays===1?'':'s'} reais` });
-  }
-  // ritmo até a meta: PROJEÇÃO derivada do crescimento real de 12m (rotulada)
-  const meta=(typeof getRendaMeta==='function')?getRendaMeta():0;
-  if(meta>0 && d.media>0 && d.media<meta && d.growth!=null && d.growth>1){
-    const gm=Math.pow(1+d.growth/100, 1/12)-1;
-    const n=Math.log(meta/d.media)/Math.log(1+gm);
-    if(isFinite(n) && n>0 && n<=360){
-      out.push({ ic:'fa-flag-checkered', cor:'var(--accent)', k:'No ritmo dos últimos 12 meses', est:true,
-        v: n<12 ? Math.ceil(n)+' meses' : pc(n/12,1)+' anos',
-        s:`para a média mensal alcançar a meta de ${brl0(meta)} — mantendo o crescimento de ${pc(d.growth,1)}% ao ano` });
-    }
-  }
-  return out;
-}
-function provInsightsHTML(d, p, rk){
-  const its=provInsights(d,p,rk); if(!its.length) return '';
-  return `<div class="card card-pad prov-in" style="--d:80ms">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-lightbulb"></i></span> Raio-X da sua renda</div></div>
-    <div class="ri-grid">${its.map(x=>`<div class="ri-item">
-      <span class="ri-ic" style="color:${x.cor};background:color-mix(in srgb, ${x.cor} 13%, transparent)"><i class="fa-solid ${x.ic}"></i></span>
-      <div class="ri-tx"><span class="ri-k">${x.k}${x.est?'<em class="ri-est">estimado</em>':''}</span><b class="ri-v priv-blur">${x.v}</b><span class="ri-s priv-blur">${x.s}</span>
-      ${x.bar!=null?`<span class="ri-bar"><i style="width:${Math.min(100,x.bar).toFixed(1)}%;background:${x.cor}"></i></span>`:''}</div>
-    </div>`).join('')}</div>
+/* 9) META DE RENDA — única casa da meta (getRendaMeta/updateRendaMeta) */
+function provMetaHTML(d, yoc){
+  const meta=getRendaMeta(), media=d.media;
+  const prog=meta>0 ? Math.min(100, media/meta*100) : 0;
+  const falta=Math.max(0, meta-media);
+  return `<div class="card card-pad prov-in" style="--d:120ms">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-bullseye"></i></span> Meta de Renda</div><span class="card-sub">mensal</span></div>
+    <div class="pmeta-top">
+      <div><span class="k">Recebido hoje</span><b class="v priv-blur">${brl(media)}</b><span class="s">média real de 12 meses</span></div>
+      <div class="pmeta-arrow"><i class="fa-solid fa-arrow-right-long"></i></div>
+      <div class="pmeta-goal"><span class="k">Meta</span><b class="v priv-blur" id="metaRendaV">${brl0(meta)}</b><span class="s" id="metaFalta">${falta>0?`faltam <span class="priv-blur">${brl0(falta)}</span>/mês`:'meta atingida'}</span></div>
+    </div>
+    <div class="pmeta-bar"><div id="metaProgBar" style="width:${prog.toFixed(1)}%"></div><span class="pmeta-pct mono">${pc(prog,0)}%</span></div>
+    <input type="range" id="metaRenda" class="pmeta-range" min="500" max="30000" step="250" value="${meta}" oninput="updateRendaMeta()" aria-label="Meta de renda mensal">
+    <div id="metaProgTxt" class="pmeta-tx">${metaProgText(media, meta, yoc)}</div>
   </div>`;
 }
-
 /* ── blocos da tela ─────────────────────────────────────────────────────── */
 /* ── PROVENTOS A RECEBER ──────────────────────────────────────────────────
    Lista dos proventos futuros da carteira: confirmados (data declarada pelo
@@ -9085,85 +8978,6 @@ function prcBodyHTML(){
     ${btn}`;
 }
 function provAReceberHTML(){ return `<section class="prc prov-in" style="--d:40ms" id="prcBody">${prcBodyHTML()}</section>`; }
-/* 6) RISCO DA RENDA — a tela toda responde "quanto, de onde e quando eu recebo".
-   Este card responde a pergunta que falta: O QUE PODE DERRUBAR essa renda.
-   Tudo vem de pagamentos reais (provRankFull): concentração, impacto de perder o maior
-   pagador e quem já está pagando menos. Sem projeção. */
-function provRisco(rk, d){
-  rk = (rk||[]).filter(x=>x.tot>0);
-  if(!rk.length) return null;
-  const total = rk.reduce((s,x)=>s+x.tot,0);
-  const top = rk[0];
-  // quantos ativos somam metade da renda — concentração em uma medida que se explica sozinha
-  let acc=0, meia=0;
-  for(const x of rk){ acc+=x.tot; meia++; if(acc>=total*0.5) break; }
-  const semTop = (total-top.tot)/12;                       // média mensal sem o maior pagador
-  const quedaP = d.media>0 ? (1-semTop/d.media)*100 : 0;
-  // quem diminuiu: 6m recentes contra os 6m anteriores, só com pagamento real nos dois lados
-  const caiu = rk.filter(x=>x.trend==='down').sort((a,b)=>a.trendPct-b.trendPct).slice(0,3);
-  const nivel = rk.length===1 ? 'alto' : top.part>=50 ? 'alto' : top.part>=30 ? 'medio' : 'ok';
-  return { total, top, meia, semTop, quedaP, caiu, nivel, n:rk.length,
-           topo: rk.slice(0,4), resto: rk.slice(4).reduce((s,x)=>s+x.tot,0) };
-}
-function provRiscoCard(rk, d){
-  const r=provRisco(rk, d);
-  if(!r) return '';
-  const COR={alto:'var(--down)', medio:'var(--warn)', ok:'var(--up)'};
-  const BG ={alto:'var(--down-l)', medio:'var(--warn-l)', ok:'var(--up-l)'};
-  const TXT={alto:'concentrada', medio:'atenção', ok:'distribuída'};
-  const cor=COR[r.nivel], seg=['var(--brand)','color-mix(in srgb, var(--brand) 55%, transparent)','var(--gold)','var(--ink-3)'];
-  const barra = r.topo.map((x,i)=>`<i style="width:${(x.tot/r.total*100).toFixed(1)}%;background:${seg[i]||'var(--ink-4)'}" title="${x.tk}"></i>`).join('')
-    + (r.resto>0?`<i style="width:${(r.resto/r.total*100).toFixed(1)}%;background:var(--line-2)" title="demais"></i>`:'');
-  const leg = r.topo.map((x,i)=>`<span class="pri-lg"><i style="background:${seg[i]||'var(--ink-4)'}"></i>${x.tk} <b>${pc(x.part,0)}%</b></span>`).join('')
-    + (r.resto>0?`<span class="pri-lg"><i style="background:var(--line-2)"></i>demais <b>${pc(r.resto/r.total*100,0)}%</b></span>`:'');
-  return `<div class="card card-pad prov-in" style="--d:200ms">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:${BG[r.nivel]};color:${cor}"><i class="fa-solid fa-shield-halved"></i></span> Risco da sua renda</div><span class="card-sub">12 meses</span></div>
-    <div class="pri-top">
-      <div class="pri-big" style="color:${cor}">${pc(r.top.part,0)}%</div>
-      <div class="pri-lb">da sua renda vem de <strong>${r.top.tk}</strong><span class="pri-tag" style="color:${cor};background:${BG[r.nivel]}">${TXT[r.nivel]}</span></div>
-    </div>
-    <div class="pri-bar">${barra}</div>
-    <div class="pri-legs">${leg}</div>
-    <div class="pri-rows">
-      <div class="pri-row">
-        <span class="k"><i class="fa-solid fa-users-slash"></i> Se ${r.top.tk} parar de pagar</span>
-        <b class="v priv-blur">${brl(r.semTop)}/mês</b>
-        <span class="s" style="color:${r.quedaP>=30?'var(--down)':'var(--ink-4)'}">−${pc(r.quedaP,0)}% da sua média</span>
-      </div>
-      <div class="pri-row">
-        <span class="k"><i class="fa-solid fa-layer-group"></i> Metade da renda vem de</span>
-        <b class="v">${r.meia} ativo${r.meia===1?'':'s'}</b>
-        <span class="s">de ${r.n} que pagam</span>
-      </div>
-    </div>
-    ${r.caiu.length?`<div class="pri-caiu">
-      <div class="pri-caiu-t"><i class="fa-solid fa-arrow-trend-down"></i> Pagando menos que antes</div>
-      ${r.caiu.map(x=>`<div class="pri-c" onclick="quickView('${x.tk}')" role="button" tabindex="0"
-        onkeydown="if(event.key==='Enter'){quickView('${x.tk}')}"><span class="tk">${x.tk}</span><span class="nm">${esc(x.nm)}</span><b>${pc(x.trendPct,0)}%</b></div>`).join('')}
-      <div class="pri-nota">Últimos 6 meses contra os 6 anteriores, só com pagamento real nos dois períodos.</div>
-    </div>`:''}
-    ${illusNote(r.nivel==='ok'
-      ? 'Sua renda está distribuída: nenhum ativo sozinho responde por um terço do que você recebe.'
-      : `Renda concentrada em <strong>${r.top.tk}</strong>. Não é erro — é risco: se esse ativo cortar o provento, a queda vem inteira para você. Aportes nos demais pagadores diluem isso.`)}
-  </div>`;
-}
-/* 9) META DE RENDA — única casa da meta (getRendaMeta/updateRendaMeta) */
-function provMetaHTML(d, yoc){
-  const meta=getRendaMeta(), media=d.media;
-  const prog=meta>0 ? Math.min(100, media/meta*100) : 0;
-  const falta=Math.max(0, meta-media);
-  return `<div class="card card-pad prov-in" style="--d:120ms">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-bullseye"></i></span> Meta de Renda</div><span class="card-sub">mensal</span></div>
-    <div class="pmeta-top">
-      <div><span class="k">Recebido hoje</span><b class="v priv-blur">${brl(media)}</b><span class="s">média real de 12 meses</span></div>
-      <div class="pmeta-arrow"><i class="fa-solid fa-arrow-right-long"></i></div>
-      <div class="pmeta-goal"><span class="k">Meta</span><b class="v priv-blur" id="metaRendaV">${brl0(meta)}</b><span class="s" id="metaFalta">${falta>0?`faltam <span class="priv-blur">${brl0(falta)}</span>/mês`:'meta atingida'}</span></div>
-    </div>
-    <div class="pmeta-bar"><div id="metaProgBar" style="width:${prog.toFixed(1)}%"></div><span class="pmeta-pct mono">${pc(prog,0)}%</span></div>
-    <input type="range" id="metaRenda" class="pmeta-range" min="500" max="30000" step="250" value="${meta}" oninput="updateRendaMeta()" aria-label="Meta de renda mensal">
-    <div id="metaProgTxt" class="pmeta-tx">${metaProgText(media, meta, yoc)}</div>
-  </div>`;
-}
 function provMonthCard(groups){
   const lst=provMonthAgenda(groups), now=new Date();
   const mesNome=PROV_MESL[now.getMonth()];
@@ -9268,24 +9082,6 @@ function provHmTap(el){
   document.querySelectorAll('.phm-c.on').forEach(x=>{ if(x!==el) x.classList.remove('on'); });
   el.classList.toggle('on');
 }
-/* 10) RECORDES */
-function provRecCard(groups){
-  const r=provRecords(groups), it=[];
-  if(r.maior) it.push({ ic:'fa-medal', cor:'var(--gold)', k:'Maior pagamento', v:brl(r.maior.val), s:`${r.maior.tk} · ${provDateShort(r.maior.date)}/${String(r.maior.date.getFullYear()).slice(2)}` });
-  if(r.melhorMes) it.push({ ic:'fa-star', cor:'var(--up)', k:'Melhor mês', v:brl(r.melhorMes.val), s:`${PROV_MESL[r.melhorMes.m]} de ${r.melhorMes.y}` });
-  if(r.topAtivo) it.push({ ic:'fa-crown', cor:'var(--brand)', k:'Ativo que mais pagou', v:r.topAtivo.tk, s:`<span class="priv-blur">${brl(r.topAtivo.val)}</span> no total`, plain:true });
-  if(r.crescimento) it.push({ ic:'fa-rocket', cor:'var(--accent)', k:'Maior crescimento anual', v:'+'+pc(r.crescimento.pct,0)+'%', s:`${r.crescimento.tk} · 12m vs os 12m anteriores`, plain:true });
-  if(r.sequencia) it.push({ ic:'fa-arrow-trend-up', cor:'var(--down)', k:'Sequência de crescimento', v:r.sequencia+' meses', s:'seguidos recebendo mais que no mês anterior', plain:true });
-  if(!it.length) return '';
-  return `<div class="card card-pad prov-in" style="--d:360ms">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-award"></i></span> Recordes</div></div>
-    <div class="prec">${it.map(x=>`<div class="prec-i">
-      <span class="prec-ic" style="color:${x.cor};background:color-mix(in srgb, ${x.cor} 13%, transparent)"><i class="fa-solid ${x.ic}"></i></span>
-      <div class="prec-tx"><span class="k">${x.k}</span><b class="v${x.plain?'':' priv-blur'}">${x.v}</b><span class="s">${x.s}</span></div>
-    </div>`).join('')}</div>
-  </div>`;
-}
-
 /* grade de 2 colunas (desktop) — não emite <div> vazio quando os dois cards somem */
 function provPair(a,b){ const h=(a||'')+(b||''); return h ? `<div class="pgrid">${h}</div>` : ''; }
 function viewProventos(){
@@ -9356,11 +9152,9 @@ function viewProventos(){
   </section>
   ${provAReceberHTML()}
   ${provMetaHTML(d, yoc)}
-  ${provRiscoCard(rk, d)}
   ${provPair(provMonthCard(groups), provDistCard(groups))}
   ${provRankCard(rk)}
   ${provHeatCard(groups)}
-  ${provPair(provRecCard(groups), provInsightsHTML(d,p,rk))}
   ${provFootNote(d)}`;
 }
 function chartUnavail(c){ if(c) c.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; }
