@@ -3333,7 +3333,7 @@ body.report-open { overflow:hidden; }
    nascer desbotada — 'geral' é sempre a 1ª e o scroller abre em scrollLeft:0. */
 .atabs-inner { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:2px 1px; -webkit-mask:linear-gradient(90deg, #000 0, #000 calc(100% - 14px), transparent 100%); mask:linear-gradient(90deg, #000 0, #000 calc(100% - 14px), transparent 100%); }
 .atabs-inner::-webkit-scrollbar { display:none; }
-.atab { flex:none; display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:500; cursor:pointer; white-space:nowrap; transition:all .16s var(--ease-out); }
+.atab { flex:none; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:0 18px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:500; cursor:pointer; white-space:nowrap; transition:all .16s var(--ease-out); }
 .atab i { font-size:12px; opacity:.7; }
 .atab:hover { border-color:var(--line-2); color:var(--ink); }
 .atab.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); box-shadow:var(--sh-sm); }
@@ -3964,15 +3964,15 @@ button.mp-cell:active { background:var(--surface-3); }
 .prc-h-t { font-size:16.5px; font-weight:700; letter-spacing:-.015em; color:var(--ink); }
 .prc-h-s { margin-top:3px; font-size:12px; color:var(--ink-3); }
 .prc-h-s b { font-family:var(--mono); font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
-.prc-nav { flex:none; display:inline-flex; align-items:center; gap:2px; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:2px; }
-.prc-arrow { width:28px; height:28px; border:none; border-radius:50%; background:transparent; color:var(--ink-2); font-size:11px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:background .16s var(--ease); }
+.prc-nav { flex:none; display:inline-flex; align-items:center; gap:2px; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:3px; }
+.prc-arrow { width:40px; height:40px; border:none; border-radius:50%; background:transparent; color:var(--ink-2); font-size:11px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:background .16s var(--ease); }
 .prc-arrow:hover:not(:disabled) { background:var(--surface-3); }
 .prc-arrow:disabled { color:var(--ink-4); opacity:.4; cursor:default; }
 .prc-mes { font-family:var(--mono); font-size:11.5px; font-weight:700; color:var(--ink-2); padding:0 4px; white-space:nowrap; }
 .prc-chips { display:flex; gap:7px; margin-top:12px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
 .prc-chips::-webkit-scrollbar { display:none; }
-.prc-chip { flex:none; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); font-family:var(--sans);
-  font-size:12px; font-weight:600; padding:6px 13px; border-radius:999px; cursor:pointer; transition:all .16s var(--ease); }
+.prc-chip { flex:none; display:inline-flex; align-items:center; min-height:40px; border:1px solid var(--line); background:var(--surface); color:var(--ink-3); font-family:var(--sans);
+  font-size:13px; font-weight:600; padding:0 16px; border-radius:999px; cursor:pointer; transition:all .16s var(--ease); }
 .prc-chip:hover { background:var(--surface-2); color:var(--ink-2); }
 .prc-chip.on { background:var(--ink); border-color:var(--ink); color:var(--surface); }
 [data-theme="dark"] .prc-chip.on { background:var(--brand-d); border-color:var(--brand-d); color:#fff; }
@@ -3993,7 +3993,7 @@ button.mp-cell:active { background:var(--surface-3); }
 .prc-collapse { display:grid; grid-template-rows:0fr; transition:grid-template-rows .22s var(--ease); }
 .prc-collapse.open { grid-template-rows:1fr; }
 .prc-collapse-in { overflow:hidden; min-height:0; }
-.prc-more { display:flex; align-items:center; justify-content:center; gap:7px; width:100%; margin-top:12px; padding:11px;
+.prc-more { display:flex; align-items:center; justify-content:center; gap:7px; width:100%; min-height:44px; margin-top:12px; padding:11px;
   border:1px dashed var(--line-2); border-radius:var(--r-lg); background:transparent; color:var(--ink-3);
   font-family:var(--sans); font-size:12.5px; font-weight:600; cursor:pointer; transition:all .16s var(--ease); }
 .prc-more:hover { background:var(--surface-2); color:var(--ink-2); border-color:var(--ink-4); }
@@ -4083,7 +4083,8 @@ button.mp-cell:active { background:var(--surface-3); }
 .pdl-v span { font-size:10px; color:var(--ink-4); }
 
 /* ── etiquetas do ranking (DY, pagamentos, YoC, tendência) ── */
-.prank-tags { grid-column:2 / -1; display:flex; flex-wrap:wrap; gap:5px 6px; margin-top:8px; }
+.prank-meta { grid-column:2 / -1; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:6px; }
+.prank-meta .pm-tx { font-size:11px; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
 .ptag { display:inline-flex; align-items:center; gap:4px; padding:3px 7px; border-radius:6px;
   background:var(--surface-3); color:var(--ink-3); font-size:10px; font-weight:600; white-space:nowrap; }
 .ptag i { font-size:9px; color:var(--ink-4); }
@@ -4094,10 +4095,12 @@ button.mp-cell:active { background:var(--surface-3); }
 .phm { margin:8px 0 12px; }
 /* no desktop as células virariam quadrados enormes: limita a largura da grade */
 @media (min-width:620px){ .phm, .phm-lg { max-width:560px; } }
-.phm-hd, .phm-row { display:grid; grid-template-columns:32px repeat(12,1fr); gap:3px; align-items:center; }
+.phm-hd, .phm-row { display:grid; grid-template-columns:30px repeat(12,1fr); gap:3px; align-items:center; }
 .phm-row { margin-top:3px; }
 .phm-y { font-family:var(--mono); font-size:9.5px; color:var(--ink-4); text-align:right; padding-right:4px; }
 .phm-m { text-align:center; font-size:8.5px; font-weight:700; color:var(--ink-4); }
+/* célula do mapa de calor: 12 colunas em 390px não permitem alvo de 44px — o componente
+   é de LEITURA; o toque é um extra para ver o valor. Não force, senão estoura a largura. */
 .phm-c { position:relative; display:block; aspect-ratio:1; border-radius:4px; background:var(--surface-3); }
 .phm-l1 { background:color-mix(in srgb, var(--up) 24%, transparent); }
 .phm-l2 { background:color-mix(in srgb, var(--up) 46%, transparent); }
@@ -4323,6 +4326,9 @@ button.mp-cell:active { background:var(--surface-3); }
   .wstat .ws-v { font-size:13.5px; letter-spacing:-.02em; }
   .wstat { padding:13px 12px; gap:10px; }
 }
+/* lista do mês: mostra 4 e o resto abre no toque — o cartão passava de 500px sozinho */
+.pmlist > .pmr:nth-child(n+5) { display:none; }
+.pmlist.pml-open > .pmr:nth-child(n+5) { display:grid; }
 </style>
 
 <script src="/vendor/chart.umd.js"></script>
@@ -8667,7 +8673,10 @@ function proventosData(){
 /* nota de rodapé da tela (mesma redação honesta de antes, agora dentro de illusNote →
    o texto solto virava flex-item e quebrava em colunas no mobile) */
 function provFootNote(d){
-  return illusNote(`Cada pagamento é o <strong>valor por cota realmente declarado</strong> pelo ativo, multiplicado pelas cotas que você já tinha na ${termLabel('datacom','data-com')} — nada é projetado. Janela de 12 meses corridos, a mesma da <a href="javascript:nav('agenda')" class="prov-link">Agenda de Dividendos</a>.${d.semData?' Aportes <strong>sem data</strong> foram contados como anteriores a todos os pagamentos — informe a data para a conta ficar exata.':''}${d.semFonte.length?` Ainda sem fonte de proventos para: <strong>${d.semFonte.slice(0,6).join(', ')}</strong> — esses ativos não entram no total.`:''} Resultados passados não garantem retornos futuros.`);
+  // avisos que exigem ação do usuário vêm primeiro; a metodologia fica curta no fim
+  const avisos = (d.semData?` Aportes <strong>sem data</strong> contaram como anteriores a todos os pagamentos — informe a data para a conta ficar exata.`:'')
+    + (d.semFonte.length?` Ainda sem fonte de proventos para <strong>${d.semFonte.slice(0,6).join(', ')}</strong> — não entram no total.`:'');
+  return illusNote(`Valor por cota <strong>realmente declarado</strong> × cotas que você tinha na ${termLabel('datacom','data-com')}. Janela de 12 meses, a mesma da <a href="javascript:nav('agenda')" class="prov-link">Agenda</a>.${avisos}`);
 }
 /* esqueleto com a MESMA silhueta da tela pronta (hero + barras) — carregar sem susto visual */
 function provSkeleton(){
@@ -9057,7 +9066,7 @@ function provMonthCard(groups){
       <div class="pmon-tot"><b class="priv-blur">${brl(lst.pago)}</b><span>recebido no mês</span></div></div>
     <div class="pcal">${['D','S','T','Q','Q','S','S'].map(w=>`<span class="pcal-w">${w}</span>`).join('')}${cells.join('')}</div>
     <div class="pcal-lg"><span><i class="dot pago"></i>recebido</span><span><i class="dot conf"></i>confirmado</span><span><i class="dot prev"></i>previsto</span></div>
-    ${lst.length ? `<div class="pmlist">${rows}</div>` : `<div class="pm-empty"><i class="fa-regular fa-calendar"></i> Nenhum pagamento neste mês — nem recebido, nem anunciado, nem previsto pelo histórico dos seus ativos.</div>`}
+    ${lst.length ? `<div class="pmlist">${rows}</div>${lst.length>4?`<button class="prc-more" onclick="this.previousElementSibling.classList.toggle('pml-open');this.innerHTML=this.previousElementSibling.classList.contains('pml-open')?'<i class=\'fa-solid fa-chevron-up\'></i> Ver menos':'<i class=\'fa-solid fa-chevron-down\'></i> Ver todos os ${lst.length}'"><i class="fa-solid fa-chevron-down"></i> Ver todos os ${lst.length}</button>`:''}` : `<div class="pm-empty"><i class="fa-regular fa-calendar"></i> Nenhum pagamento neste mês — nem recebido, nem anunciado, nem previsto pelo histórico dos seus ativos.</div>`}
     ${lst.aVir>0?`<div class="pm-foot">A receber ainda em ${mesNome}: <b class="priv-blur">${brl(lst.aVir)}</b>${lst.temPrev?' <em>(inclui valor previsto)</em>':''}</div>`:''}
     ${lst.temPrev?illusNote('<strong>Previsto</strong> não é anúncio: usa o dia do último pagamento real e a periodicidade apurada do histórico (mediana dos intervalos), com o último valor por cota declarado. Ativo sem histórico suficiente não aparece como previsto.'):''}
   </div>`;
@@ -9089,10 +9098,10 @@ function provRankCard(rk){
       <span class="prank-n">${i+1}</span>
       <div class="prank-id"><div class="prank-tk">${x.tk}</div><div class="prank-nm">${x.nm?esc(x.nm):'&nbsp;'}</div></div>
       <div class="prank-v"><div class="v up priv-blur">${brl(x.tot)}</div><div class="s">${pc(x.part,1)}% da renda</div></div>
-      <div class="prank-tags">
-        <span class="ptag"><i class="fa-solid fa-receipt"></i> ${x.n} pagamento${x.n===1?'':'s'}</span>
-        ${x.yoc!=null?`<span class="ptag"><i class="fa-solid fa-seedling"></i> YoC ${pc(x.yoc,1)}%</span>`:''}
-        ${x.dy!=null?`<span class="ptag"><i class="fa-solid fa-percent"></i> DY ${pc(x.dy,1)}%</span>`:''}
+      <!-- metadados em UMA linha de texto: quatro pílulas empilhadas faziam cada ativo
+           ocupar ~150px e a lista inteira passar de 900px -->
+      <div class="prank-meta">
+        <span class="pm-tx">${x.n} pagamento${x.n===1?'':'s'}${x.yoc!=null?` · ${termLabel('yoc','YoC')} ${pc(x.yoc,1)}%`:''}${x.dy!=null?` · DY ${pc(x.dy,1)}%`:''}</span>
         ${tr?`<span class="ptag ptag-${tr[1]}"><i class="fa-solid ${tr[0]}"></i> ${tr[2]}</span>`:''}
       </div>
       <span class="prank-track"><i style="width:${Math.max(2,x.part).toFixed(1)}%"></i></span>
