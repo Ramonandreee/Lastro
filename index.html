@@ -4339,8 +4339,15 @@ button.pcal-c { cursor:pointer; transition:transform .14s var(--ease), box-shado
 button.pcal-c:hover { transform:scale(1.06); }
 button.pcal-c:active { transform:scale(.96); }
 button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l); }
-.pcal-c.pcal-sel { box-shadow:inset 0 0 0 2px currentColor; }
-.pcal-hint { display:inline-flex; align-items:center; gap:5px; color:var(--ink-4); opacity:.85; }
+/* selecionado tem de ser inequívoco: cor cheia, não um contorno discreto */
+.pcal-c.pcal-sel { background:var(--ink); color:var(--canvas); box-shadow:0 4px 12px rgba(15,20,25,.22); }
+.pcal-c.pcal-sel b { color:var(--canvas); }
+.pcal-c.pcal-sel .pcal-dot { background:var(--canvas); }
+.pcal-c.pcal-sel.has-prev .pcal-dot { border-color:var(--canvas); background:transparent; }
+/* a faixa do dia entra com destaque, para o olho ir até ela */
+.pm-filtro { animation:pmIn .22s var(--ease-out); }
+@keyframes pmIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+.pcal-hint { display:inline-flex; align-items:center; gap:5px; color:var(--brand); font-weight:600; opacity:1; }
 .pcal-hint i { font-size:9px; }
 .pm-head { align-items:flex-start; margin-bottom:10px; }
 .pm-tot { margin-bottom:4px; }
@@ -9087,7 +9094,14 @@ function provAReceberHTML(){ return `<section class="prc prov-in" style="--d:40m
    Tocar num dia com pagamento filtra a lista para aquele dia; tocar de novo limpa. */
 let _pmOff=0, _pmDia=null;
 function setPmMes(d){ _pmOff+=d; _pmDia=null; renderPm(); }
-function setPmDia(dd){ _pmDia = (_pmDia===dd) ? null : dd; renderPm(); }
+function setPmDia(dd){
+  _pmDia = (_pmDia===dd) ? null : dd;
+  renderPm();
+  if(typeof navigator!=='undefined' && navigator.vibrate) try{ navigator.vibrate(8); }catch(e){}
+  // NÃO rolar a tela aqui: mover o conteúdo sob o dedo faz o toque seguinte cair no
+  // lugar errado (o teste pegou a seta de mês deixando de responder). O retorno visual
+  // vem da célula preenchida e da faixa logo abaixo do calendário, que já estão à vista.
+}
 function renderPm(){
   const el=document.getElementById('pmBody');
   if(el){ el.innerHTML=pmBodyHTML(); if(typeof applyPriv==='function') applyPriv(); }
