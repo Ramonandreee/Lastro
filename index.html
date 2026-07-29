@@ -4329,6 +4329,8 @@ button.mp-cell:active { background:var(--surface-3); }
 /* lista do mês: mostra 4 e o resto abre no toque — o cartão passava de 500px sozinho */
 .pmlist > .pmr:nth-child(n+5) { display:none; }
 .pmlist.pml-open > .pmr:nth-child(n+5) { display:grid; }
+.mt-atalhos { display:flex; gap:10px; margin-top:var(--gap); flex-wrap:wrap; }
+.mt-atalhos .btn { flex:1 1 180px; justify-content:center; }
 </style>
 
 <script src="/vendor/chart.umd.js"></script>
@@ -5185,6 +5187,7 @@ const PAGES = {
   painel:       { t:'Início',                s:'Mercado, oportunidades e inteligência Lastro' },
   mercado:      { t:'Mercado',               s:'Explore ativos por classe, veja o pulso do dia e descubra oportunidades' },
   mais:         { t:'Mais',                   s:'Ferramentas, planos e sua conta' },
+  metarenda:    { t:'Meta de Renda',          s:'Quanto você quer receber por mês em proventos' },
   acoes:        { t:'Ações',                 s:'Análise fundamentalista das principais ações da B3' },
   fiis:         { t:'Fundos Imobiliários',   s:'Indicadores e Score Lastro de FIIs' },
   bdrs:         { t:'BDRs',                   s:'Recibos de ações estrangeiras negociados na B3' },
@@ -6839,6 +6842,7 @@ function render(v, soft){
   else if(['fiis','acoes','bdrs','etfs','etfsint','stocks','cripto'].includes(v)) c.innerHTML = viewAssets(v);
   else if(v==='carteira')    c.innerHTML = viewCarteira();
   else if(v==='proventos')   c.innerHTML = viewProventos();
+  else if(v==='metarenda')   c.innerHTML = viewMetaRenda();
   else if(v==='aporte')      c.innerHTML = viewAporte();
   else if(v==='ir')          c.innerHTML = viewIR();
   else if(v==='acompanhar')  c.innerHTML = viewAcompanhar();
@@ -8882,6 +8886,20 @@ function provDateShort(d){ return String(d.getDate()).padStart(2,'0')+' '+PROV_M
 /* ── "Raio-X da sua renda": leituras que os apps de carteira não mostram ──
    Tudo derivado de pagamentos REAIS (realPaymentsFor) + dados que o usuário já forneceu.
    O que for projeção entra com est:true e ganha o selo "estimado" na interface. */
+/* META DE RENDA — vive no menu Mais (saiu da tela de Proventos, que já é longa).
+   Continua sendo a única casa da meta: getRendaMeta/updateRendaMeta. */
+function viewMetaRenda(){
+  const d=proventosData(), p=portfolioStats();
+  const yoc = p.invest ? d.total12/p.invest*100 : 0;
+  _provMetaCtx={ media:d.media, yoc };          // contexto do slider (não recalcula a cada arrasto)
+  return `<div class="sec-title">Meta de Renda</div>
+  <div class="sec-desc">Defina quanto você quer receber por mês em proventos. O progresso usa a sua <strong>média real dos últimos 12 meses</strong> — nada projetado.</div>
+  ${provMetaHTML(d, yoc)}
+  <div class="mt-atalhos">
+    <button class="btn btn-ghost" onclick="nav('proventos')"><i class="fa-solid fa-coins"></i> Ver meus proventos</button>
+    <button class="btn btn-ghost" onclick="nav('simulador')"><i class="fa-solid fa-calculator"></i> Simular aportes</button>
+  </div>`;
+}
 /* 9) META DE RENDA — única casa da meta (getRendaMeta/updateRendaMeta) */
 function provMetaHTML(d, yoc){
   const meta=getRendaMeta(), media=d.media;
@@ -9212,7 +9230,6 @@ function viewProventos(){
     </div>
   </section>
   ${provAReceberHTML()}
-  ${provMetaHTML(d, yoc)}
   ${provPair(provMonthCard(groups), provDistCard(groups))}
   ${provRankCard(rk)}
   ${provHeatCard(groups)}
@@ -10132,6 +10149,7 @@ function viewMais(){
       ['comparador','fa-code-compare','Comparador',0,'Ativos lado a lado pelos fundamentos'],
       ['recomendadas','fa-layer-group','Carteiras Recomendadas',0,'Estratégias montadas pela Lastro'],
       ['simulador','fa-calculator','Simuladores',0,'Juros compostos, renda passiva e FIRE'],
+      ['metarenda','fa-bullseye','Meta de Renda',0,'Quanto você quer receber por mês'],
     ]},
   ];   // Internacional (Stocks/BDRs/ETFs int.) sai do menu — já vive no hub Mercado
   const grpHTML = GROUPS.map(g=>`
