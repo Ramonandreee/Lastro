@@ -4029,7 +4029,10 @@ button.mp-cell:active { background:var(--surface-3); }
 .pmon-tot span { font-size:9.5px; color:var(--ink-4); }
 .pcal { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin:8px 0 11px; }
 .pcal-w { text-align:center; font-size:9.5px; font-weight:700; color:var(--ink-4); padding-bottom:2px; }
-.pcal-c { position:relative; aspect-ratio:1; border-radius:8px; background:var(--surface-2);
+/* min-height em vez de aspect-ratio: 7 colunas em 390px dão 38px de lado, abaixo do
+   alvo de toque. A célula fica levemente retangular e ganha os 44px de altura. */
+.pcal-c { position:relative; min-height:44px; border-radius:8px; background:var(--surface-2);
+  border:0; padding:0; font:inherit; color:inherit; -webkit-tap-highlight-color:transparent;
   display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--ink-4); }
 .pcal-c b { font-family:var(--mono); font-size:11px; font-weight:600; }
 .pcal-x { background:transparent; }
@@ -4331,6 +4334,26 @@ button.mp-cell:active { background:var(--surface-3); }
 .pmlist.pml-open > .pmr:nth-child(n+5) { display:grid; }
 .mt-atalhos { display:flex; gap:10px; margin-top:var(--gap); flex-wrap:wrap; }
 .mt-atalhos .btn { flex:1 1 180px; justify-content:center; }
+/* ── calendário de proventos: dia tocável ── */
+button.pcal-c { cursor:pointer; transition:transform .14s var(--ease), box-shadow .14s var(--ease); }
+button.pcal-c:hover { transform:scale(1.06); }
+button.pcal-c:active { transform:scale(.96); }
+button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l); }
+.pcal-c.pcal-sel { box-shadow:inset 0 0 0 2px currentColor; }
+.pcal-hint { display:inline-flex; align-items:center; gap:5px; color:var(--ink-4); opacity:.85; }
+.pcal-hint i { font-size:9px; }
+.pm-head { align-items:flex-start; margin-bottom:10px; }
+.pm-tot { margin-bottom:4px; }
+.pm-tot b { font-family:var(--mono); font-size:19px; font-weight:700; color:var(--up); letter-spacing:-.02em; }
+.pm-tot span { display:block; font-size:11px; color:var(--ink-4); margin-top:1px; }
+/* faixa do dia selecionado */
+.pm-filtro { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  margin-top:12px; padding:10px 13px; border-radius:var(--r-btn); background:var(--surface-2); border:1px solid var(--line);
+  font-size:12.5px; color:var(--ink-2); }
+.pm-filtro b { font-family:var(--mono); color:var(--ink); }
+.pm-limpar { display:inline-flex; align-items:center; gap:6px; min-height:32px; padding:0 10px; border:0; border-radius:999px;
+  background:var(--surface-3); color:var(--ink-3); font-family:var(--sans); font-size:11.5px; font-weight:600; cursor:pointer; }
+.pm-limpar:hover { background:var(--line-2); color:var(--ink); }
 </style>
 
 <script src="/vendor/chart.umd.js"></script>
@@ -8791,9 +8814,10 @@ function provClassDist(groups){
   return out;
 }
 /* pagamentos do MÊS corrente: pago (real) · confirmado (anunciado, data real) · previsto (ciclo apurado) */
-function provMonthAgenda(groups){
+function provMonthAgenda(groups, off){
   groups=groups||portfolioByTicker();
-  const now=new Date(), y=now.getFullYear(), m=now.getMonth();
+  const now=new Date(), ref=new Date(now.getFullYear(), now.getMonth()+(off||0), 1);
+  const y=ref.getFullYear(), m=ref.getMonth();
   const noMes = d => d && d.getFullYear()===y && d.getMonth()===m;
   const out=[];
   groups.forEach(g=>{
@@ -8814,6 +8838,7 @@ function provMonthAgenda(groups){
   out.pago  = out.filter(x=>x.status==='pago').reduce((s,x)=>s+x.valor,0);
   out.aVir  = out.filter(x=>x.status!=='pago').reduce((s,x)=>s+x.valor,0);
   out.temPrev = out.some(x=>x.status==='prev');
+  out.ref = ref;
   return out;
 }
 /* próximo pagamento: o CONFIRMADO mais próximo; sem confirmado, o PREVISTO mais próximo */
@@ -9057,37 +9082,70 @@ function prcBodyHTML(){
     ${btn}`;
 }
 function provAReceberHTML(){ return `<section class="prc prov-in" style="--d:40ms" id="prcBody">${prcBodyHTML()}</section>`; }
-function provMonthCard(groups){
-  const lst=provMonthAgenda(groups), now=new Date();
-  const mesNome=PROV_MESL[now.getMonth()];
-  const dim=new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-  const off=new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+/* ── PROVENTOS DO MÊS — calendário navegável e tocável ──────────────────────
+   Estado: _pmOff = meses a partir do atual · _pmDia = dia selecionado (null = mês todo).
+   Tocar num dia com pagamento filtra a lista para aquele dia; tocar de novo limpa. */
+let _pmOff=0, _pmDia=null;
+function setPmMes(d){ _pmOff+=d; _pmDia=null; renderPm(); }
+function setPmDia(dd){ _pmDia = (_pmDia===dd) ? null : dd; renderPm(); }
+function renderPm(){
+  const el=document.getElementById('pmBody');
+  if(el){ el.innerHTML=pmBodyHTML(); if(typeof applyPriv==='function') applyPriv(); }
+}
+function pmBodyHTML(groups){
+  const lst=provMonthAgenda(groups, _pmOff), now=new Date(), ref=lst.ref;
+  const mesNome=PROV_MESL[ref.getMonth()], ehAtual = _pmOff===0;
+  const dim=new Date(ref.getFullYear(), ref.getMonth()+1, 0).getDate();
+  const off=new Date(ref.getFullYear(), ref.getMonth(), 1).getDay();
   const byDay={}; lst.forEach(x=>{ const k=x.date.getDate(); (byDay[k]=byDay[k]||[]).push(x); });
+  if(_pmDia!=null && !byDay[_pmDia]) _pmDia=null;          // trocou de mês: seleção não sobrevive
+
   const cells=[];
   for(let i=0;i<off;i++) cells.push('<span class="pcal-c pcal-x"></span>');
   for(let dd=1; dd<=dim; dd++){
-    const ev=byDay[dd]||[], hoje = dd===now.getDate();
+    const ev=byDay[dd]||[], hoje = ehAtual && dd===now.getDate(), sel = _pmDia===dd;
     const st = ev.length ? (ev.every(e=>e.status==='pago') ? 'pago' : ev.some(e=>e.status==='conf') ? 'conf' : 'prev') : '';
-    cells.push(`<span class="pcal-c${st?' has-'+st:''}${hoje?' pcal-hoje':''}" ${ev.length?`title="${dd}/${now.getMonth()+1} · ${ev.map(e=>e.tk).join(', ')}"`:''}>
-      <b>${dd}</b>${ev.length?`<i class="pcal-dot"></i>${ev.length>1?`<em class="pcal-n">${ev.length}</em>`:''}`:''}</span>`);
+    const tot = ev.reduce((s,e)=>s+e.valor,0);
+    cells.push(ev.length
+      ? `<button type="button" class="pcal-c has-${st}${hoje?' pcal-hoje':''}${sel?' pcal-sel':''}" onclick="setPmDia(${dd})"
+           aria-pressed="${sel}" aria-label="${dd} de ${mesNome}: ${ev.length} pagamento${ev.length===1?'':'s'}, ${brl(tot)}">
+           <b>${dd}</b><i class="pcal-dot"></i>${ev.length>1?`<em class="pcal-n">${ev.length}</em>`:''}</button>`
+      : `<span class="pcal-c${hoje?' pcal-hoje':''}"><b>${dd}</b></span>`);
   }
+  const vis = _pmDia==null ? lst : lst.filter(x=>x.date.getDate()===_pmDia);
   const STAT={ pago:['fa-circle-check','Recebido','pago'], conf:['fa-circle-check','Confirmado','conf'], prev:['fa-clock','Previsto','prev'] };
-  const rows=lst.map(x=>{ const st=STAT[x.status];
+  const rows=vis.map(x=>{ const st=STAT[x.status];
     return `<div class="pmr" onclick="quickView('${x.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();quickView('${x.tk}')}">
       ${assetLogo(x.tk,x.k,'sm')}
       <div class="pmr-id"><div class="tk">${x.tk}</div><div class="nm">${esc(x.nm)}</div></div>
       <div class="pmr-d">${provDateShort(x.date)}</div>
       <div class="pmr-v"><b class="priv-blur">${brl(x.valor)}</b><span class="pmr-st st-${st[2]}"><i class="fa-solid ${st[0]}"></i> ${st[1]}</span></div>
     </div>`; }).join('');
-  return `<div class="card card-pad prov-in" style="--d:200ms">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-regular fa-calendar-check"></i></span> Proventos de ${mesNome}</div>
-      <div class="pmon-tot"><b class="priv-blur">${brl(lst.pago)}</b><span>recebido no mês</span></div></div>
+  const totDia = vis.reduce((s,x)=>s+x.valor,0);
+  const filtro = _pmDia!=null
+    ? `<div class="pm-filtro"><span><b>${_pmDia} de ${mesNome}</b> · ${vis.length} pagamento${vis.length===1?'':'s'} · <b class="priv-blur">${brl(totDia)}</b></span>
+       <button class="pm-limpar" onclick="setPmDia(${_pmDia})"><i class="fa-solid fa-xmark"></i> ver o mês todo</button></div>` : '';
+  const verMais = (_pmDia==null && vis.length>4)
+    ? `<button class="prc-more" onclick="const l=this.previousElementSibling;l.classList.toggle('pml-open');this.innerHTML=l.classList.contains('pml-open')?'<i class=\'fa-solid fa-chevron-up\'></i> Ver menos':'<i class=\'fa-solid fa-chevron-down\'></i> Ver todos os ${vis.length}'"><i class="fa-solid fa-chevron-down"></i> Ver todos os ${vis.length}</button>` : '';
+  return `<div class="card-head pm-head">
+      <div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-regular fa-calendar-check"></i></span> Proventos de ${mesNome}</div>
+      <div class="prc-nav">
+        <button class="prc-arrow" onclick="setPmMes(-1)" aria-label="Mês anterior"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="prc-mes">${PROV_MES[ref.getMonth()]} ${String(ref.getFullYear()).slice(2)}</span>
+        <button class="prc-arrow" onclick="setPmMes(1)" aria-label="Próximo mês"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+    <div class="pmon-tot pm-tot"><b class="priv-blur">${brl(lst.pago)}</b><span>recebido ${ehAtual?'no mês':'em '+mesNome}</span></div>
     <div class="pcal">${['D','S','T','Q','Q','S','S'].map(w=>`<span class="pcal-w">${w}</span>`).join('')}${cells.join('')}</div>
-    <div class="pcal-lg"><span><i class="dot pago"></i>recebido</span><span><i class="dot conf"></i>confirmado</span><span><i class="dot prev"></i>previsto</span></div>
-    ${lst.length ? `<div class="pmlist">${rows}</div>${lst.length>4?`<button class="prc-more" onclick="this.previousElementSibling.classList.toggle('pml-open');this.innerHTML=this.previousElementSibling.classList.contains('pml-open')?'<i class=\'fa-solid fa-chevron-up\'></i> Ver menos':'<i class=\'fa-solid fa-chevron-down\'></i> Ver todos os ${lst.length}'"><i class="fa-solid fa-chevron-down"></i> Ver todos os ${lst.length}</button>`:''}` : `<div class="pm-empty"><i class="fa-regular fa-calendar"></i> Nenhum pagamento neste mês — nem recebido, nem anunciado, nem previsto pelo histórico dos seus ativos.</div>`}
-    ${lst.aVir>0?`<div class="pm-foot">A receber ainda em ${mesNome}: <b class="priv-blur">${brl(lst.aVir)}</b>${lst.temPrev?' <em>(inclui valor previsto)</em>':''}</div>`:''}
-    ${lst.temPrev?illusNote('<strong>Previsto</strong> não é anúncio: usa o dia do último pagamento real e a periodicidade apurada do histórico (mediana dos intervalos), com o último valor por cota declarado. Ativo sem histórico suficiente não aparece como previsto.'):''}
-  </div>`;
+    <div class="pcal-lg"><span><i class="dot pago"></i>recebido</span><span><i class="dot conf"></i>confirmado</span><span><i class="dot prev"></i>previsto</span>${lst.length?'<span class="pcal-hint"><i class="fa-solid fa-hand-pointer"></i> toque num dia</span>':''}</div>
+    ${filtro}
+    ${vis.length ? `<div class="pmlist">${rows}</div>${verMais}`
+      : `<div class="pm-empty"><i class="fa-regular fa-calendar"></i> Nenhum pagamento em ${mesNome} — nem recebido, nem anunciado, nem previsto pelo histórico dos seus ativos.</div>`}
+    ${(_pmDia==null && lst.aVir>0)?`<div class="pm-foot">A receber ainda em ${mesNome}: <b class="priv-blur">${brl(lst.aVir)}</b>${lst.temPrev?' <em>(inclui valor previsto)</em>':''}</div>`:''}
+    ${lst.temPrev?illusNote('<strong>Previsto</strong> não é anúncio: usa o dia do último pagamento real e a periodicidade apurada do histórico (mediana dos intervalos), com o último valor por cota declarado. Ativo sem histórico suficiente não aparece como previsto.'):''}`;
+}
+function provMonthCard(groups){
+  return `<div class="card card-pad prov-in" style="--d:200ms" id="pmBody">${pmBodyHTML(groups)}</div>`;
 }
 /* 7) DISTRIBUIÇÃO DA RENDA POR CLASSE */
 function provDistCard(groups){
