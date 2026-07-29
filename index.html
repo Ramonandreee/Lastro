@@ -4540,7 +4540,16 @@ function movsSave(a){ MOVS=Array.isArray(a)?a.slice(-5000):[]; if(demoMode||(typ
 /* câmbio p/ o redutor: USD→BRL pelo fechamento do dia (ou câmbio atual); BRL=1 */
 function movsFx(){ return (cur,date)=> cur==='usd' ? ((typeof closeOn==='function'&&closeOn('USDBRL',String(date||'').slice(0,10)))||(typeof usdBrlRate==='function'?usdBrlRate():1)) : 1; }
 /* estado derivado (posições+caixa+realizado) numa data D (default: tudo/hoje) */
-function movsState(D){ if(!hasMovs()) return null; try{ return window.LastroMovs.deriveState(MOVS, D||null, {fx:movsFx()}); }catch(e){ return null; } }
+/* deriveState compara datas como STRING ('YYYY-MM-DD'). Passar um Date vira
+   "Wed Jul 29" no String(D).slice(0,10) e a comparação deixa TODOS os movimentos
+   passarem — inclusive vendas futuras à data pedida. Normaliza aqui, uma vez só. */
+function movsDateKey(D){
+  if(!D) return null;
+  if(D instanceof Date){ const p=n=>String(n).padStart(2,'0');
+    return D.getFullYear()+'-'+p(D.getMonth()+1)+'-'+p(D.getDate()); }
+  return String(D).slice(0,10);
+}
+function movsState(D){ if(!hasMovs()) return null; try{ return window.LastroMovs.deriveState(MOVS, movsDateKey(D), {fx:movsFx()}); }catch(e){ return null; } }
 /* atualiza a projeção CARTEIRA a partir de MOVS (mesmo formato [{id,tk,cotas,pm,date}]) */
 function rebuildCarteira(){ if(!hasMovs()) return; try{ CARTEIRA = window.LastroMovs.rebuildLots(MOVS)||[]; }catch(e){} }
 /* saldo em CAIXA (BRL, reais) na data D — Fase 1 só-compra ⇒ 0 */
@@ -4619,6 +4628,47 @@ function provPerCotaMonth(tk, base, y, m){ return base>0 ? base : 0; }
      [...] (.src='real') → pagamentos reais (inclui os anunciados ainda a pagar)
    Consumida pela Agenda (agendaMyPayments) e pela carteira (groupPayments).
    `valor` é NATIVO (US$ p/ dolarizado); `total` já vem convertido em BRL. */
+/* ── COTAS COM DIREITO A UM PROVENTO ──────────────────────────────────────
+   Quantas cotas o usuário tinha na DATA-COM daquele pagamento. Com o livro de
+   movimentos isso vem do estado NAQUELA data; sem ele, cai nos lotes atuais.
+   Somar os lotes de hoje apaga a renda de quem já vendeu — e ela foi recebida. */
+let _posCache=new Map(), _posCacheKey='';
+function posEmData(D){
+  const k=(typeof MOVS!=='undefined'?MOVS.length:0)+':'+(typeof _stateTs!=='undefined'?_stateTs:0);
+  if(k!==_posCacheKey){ _posCache.clear(); _posCacheKey=k; }        // MOVS mudou → recalcula
+  const t=movsDateKey(D);
+  if(_posCache.has(t)) return _posCache.get(t);
+  const st=(typeof movsState==='function')?movsState(D):null;
+  const p=(st&&st.posByTk)?st.posByTk:{};
+  _posCache.set(t,p);
+  return p;
+}
+function cotasNaDataCom(tk, D, g){
+  if(typeof movsActive==='function' && movsActive()){
+    const p=posEmData(D)[tk];
+    return { cotas: p? p.cotas : 0, semData:false };
+  }
+  let cotas=0, semData=false;
+  ((g&&g.lots)||[]).forEach(l=>{ const dt=parseLotDate(l.date); if(!dt) semData=true; if(!dt || dt<=D) cotas+=l.cotas; });
+  return { cotas, semData };
+}
+/* grupos para o HISTÓRICO de proventos: os da carteira + os que já saíram dela.
+   O que um ativo vendido pagou enquanto você o tinha é renda recebida de verdade. */
+function provGrupos(){
+  const atuais=(typeof portfolioByTicker==='function')?portfolioByTicker():[];
+  if(!(typeof movsActive==='function' && movsActive())) return atuais;
+  const tem=new Set(atuais.map(g=>g.tk));
+  const extra=[];
+  const vistos=new Set();
+  (typeof MOVS!=='undefined'?MOVS:[]).forEach(m=>{ if(m&&m.tk) vistos.add(String(m.tk).toUpperCase()); });
+  vistos.forEach(tk=>{
+    if(tem.has(tk)) return;
+    const f=(typeof assetLookup==='function')?assetLookup(tk):null; if(!f) return;
+    extra.push({ tk, f, lots:[], cotas:0, custo:0, val:0, prov:0,
+                 cur:(typeof isUsAsset==='function'&&isUsAsset(f))?'usd':'brl', vendido:true });
+  });
+  return extra.length ? atuais.concat(extra) : atuais;
+}
 function realPaymentsFor(g){
   if(!g || !g.f) return null;
   // sem fonte de proventos: classe não coberta OU ativo dolarizado (o /api/asset é proxy brapi/B3 —
@@ -4628,9 +4678,8 @@ function realPaymentsFor(g){
   const rate = g.cur==='usd' ? usdBrlRate() : 1;
   const out=[];
   dd.forEach(d=>{
-    // elegibilidade: só as cotas já detidas na DATA-COM. Lote sem data é tratado como antigo (semData).
-    let cotas=0, semData=false;
-    g.lots.forEach(l=>{ const dt=parseLotDate(l.date); if(!dt) semData=true; if(!dt || dt<=d.com) cotas+=l.cotas; });
+    // elegibilidade: só as cotas já detidas na DATA-COM (via livro de movimentos quando existe).
+    const cd=cotasNaDataCom(g.tk, d.com, g), cotas=cd.cotas, semData=cd.semData;
     if(cotas<=0) return;
     out.push({ tk:g.tk, k:g.f.k, pay:d.pay, com:d.com, comReal:!!d.comReal, perCota:d.value, cotas,
                valor:d.value*cotas, total:d.value*cotas*rate, semData, label:d.label||'' });
@@ -4654,7 +4703,7 @@ function groupPayments(g){
 }
 /* extrato consolidado de proventos da carteira (.pend = algum ativo ainda apurando) */
 function provPayments(groups){ const out=[]; let pend=false;
-  (groups||portfolioByTicker()).forEach(g=>{ (g.pays||groupPayments(g)).forEach(p=>out.push(p)); if(g.provPend) pend=true; });
+  (groups||provGrupos()).forEach(g=>{ (g.pays||groupPayments(g)).forEach(p=>out.push(p)); if(g.provPend) pend=true; });
   out.sort((a,b)=>b.date-a.date); out.pend=pend; return out; }
 /* Busca o histórico REAL de proventos dos ativos da carteira (/api/asset, cache de 5min no
    loadAssetLive) e re-renderiza a tela quando chega. Sem isso, as telas que mostram proventos
@@ -4666,7 +4715,9 @@ function ensurePortfolioDividends(force){
   const now=Date.now();
   if(force) _provTried.clear();
   // não busca dolarizado: /api/asset é proxy brapi/B3 e a chamada falharia sempre
-  const want=[...new Set(portfolioByTicker().filter(g=>LIVE_ASSET_KINDS.has(g.f.k) && !(typeof isUsAsset==='function' && isUsAsset(g.f))).map(g=>g.tk))];
+  // inclui os que saíram da carteira: sem buscar o histórico deles, os proventos que
+  // pagaram enquanto você os tinha ficariam eternamente em "apurando".
+  const want=[...new Set(provGrupos().filter(g=>LIVE_ASSET_KINDS.has(g.f.k) && !(typeof isUsAsset==='function' && isUsAsset(g.f))).map(g=>g.tk))];
   const todo=want.filter(tk=>!Array.isArray((ASSET_LIVE[tk]||{}).dividends) && !(now-(_provTried.get(tk)||0) < 300000));
   if(!todo.length) return;
   todo.forEach(tk=>{ _provTried.set(tk, now); _provFail.delete(tk); });
@@ -8683,7 +8734,7 @@ function simRendaHTML(){
    VIEW: MEUS PROVENTOS
    ══════════════════════════════════════════════════════════ */
 function proventosData(){
-  const groups=portfolioByTicker();
+  const groups=provGrupos();
   const pays=provPayments(groups), now=new Date();
   // JANELA IDÊNTICA À DA AGENDA (12 meses corridos a partir de hoje) — é o que faz os dois
   // "Recebido (12m)" do app baterem no centavo. Valores já em BRL (valorBRL) p/ somar dolarizado.
@@ -8745,7 +8796,7 @@ const PROV_CLASS_COLOR = { fiis:'--brand', acoes:'--up', etfs:'--gold', bdrs:'--
    1º aporte do usuário e o 1º provento que a fonte publica. Antes disso um mês
    sem valor não é "não recebeu" — é "não sabemos", e não pode virar barra zero. */
 function provCoverStart(groups){
-  groups=groups||portfolioByTicker();
+  groups=groups||provGrupos();
   let firstLot=null, srcStart=null;
   groups.forEach(g=>{
     (g.lots||[]).forEach(l=>{ const t=parseLotDate(l.date); if(t&&(!firstLot||t<firstLot)) firstLot=t; });
@@ -8762,7 +8813,7 @@ function provCoverMonths(groups){
 }
 /* série mensal REAL (n meses até o mês corrente), já cortada no início da cobertura */
 function provMonthSeries(n, groups){
-  groups=groups||portfolioByTicker();
+  groups=groups||provGrupos();
   const pays=provPayments(groups), now=new Date(), cov=provCoverStart(groups);
   const arr=[], idx={};
   for(let i=n-1;i>=0;i--){
@@ -8779,13 +8830,13 @@ function provMonthSeries(n, groups){
 }
 /* ranking completo (12m): total, nº de pagamentos, participação, YoC real, DY e tendência */
 function provRankFull(groups){
-  groups=groups||portfolioByTicker();
+  groups=groups||provGrupos();
   const now=new Date();
   const lim12=new Date(now.getFullYear()-1, now.getMonth(), now.getDate());
   const lim6 =new Date(now.getFullYear(), now.getMonth()-6, now.getDate());
   const out=[];
   groups.forEach(g=>{
-    const ps=(g.pays||[]).filter(p=>p.date>=lim12 && p.date<=now);
+    const ps=(g.pays||groupPayments(g)||[]).filter(p=>p.date>=lim12 && p.date<=now);
     const tot=ps.reduce((s,p)=>s+PROV_VAL(p),0);
     if(!(tot>0)) return;
     const rec=ps.filter(p=>p.date>=lim6).reduce((s,p)=>s+PROV_VAL(p),0);
@@ -8804,7 +8855,7 @@ function provRankFull(groups){
 }
 /* distribuição da renda de 12m por CLASSE (classKeyOf/CLASS_META — ETF B3 ≠ ETF internacional) */
 function provClassDist(groups){
-  groups=groups||portfolioByTicker();
+  groups=groups||provGrupos();
   const now=new Date(), lim12=new Date(now.getFullYear()-1, now.getMonth(), now.getDate());
   const map=new Map();
   groups.forEach(g=>{
@@ -8822,7 +8873,7 @@ function provClassDist(groups){
 }
 /* pagamentos do MÊS corrente: pago (real) · confirmado (anunciado, data real) · previsto (ciclo apurado) */
 function provMonthAgenda(groups, off){
-  groups=groups||portfolioByTicker();
+  groups=groups||provGrupos();
   const now=new Date(), ref=new Date(now.getFullYear(), now.getMonth()+(off||0), 1);
   const y=ref.getFullYear(), m=ref.getMonth();
   const noMes = d => d && d.getFullYear()===y && d.getMonth()===m;
@@ -8865,7 +8916,7 @@ function provNextPayment(groups){
 }
 /* recordes — só o que os pagamentos reais sustentam */
 function provRecords(groups){
-  groups=groups||portfolioByTicker();
+  groups=groups||provGrupos();
   const pays=provPayments(groups), out={};
   if(!pays.length) return out;
   const now=new Date();
@@ -9237,7 +9288,9 @@ function provHmTap(el){
 function provPair(a,b){ const h=(a||'')+(b||''); return h ? `<div class="pgrid">${h}</div>` : ''; }
 function viewProventos(){
   const d=proventosData(), p=portfolioStats();
-  const groups=p._byT;
+  // histórico inclui quem já saiu da carteira: o que esses ativos pagaram enquanto você
+  // os tinha é renda recebida de verdade (p._byT traz só as posições atuais)
+  const groups=provGrupos();
   d.firstPay=provFirstPay(groups);
   const head=`<div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-coins"></i></span> Meus Proventos</div></div>`;
   if(!d.nPos){
@@ -9860,7 +9913,7 @@ function agendaDivs(tk){
 /* pagamentos REAIS da carteira: valor por cota declarado × cotas com direito na DATA-COM real */
 function agendaMyPayments(groups){
   const out=[];   // mesma fonte única de verdade que alimenta a carteira/Proventos (realPaymentsFor)
-  (groups||portfolioByTicker()).forEach(g=>{ const r=realPaymentsFor(g); if(r) r.forEach(p=>out.push(p)); });
+  (groups||provGrupos()).forEach(g=>{ const r=realPaymentsFor(g); if(r) r.forEach(p=>out.push(p)); });
   return out.sort((a,b)=>b.pay-a.pay);
 }
 /* universo consultado na aba mercado (teto baixo — cada ativo é uma chamada) */
