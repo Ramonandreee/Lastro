@@ -2575,8 +2575,8 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .prof-actions { display:flex; gap:8px; margin-top:12px; }
 .fld-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .fld-grid .fld:first-child, .fld-grid .fld:nth-child(2) { grid-column:1 / -1; }
-.fld select { padding:13px 15px; border:1px solid var(--line-2); border-radius:var(--r-lg); background:var(--surface-2); color:var(--ink); font-size:15px; cursor:pointer; transition:border-color .16s var(--ease), background .16s var(--ease), box-shadow .16s var(--ease); }
-.fld select:focus { border-color:var(--brand); background:var(--surface); box-shadow:0 0 0 3px var(--brand-l); outline:none; }
+.fld select { -webkit-appearance:none; appearance:none; padding:13px 40px 13px 15px; border:1px solid var(--line-2); border-radius:var(--r-lg); background-color:var(--surface-2); background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238A94A6' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; background-size:15px; color:var(--ink); font-size:15px; cursor:pointer; transition:border-color .16s var(--ease), background-color .16s var(--ease), box-shadow .16s var(--ease); }
+.fld select:focus { border-color:var(--brand); background-color:var(--surface); box-shadow:0 0 0 3px var(--brand-l); outline:none; }
 @media (max-width:460px){ .fld-grid { grid-template-columns:1fr; } }
 .prof-lbl { font-size:12px; font-weight:500; color:var(--ink-2); margin-bottom:8px; }
 .prof-chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
@@ -2783,7 +2783,7 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .quiz-badge { width:74px; height:74px; border-radius:50%; margin:2px auto 16px; display:flex; align-items:center; justify-content:center; font-size:29px; color:#fff; box-shadow:0 10px 26px rgba(15,20,25,.2); }
 .quiz-conservador { background:linear-gradient(150deg,#2E8B6E,#1C6F5A); }
 .quiz-moderado { background:linear-gradient(150deg,#2E6FB0,#1E4E86); }
-.quiz-arrojado { background:linear-gradient(150deg,#C8911F,#9C6C18); }
+.quiz-arrojado { background:linear-gradient(150deg,#E0693F,#C0472A); }
 .quiz-res-t { font-size:23px; font-weight:700; letter-spacing:-.025em; color:var(--ink); }
 .quiz-res-d { font-size:13.5px; color:var(--ink-2); line-height:1.62; margin:9px 8px 0; max-width:340px; margin-left:auto; margin-right:auto; }
 .quiz-actions { display:flex; gap:10px; margin-top:22px; }
@@ -5271,7 +5271,7 @@ function proUnlock(){ closePremiumModal(); if(!isAuthed()) openAuth('signup'); e
 function proGate(key){ if(isPro()) return true; openPremiumModal(key); return false; }
 /* rótulo do botão de desbloqueio conforme o estado do usuário */
 function proCtaLabel(){ return !isAuthed() ? 'Criar conta · 7 dias Premium grátis' : (trialExpired()? 'Assinar Premium' : 'Desbloquear Premium'); }
-function proCtaIcon(){ return !isAuthed() ? 'fa-rocket' : 'fa-crown'; }
+function proCtaIcon(){ return !isAuthed() ? 'fa-crown' : 'fa-crown'; }
 function proCtaButton(extraClass){ return `<button class="btn btn-premium ${extraClass||''}" onclick="proGate()"><i class="fa-solid ${proCtaIcon()}"></i> ${proCtaLabel()}</button>`; }
 const PREMIUM_VIEWS = ['proventos','aporte','ir','alertas','backtest','raiox','stress'];
 function premiumRibbon(){ return `<div class="premium-ribbon"><i class="fa-solid fa-crown"></i> Recurso Premium${trialActive()?` · Teste ativo · ${trialDaysLeft()} dia(s)`:''}</div>`; }
@@ -5290,7 +5290,7 @@ function refreshPlanUI(){
     const uct=up.querySelector('.uc-top'), ucs=up.querySelector('.uc-sub');
     if(uct&&ucs){
       if(trialActive()){ uct.innerHTML='<i class="fa-solid fa-bolt"></i> Teste Premium ativo'; ucs.textContent=`${trialDaysLeft()} dia(s) restantes · assine para manter`; }
-      else if(!isAuthed()){ uct.innerHTML='<i class="fa-solid fa-rocket"></i> Teste Premium grátis'; ucs.textContent='Crie sua conta e use 7 dias grátis'; }
+      else if(!isAuthed()){ uct.innerHTML='<i class="fa-solid fa-crown"></i> Teste Premium grátis'; ucs.textContent='Crie sua conta e use 7 dias grátis'; }
       else { uct.innerHTML='<i class="fa-solid fa-crown"></i> Seja Premium'; ucs.textContent='Análises, alertas e rastreador completos'; }
     }
   }
@@ -7787,7 +7787,7 @@ function viewPlanos(){
   const trialBanner = pro ? '' : (trialActive()
     ? `<div class="plan-trial-cta is-active"><i class="fa-solid fa-bolt"></i><div><strong>Teste Premium ativo — ${trialDaysLeft()} dia(s) restantes.</strong> <span>Assine para manter o acesso completo após o período.</span></div></div>`
     : (!isAuthed()
-      ? `<div class="plan-trial-cta"><i class="fa-solid fa-rocket"></i><div><strong>Crie sua conta e teste todos os recursos Premium grátis por 7 dias.</strong> <span>Sem cartão necessário.</span></div><button class="btn btn-premium btn-sm" onclick="openAuth('signup')"><i class="fa-solid fa-rocket"></i> Criar conta grátis</button></div>`
+      ? `<div class="plan-trial-cta"><i class="fa-solid fa-crown"></i><div><strong>Crie sua conta e teste todos os recursos Premium grátis por 7 dias.</strong> <span>Sem cartão necessário.</span></div><button class="btn btn-premium btn-sm" onclick="openAuth('signup')"><i class="fa-solid fa-crown"></i> Criar conta grátis</button></div>`
       : `<div class="plan-trial-cta"><i class="fa-solid fa-crown"></i><div><strong>Seu teste de 7 dias terminou.</strong> <span>Assine o Premium para retomar o acesso completo.</span></div></div>`));
   return `
   <div class="pricing-hero">
@@ -7847,7 +7847,7 @@ function viewPlanos(){
   </div>
 
   ${pro?'':`<div class="cmp-cta">${!isAuthed()
-      ? `<button class="btn btn-premium" onclick="openAuth('signup')"><i class="fa-solid fa-rocket"></i> Criar conta · 7 dias Premium grátis</button><div class="cmp-cta-sub">Sem cartão · cancele quando quiser</div>`
+      ? `<button class="btn btn-premium" onclick="openAuth('signup')"><i class="fa-solid fa-crown"></i> Criar conta · 7 dias Premium grátis</button><div class="cmp-cta-sub">Sem cartão · cancele quando quiser</div>`
       : `<button class="btn btn-premium" onclick="subscribePremium('anual')"><i class="fa-solid fa-bolt"></i> Assinar Premium</button><div class="cmp-cta-sub">Sem fidelidade · cancele quando quiser</div>`}</div>`}
 
   <div class="pricing-foot">
@@ -7971,7 +7971,7 @@ function viewIndicar(){
   </div>`;
   if(!isAuthed()){
     return `${hero}
-    <div class="card card-pad">${emptyState('fa-user-plus','Crie sua conta para participar','Gere seu link exclusivo e ganhe 20% da assinatura de cada amigo que você indicar — recorrente, direto na sua conta via PIX.', `<button class="btn btn-premium" onclick="openAuth('signup')"><i class="fa-solid fa-rocket"></i> Criar conta grátis</button>`)}</div>`;
+    <div class="card card-pad">${emptyState('fa-user-plus','Crie sua conta para participar','Gere seu link exclusivo e ganhe 20% da assinatura de cada amigo que você indicar — recorrente, direto na sua conta via PIX.', `<button class="btn btn-premium" onclick="openAuth('signup')"><i class="fa-solid fa-crown"></i> Criar conta grátis</button>`)}</div>`;
   }
   const link=refLink();
   const proRef=isProTier(), rate=proRef?REF_RATE_PRO:REF_RATE, ratePct=Math.round(rate*100);
