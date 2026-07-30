@@ -4101,8 +4101,8 @@ button.mp-cell:active { background:var(--surface-3); }
 .phm-l2 { background:color-mix(in srgb, var(--up) 46%, transparent); }
 .phm-l3 { background:color-mix(in srgb, var(--up) 70%, transparent); }
 .phm-l4 { background:var(--up); }
-.phm-off { background:transparent; box-shadow:inset 0 0 0 1px var(--line); }
-.phm-now { box-shadow:inset 0 0 0 1.5px var(--ink-4); }
+.phm-off { background:color-mix(in srgb, var(--ink) 4%, transparent); box-shadow:none; }
+.phm-now { box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--up) 60%, transparent); }
 .phm-tip { position:absolute; left:50%; bottom:calc(100% + 6px); z-index:6; display:flex; flex-direction:column; align-items:center; gap:1px;
   padding:6px 9px; border-radius:8px; background:var(--ink); color:var(--canvas); white-space:nowrap; font-size:10px;
   opacity:0; pointer-events:none; transform:translate(-50%, 4px); transition:opacity .16s var(--ease), transform .16s var(--ease); }
@@ -4119,8 +4119,6 @@ button.mp-cell:active { background:var(--surface-3); }
 .phm-lg { display:flex; align-items:center; gap:4px; font-size:10px; color:var(--ink-4); }
 .phm-lg i.phm-c { width:11px; height:11px; aspect-ratio:auto; flex:none; }
 .phm-lg > span { margin:0 4px; }
-.phm-off-lg { display:inline-flex; align-items:center; gap:5px; margin-left:auto; }
-.phm-off-lg i.phm-c { margin:0; }
 
 @media (min-width:620px){ .ph-foot { grid-template-columns:repeat(3,1fr); } }
 /* seletor Compra/Venda do modal de movimento */
@@ -9302,8 +9300,7 @@ function provHeatCard(groups){
       <div class="phm-hd"><span class="phm-y"></span>${PROV_MES.map(m=>`<span class="phm-m">${m[0].toUpperCase()}</span>`).join('')}</div>
       ${anos.map(y=>`<div class="phm-row"><span class="phm-y">${y}</span>${PROV_MES.map((_,m)=>cell(y,m)).join('')}</div>`).join('')}
     </div>
-    <div class="phm-lg"><span>menos</span><i class="phm-c phm-l0"></i><i class="phm-c phm-l1"></i><i class="phm-c phm-l2"></i><i class="phm-c phm-l3"></i><i class="phm-c phm-l4"></i><span>mais</span>
-      <span class="phm-off-lg"><i class="phm-c phm-off"></i> fora do histórico</span></div>
+    <div class="phm-lg"><span>menos</span><i class="phm-c phm-l1"></i><i class="phm-c phm-l2"></i><i class="phm-c phm-l3"></i><i class="phm-c phm-l4"></i><span>mais</span></div>
   </div>`;
 }
 function provHmTap(el){
