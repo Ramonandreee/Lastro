@@ -4389,6 +4389,18 @@ button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l);
 .ir-darf-res .metric { padding:9px 0; }
 @media (max-width:760px){ .sim-grid { grid-template-columns:1fr; } }
 
+/* nota explicativa recolhível: só o círculo ⓘ; toca para revelar */
+.illus-note.illus-c { cursor:pointer; border-top:0; padding-top:0; margin-top:12px; align-items:center; gap:0; -webkit-tap-highlight-color:transparent; }
+.illus-note.illus-c > i { flex:none; width:24px; height:24px; border-radius:50%; background:var(--surface-3); color:var(--ink-3);
+  display:inline-flex; align-items:center; justify-content:center; font-size:11px; margin-top:0;
+  transition:background .16s var(--ease), color .16s var(--ease); }
+.illus-note.illus-c:hover > i, .illus-note.illus-c:focus-visible > i { background:var(--brand-l); color:var(--brand); }
+.illus-note.illus-c:focus-visible { outline:none; }
+.illus-note.illus-c .illus-body { display:none; }
+.illus-note.illus-c.illus-open { border-top:1px solid var(--line); padding-top:12px; gap:8px; align-items:flex-start; }
+.illus-note.illus-c.illus-open > i { width:auto; height:auto; background:transparent; color:var(--ink-4); margin-top:3px; }
+.illus-note.illus-c.illus-open .illus-body { display:inline; }
+
 </style>
 
 <script src="/vendor/chart.umd.js"></script>
@@ -5582,6 +5594,32 @@ function applyPriv(){
   });
 }
 function togglePriv(){ localStorage.setItem('lastro_priv', privOn()?'0':'1'); applyPriv(); if(typeof saveCloudState==='function') saveCloudState(); }
+/* Notas explicativas (ⓘ) recolhidas por padrão: mostra só o círculo; toca para revelar o texto.
+   Idempotente (data-ic). Instala uma vez um MutationObserver no #content para pegar também as
+   notas injetadas por funções dinâmicas (Aporte, DARF, simuladores) sem chamar em cada uma. */
+let _illusObs=false, _illusQ=false;
+function illusInit(){
+  if(!_illusObs){ const c=document.getElementById('content');
+    if(c){ _illusObs=true; new MutationObserver(()=>{ if(_illusQ) return; _illusQ=true;
+      requestAnimationFrame(()=>{ _illusQ=false; illusScan(); }); }).observe(c,{childList:true,subtree:true}); } }
+  illusScan();
+}
+function illusScan(){
+  document.querySelectorAll('.illus-note:not([data-ic])').forEach(el=>{
+    el.setAttribute('data-ic','1');
+    let icon=el.querySelector(':scope > i');
+    const nodes=[...el.childNodes];
+    if(!icon){ icon=document.createElement('i'); icon.className='fa-solid fa-circle-info'; }
+    const body=document.createElement('span'); body.className='illus-body';
+    nodes.forEach(n=>{ if(n!==icon) body.appendChild(n); });
+    el.textContent=''; el.appendChild(icon); el.appendChild(body);
+    el.classList.add('illus-c');
+    el.setAttribute('role','button'); el.setAttribute('tabindex','0');
+    el.setAttribute('aria-label','Ver explicação'); el.setAttribute('aria-expanded','false');
+    el.addEventListener('click',()=>{ const o=el.classList.toggle('illus-open'); el.setAttribute('aria-expanded', o?'true':'false'); });
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); el.click(); } });
+  });
+}
 /* área de perfil (gerenciamento da conta) */
 /* perfil local (nome de exibição + foto), sincronizado na nuvem */
 function getProfile(){ try{ return JSON.parse(localStorage.getItem('lastro_profile')||'{}'); }catch(e){ return {}; } }
@@ -9061,7 +9099,7 @@ function togglePrc(){
     : `<i class="fa-solid fa-chevron-down"></i> Ver mais (${btn.dataset.n})`;
 }
 function renderPrc(){ const el=document.getElementById('prcBody');
-  if(el){ el.innerHTML=prcBodyHTML(); if(typeof applyPriv==='function') applyPriv(); } }
+  if(el){ el.innerHTML=prcBodyHTML(); if(typeof applyPriv==='function') applyPriv(); illusInit(); } }
 function prcRow(it, first, mesmaData){
   const dias=provDaysTo(it.pay);
   const tag = it.conf ? '<i class="fa-solid fa-circle-check"></i> confirmado' : '<i class="fa-regular fa-clock"></i> previsto';
@@ -9146,7 +9184,7 @@ function setPmDia(dd){
 }
 function renderPm(){
   const el=document.getElementById('pmBody');
-  if(el){ el.innerHTML=pmBodyHTML(); if(typeof applyPriv==='function') applyPriv(); }
+  if(el){ el.innerHTML=pmBodyHTML(); if(typeof applyPriv==='function') applyPriv(); illusInit(); }
 }
 function pmBodyHTML(groups){
   const lst=provMonthAgenda(groups, _pmOff), now=new Date(), ref=lst.ref;
@@ -9913,7 +9951,7 @@ function viewAgenda(){
 }
 /* re-render assíncrono reescreve o HTML DEPOIS do applyPriv() do afterRender —
    sem reaplicar, os valores mascarados (olho fechado) vazariam em claro. */
-function renderAgenda(){ const el=$('#agBody'); if(el){ el.innerHTML=agendaBodyHTML(); if(typeof applyPriv==='function') applyPriv(); } }
+function renderAgenda(){ const el=$('#agBody'); if(el){ el.innerHTML=agendaBodyHTML(); if(typeof applyPriv==='function') applyPriv(); illusInit(); } }
 function initAgenda(){
   const want=new Set();
   portfolioByTicker().forEach(g=>{ if(LIVE_ASSET_KINDS.has(g.f.k)) want.add(g.tk); });
@@ -10458,6 +10496,7 @@ function afterRender(v, soft){
   destroyCharts();
   syncTabBar(v);                                    // acende a aba da seção (cobre boot e render() direto)
   if(typeof applyPriv==='function') applyPriv();   // reaplica máscara de privacidade nos valores recém-renderizados
+  illusInit();                                     // recolhe as notas explicativas (ⓘ)
   document.body.classList.toggle('view-inicio', v==='painel');
   // identidade Premium: ribbon discreto no topo das páginas Premium
   const isPremiumV = PREMIUM_VIEWS.includes(v) || (v==='simulador' && simTab==='fire');   // aba FIRE do Simulador mantém identidade Pro
