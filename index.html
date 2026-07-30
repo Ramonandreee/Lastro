@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="description" content="Lastro — Inteligência para o investidor brasileiro. Análise de FIIs, ações B3, indicadores fundamentalistas e Score Lastro.">
+<meta name="description" content="Lastro — Inteligência para o investidor brasileiro. Análise de FIIs, ações B3, indicadores fundamentalistas.">
 <meta name="theme-color" content="#F1F3F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#070C16" media="(prefers-color-scheme: dark)">
 <title>Lastro · Inteligência de Investimentos</title>
@@ -865,7 +865,7 @@ img, svg, canvas, video { max-width: 100%; }
   table.tbl .td-asset .ds { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .market-status, .data-status { display:none; }
   .atabs, .stabs, .rec-filters { top:calc(64px + env(safe-area-inset-top,0px)); }
-  /* badge "Com Score Lastro" é redundante no mobile (já há o bloco Score Lastro acima) */
+  /* badge/chip do cabeçalho é redundante no mobile */
   .card-head .chip { display:none; }
   .card-pad { padding: var(--pad); }
   .dt-head { gap:12px; }
@@ -895,7 +895,7 @@ img, svg, canvas, video { max-width: 100%; }
   #dataTbl .td-asset .tk { font-size: 13.5px; }
   #dataTbl .td-asset .ds { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #dataTbl .tk-meta { display: block; font-size: 11px; color: var(--ink-3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* ranking do Score (.tbl-rank): no mobile mostra Ativo · Score · Classificação, SEM rolar */
+  /* ranking (.tbl-rank): no mobile mostra Ativo · Classificação, SEM rolar */
   table.tbl-rank { width: 100% !important; min-width: 0 !important; table-layout: fixed; }
   table.tbl-rank td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 9px; padding-right: 9px; }
   table.tbl-rank th { white-space: normal; overflow: visible; text-overflow: clip; padding-left: 9px; padding-right: 9px; font-size: 9.5px; line-height: 1.25; vertical-align: bottom; }
@@ -1120,7 +1120,7 @@ img, svg, canvas, video { max-width: 100%; }
       </div>
       <label class="fld"><span><span id="posDtLbl">Data do aporte</span> <small style="color:var(--ink-4);font-weight:400">· contabiliza os proventos</small></span><input id="posDt" type="date" required onchange="posPreview()" onkeydown="if(event.key==='Enter')savePos()"></label>
       <div id="posPreview" class="pos-preview"></div>
-      <div id="posHint" class="pos-hint"><i class="fa-solid fa-circle-info"></i> <span>Digite o ativo para ver a cotação atual, o Score Lastro e o custo do aporte antes de salvar.</span></div>
+      <div id="posHint" class="pos-hint"><i class="fa-solid fa-circle-info"></i> <span>Digite o ativo para ver a cotação atual e o custo do aporte antes de salvar.</span></div>
       <div id="posErr" class="fld-err"></div>
     </div>
     <div class="modal-foot"><button class="btn btn-ghost" onclick="closePosModal()">Cancelar</button><button class="btn btn-primary" onclick="savePos()"><i class="fa-solid fa-check"></i> Salvar</button></div>
@@ -1516,7 +1516,7 @@ table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { backgrou
 .td-asset .nm { line-height: 1.28; min-width: 0; }
 .td-asset .tk { font-family: var(--mono); font-weight: 600; font-size: 14.5px; color: var(--ink); letter-spacing: -.01em; }
 .td-asset .ds { font-size: 11.5px; color: var(--ink-3); font-weight: 450; }
-.tk-meta { display: none; }   /* linha Score·DY só aparece no mobile (desktop mostra nas colunas) */
+.tk-meta { display: none; }   /* linha DY só aparece no mobile (desktop mostra nas colunas) */
 .seg {
   font-size: 10.5px; font-weight: 500;
   padding: 3px 9px; border-radius: 6px;
@@ -1528,13 +1528,6 @@ table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { backgrou
 .seg-Tijolo { background: var(--brand-l); color: var(--brand); }
 [data-theme="dark"] .seg-Shopping { background: rgba(139,79,184,.16); color: #C99BE8; }
 
-/* score gauge */
-.score-pill {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-family: var(--mono); font-weight: 600; font-size: 13px;
-}
-.score-dot { width: 8px; height: 8px; border-radius: 50%; }
-
 /* filters */
 /* GRID (não flex): os filhos não herdam flex-grow (que esticava vertical no iOS) */
 .filters { display:grid; gap:10px; margin-bottom:18px; }
@@ -1545,7 +1538,7 @@ table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { backgrou
 .filters-row2.has-adv { grid-template-columns:1fr 1fr; }
 .filters-row2 > * { min-width:0; }
 .filters-row2 .sel-wrap { width:100%; height:46px; }
-/* Ordenar: rótulo fixo em vez do valor selecionado (evita "Score Lastro" em destaque) */
+/* Ordenar: rótulo fixo em vez do valor selecionado (mantém o controle enxuto) */
 .sel-ordenar .sel-ghost { color:transparent; }
 .sel-ordenar .sel-ghost option { color:var(--ink); }
 .sel-ordenar .sel-fixed { position:absolute; left:40px; font-size:14px; font-weight:600; color:var(--ink-2); pointer-events:none; }
@@ -1611,11 +1604,6 @@ table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { backgrou
 .sel-wrap.has-lead .sel { padding-left: 40px; }
 .sel:hover { border-color: var(--line-2); }
 .sel:focus { box-shadow: 0 0 0 3px var(--brand-l); }
-/* destaque do recurso proprietário: ordenação por Score Lastro */
-.sel-wrap.sel-score .sel { background: var(--gold-l); border-color: color-mix(in srgb, var(--gold) 32%, transparent); color: var(--gold); font-weight: 600; }
-.sel-wrap.sel-score .lead, .sel-wrap.sel-score .chev { color: var(--gold); }
-.sel-wrap.sel-score .sel:hover { border-color: var(--gold); }
-.sel-wrap.sel-score .sel:focus { box-shadow: 0 0 0 3px var(--gold-l); }
 
 /* score gauge big (radial) */
 .gauge-card { display: flex; align-items: center; gap: 20px; }
@@ -3702,7 +3690,7 @@ button.mp-cell:active { background:var(--surface-3); }
 .mrec-v { display:inline-flex; align-items:center; gap:2px; font-size:11px; font-weight:700; }
 .mrec-v.up { color:var(--up); } .mrec-v.down { color:var(--down); }
 
-/* Descobrir — atalhos e hero do Score */
+/* Descobrir — atalhos e hero */
 .mkt-shortcuts { display:flex; flex-direction:column; gap:11px; }
 .mkt-short { display:flex; align-items:center; gap:13px; padding:15px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; transition:border-color .18s var(--ease), box-shadow .18s var(--ease), transform .12s var(--ease); }
 .mkt-short:hover { border-color:var(--line-2); box-shadow:var(--sh); }
@@ -4383,11 +4371,11 @@ window.LastroMoney = window.LastroMoney || (function(){
     convertCents:(c,rt)=>r(r(c)*Number(rt)), pctCents:(d,b)=>{ const bb=r(b); return bb ? r(d)/bb*100 : 0; } };
 })();
 
-// Score Lastro: composto transparente 0-100 — MESMA fórmula para dado curado e ao vivo
-// (DY sustentável 35% · P/VP 30% · Solidez 20% · Consistência 15%; teto 100).
+// Índice interno de qualidade (0-100) usado como ingrediente das análises de carteira
+// (equilíbrio/consistência) — NÃO é exibido ao usuário. Composto transparente:
+// DY sustentável 35% · P/VP 30% · Solidez 20% · Consistência 15%; teto 100.
 // Solidez = ROE para empresas (ações); liquidez para fundos (FIIs, sem ROE); neutro se nenhum.
-// Dado ausente entra como NEUTRO, sem trocar o critério — assim o mesmo ativo recebe o mesmo Score
-// seja pelos dados curados, seja pelos fundamentos reais carregados.
+// Dado ausente entra como NEUTRO, sem trocar o critério.
 function scoreOf(a){
   if(!a) return null;
   if(typeof a.score==='number') return a.score;            // score explícito (se houver) vence, em ambos os caminhos
@@ -4404,9 +4392,7 @@ function scoreOf(a){
   return Math.min(100, Math.round(dyN + pvpN + solN + conN));   // teto garantido (defesa se consist>1)
 }
 function scoreLastro(a){ return scoreOf(a); }
-function ensureScore(a){ return scoreOf(a); }
 function scoreColor(s){ return s>=80?'var(--brand)': s>=65?'var(--accent)': s>=50?'var(--gold)':'var(--down)'; }
-function scoreChip(s){ return s>=80?'chip-up': s>=65?'chip-blue': s>=50?'chip-gold':'chip-down'; }
 function scoreTier(s){ return s>=80?'Excelente': s>=65?'Sólido': s>=50?'Razoável':'Atenção'; }
 
 const FIIS = [
@@ -4848,7 +4834,7 @@ function portfolioByTicker(lots){
 function fmtDateBR(iso){ if(!iso) return '—'; const s=String(iso); const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); const d = m ? new Date(+m[1], +m[2]-1, +m[3]) : new Date(s); if(isNaN(d)) return '—'; const p=x=>String(x).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`; }
 function toggleLots(tk){ const r=document.getElementById('lots-'+tk); if(r){ r.hidden=!r.hidden; const row=document.querySelector(`.pos-row[data-tk="${tk}"] .lot-caret`); if(row) row.classList.toggle('open', !r.hidden); } }
 function fillTickerList(){ const dl=document.getElementById('tkList'); if(!dl) return; dl.innerHTML = searchPool().map(a=>`<option value="${a.tk}">${esc(a.nm||'')}</option>`).join(''); }
-/* prévia ao vivo: Score, cotação e leitura do preço digitado */
+/* prévia ao vivo: cotação e leitura do preço digitado */
 /* máscara de moeda pt-BR ao digitar (1.234,56) */
 function maskBRL(input){
   let d=String(input.value||'').replace(/\D/g,'');
@@ -4908,7 +4894,6 @@ function posPreview(){
   const pmEl=$('#posPm'); if(pmEl && !_pmTouched && a.px>0) pmEl.value=fmtBRLInput(a.px);
   const pm=parseBRL($('#posPm').value), qt=+$('#posQt').value;
   const rows=[];
-  if(typeof a.score==='number') rows.push(`<div class="pp-row"><span>Score Lastro</span><b style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)};margin-right:6px"></span>${a.score}/100 · ${scoreTier(a.score)}</b></div>`);
   rows.push(`<div class="pp-row"><span>Cotação atual</span><b class="mono">${fmtPx(a,k)}</b></div>`);
   if(pm>0){ const diff=(pm-(a.px||0))/(a.px||1)*100; rows.push(`<div class="pp-row"><span>Seu preço vs. cotação</span><b class="mono ${diff<=0?'up':'down'}">${diff>0?'+':''}${pc(diff,1)}% ${diff<=0?'(abaixo)':'(acima)'}</b></div>`); }
   if(pm>0&&qt>0) rows.push(`<div class="pp-row"><span>Custo do aporte</span><b class="mono">${fmtCur(pm*qt,cur)}${cur==='usd'?` <span class="faint">≈ ${brl(pm*qt*usdBrlRate())}</span>`:''}</b></div>`);
@@ -5155,9 +5140,9 @@ const RECOMENDADAS = [
     bull:'Diversificação captura altas de diferentes mercados.', bear:'Quedas amplas afetam várias classes ao mesmo tempo.',
     ativos:['ITUB4','WEGE3','KNCR11','HGLG11','AAPL34','VALE3','TAEE11','BTLG11'] },
   { id:'pro-alfa', nome:'Alfa Quant Pro', perfil:'Arrojado', cat:'Arrojada', dy:7.8, ret:24.6, vol:'Alta', n:9, pro:true,
-    desc:'Carteira quantitativa exclusiva Pro, com seleção por Score e momentum.',
+    desc:'Carteira quantitativa exclusiva Pro, com seleção por qualidade e momentum.',
     objetivo:'Maximizar retorno ajustado ao risco combinando qualidade e tendência.',
-    estrategia:'Seleção sistemática dos ativos de maior Score Lastro com filtro de momentum e controle de concentração setorial. Rebalanceamento mensal disciplinado.',
+    estrategia:'Seleção sistemática dos ativos de maior qualidade fundamentalista com filtro de momentum e controle de concentração setorial. Rebalanceamento mensal disciplinado.',
     riscos:['Maior rotatividade e custos','Volatilidade elevada','Sensível a reversões de tendência'],
     bull:'Tendências fortes amplificam o retorno da carteira.', bear:'Reversões bruscas penalizam estratégias de momentum.',
     ativos:['WEGE3','PETR4','ITUB4','VALE3','BBAS3','HGLG11','KNCR11','TAEE11','BTLG11'] },
@@ -5270,7 +5255,7 @@ const PAGES = {
   mais:         { t:'Mais',                   s:'Ferramentas, planos e sua conta' },
   metarenda:    { t:'Meta de Renda',          s:'Quanto você quer receber por mês em proventos' },
   acoes:        { t:'Ações',                 s:'Análise fundamentalista das principais ações da B3' },
-  fiis:         { t:'Fundos Imobiliários',   s:'Indicadores e Score Lastro de FIIs' },
+  fiis:         { t:'Fundos Imobiliários',   s:'Indicadores fundamentalistas de FIIs' },
   bdrs:         { t:'BDRs',                   s:'Recibos de ações estrangeiras negociados na B3' },
   etfs:         { t:'ETFs',                   s:'Fundos de índice negociados na B3' },
   etfsint:      { t:'ETFs internacionais',    s:'ETFs listados nos EUA (em dólar) — S&P 500, Nasdaq, setores e renda' },
@@ -5346,7 +5331,7 @@ const PREMIUM_FEATURES = {
   fire:      { name:'Independência Financeira', icon:'fa-fire', desc:'Descubra quanto falta para viver dos seus dividendos, com número mágico e data projetada de liberdade.', why:'Visualize sua meta de liberdade financeira e o caminho real até ela.' },
   ir:        { name:'Imposto de Renda', icon:'fa-file-invoice-dollar', desc:'Bens e Direitos prontos para a declaração, rendimentos isentos do ano e cálculo de DARF sobre vendas.', why:'Economize horas na declaração e evite erros que custam caro.' },
   alertas:   { name:'Alertas de Preço', icon:'fa-bell', desc:'Seja avisado assim que um ativo atingir o preço-alvo, com cotações ao vivo da B3 e cripto.', why:'Nunca mais perca o momento certo de comprar ou vender.' },
-  comparador:{ name:'Comparador Completo', icon:'fa-code-compare', desc:'Compare até 4 ativos lado a lado pelos principais fundamentos e pelo Score Lastro.', why:'Decida entre vários ativos com tudo na mesma tela.' },
+  comparador:{ name:'Comparador Completo', icon:'fa-code-compare', desc:'Compare até 4 ativos lado a lado pelos principais fundamentos.', why:'Decida entre vários ativos com tudo na mesma tela.' },
   watchlist: { name:'Watchlist Ilimitada', icon:'fa-star', desc:'Acompanhe quantos ativos quiser, sem limite.', why:'Monitore todas as suas ideias de investimento em um só lugar.' },
   export:    { name:'Exportar Carteira', icon:'fa-file-csv', desc:'Baixe sua carteira completa em CSV para usar onde quiser.', why:'Leve seus dados com você, com total liberdade.' },
   relatorio: { name:'Relatório Mensal da Carteira', icon:'fa-file-lines', pro:true, desc:'Um relatório completo e imprimível da sua carteira: patrimônio, resultado, proventos do mês e alocação.', why:'Acompanhe sua evolução com um documento profissional — ideal para guardar ou compartilhar com seu contador.' },
@@ -5355,7 +5340,7 @@ const PREMIUM_FEATURES = {
   stress:    { name:'Stress Test da Carteira', icon:'fa-heart-pulse', pro:true, desc:'Simule cenários de crise — queda de bancos, do petróleo, alta de juros, queda da bolsa, dólar em alta — e veja o impacto estimado em reais na sua carteira.', why:'Saiba quanto a sua carteira pode perder antes de a crise acontecer.' },
   carteiras: { name:'Carteiras Recomendadas Exclusivas', icon:'fa-layer-group', pro:true, desc:'Estratégias premium montadas pela inteligência Lastro, disponíveis apenas para assinantes Investidor Pro.', why:'Acesse alocações mais sofisticadas, com composição e estratégia detalhadas.' },
 };
-const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço ilimitados','Watchlist ilimitada e exportação CSV'];
+const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador completo de ativos','Alertas de preço ilimitados','Watchlist ilimitada e exportação CSV'];
 const PRO_BENEFITS = ['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test da carteira','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'];
 /* tela de apresentação Premium / Investidor Pro (usada no modal e como paywall inline) */
 function premiumPresentation(key){
@@ -5934,7 +5919,7 @@ function openAssinatura(){ closeAcctMenu(); currentView='assinatura'; document.q
 function viewAssinatura(){
   const pro=isPremium(); let s=getSub();
   if(pro && !s){ s={ cycle:'anual', since:new Date().toISOString(), card:'4242', brand:'Visa', amount:298.80 }; setSub(s); }
-  const benefits = planTier()==='pro' ? PRO_BENEFITS : ['Carteira e watchlist ilimitadas','Rastreador avançado','Score Lastro completo + ranking','Comparador de 4 ativos','Alertas de preço','Exportação da carteira (CSV)'];
+  const benefits = planTier()==='pro' ? PRO_BENEFITS : ['Carteira e watchlist ilimitadas','Rastreador avançado','Fundamentos completos de ações e FIIs','Comparador de 4 ativos','Alertas de preço','Exportação da carteira (CSV)'];
   if(!pro){
     return `
     <button class="dt-back" onclick="goView('painel')"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
@@ -6515,8 +6500,8 @@ function maybeOnboard(){
 }
 const OB_LOGO='<svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg>';
 const OB_STEPS=[
-  { logo:true, title:'Bem-vindo à Lastro', sub:'Inteligência para o investidor brasileiro — renda variável com dados ao vivo e Score proprietário. Veja em 30 segundos o que dá pra fazer aqui.' },
-  { ic:'fa-chart-column', bg:'brand', title:'Explore o mercado', sub:'Ações, FIIs, BDRs, ETFs, Stocks e cripto — com fundamentos completos.', feats:[['fa-award','Score Lastro™','Qualidade de cada ativo, de 0 a 100, transparente'],['fa-filter','Rastreador','Filtre por DY, P/VP, P/L, ROE, setor e mais']] },
+  { logo:true, title:'Bem-vindo à Lastro', sub:'Inteligência para o investidor brasileiro — renda variável com dados ao vivo e fundamentos completos. Veja em 30 segundos o que dá pra fazer aqui.' },
+  { ic:'fa-chart-column', bg:'brand', title:'Explore o mercado', sub:'Ações, FIIs, BDRs, ETFs, Stocks e cripto — com fundamentos completos.', feats:[['fa-chart-simple','Fundamentos completos','DY, P/VP, P/L, ROE e mais de cada ativo'],['fa-filter','Rastreador','Filtre por DY, P/VP, P/L, ROE, setor e mais']] },
   { ic:'fa-wallet', bg:'accent', title:'Sua carteira, viva', sub:'Acompanhe patrimônio, proventos e rentabilidade — sincronizados na nuvem no seu login.', feats:[['fa-magnifying-glass-chart','Raio-X da Carteira','Diversificação, Nota Lastro e recomendações'],['fa-coins','Proventos','Histórico, Yield on Cost e projeção de renda']] },
   { ic:'fa-crown', bg:'gold', title:'Ferramentas Investidor Pro', sub:'Decisões com o nível de uma mesa profissional.', feats:[['fa-chart-line','Backtest','Histórico da carteira vs CDI e IBOV'],['fa-heart-pulse','Stress Test','Simule crises e veja o impacto em reais'],['fa-magnifying-glass-chart','Raio-X da Carteira','Diversificação e concentração com Nota Lastro']] },
 ];
@@ -6545,7 +6530,7 @@ function closeOnboarding(){ const m=$('#obModal'); if(m){ m.classList.remove('op
 
 /* ══ Intro premium (apresentação animada antes do cadastro) ══ */
 const INTRO_SLIDES=[
-  { feature:'mercado', eyebrow:'Análise de ativos', h:'Ações, FIIs e ETFs<br>com Score Lastro™.' },
+  { feature:'mercado', eyebrow:'Análise de ativos', h:'Ações, FIIs e ETFs<br>com fundamentos completos.' },
   { photo:'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1000&q=80', shape:'arch', pos:'50% 30%',
     c1:'#2f5f8a', c2:'#1e3d5c', icon:'fa-coins',
     eyebrow:'Proventos & renda', h:'Acompanhe seus<br>dividendos mês a mês.' },
@@ -6559,7 +6544,7 @@ function introFeature(k){
   if(k==='mercado'){
     return `<div class="ifx ifx-mkt">
       <div class="ifc ifc-a"><div class="ifc-l"><b>PETR4</b><small>Petrobras</small></div>${introSpark([3,4,3.6,5,4.8,6,6.5],'up')}<div class="ifc-r"><b>38,42</b><span class="up">+1,84%</span></div></div>
-      <div class="ifx-badge"><i class="fa-solid fa-award"></i> Score 87</div>
+      <div class="ifx-badge"><i class="fa-solid fa-coins"></i> DY 13,8%</div>
       <div class="ifc ifc-b"><div class="ifc-l"><b>ITUB4</b><small>Itaú</small></div>${introSpark([5,4.6,4.8,4.1,4.3,3.9,3.7],'down')}<div class="ifc-r"><b>33,10</b><span class="down">−0,72%</span></div></div>
       <div class="ifc ifc-c"><div class="ifc-l"><b>BOVA11</b><small>ETF Ibovespa</small></div>${introSpark([4,4.3,4.2,4.9,5.1,5.4,5.8],'up')}<div class="ifc-r"><b>131,20</b><span class="up">+0,61%</span></div></div>
       <div class="ifx-chip ifx-chip-1"><i class="fa-solid fa-magnifying-glass-dollar"></i> Fundamentos</div>
@@ -6713,7 +6698,7 @@ function tourContentPre(){ closeSidebar(); if(currentView!=='painel') nav('paine
 function tourTopPre(){ closeSidebar(); }
 const TOUR=[
   { center:true, ic:'fa-hand-sparkles', title:'Bora conhecer o app?', text:'Em poucos passos eu te mostro as seções e o que dá pra fazer em cada uma. Use Próximo, as setas do teclado ou arraste.' },
-  { sel:'[data-tour="mercado"]', pre:tourGroupPre, title:'Mercado', text:'Explore Ações, FIIs, BDRs, ETFs, Stocks e Cripto — com fundamentos completos e o Score Lastro™ (0 a 100) de cada ativo. As Notícias também ficam aqui.' },
+  { sel:'[data-tour="mercado"]', pre:tourGroupPre, title:'Mercado', text:'Explore Ações, FIIs, BDRs, ETFs, Stocks e Cripto — com fundamentos completos de cada ativo. As Notícias também ficam aqui.' },
   { sel:'[data-tour="carteira"]', pre:tourGroupPre, title:'Minha Carteira', text:'Cadastre seus aportes e acompanhe patrimônio, proventos, agenda de dividendos, watchlist, alertas e o Aporte Inteligente — sincronizado na nuvem.' },
   { sel:'[data-tour="analise"]', pre:tourGroupPre, title:'Análise', text:'Ferramentas de decisão: Raio-X da carteira, Backtest, Stress Test e Rastreador.' },
   { sel:'.hcard-health', pre:tourContentPre, title:'Saúde da carteira', text:'Um retrato rápido da diversificação da sua carteira — toque para abrir o Raio-X completo com concentração por ativo, setor e classe.' },
@@ -6989,19 +6974,6 @@ function greetingArt(){
   return `<svg viewBox="0 0 44 44" width="30" height="30" aria-hidden="true"><defs><radialGradient id="gMoon" cx="38%" cy="33%" r="74%"><stop offset="0%" stop-color="#f3f5f8"/><stop offset="52%" stop-color="#ccd2db"/><stop offset="100%" stop-color="#98a1af"/></radialGradient></defs><circle cx="22" cy="22" r="19" fill="url(#gMoon)"/><circle cx="15" cy="16" r="3.4" fill="#a7afbc" opacity=".55"/><circle cx="29" cy="14" r="2.2" fill="#a7afbc" opacity=".5"/><circle cx="31" cy="27" r="4.2" fill="#9fa8b6" opacity=".5"/><circle cx="18" cy="30" r="2.6" fill="#a7afbc" opacity=".5"/><circle cx="23" cy="21" r="1.5" fill="#b3bac6" opacity=".5"/></svg>`;
 }
 function todayLabel(){ const s=new Date().toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'long'}); return s.charAt(0).toUpperCase()+s.slice(1); }
-function topOpportunities(n=4){
-  const pool=[...ACOES.map(a=>({a,k:'acoes'})), ...FIIS.map(a=>({a,k:'fiis'}))].filter(o=>typeof o.a.score==='number' && o.a.px>0);
-  return pool.sort((x,y)=>y.a.score-x.a.score).slice(0,n);
-}
-function oppCard(o){
-  const a=o.a, k=o.k;
-  const metric = k==='fiis' ? `DY ${pc(a.dy,1)}% · P/VP ${pc(a.pvp,2)}` : `DY ${pc(a.dy,1)}% · P/L ${pc(a.pl,1)}x`;
-  return `<div class="opp-card" style="--sc:${scoreColor(a.score)}" onclick="quickView('${a.tk}')">
-    <div class="opp-top">${assetLogo(a.tk,k,'sm')}<div class="opp-id"><div class="tk">${a.tk}</div><div class="nm">${esc(a.nm||'')}</div></div></div>
-    <div class="opp-row"><span class="score-pill" style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)}"></span>Score ${a.score}</span><span class="opp-px mono">${brl(a.px)}</span></div>
-    <div class="opp-meta">${metric} · <span class="${(a.var||0)>=0?'up':'down'}">${(a.var||0)>=0?'+':''}${pc(a.var||0)}% hoje</span></div>
-  </div>`;
-}
 function goView(v){ const el=document.querySelector('.nav-item[data-view="'+v+'"]'); nav(v, el); }
 
 /* hero alterna entre Ibovespa e Nasdaq */
@@ -7096,7 +7068,6 @@ function viewPainel(){
   const baixasRows = topMovers('down').map(moverRow).join('') || '<div class="drawer-empty" style="padding:14px 0">Carregando mercado…</div>';
 
   const ib = MARKET[0]; // Ibovespa como destaque de mercado
-  const opps = topOpportunities(4).map(oppCard).join('');
 
   // carteira: resumo compacto quando existe; convite quando vazia (sem expor patrimônio na 1ª impressão)
   const patCard = CARTEIRA.length ? `
@@ -7117,7 +7088,7 @@ function viewPainel(){
       <div class="pat-l">
         <div class="pat-eyebrow"><i class="fa-solid fa-wallet"></i> Comece agora</div>
         <div class="pat-empty-t">Monte sua carteira</div>
-        <div class="pat-sub faint">Acompanhe patrimônio, proventos e a saúde da carteira em tempo real, com o Score&nbsp;Lastro.</div>
+        <div class="pat-sub faint">Acompanhe patrimônio, proventos e a saúde da carteira em tempo real, com fundamentos completos.</div>
       </div>
       <button class="btn btn-primary" onclick="goView('carteira')"><i class="fa-solid fa-plus"></i> Criar carteira</button>
     </div>`;
@@ -7179,20 +7150,16 @@ function deltaHTML(val, pct, periodo, o){
   return `<span class="delta-line ${up?'up':'down'}${o.cls?' '+o.cls:''}"${o.id?` id="${o.id}"`:''}>`+
     `<b${o.blur===false?'':' class="priv-blur"'}>${deltaMoney(val,o.fmt)}</b>${tail?` <em>${tail}</em>`:''}</span>`;
 }
-const scoreCell = a => (typeof a.score==='number')
-  ? `<td><span class="score-pill" style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)}"></span>${a.score}</span></td>`
-  : `<td><span class="muted" style="font-size:12px">—</span></td>`;
 const varCell = a => `<td class="mono ${a.var>=0?'up':'down'}">${a.var>=0?'+':''}${pc(a.var)}%</td>`;
 
 const ASSET_CFG = {
   fiis: {
     data:()=>FIIS, icon:'fa-building', label:'Fundos Imobiliários', unit:'FIIs', score:true,
     segs:['Papel','Logístico','Shopping','Tijolo','Híbrido','Lajes','Renda Urbana','Agro','FoF'],
-    sorts:[['score','Score Lastro'],['dy','Maior DY'],['pvp','Menor P/VP'],['liq','Maior liquidez']],
+    sorts:[['dy','Maior DY'],['pvp','Menor P/VP'],['liq','Maior liquidez']],
     cols:[
       {h:'Segmento', f:a=>`<td class="cell-left"><span class="seg seg-${a.seg}">${a.seg}</span></td>`},
       {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
-      {h:'Score', f:scoreCell, s:'score'},
       {h:'DY 12M', f:a=>`<td class="mono up">${pc(a.dy,1)}%</td>`, s:'dy'},
       {h:'P/VP', f:a=>`<td class="mono ${a.pvp<1?'up':''}">${pc(a.pvp)}</td>`, s:'pvp'},
       {h:'Div/cota', f:a=>`<td class="mono up">${brl(a.div)}</td>`},
@@ -7203,11 +7170,10 @@ const ASSET_CFG = {
   acoes: {
     data:()=>ACOES, icon:'fa-chart-column', label:'Ações B3', unit:'ações', score:true,
     segs:['Bancos','Petróleo e Gás','Mineração','Bebidas','Bens Industriais','Saúde','Holdings','Serviços Financ.','Aluguel de Carros','Varejo Farma','Logística','Papel e Celulose','Siderurgia','Energia Elétrica','Saneamento','Telecom','Varejo','Alimentos','Tecnologia'],
-    sorts:[['score','Score Lastro'],['dy','Maior DY'],['pl','Menor P/L'],['roe','Maior ROE']],
+    sorts:[['dy','Maior DY'],['pl','Menor P/L'],['roe','Maior ROE']],
     cols:[
       {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
       {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
-      {h:'Score', f:scoreCell, s:'score'},
       {h:'P/L', f:a=>`<td class="mono ${a.pl<10?'up':''}">${pc(a.pl,1)}x</td>`, s:'pl'},
       {h:'P/VP', f:a=>`<td class="mono">${pc(a.pvp,1)}x</td>`},
       {h:'DY', f:a=>`<td class="mono ${a.dy>5?'up':''}">${pc(a.dy,1)}%</td>`, s:'dy'},
@@ -7280,9 +7246,9 @@ let tableState = {};
 let universeLoaded = false;
 function assetPageSize(){ const n=+sessionStorage.getItem('lastro_pgsize'); return [30,50,100].includes(n)?n:30; }
 Object.keys(ASSET_CFG).forEach(k=> tableState[k] = {q:'', seg:'', reg:'', sort:ASSET_CFG[k].sorts[0][0], dir:(ASSET_CFG[k].sorts[0][0]==='pvp'||ASSET_CFG[k].sorts[0][0]==='pl')?1:-1, page:1, pageSize:assetPageSize(),
-  fopen:false, fdyMin:0, fscoreMin:0, fpvpMax:3, fplMax:40, froeMin:0, fliqMin:0});
+  fopen:false, fdyMin:0, fpvpMax:3, fplMax:40, froeMin:0, fliqMin:0});
 /* nº de filtros fundamentalistas ativos (P/VP e P/L no máximo = sem filtro) */
-function assetFilterCount(kind){ const s=tableState[kind]; let n=0; if(s.fdyMin>0)n++; if(s.fscoreMin>0)n++; if(s.fpvpMax<3)n++; if(s.fplMax<40)n++; if(s.froeMin>0)n++; if(s.fliqMin>0)n++; return n; }
+function assetFilterCount(kind){ const s=tableState[kind]; let n=0; if(s.fdyMin>0)n++; if(s.fpvpMax<3)n++; if(s.fplMax<40)n++; if(s.froeMin>0)n++; if(s.fliqMin>0)n++; return n; }
 
 function viewAssets(kind){
   const cfg = ASSET_CFG[kind];
@@ -7292,7 +7258,7 @@ function viewAssets(kind){
   const regSelect = cfg.regions ? `<div class="sel-wrap grow"><select class="sel" onchange="tblFilter('${kind}','reg',this.value)"><option value="">Nacional + Internacional</option>${cfg.regions.map(r=>`<option>${r}</option>`).join('')}</select><i class="fa-solid fa-chevron-down chev"></i></div>` : '';
   // ordenação: rótulo fixo "Ordenar" (o valor atual não fica em destaque)
   const sortSelect = `<div class="sel-wrap sel-ordenar has-lead"><i class="fa-solid fa-arrow-down-wide-short lead"></i><select class="sel sel-ghost" aria-label="Ordenar por" onchange="tblFilter('${kind}','sort',this.value)">${sortOpts}</select><span class="sel-fixed">Ordenar</span><i class="fa-solid fa-chevron-down chev"></i></div>`;
-  const badge = cfg.score ? `<span class="chip chip-gold"><i class="fa-solid fa-award" style="font-size:10px"></i> Com Score Lastro</span>`
+  const badge = cfg.score ? `<span class="chip chip-brand"><i class="fa-solid fa-chart-simple" style="font-size:10px"></i> Fundamentos completos</span>`
     : cfg.intl ? `<span class="chip chip-blue"><i class="fa-solid fa-dollar-sign" style="font-size:10px"></i> Cotações em USD</span>`
     : `<span class="chip chip-neu">${cfg.label}</span>`;
 
@@ -7329,7 +7295,6 @@ function assetFiltersPanel(kind){
     <div class="af-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-sliders"></i></span> Filtros fundamentalistas</div><button class="btn btn-ghost btn-sm" onclick="assetFilterReset('${kind}')"><i class="fa-solid fa-rotate-left"></i> Limpar</button></div>
     <div class="af-grid">
       ${ctrl('dy','DY mínimo', s.fdyMin, 0,15,0.5, pc(s.fdyMin,1)+'%')}
-      ${ctrl('sc','Score Lastro mínimo', s.fscoreMin, 0,95,5, s.fscoreMin)}
       ${ctrl('pvp','P/VP máximo', s.fpvpMax, 0.5,3,0.05, s.fpvpMax>=3?'sem limite':pc(s.fpvpMax,2))}
       ${ac?ctrl('pl','P/L máximo', s.fplMax, 3,40,1, s.fplMax>=40?'sem limite':s.fplMax+'x'):''}
       ${ac?ctrl('roe','ROE mínimo', s.froeMin, 0,30,1, s.froeMin+'%'):''}
@@ -7340,23 +7305,23 @@ function assetFiltersPanel(kind){
 function toggleAssetFilters(kind){ const st=tableState[kind]; st.fopen=!st.fopen; render(kind); }
 function assetFilterUpd(kind){
   const s=tableState[kind], g=id=>{ const e=document.getElementById('af_'+id+'_'+kind); return e?+e.value:0; };
-  s.fdyMin=g('dy'); s.fscoreMin=g('sc'); s.fpvpMax=g('pvp'); s.fliqMin=g('liq');
+  s.fdyMin=g('dy'); s.fpvpMax=g('pvp'); s.fliqMin=g('liq');
   if(document.getElementById('af_pl_'+kind)) s.fplMax=g('pl');
   if(document.getElementById('af_roe_'+kind)) s.froeMin=g('roe');
   const setv=(id,t)=>{ const e=document.getElementById('afv_'+id+'_'+kind); if(e) e.textContent=t; };
-  setv('dy', pc(s.fdyMin,1)+'%'); setv('sc', s.fscoreMin); setv('pvp', s.fpvpMax>=3?'sem limite':pc(s.fpvpMax,2));
+  setv('dy', pc(s.fdyMin,1)+'%'); setv('pvp', s.fpvpMax>=3?'sem limite':pc(s.fpvpMax,2));
   setv('pl', s.fplMax>=40?'sem limite':s.fplMax+'x'); setv('roe', s.froeMin+'%'); setv('liq', s.fliqMin+' mi');
   s.page=1; renderAssets(kind);
   const btn=document.querySelector('.filters-adv'); if(btn){ let bd=btn.querySelector('.fbadge'); const n=assetFilterCount(kind); if(n>0){ if(!bd){ bd=document.createElement('span'); bd.className='fbadge'; btn.querySelector('i.fa-sliders').after(bd); } bd.textContent=n; } else if(bd) bd.remove(); }
 }
 function assetFilterPreset(kind,name){
   const ac=(kind==='acoes');
-  const P={ dividendos:{fdyMin:8,fscoreMin:60,fpvpMax:3,fplMax:40,froeMin:0,fliqMin:5},
-            qualidade:{fdyMin:0,fscoreMin:80,fpvpMax:3,fplMax:40,froeMin:ac?15:0,fliqMin:0},
-            barganha:{fdyMin:6,fscoreMin:70,fpvpMax:ac?3:0.98,fplMax:9,froeMin:0,fliqMin:5} }[name];
+  const P={ dividendos:{fdyMin:8,fpvpMax:3,fplMax:40,froeMin:0,fliqMin:5},
+            qualidade:{fdyMin:0,fpvpMax:3,fplMax:40,froeMin:ac?15:0,fliqMin:0},
+            barganha:{fdyMin:6,fpvpMax:ac?3:0.98,fplMax:9,froeMin:0,fliqMin:5} }[name];
   if(!P) return; Object.assign(tableState[kind], P); tableState[kind].page=1; render(kind);
 }
-function assetFilterReset(kind){ Object.assign(tableState[kind], {fdyMin:0,fscoreMin:0,fpvpMax:3,fplMax:40,froeMin:0,fliqMin:0}); tableState[kind].page=1; render(kind); }
+function assetFilterReset(kind){ Object.assign(tableState[kind], {fdyMin:0,fpvpMax:3,fplMax:40,froeMin:0,fliqMin:0}); tableState[kind].page=1; render(kind); }
 
 /* fundamentos reais (brapi) para as linhas visíveis da listagem */
 const FUND_LOADED = new Set();
@@ -7537,7 +7502,6 @@ function renderAssets(kind){
   if(st.reg && cfg.regOf) data = data.filter(a=> cfg.regOf(a)===st.reg);
   // filtros fundamentalistas (Rastreador embutido)
   if(st.fdyMin>0)   data = data.filter(a=> (a.dy||0)>=st.fdyMin);
-  if(st.fscoreMin>0)data = data.filter(a=> (a.score||0)>=st.fscoreMin);
   if(st.fpvpMax<3)  data = data.filter(a=> typeof a.pvp!=='number' || a.pvp<=st.fpvpMax);
   if(st.fplMax<40)  data = data.filter(a=> typeof a.pl!=='number' || a.pl<=st.fplMax);
   if(st.froeMin>0)  data = data.filter(a=> (a.roe||0)>=st.froeMin);
@@ -7568,7 +7532,7 @@ function renderAssets(kind){
     const vv = a[vfield];
     const vcell = `<td class="mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</td>`;
     return `<tr onclick="quickView('${a.tk}')">
-      <td class="cell-left"><div class="td-asset">${assetLogo(a.tk,kind,'sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div>${typeof a.score==='number'?`<div class="tk-meta"><span style="color:${scoreColor(a.score)};font-weight:700">Score ${a.score}</span>${(typeof a.dy==='number'&&a.dy>0)?` · DY ${pc(a.dy,0)}%`:''}</div>`:''}</div></div></td>
+      <td class="cell-left"><div class="td-asset">${assetLogo(a.tk,kind,'sm')}<div class="nm"><div class="tk">${a.tk}</div><div class="ds">${a.nm}</div>${(typeof a.dy==='number'&&a.dy>0)?`<div class="tk-meta"><span style="color:var(--up);font-weight:700">DY ${pc(a.dy,0)}%</span></div>`:''}</div></div></td>
       ${cfg.cols.map(c=>c.f(a)).join('')}
       ${vcell}
     </tr>`;
@@ -7847,7 +7811,7 @@ function viewWatchlist(){
   if(!items.length){
     return `<div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-star"></i></span> Watchlist</div>${cta}</div>
-      ${emptyState('fa-star','Sua watchlist está vazia','Abra qualquer ativo e toque em ★ Watchlist para acompanhá-lo aqui — cotações ao vivo e Score num só lugar.', `<button class="btn btn-primary" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i> Buscar ativo</button>`)}
+      ${emptyState('fa-star','Sua watchlist está vazia','Abra qualquer ativo e toque em ★ Watchlist para acompanhá-lo aqui — cotações ao vivo num só lugar.', `<button class="btn btn-primary" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i> Buscar ativo</button>`)}
     </div>`;
   }
   const rows = items.map(({a,k})=>{
@@ -7857,14 +7821,13 @@ function viewWatchlist(){
       <td><span class="chip chip-neu">${ASSET_CLASS[k].label}</span></td>
       <td class="mono">${fmtPx(a,k)}</td>
       <td class="mono ${vv>=0?'up':'down'}">${vv>=0?'+':''}${pc(vv)}%</td>
-      <td>${typeof a.score==='number'?`<span class="score-pill" style="color:${scoreColor(a.score)}"><span class="score-dot" style="background:${scoreColor(a.score)}"></span>${a.score}</span>`:'<span class="muted" style="font-size:12px">—</span>'}</td>
       <td class="row-acts"><button class="row-act danger" title="Remover da watchlist" onclick="event.stopPropagation();toggleWatch('${a.tk}');render('acompanhar')"><i class="fa-solid fa-star" style="color:var(--gold)"></i></button></td>
     </tr>`;
   }).join('');
   return `<div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-star"></i></span> Watchlist</div>${cta}</div>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th class="cell-left">Ativo</th><th>Classe</th><th>Cotação</th><th>Var.</th><th>Score</th><th></th></tr></thead>
+      <thead><tr><th class="cell-left">Ativo</th><th>Classe</th><th>Cotação</th><th>Var.</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
   </div>`;
@@ -7876,7 +7839,7 @@ function viewWatchlist(){
 const PLANS = {
   premium: { key:'premium', name:'Premium', popular:true, desc:'Para acompanhar sua carteira de verdade e decidir com dados.',
     anual:24.90, mensal:29.90, anchorA:34.90, anchorM:39.90, anualTotal:298.80,
-    feats:['Tudo do Gratuito, sem limites','Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador + Score Lastro completo','Alertas de preço ilimitados','Watchlist ilimitada + exportação CSV'] },
+    feats:['Tudo do Gratuito, sem limites','Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador completo de ativos','Alertas de preço ilimitados','Watchlist ilimitada + exportação CSV'] },
   pro: { key:'pro', name:'Investidor Pro', popular:false, desc:'Tudo do Premium, com análises, relatórios e prioridade.',
     anual:39.90, mensal:49.90, anchorA:54.90, anchorM:64.90, anualTotal:478.80,
     feats:['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test da carteira','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'] },
@@ -7930,7 +7893,7 @@ function viewPlanos(){
         ${feat('Comparador de ' + PLAN_LIMITS.comparador + ' ativos')}
         ${featx('Sem carteira real e sincronizada')}
         ${featx('Sem Proventos, Aporte, FIRE e IR')}
-        ${featx('Sem rastreador, alertas e Score completo')}
+        ${featx('Sem rastreador e alertas de preço')}
       </ul>
       <button class="btn btn-ghost" style="width:100%;justify-content:center" ${pro?`onclick="downgradeFree()"`:`disabled`}>${pro?'Voltar ao Gratuito':'Seu plano atual'}</button>
       <div class="plan-trust">Sem custo · para sempre</div>
@@ -7949,7 +7912,7 @@ function viewPlanos(){
     ${[
       ['Carteira real ilimitada', false, true, true],
       ['Proventos · Aporte · FIRE · IR', false, true, true],
-      ['Rastreador + Score completo', false, true, true],
+      ['Rastreador completo de ativos', false, true, true],
       ['Alertas de preço', false, true, true],
       ['Watchlist', PLAN_LIMITS.watchlist, 'Ilimitada', 'Ilimitada'],
       ['Comparador', PLAN_LIMITS.comparador, '4 ativos', '4 ativos'],
@@ -9406,10 +9369,9 @@ function initProvClassChart(){
    ══════════════════════════════════════════════════════════ */
 function aporteMotivo(strat, g, total){
   const a=g.f.a, k=g.f.k, wOld=total? g.val/total*100 : 0;
-  if(strat==='score') return `Score ${a.score||'—'}/100 — a qualidade direciona um aporte maior.`;
   if(strat==='dy') return `DY de ${pc(a.dy||0,1)}% — prioriza a geração de renda.`;
   if(strat==='value') return k==='fiis'? `P/VP ${pc(a.pvp||0,2)} — valuation atrativo, entra mais barato.` : `P/L ${a.pl?pc(a.pl,1)+'x':'—'} — preço atrativo frente ao lucro.`;
-  if(strat==='quality') return `Score ${a.score||'—'} com ${k==='fiis'?'P/VP '+pc(a.pvp||0,2):'P/L '+(a.pl?pc(a.pl,1)+'x':'—')} — qualidade a bom preço.`;
+  if(strat==='quality') return `Fundamentos sólidos com ${k==='fiis'?'P/VP '+pc(a.pvp||0,2):'P/L '+(a.pl?pc(a.pl,1)+'x':'—')} — qualidade a bom preço.`;
   if(strat==='consist') return `Consistência de ${a.consist!=null?pc(a.consist*100,0)+'%':'—'} — histórico estável de resultados.`;
   return `Peso atual de ${pc(wOld,1)}% — recompõe a participação rumo ao equilíbrio.`;
 }
@@ -9418,7 +9380,6 @@ function aportePlan(valor, strat){
   if(!groups.length) return null;
   const total=groups.reduce((s,g)=>s+g.val,0), newTotal=total+valor, n=groups.length;
   const wOf=g=>{ const a=g.f.a,k=g.f.k;
-    if(strat==='score') return Math.max(1,a.score||50);
     if(strat==='dy') return Math.max(0.1,a.dy||1);
     if(strat==='value'){ const v=k==='fiis'?(a.pvp||1):((a.pl||15)/8); return Math.max(0.15, 1/Math.max(0.2,v)); }
     if(strat==='quality'){ const v=k==='fiis'?(a.pvp||1):((a.pl||15)/8); return Math.max(0.15, (a.score||50)/100/Math.max(0.25,v)); }
@@ -9451,7 +9412,6 @@ function viewAporte(){
       <div class="form-col" style="flex-basis:180px"><label class="form-label">Estratégia</label>
         <select id="apStrat" class="form-select" onchange="runAporte()">
           <option value="equal">Rebalancear (igualar pesos)</option>
-          <option value="score">Priorizar qualidade (Score)</option>
           <option value="dy">Priorizar renda (DY)</option>
           <option value="value">Priorizar valor (mais barato)</option>
           <option value="quality">Qualidade a bom preço</option>
@@ -9636,17 +9596,6 @@ function runDarf(){
 }
 
 /* ══════════════════════════════════════════════════════════
-   VIEW: SCORE LASTRO
-   ══════════════════════════════════════════════════════════ */
-/* linha de pilar do Score — pct null = sem dado (não inventa barra) */
-function gbRow(label, pct, weight){
-  const w = weight?`<span class="gb-w">${weight}</span>`:'';
-  if(pct==null || !isFinite(pct)) return `<div class="gb-row"><div class="gb-top"><span class="muted">${label}${w}</span><span class="v faint">sem dado</span></div><div class="gb-bar gb-bar-na"></div></div>`;
-  const v=Math.round(pct);
-  return `<div class="gb-row"><div class="gb-top"><span class="muted">${label}${w}</span><span class="v" style="color:${scoreColor(pct)}">${v}</span></div><div class="gb-bar"><i style="width:0%;background:${scoreColor(pct)}" data-w="${v}%"></i></div></div>`;
-}
-
-/* ══════════════════════════════════════════════════════════
    VIEW: COMPARADOR
    ══════════════════════════════════════════════════════════ */
 const ALL_ASSETS_FLAT = ()=>[...FIIS.map(a=>({...a,_k:'fiis'})), ...ACOES.map(a=>({...a,_k:'acoes'}))];
@@ -9664,7 +9613,7 @@ function viewComparador(){
   const pro = isPro();
   return `
   <div class="sec-title">Comparador de ativos</div>
-  <div class="sec-desc">Compare ativos lado a lado pelos principais fundamentos e pelo Score Lastro. ${pro?'Até 4 ativos.':'No plano Gratuito você compara 2 — faça upgrade para 4.'}</div>
+  <div class="sec-desc">Compare ativos lado a lado pelos principais fundamentos. ${pro?'Até 4 ativos.':'No plano Gratuito você compara 2 — faça upgrade para 4.'}</div>
   <div class="filters cmp-filters">${[0,1,2,3].map(cmpSlot).join('')}</div>
   <div id="cmpBody"></div>`;
 }
@@ -9706,7 +9655,7 @@ function initComparador(){
   const body = $('#cmpBody'); if(!body) return;
   // initComparador roda várias vezes (async de loadAssetLive reinvoca) — descarta a instância antes de rebuildar o DOM
   if(charts.cmpPerf){ try{ charts.cmpPerf.destroy(); }catch(e){} charts.cmpPerf=null; }
-  if(items.length<2){ body.innerHTML=`<div class="card card-pad">${emptyState('fa-scale-balanced','Compare lado a lado','Selecione ao menos dois ativos acima para ver fundamentos, Score Lastro, o melhor valor de cada indicador e a performance no período.')}</div>`; return; }
+  if(items.length<2){ body.innerHTML=`<div class="card card-pad">${emptyState('fa-scale-balanced','Compare lado a lado','Selecione ao menos dois ativos acima para ver fundamentos, o melhor valor de cada indicador e a performance no período.')}</div>`; return; }
   // busca fundamentos reais (brapi) dos ativos que ainda não têm — re-renderiza ao chegar
   let loading=false;
   cmpSel.slice(0,cap).forEach(tk=>{ const lk=assetLookup(tk); if(lk && LIVE_ASSET_KINDS.has(lk.k) && !ASSET_LIVE[tk]){ loading=true; loadAssetLive(tk).then(d=>{ if(d && currentView==='comparador') initComparador(); }); } });
@@ -9715,9 +9664,6 @@ function initComparador(){
   // dir: 'max' | 'min' | 'none' (none = não é bom/ruim, sem barra de ranking).
   // band: elegível a "melhor"/líder só se isFinite, dentro da banda e direcionalmente válido.
   const metrics = [
-    { key:'score', label:'Score Lastro', term:'scoreLastro', dir:'max', get:a=>num(ensureScore(a)),
-      band:v=>v>=0&&v<=100, fill:v=>v/100,
-      fmt:(a,v)=> v==null?'—':`<span style="color:${scoreColor(v)}">${v}</span>` },
     { key:'px', label:'Cotação', dir:'none', get:a=>num(a.px), fmt:(a,v)=> v==null?'—':brl(v) },
     { key:'dy', label:'DY 12M', dir:'max', get:a=>num(a.dy), band:v=>v>=0&&v<=30, fmt:(a,v)=> v==null?'—':pc(v,1)+'%' },
     { key:'pl', label:'P/L', dir:'min', get:a=>num(a.pl), band:v=>v>0&&v<=200, fmt:(a,v)=> v==null?'—':pc(v,1)+'x' },
@@ -9770,18 +9716,16 @@ function initComparador(){
     return `<div class="cmp-mrow"><div class="cmp-mrow-h">${head}</div>${bars}</div>`;
   }).join('');
 
-  // veredito honesto: líder = mais vitórias (desempate por Score); empate ou <2 disputas = equilibrada
-  const scores = items.map(a=>{ const s=num(ensureScore(a)); return (s!=null&&s>=0&&s<=100)?s:null; });
-  let topScoreI=-1; scores.forEach((s,i)=>{ if(s!=null && (topScoreI<0 || s>scores[topScoreI])) topScoreI=i; });
-  const order = items.map((a,i)=>i).sort((x,y)=> wins[y]-wins[x] || (scores[y]||-1)-(scores[x]||-1));
+  // veredito honesto: líder = mais vitórias; empate ou <2 disputas = equilibrada
+  const order = items.map((a,i)=>i).sort((x,y)=> wins[y]-wins[x]);
   const lead = order[0], run = order[1];
-  const tie = run!=null && wins[lead]===wins[run] && (scores[lead]||-1)===(scores[run]||-1);
+  const tie = run!=null && wins[lead]===wins[run];
   let verdictHTML;
   if(contests<2 || wins[lead]===0 || tie){
     verdictHTML = `<div id="cmpVerdict" class="cmp-verdict"><i class="fa-solid fa-scale-balanced cv-logo" style="color:var(--brand)"></i><div><b>Comparação equilibrada</b> — nenhum ativo domina os indicadores. <span class="cv-dis">Não é recomendação de compra.</span></div></div>`;
   } else {
-    const la=items[lead], lk=assetLookup(la.tk), sTxt = topScoreI>=0 ? ` · Maior Score: <b>${items[topScoreI].tk}</b> (${scores[topScoreI]})` : '';
-    verdictHTML = `<div id="cmpVerdict" class="cmp-verdict"><span class="cv-logo">${assetLogo(la.tk, lk?lk.k:'acoes','sm')}</span><div><b>${la.tk}</b> lidera em <b>${wins[lead]}</b> de ${contests} indicadores${sTxt}. <span class="cv-dis">Não é recomendação de compra.</span></div></div>`;
+    const la=items[lead], lk=assetLookup(la.tk);
+    verdictHTML = `<div id="cmpVerdict" class="cmp-verdict"><span class="cv-logo">${assetLogo(la.tk, lk?lk.k:'acoes','sm')}</span><div><b>${la.tk}</b> lidera em <b>${wins[lead]}</b> de ${contests} indicadores. <span class="cv-dis">Não é recomendação de compra.</span></div></div>`;
   }
 
   const chartCard = `<div class="card card-pad cmp-chart-card">
@@ -10133,7 +10077,6 @@ function recAssetRationale(tk){
     else { role=`${esc(a.seg||'Empresa')} de qualidade que equilibra <strong>crescimento e solidez</strong> dentro da estratégia.`; tag='Qualidade'; }
   }
   const bits=[];
-  if(typeof a.score==='number') bits.push(`Score ${a.score}/100`);
   if((a.dy||0)>0) bits.push(`DY ${pc(a.dy,1)}%`);
   if(k==='fiis' && typeof a.pvp==='number') bits.push(`P/VP ${pc(a.pvp,2)}`);
   if(k!=='fiis' && typeof a.pl==='number') bits.push(`P/L ${pc(a.pl,1)}x`);
@@ -11536,17 +11479,17 @@ function rxRecommendations(lots){
   d.pos.slice().sort((a,b)=>b.w-a.w).forEach(x=>{ const a=x.a||{};
     if(x.w>25) sell.push({tk:x.tk,k:x.k,acao:'Reduzir',cls:'down',reason:`Concentração elevada: ${pc(x.w,0)}% da carteira. Reduzir para ≤25% diminui o risco específico.`});
     else if((a.dy||0)>13 && (a.consist!=null?a.consist:1)<0.8) sell.push({tk:x.tk,k:x.k,acao:'Atenção',cls:'warn',reason:`DY de ${pc(a.dy,1)}% muito alto com baixa consistência — risco de o dividendo não se sustentar.`});
-    else if((a.score||0)>0 && a.score<55) sell.push({tk:x.tk,k:x.k,acao:'Revisar',cls:'warn',reason:`Score Lastro baixo (${a.score}/100) — qualidade fundamentalista fraca puxa o nível da carteira.`});
+    else if((a.score||0)>0 && a.score<55) sell.push({tk:x.tk,k:x.k,acao:'Revisar',cls:'warn',reason:`Qualidade fundamentalista fraca — indicadores abaixo da média puxam o nível da carteira.`});
   });
   const pool=[...FIIS.map(a=>({a,k:'fiis',classe:'FIIs'})), ...ACOES.map(a=>({a,k:'acoes',classe:'Ações'}))]
     .filter(o=>typeof o.a.score==='number' && o.a.px>0 && !held.has(o.a.tk));
   const buy=[];
   ['Ações','FIIs'].filter(c=>!d.classes.includes(c)).forEach(c=>{
     const o=pool.filter(o=>o.classe===c).sort((x,y)=>y.a.score-x.a.score)[0];
-    if(o) buy.push({tk:o.a.tk,k:o.k,acao:'Adicionar',cls:'up',reason:`Sua carteira não tem ${c}. ${o.a.tk} entra com Score ${o.a.score}/100 e diversifica a classe.`});
+    if(o) buy.push({tk:o.a.tk,k:o.k,acao:'Adicionar',cls:'up',reason:`Sua carteira não tem ${c}. ${o.a.tk} entra com bons fundamentos e diversifica a classe.`});
   });
   pool.sort((x,y)=>y.a.score-x.a.score).forEach(o=>{ if(buy.length>=4||buy.some(b=>b.tk===o.a.tk)) return; const a=o.a;
-    const why = (a.dy||0)>=8 ? `Score ${a.score}/100 e DY de ${pc(a.dy,1)}% — qualidade com boa renda para fortalecer a carteira.` : `Score ${a.score}/100 (${scoreTier(a.score)}) — ativo de alta qualidade que eleva a média da carteira.`;
+    const why = (a.dy||0)>=8 ? `DY de ${pc(a.dy,1)}% e bons fundamentos — qualidade com boa renda para fortalecer a carteira.` : `Fundamentos sólidos — ativo de alta qualidade que eleva a média da carteira.`;
     buy.push({tk:a.tk,k:o.k,acao:'Adicionar',cls:'up',reason:why});
   });
   return { buy:buy.slice(0,4), sell:sell.slice(0,4) };
@@ -11632,7 +11575,7 @@ function viewRaioX(){
         ${sellRows}
       </div>
     </div>
-    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sugestões educativas geradas a partir da composição, concentração e Score Lastro — não são recomendação personalizada de investimento.</div>
+    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sugestões educativas geradas a partir da composição, concentração e qualidade dos ativos — não são recomendação personalizada de investimento.</div>
   </div>
   <div class="card card-pad rx-aporte-cta" onclick="nav('aporte')">
     <div class="rx-aporte-l"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-scale-balanced"></i></span>
@@ -11915,10 +11858,10 @@ function portfolioInsights(lots){
   }
   // renda
   if(p.dyMed>=8) pros.push(`Renda passiva robusta: DY médio de <strong>${pc(p.dyMed,1)}%</strong> ao ano.`);
-  // qualidade média — Score Lastro ponderado pelo peso de cada posição
+  // qualidade média — índice de fundamentos ponderado pelo peso de cada posição
   const scoreMed = pos.reduce((s,x)=> s + (x.a.score||0)*x.w/100, 0);
-  if(scoreMed>=70) pros.push(`Qualidade alta: Score Lastro médio ponderado de <strong>${Math.round(scoreMed)}/100</strong>.`);
-  else if(scoreMed>0 && scoreMed<55) cons.push(`Score Lastro médio de ${Math.round(scoreMed)}/100 — há ativos de menor qualidade puxando a carteira.`);
+  if(scoreMed>=70) pros.push(`Qualidade alta: fundamentos médios ponderados de <strong>${Math.round(scoreMed)}/100</strong>.`);
+  else if(scoreMed>0 && scoreMed<55) cons.push(`Qualidade média de fundamentos de ${Math.round(scoreMed)}/100 — há ativos de menor qualidade puxando a carteira.`);
   // concentração setorial
   const bySeg={}; pos.forEach(x=>{ const s=(x.a.seg)||'Outros'; bySeg[s]=(bySeg[s]||0)+x.w; });
   const topSeg=Object.entries(bySeg).sort((a,b)=>b[1]-a[1])[0];
@@ -11927,7 +11870,7 @@ function portfolioInsights(lots){
   const rebal=[];
   pos.slice().filter(x=>x.w>25).sort((a,b)=>b.w-a.w).forEach(x=> rebal.push(`Reduzir <strong>${x.tk}</strong> (${pc(x.w,0)}%) para diluir a concentração.`));
   const fraco = pos.slice().sort((a,b)=>(a.a.score||0)-(b.a.score||0))[0];
-  if(fraco && (fraco.a.score||0)>0 && (fraco.a.score||0)<55) rebal.push(`Revisar <strong>${fraco.tk}</strong> — menor Score da carteira (${fraco.a.score||0}/100).`);
+  if(fraco && (fraco.a.score||0)>0 && (fraco.a.score||0)<55) rebal.push(`Revisar <strong>${fraco.tk}</strong> — menor qualidade fundamentalista da carteira.`);
   if(classes.length>1){ const minK=Object.entries(byK).sort((a,b)=>a[1]-b[1])[0]; if(minK[1]<15) rebal.push(`Aumentar exposição a <strong>${ASSET_CLASS[minK[0]].label}s</strong> (hoje ${pc(minK[1],0)}%) para equilibrar as classes.`); }
   // resultado
   const summary = p.lucro>=0
@@ -11977,7 +11920,7 @@ function runSearch(q){
     </div>`).join('');
 }
 /* ══════════════════════════════════════════════════════════
-   PÁGINA DE DETALHE DO ATIVO (estilo Investidor10 + Score Lastro)
+   PÁGINA DE DETALHE DO ATIVO (estilo Investidor10)
    ══════════════════════════════════════════════════════════ */
 const ASSET_CLASS = {
   fiis:   { label:'FII',    cur:'brl', score:true },
@@ -12964,7 +12907,6 @@ const TERMS={
   cagr:'CAGR (retorno anualizado): a taxa média de crescimento por ano, como se o retorno tivesse sido constante ao longo do período.',
   darf:'DARF: guia de pagamento do imposto sobre o lucro em vendas. Ações têm isenção até R$ 20 mil vendidos no mês; o que passa disso é tributado.',
   notaLastro:'Nota de Diversificação Lastro™: nota de 0 a 100 que resume o equilíbrio da sua carteira — diversificação entre classes e setores, concentração e qualidade dos ativos.',
-  scoreLastro:'Score Lastro™: nota proprietária de 0 a 100 que resume a qualidade de um ativo combinando vários indicadores fundamentalistas em uma só medida.',
   pmProv:'Preço médio com proventos: seu preço médio descontando os proventos já recebidos. Mostra o custo "líquido" da posição.',
   cdi:'CDI: taxa de referência da renda fixa no Brasil, bem próxima da Selic. Serve de comparação para saber se a carteira rende mais que o básico.',
   ibov:'IBOV (Ibovespa): principal índice da bolsa brasileira — serve de referência para comparar o desempenho da sua carteira com o mercado.',
@@ -12997,7 +12939,6 @@ const TERM_CARDS={
   magico:{ nome:'Número mágico', icon:'fa-wand-sparkles', descricao:'O patrimônio que você precisa acumular para viver dos rendimentos, sem vender ativos.', formula:'Renda mensal desejada × 12 ÷ rendimento anual (%)', interpretacao:'É a sua meta de liberdade financeira em reais.', faixaIdeal:'Quanto antes atingir, mais cedo a independência.' },
   dyMed:{ nome:'DY médio da carteira', icon:'fa-percent', descricao:'A média do dividend yield dos seus ativos, ponderada pelo valor de cada um.', formula:'Proventos anuais da carteira ÷ patrimônio', interpretacao:'Estima quanto a carteira paga de proventos por ano sobre o patrimônio.', faixaIdeal:'FIIs costumam elevar essa média.' },
   cobertura:{ nome:'Cobertura da meta', icon:'fa-bullseye', descricao:'Quanto da sua renda-alvo os proventos projetados já cobrem.', formula:'Renda projetada ÷ renda desejada × 100', interpretacao:'100% significa que a carteira paga toda a renda que você quer.', faixaIdeal:'Objetivo: chegar e passar de 100%.' },
-  scoreLastro:{ nome:'Score Lastro™', icon:'fa-award', descricao:'Nota proprietária de 0 a 100 que resume a qualidade de um ativo combinando vários indicadores fundamentalistas.', formula:'Valuation + rentabilidade + endividamento + pagamento de proventos', interpretacao:'Quanto maior, mais sólido é o ativo pelos fundamentos.', faixaIdeal:'Acima de 70 é considerado forte.' },
   notaLastro:{ nome:'Nota de Diversificação Lastro™', icon:'fa-shield-halved', descricao:'Nota de 0 a 100 que resume o equilíbrio da sua carteira.', formula:'Diversificação entre classes e setores + concentração + qualidade dos ativos', interpretacao:'Quanto maior, mais equilibrada e resiliente a carteira.', faixaIdeal:'Acima de 70 indica boa diversificação.' },
   darf:{ nome:'DARF', icon:'fa-file-invoice-dollar', descricao:'Guia de pagamento do imposto sobre o lucro nas vendas de ativos.', formula:'Lucro tributável × alíquota (15% ações · 20% FIIs/day trade)', interpretacao:'Ações têm isenção até R$ 20 mil vendidos no mês; o que passa é tributado.', pontosAtencao:'Emitir e pagar até o último dia útil do mês seguinte à venda.' },
   pmProv:{ nome:'Preço médio com proventos', icon:'fa-tags', descricao:'Seu preço médio descontando os proventos já recebidos daquele ativo.', formula:'Preço médio − proventos recebidos por cota', interpretacao:'Mostra o custo "líquido" da posição; pode até ficar negativo em ativos muito antigos.', faixaIdeal:'Quanto menor, mais a posição já se pagou.' },
@@ -13187,28 +13128,6 @@ function fundamentalsHTML(a,k,f){
   return `<div class="metric-grid">${m}</div><div style="font-size:12px;color:var(--ink-3);margin-top:12px"><i class="fa-solid fa-circle-info"></i> Indicadores fundamentalistas detalhados disponíveis para Ações e FIIs.</div>`;
 }
 
-function scoreBlockHTML(a){
-  const c=scoreColor(a.score), circ=2*Math.PI*52, off=circ-(a.score/100)*circ;
-  return `<div class="card card-pad">
-    <div class="ds-title">Score Lastro™ <span style="color:${c}">· ${scoreTier(a.score)}</span></div>
-    <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">
-      <div class="gauge" style="flex:none">
-        <svg width="132" height="132" viewBox="0 0 132 132">
-          <circle cx="66" cy="66" r="52" fill="none" stroke="var(--surface-3)" stroke-width="11"/>
-          <circle class="gauge-arc" cx="66" cy="66" r="52" fill="none" stroke="${c}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ}" data-off="${off}"/>
-        </svg>
-        <div class="gauge-center"><div class="gauge-num" style="color:${c}">${a.score}</div><div class="gauge-lbl">/100</div></div>
-      </div>
-      <div class="gauge-break" style="flex:1;min-width:230px">
-        ${gbRow('DY sustentável (35%)', Math.min(a.dy/15,1)*100)}
-        ${gbRow('Valuation P/VP (30%)', (a.pvp<=1?1:Math.max(0,1.6-a.pvp)/0.6)*100)}
-        ${gbRow('Liquidez (20%)', Math.min(a.liq/50,1)*100)}
-        ${gbRow('Consistência (15%)', (a.consist||0.7)*100)}
-      </div>
-    </div>
-  </div>`;
-}
-
 function peersHTML(tk,a,k){
   let pool=[];
   if(k==='acoes') pool=ACOES.filter(x=>x.tk!==tk && x.seg===a.seg);
@@ -13216,11 +13135,8 @@ function peersHTML(tk,a,k){
   else return '';
   if(!pool.length) return '';
   const isF=k==='fiis';
-  // prioriza ativos com fundamentos (curados, com Score) antes dos do universo
+  // prioriza ativos com fundamentos (curados) antes dos do universo
   pool=pool.sort((x,y)=> (typeof y.score==='number'?1:0)-(typeof x.score==='number'?1:0)).slice(0,6);
-  const scoreCell = s => typeof s==='number'
-    ? `<span class="score-pill" style="color:${scoreColor(s)};justify-content:flex-end"><span class="score-dot" style="background:${scoreColor(s)}"></span>${s}</span>`
-    : '<span class="muted" style="font-size:12px">—</span>';
   const rows=pool.map(p=>{
     const mid = isF ? (typeof p.pvp==='number'?pc(p.pvp,2):'—') : (typeof p.pl==='number'?pc(p.pl,1)+'x':'—');
     const dy  = typeof p.dy==='number'?pc(p.dy,1)+'%':'—';
@@ -13229,13 +13145,12 @@ function peersHTML(tk,a,k){
       <td class="mono">${fmtPx(p,k)}</td>
       <td class="mono ${isF&&p.pvp<1?'up':''}">${mid}</td>
       <td class="mono ${typeof p.dy==='number'&&p.dy>0?'up':''}">${dy}</td>
-      <td>${scoreCell(p.score)}</td>
     </tr>`;
   }).join('');
   return `<div class="card card-pad">
     <div class="ds-title">Comparação com pares · ${esc(a.seg)}</div>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th class="cell-left">Ativo</th><th>Cotação</th><th>${isF?'P/VP':'P/L'}</th><th>DY</th><th>Score</th></tr></thead>
+      <thead><tr><th class="cell-left">Ativo</th><th>Cotação</th><th>${isF?'P/VP':'P/L'}</th><th>DY</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
   </div>`;
@@ -13375,10 +13290,10 @@ function assetInsights(a,k,f){
   }
   let verdict='Fundamentos detalhados em breve para este ativo.', tone='neu';
   if(typeof a.score==='number'){
-    if(a.score>=80){ verdict='Ativo de alta qualidade pelos critérios do Score Lastro — fundamentos sólidos em vários pilares.'; tone='pos'; }
+    if(a.score>=80){ verdict='Ativo de alta qualidade — fundamentos sólidos em vários pilares.'; tone='pos'; }
     else if(a.score>=65){ verdict='Ativo sólido, com bons fundamentos e alguns pontos de atenção a observar.'; tone='pos'; }
     else if(a.score>=50){ verdict='Qualidade razoável — pese os pontos de atenção antes de investir.'; tone='neu'; }
-    else { verdict='Score baixo — há fragilidades relevantes nos fundamentos; exige cautela.'; tone='neg'; }
+    else { verdict='Há fragilidades relevantes nos fundamentos — exige cautela.'; tone='neg'; }
   }
   return { verdict, tone, pros: pros.slice(0,4), cons: cons.slice(0,3) };
 }
@@ -13426,7 +13341,6 @@ function decisionCard(a,k,f){
   return `<div class="card card-pad decision">
     <div class="dec-head">
       <div class="dec-verdict"><i class="fa-solid fa-${icon} tone-${ins.tone}"></i> <span>${ins.verdict}</span></div>
-      <span class="chip ${scoreChip(a.score)}" style="white-space:nowrap"><i class="fa-solid fa-award" style="font-size:10px"></i> Score ${a.score}</span>
     </div>
     <div class="dims">${dimHtml}</div>
     <div class="proscons">
@@ -13562,7 +13476,6 @@ function keyStatsHTML(a,k,f){
 }
 /* ── Visão Geral ── */
 function tabGeral(tk,a,k,f){
-  const cls=ASSET_CLASS[k], hasScore=cls.score && typeof a.score==='number';
   const live=ASSET_LIVE[tk], rsY=PRICE_SERIES[tk+':1A'];
   let pmin, pmax, var12;
   if(live && (live.week52Low!=null || live.week52High!=null)){ pmin=live.week52Low; pmax=live.week52High; }
@@ -13590,7 +13503,7 @@ function tabGeral(tk,a,k,f){
   </div>
   ${keyStatsHTML(a,k,f)}
   ${ (k==='etfs' && a.usd) ? etfHoldingsHTML(a,f) : '' }
-  ${ (k==='acoes'||k==='fiis') ? `<div class="dt-grid">${peersHTML(tk,a,k)}${ hasScore ? scoreBlockHTML(a) : newsHTML(tk) }</div>` : '' }
+  ${ (k==='acoes'||k==='fiis') ? `<div class="dt-grid">${peersHTML(tk,a,k)}${newsHTML(tk)}</div>` : '' }
   `;
 }
 
@@ -13805,7 +13718,7 @@ function checklistItems(a,k,f){
     chk('Rendimento (DY) atrativo', a.dy, 9, 7, true, num(a.dy)?`DY ${pc(a.dy,1)}% a.a.`:'');
     chk('Vacância sob controle', a.vac, 5, 10, false, num(a.vac)?`Vacância ${pc(a.vac,1)}%`:'');
     chk('Boa liquidez diária', f&&f.liqf?parseLiq(f.liqf):null, 1, .3, true, f&&f.liqf?`Liquidez ${f.liqf}`:'');
-    chk('Score Lastro elevado', a.score, 70, 50, true, num(a.score)?`Score ${a.score}/100`:'');
+    chk('Histórico de distribuição consistente', a.consist, 0.85, 0.72, true, num(a.consist)?`${pc(a.consist*100,0)}% de consistência`:'');
     chk('Renda mensal consistente', a.div, 0.5, 0.2, true, num(a.div)?`Último ${brl(a.div)}/cota`:'');
     chk('Patrimônio robusto', f?parseLiq(f.plf):null, 500, 100, true, f&&f.plf?`PL ${f.plf}`:'');
     chk('Base de cotistas ampla', f&&f.cotistas?(+String(f.cotistas).replace(/\D/g,'')||null):null, 20000, 3000, true, f&&f.cotistas?`${f.cotistas} cotistas`:'');
@@ -13821,7 +13734,7 @@ function checklistItems(a,k,f){
     chk('Endividamento controlado', indVal('dleb',a), 2, 3.5, false, num(indVal('dleb',a))?`Dív.Líq/EBITDA ${pc(indVal('dleb',a),1)}x`:'');
     chk('Paga bons dividendos', a.dy, 5, 2, true, num(a.dy)?`DY ${pc(a.dy,1)}%`:'');
     chk('Receita em crescimento', indVal('cagrRec',a), 5, 0, true, num(indVal('cagrRec',a))?`CAGR ${pc(indVal('cagrRec',a),1)}%`:'');
-    chk('Score Lastro elevado', a.score, 70, 50, true, num(a.score)?`Score ${a.score}/100`:'');
+    chk('Histórico de resultados consistente', a.consist, 0.85, 0.72, true, num(a.consist)?`${pc(a.consist*100,0)}% de consistência`:'');
   }
   return it.slice(0,10);
 }
@@ -14098,7 +14011,6 @@ function viewAssetDetail(tk){
   const found=assetLookup(tk); if(!found) return '<div class="card card-pad">Ativo não encontrado.</div>';
   const {a,k}=found; const cls=ASSET_CLASS[k]; const f=FUND[tk];
   const vv=(k==='cripto'?a.v24:a.var)??0;
-  const hasScore=cls.score && typeof a.score==='number';
   if(!assetTabsFor(k).includes(assetTab)) assetTab='geral';
 
   return `
@@ -14106,7 +14018,7 @@ function viewAssetDetail(tk){
   <div class="dt-head">
     ${assetLogo(tk,k,'lg')}
     <div class="dt-id">
-      <div class="tk">${tk} <span class="chip chip-neu" style="font-size:10px">${cls.label}</span>${k==='etfs'?(/11$/.test(tk)?` <span class="chip" style="font-size:10px;background:var(--brand-l);color:var(--brand)">B3</span>`:` <span class="chip" style="font-size:10px;background:var(--accent-l);color:var(--accent)">Internacional</span>`):''}${hasScore?` <span class="chip ${scoreChip(a.score)}" style="font-size:10px"><i class="fa-solid fa-award" style="font-size:9px"></i> Score ${a.score}</span>`:''}</div>
+      <div class="tk">${tk} <span class="chip chip-neu" style="font-size:10px">${cls.label}</span>${k==='etfs'?(/11$/.test(tk)?` <span class="chip" style="font-size:10px;background:var(--brand-l);color:var(--brand)">B3</span>`:` <span class="chip" style="font-size:10px;background:var(--accent-l);color:var(--accent)">Internacional</span>`):''}</div>
       <div class="nm">${esc(a.nm)}</div>
       <div class="sec">${esc(f?(f.setor||f.tipo||a.seg||''):(a.seg||cls.label))}</div>
     </div>
