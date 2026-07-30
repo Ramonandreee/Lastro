@@ -3873,7 +3873,9 @@ button.mp-cell:active { background:var(--surface-3); }
 .prank-n { width:22px; height:22px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; font-weight:700; color:var(--brand); background:var(--brand-l); }
 .prank-lead .prank-n { color:var(--gold); background:var(--gold-l); opacity:1; }
 .prank-id { min-width:0; }
-.prank-tk { font-family:var(--mono); font-size:13.5px; font-weight:600; color:var(--ink); }
+.prank-tk { display:flex; align-items:center; gap:8px; min-width:0; }
+.prank-tk .tk { font-family:var(--mono); font-size:13.5px; font-weight:600; color:var(--ink); }
+.prank-tk .ptag { flex:none; padding:2px 7px; font-size:9.5px; }
 .prank-nm { font-size:11px; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .prank-v { text-align:right; flex:none; }
 .prank-v .v { font-family:var(--mono); font-size:13.5px; font-weight:600; }
@@ -4078,8 +4080,6 @@ button.mp-cell:active { background:var(--surface-3); }
 .pdl-v span { font-size:10px; color:var(--ink-4); }
 
 /* ── etiquetas do ranking (DY, pagamentos, YoC, tendência) ── */
-.prank-meta { grid-column:2 / -1; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:6px; }
-.prank-meta .pm-tx { font-size:11px; color:var(--ink-4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
 .ptag { display:inline-flex; align-items:center; gap:4px; padding:3px 7px; border-radius:6px;
   background:var(--surface-3); color:var(--ink-3); font-size:10px; font-weight:600; white-space:nowrap; }
 .ptag i { font-size:9px; color:var(--ink-4); }
@@ -9266,21 +9266,18 @@ function provRankCard(rk){
     const tr=x.trend?TR[x.trend]:null;
     return `<div class="prank-row${lead?' prank-lead':''}" onclick="quickView('${x.tk}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();quickView('${x.tk}')}" style="--pk:${Math.max(.42, 1-i*.11).toFixed(2)}">
       <span class="prank-n">${i+1}</span>
-      <div class="prank-id"><div class="prank-tk">${x.tk}</div><div class="prank-nm">${x.nm?esc(x.nm):'&nbsp;'}</div></div>
-      <div class="prank-v"><div class="v up priv-blur">${brl(x.tot)}</div><div class="s">${pc(x.part,1)}% da renda</div></div>
-      <!-- metadados em UMA linha de texto: quatro pílulas empilhadas faziam cada ativo
-           ocupar ~150px e a lista inteira passar de 900px -->
-      <div class="prank-meta">
-        <span class="pm-tx">${x.n} pagamento${x.n===1?'':'s'}${x.yoc!=null?` · ${termLabel('yoc','YoC')} ${pc(x.yoc,1)}%`:''}${x.dy!=null?` · DY ${pc(x.dy,1)}%`:''}</span>
-        ${tr?`<span class="ptag ptag-${tr[1]}"><i class="fa-solid ${tr[0]}"></i> ${tr[2]}</span>`:''}
+      <div class="prank-id">
+        <div class="prank-tk"><span class="tk">${x.tk}</span>${tr?`<span class="ptag ptag-${tr[1]}"><i class="fa-solid ${tr[0]}"></i> ${tr[2]}</span>`:''}</div>
+        <div class="prank-nm">${x.nm?esc(x.nm):'&nbsp;'}</div>
       </div>
+      <div class="prank-v"><div class="v up priv-blur">${brl(x.tot)}</div><div class="s">${pc(x.part,0)}% da renda</div></div>
       <span class="prank-track"><i style="width:${Math.max(2,x.part).toFixed(1)}%"></i></span>
     </div>`; }).join('');
   const mais = rk.length>8 ? `<div class="prank-more">+ ${rk.length-8} ativo${rk.length-8===1?'':'s'} pagaram menos no período</div>` : '';
   return `<div class="card card-pad prov-card prov-in" style="--d:280ms">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-trophy"></i></span> Quem mais paga</div><span class="card-sub">12 meses</span></div>
     <div class="prank">${rows}</div>${mais}
-    <div class="prov-cap">Tendência compara os <strong>últimos 6 meses</strong> com os 6 anteriores — só aparece quando existem pagamentos reais nos dois períodos. ${termLabel('yoc','YoC')} é o que o ativo pagou sobre o que <strong>você</strong> investiu nele.</div>
+    <div class="prov-cap"><strong>Tendência</strong> compara os últimos 6 meses com os 6 anteriores — só aparece quando há pagamentos reais nos dois períodos.</div>
   </div>`;
 }
 /* 8) HEATMAP ANUAL — intensidade por valor recebido no mês */
