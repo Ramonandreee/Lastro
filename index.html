@@ -4087,36 +4087,31 @@ button.mp-cell:active { background:var(--surface-3); }
 .ptag-down { background:var(--down-l); color:var(--down); } .ptag-down i { color:var(--down); }
 
 /* ── heatmap anual (constância da renda) ── */
-.phm { margin:8px 0 12px; }
+.phm { margin:10px 0 0; }
 /* no desktop as células virariam quadrados enormes: limita a largura da grade */
-@media (min-width:620px){ .phm, .phm-lg { max-width:560px; } }
-.phm-hd, .phm-row { display:grid; grid-template-columns:30px repeat(12,1fr); gap:3px; align-items:center; }
-.phm-row { margin-top:3px; }
-.phm-y { font-family:var(--mono); font-size:9.5px; color:var(--ink-4); text-align:right; padding-right:4px; }
+@media (min-width:620px){ .phm, .phm-foot { max-width:560px; } }
+.phm-hd, .phm-row { display:grid; grid-template-columns:30px repeat(12,1fr); gap:4px; align-items:center; }
+.phm-row { margin-top:4px; }
+.phm-y { font-family:var(--mono); font-size:9.5px; color:var(--ink-4); text-align:right; padding-right:6px; }
 .phm-m { text-align:center; font-size:8.5px; font-weight:700; color:var(--ink-4); }
 /* célula do mapa de calor: 12 colunas em 390px não permitem alvo de 44px — o componente
    é de LEITURA; o toque é um extra para ver o valor. Não force, senão estoura a largura. */
-.phm-c { position:relative; display:block; aspect-ratio:1; border-radius:4px; background:var(--surface-3); }
+.phm-c { position:relative; display:block; aspect-ratio:1; border-radius:5px; background:var(--surface-3); }
+.phm-c[role="button"] { cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .phm-l1 { background:color-mix(in srgb, var(--up) 24%, transparent); }
 .phm-l2 { background:color-mix(in srgb, var(--up) 46%, transparent); }
 .phm-l3 { background:color-mix(in srgb, var(--up) 70%, transparent); }
 .phm-l4 { background:var(--up); }
 .phm-off { background:color-mix(in srgb, var(--ink) 4%, transparent); box-shadow:none; }
 .phm-now { box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--up) 60%, transparent); }
-.phm-tip { position:absolute; left:50%; bottom:calc(100% + 6px); z-index:6; display:flex; flex-direction:column; align-items:center; gap:1px;
-  padding:6px 9px; border-radius:8px; background:var(--ink); color:var(--canvas); white-space:nowrap; font-size:10px;
-  opacity:0; pointer-events:none; transform:translate(-50%, 4px); transition:opacity .16s var(--ease), transform .16s var(--ease); }
-.phm-tip b { font-family:var(--mono); font-size:11.5px; font-weight:700; }
-.phm-tip em { font-style:normal; opacity:.72; }
-.phm-c:hover .phm-tip, .phm-c.on .phm-tip { opacity:1; transform:translate(-50%, 0); }
-/* meses das pontas: ancora o balão para não estourar a largura da tela */
-.phm-row .phm-c:nth-child(2) .phm-tip, .phm-row .phm-c:nth-child(3) .phm-tip { left:0; transform:translate(0, 4px); }
-.phm-row .phm-c:nth-child(2):hover .phm-tip, .phm-row .phm-c:nth-child(3):hover .phm-tip,
-.phm-row .phm-c:nth-child(2).on .phm-tip, .phm-row .phm-c:nth-child(3).on .phm-tip { transform:translate(0, 0); }
-.phm-row .phm-c:nth-child(12) .phm-tip, .phm-row .phm-c:nth-child(13) .phm-tip { left:auto; right:0; transform:translate(0, 4px); }
-.phm-row .phm-c:nth-child(12):hover .phm-tip, .phm-row .phm-c:nth-child(13):hover .phm-tip,
-.phm-row .phm-c:nth-child(12).on .phm-tip, .phm-row .phm-c:nth-child(13).on .phm-tip { transform:translate(0, 0); }
-.phm-lg { display:flex; align-items:center; gap:4px; font-size:10px; color:var(--ink-4); }
+.phm-c.on { outline:2px solid var(--ink); outline-offset:1px; z-index:2; }
+/* rodapé que dá dupla função: por padrão mostra a legenda (menos→mais); ao tocar uma
+   célula, o mês/valor aparece aqui e um toque fora volta para a legenda (sem balão preso) */
+.phm-foot { min-height:22px; margin-top:14px; display:flex; align-items:center; }
+.phm-sel { display:inline-flex; align-items:baseline; gap:8px; }
+.phm-sel b { font-family:var(--mono); font-size:13px; font-weight:700; color:var(--ink); }
+.phm-sel em { font-style:normal; font-size:11px; color:var(--ink-4); }
+.phm-lg { display:inline-flex; align-items:center; gap:4px; font-size:10px; color:var(--ink-4); }
 .phm-lg i.phm-c { width:11px; height:11px; aspect-ratio:auto; flex:none; }
 .phm-lg > span { margin:0 4px; }
 
@@ -9288,24 +9283,40 @@ function provHeatCard(groups){
   const now=new Date();
   const cell=(y,m)=>{
     const b=ms.find(x=>x.y===y && x.m===m);
-    if(!b){ const fut = y>now.getFullYear() || (y===now.getFullYear() && m>now.getMonth());
-      return `<span class="phm-c phm-off" title="${fut?'ainda não aconteceu':'fora do seu histórico'}"></span>`; }
+    if(!b) return `<span class="phm-c phm-off"></span>`;
     const lvl = b.val<=0 ? 0 : Math.min(4, Math.max(1, Math.ceil(Math.pow(b.val/mx, .55)*4)));
-    return `<span class="phm-c phm-l${lvl}${b.atual?' phm-now':''}" onclick="provHmTap(this)" role="button" tabindex="-1">
-      <span class="phm-tip"><b class="priv-blur">${b.val>0?brl(b.val):'sem provento'}</b><em>${PROV_MES[m]}/${String(y).slice(2)}${b.atual?' · em curso':''}</em></span></span>`;
+    const val = b.val>0 ? brl(b.val) : 'sem provento';
+    const lbl = `${PROV_MES[m]}/${String(y).slice(2)}${b.atual?' · em curso':''}`;
+    return `<span class="phm-c phm-l${lvl}${b.atual?' phm-now':''}" onclick="provHmTap(this)" role="button" tabindex="0" aria-label="${PROV_MES[m]}/${y}: ${val}" data-val="${val}" data-lbl="${lbl}"></span>`;
   };
+  const legenda='<span class="phm-lg"><span>menos</span><i class="phm-c phm-l1"></i><i class="phm-c phm-l2"></i><i class="phm-c phm-l3"></i><i class="phm-c phm-l4"></i><span>mais</span></span>';
   return `<div class="card card-pad prov-card prov-in" style="--d:320ms">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l);color:var(--up)"><i class="fa-solid fa-table-cells"></i></span> Constância da renda</div><span class="card-sub">${ms.length} meses</span></div>
     <div class="phm">
       <div class="phm-hd"><span class="phm-y"></span>${PROV_MES.map(m=>`<span class="phm-m">${m[0].toUpperCase()}</span>`).join('')}</div>
       ${anos.map(y=>`<div class="phm-row"><span class="phm-y">${y}</span>${PROV_MES.map((_,m)=>cell(y,m)).join('')}</div>`).join('')}
     </div>
-    <div class="phm-lg"><span>menos</span><i class="phm-c phm-l1"></i><i class="phm-c phm-l2"></i><i class="phm-c phm-l3"></i><i class="phm-c phm-l4"></i><span>mais</span></div>
+    <div class="phm-foot" id="phmFoot">${legenda}</div>
   </div>`;
 }
 function provHmTap(el){
-  document.querySelectorAll('.phm-c.on').forEach(x=>{ if(x!==el) x.classList.remove('on'); });
-  el.classList.toggle('on');
+  const foot=document.getElementById('phmFoot'); if(!foot) return;
+  if(foot._base==null) foot._base=foot.innerHTML;          // guarda a legenda p/ restaurar
+  const wasOn=el.classList.contains('on');
+  document.querySelectorAll('.phm-c.on').forEach(x=>x.classList.remove('on'));
+  if(wasOn){ foot.innerHTML=foot._base; return; }           // tocar de novo fecha
+  el.classList.add('on');
+  foot.innerHTML='<span class="phm-sel"><b class="priv-blur">'+(el.dataset.val||'')+'</b><em>'+(el.dataset.lbl||'')+'</em></span>';
+  if(typeof applyPriv==='function') applyPriv();
+}
+// tocar em qualquer lugar fora de uma célula fecha o valor e volta a legenda
+if(!window._phmDismiss){ window._phmDismiss=true;
+  document.addEventListener('click', e=>{
+    if(e.target.closest && e.target.closest('.phm-c[role="button"]')) return;
+    const open=document.querySelector('.phm-c.on'); if(!open) return;
+    open.classList.remove('on');
+    const foot=document.getElementById('phmFoot'); if(foot && foot._base!=null) foot.innerHTML=foot._base;
+  });
 }
 /* grade de 2 colunas (desktop) — não emite <div> vazio quando os dois cards somem */
 function provPair(a,b){ const h=(a||'')+(b||''); return h ? `<div class="pgrid">${h}</div>` : ''; }
