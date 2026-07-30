@@ -7749,7 +7749,7 @@ function closeCartMenu(){ const m=document.getElementById('cartMenu'); if(m) m.c
 /* Abas da área CARTEIRA: Resumo · Proventos · Agenda · Raio-X.
    Ficam no TOPO das quatro telas (antes eram cards de atalho no rodapé da Carteira),
    para o usuário alternar com um toque sem procurar. Reusa .stabs/.atab do app. */
-const CART_TABS=[['carteira','Resumo','fa-wallet'],['proventos','Proventos','fa-coins'],['agenda','Agenda','fa-regular fa-calendar'],['raiox','Raio-X','fa-chart-pie'],['aporte','Aporte','fa-scale-balanced']];
+const CART_TABS=[['carteira','Resumo','fa-wallet'],['proventos','Proventos','fa-coins'],['agenda','Agenda','fa-regular fa-calendar'],['raiox','Raio-X','fa-chart-pie'],['aporte','Aporte','fa-scale-balanced'],['ir','IR','fa-file-invoice-dollar']];
 function cartTabsHTML(active){
   return `<div class="stabs cart-tabs"><div class="stabs-inner">${CART_TABS.map(([v,l,ic])=>
     `<button class="atab ${v===active?'on':''}" onclick="${v===active?'':`goView('${v}')`}"><i class="fa-solid ${ic}"></i> ${l}</button>`
@@ -7817,10 +7817,8 @@ function viewCarteira(){
 
   <div class="mkt-sec-t" style="margin-top:22px">Ferramentas da carteira</div>
   <div class="mkt-shortcuts">
-    <button class="mkt-short" onclick="nav('ir')"><span class="ms-ic"><i class="fa-solid fa-file-invoice-dollar"></i></span><span class="ms-tx"><b>Imposto de Renda</b><small>DARF e informe anual da declaração</small></span>${isPro()?'':'<span class="mais-pro">PRO</span>'}<i class="fa-solid fa-chevron-right ms-cv"></i></button>
     <button class="mkt-short" onclick="nav('backtest')"><span class="ms-ic"><i class="fa-solid fa-chart-line"></i></span><span class="ms-tx"><b>Backtest da Carteira</b><small>Sua carteira vs CDI e IBOV no histórico</small></span>${isProTier()?'':'<span class="mais-pro">PRO</span>'}<i class="fa-solid fa-chevron-right ms-cv"></i></button>
     <button class="mkt-short" onclick="nav('stress')"><span class="ms-ic"><i class="fa-solid fa-heart-pulse"></i></span><span class="ms-tx"><b>Stress Test</b><small>Impacto estimado de cenários de crise</small></span>${isProTier()?'':'<span class="mais-pro">PRO</span>'}<i class="fa-solid fa-chevron-right ms-cv"></i></button>
-    <button class="mkt-short" onclick="nav('acompanhar')"><span class="ms-ic"><i class="fa-solid fa-star"></i></span><span class="ms-tx"><b>Acompanhar</b><small>Watchlist e alertas num só lugar</small></span><i class="fa-solid fa-chevron-right ms-cv"></i></button>
   </div>
 
 
@@ -9566,7 +9564,7 @@ function irRendimentos(year){ const pays=provPayments(); let fii=0, acoes=0;   /
 function viewIR(){
   const bd=irBensDireitos();
   if(!bd.length){
-    return `<div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-file-invoice-dollar"></i></span> Imposto de Renda</div></div>
+    return `${cartTabsHTML('ir')}<div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-file-invoice-dollar"></i></span> Imposto de Renda</div></div>
     ${emptyState('fa-file-invoice-dollar','Sem posições para declarar','Cadastre seus aportes para gerar o informe de Bens e Direitos e os rendimentos isentos prontos para a declaração anual.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   }
   const ano=new Date().getFullYear()-1, rend=irRendimentos(ano);
@@ -9583,7 +9581,7 @@ function viewIR(){
       <button class="btn btn-ghost btn-sm ir-copy" onclick="copyIR(this,'${encodeURIComponent(b.disc)}')" aria-label="Copiar discriminação"><i class="fa-regular fa-copy"></i> Copiar</button></div>
   </div>`).join('');
   const apurando='<span class="ir-apur">apurando…</span>';
-  return `
+  return `${cartTabsHTML('ir')}
   <div class="card card-pad ir-como">
     <div class="ds-title ir-como-t"><i class="fa-solid fa-circle-info"></i> Como funciona</div>
     <p class="ir-como-p">FIIs e dividendos de ações são <strong>isentos</strong> (ficha "Rendimentos Isentos"). Suas posições viram a ficha <strong>"Bens e Direitos"</strong> pelo custo de aquisição. Vendas de ações têm isenção até <strong>R$ 20.000/mês</strong>; acima, 15% sobre o ganho (FII: 20%, sem isenção). Valores estimados — confirme com seu contador.</p>
