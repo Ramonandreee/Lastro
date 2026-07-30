@@ -9419,15 +9419,23 @@ function initProvClassChart(){
   const dist=provClassDist();
   if(!dist.length) return;
   const _priv=(typeof privOn==='function'&&privOn());
+  // Ao tocar/apontar uma fatia, o valor daquela classe vai para o MIOLO do donut
+  // (onde já mora o total) — em vez de um balãozinho preto que cobria o centro e
+  // ficava "tudo junto". Sem porcentagem: só o valor real, como pedido.
+  const mid=c.closest('.pdist')?.querySelector('.pdist-mid');
+  const midBase=mid?mid.innerHTML:'';
+  const setMid=i=>{ if(!mid) return;
+    if(i==null){ mid.innerHTML=midBase; return; }
+    const x=dist[i];
+    mid.innerHTML='<b class="priv-blur">'+(_priv?'•••':brl(x.val))+'</b>'
+      +'<span style="color:'+cssVar(x.cor)+';font-weight:600">'+esc(x.nome)+'</span>'; };
   charts.provClass=new Chart(c,{ type:'doughnut',
     data:{ labels:dist.map(x=>x.nome), datasets:[{ data:dist.map(x=>x.val),
       backgroundColor:dist.map(x=>cssVar(x.cor)), borderColor:cssVar('--surface'), borderWidth:3, hoverOffset:6 }] },
     options:{ responsive:true, maintainAspectRatio:false, cutout:'68%',
       animation:{ duration:700, easing:'easeOutQuart' },
-      plugins:{ legend:{display:false},
-        tooltip:{ displayColors:false, padding:10, cornerRadius:8, backgroundColor:cssVar('--ink'),
-          titleColor:cssVar('--canvas'), bodyColor:cssVar('--canvas'),
-          callbacks:{ label:it=>{ const x=dist[it.dataIndex]; return (_priv?'•••':brl(x.val))+' · '+pc(x.part,1)+'%'; } } } } } });
+      onHover:(e,els)=>setMid(els&&els.length?els[0].index:null),
+      plugins:{ legend:{display:false}, tooltip:{enabled:false} } } });
 }
 
 /* ══════════════════════════════════════════════════════════
