@@ -7813,16 +7813,7 @@ function viewCarteira(){
     <div class="card-head pos-head" style="margin-bottom:14px"><div class="card-h"><span class="ico"><i class="fa-solid fa-list"></i></span> Posições <span class="cart-count">${n}</span></div><div class="pos-actions">${addBtn}<div class="cart-more-wrap"><button class="cart-more-btn" onclick="toggleCartMenu(event)" aria-label="Mais ações da carteira" aria-haspopup="true"><i class="fa-solid fa-ellipsis"></i></button><div class="cart-menu" id="cartMenu"><button onclick="closeCartMenu();openReportConfig()"><i class="fa-solid fa-file-lines"></i> Relatório${isProTier()?'':' <i class="fa-solid fa-crown" style="color:var(--gold);font-size:10px"></i>'}</button><button onclick="closeCartMenu();importCarteiraCSV()"><i class="fa-solid fa-file-import"></i> Importar CSV</button><button onclick="closeCartMenu();openExportConfig()"><i class="fa-solid fa-file-csv"></i> Exportar${isPremium()?'':' <span class="pro-tag">Premium</span>'}</button></div></div></div></div>
     ${n>1?`<div class="cart-sort" role="tablist" aria-label="Ordenar posições">${CART_SORTS.map(s=>`<button class="cs-btn${s[0]===cartSort?' on':''}" role="tab" aria-selected="${s[0]===cartSort}" onclick="setCartSort('${s[0]}')">${s[1]}</button>`).join('')}</div>`:''}
     <div class="pos-grid">${holdings}</div>
-  </div>
-
-  <div class="mkt-sec-t" style="margin-top:22px">Ferramentas da carteira</div>
-  <div class="mkt-shortcuts">
-    <button class="mkt-short" onclick="nav('backtest')"><span class="ms-ic"><i class="fa-solid fa-chart-line"></i></span><span class="ms-tx"><b>Backtest da Carteira</b><small>Sua carteira vs CDI e IBOV no histórico</small></span>${isProTier()?'':'<span class="mais-pro">PRO</span>'}<i class="fa-solid fa-chevron-right ms-cv"></i></button>
-    <button class="mkt-short" onclick="nav('stress')"><span class="ms-ic"><i class="fa-solid fa-heart-pulse"></i></span><span class="ms-tx"><b>Stress Test</b><small>Impacto estimado de cenários de crise</small></span>${isProTier()?'':'<span class="mais-pro">PRO</span>'}<i class="fa-solid fa-chevron-right ms-cv"></i></button>
-  </div>
-
-
-  `;
+  </div>`;
 }
 
 /* ══════════════════════════════════════════════════════════
