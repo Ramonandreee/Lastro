@@ -1626,7 +1626,7 @@ table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { backgrou
 .gb-bar i { display: block; height: 100%; border-radius: 4px; background: var(--brand); }
 
 /* simulator */
-.sim-grid { display: grid; grid-template-columns: 340px 1fr; gap: 16px; }
+.sim-grid { display: grid; grid-template-columns: 340px 1fr; gap: var(--gap); }
 .sim-control { margin-bottom: 22px; }
 .sim-control .lbl { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
 .sim-control .lbl .n { font-size: 13px; font-weight: 500; }
@@ -1974,9 +1974,12 @@ canvas { touch-action:none; }
 @media (max-width:460px){ .fld-row { grid-template-columns:1fr; } }
 
 /* ── Controles de formulário reutilizáveis (consolidam inputs/labels antes inline) ── */
-.form-label { display:block; font-size:12px; font-weight:500; color:var(--ink-3); margin-bottom:6px; }
-.form-input, .form-select { width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--canvas); color:var(--ink); font-size:14px; transition:border-color .15s var(--ease); }
-.form-input:focus, .form-select:focus { border-color:var(--accent); outline:none; }
+.form-label { display:block; font-size:12px; font-weight:600; color:var(--ink-3); margin-bottom:6px; }
+.form-input, .form-select { width:100%; min-height:46px; padding:0 14px; border:1px solid var(--line); border-radius:var(--r-btn); background:var(--surface); color:var(--ink); font-size:14px; transition:border-color .15s var(--ease), box-shadow .15s var(--ease); }
+.form-select { appearance:none; -webkit-appearance:none; padding-right:38px; cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' fill='none' stroke='%2398A0AC' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center; }
+.form-input:focus, .form-select:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-l); outline:none; }
 .form-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
 .form-col { flex:1 1 160px; min-width:0; }
 .chip.chip-sm { font-size:9.5px; padding:1px 6px; }
@@ -4349,6 +4352,42 @@ button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l);
 .pm-limpar { display:inline-flex; align-items:center; gap:6px; min-height:32px; padding:0 10px; border:0; border-radius:999px;
   background:var(--surface-3); color:var(--ink-3); font-family:var(--sans); font-size:11.5px; font-weight:600; cursor:pointer; }
 .pm-limpar:hover { background:var(--line-2); color:var(--ink); }
+/* ── tela de Imposto de Renda ── */
+.ir-como { background:linear-gradient(135deg,var(--gold-l),transparent); margin-bottom:var(--gap); }
+.ir-como-t { margin-bottom:8px; } .ir-como-t i { color:var(--gold); }
+.ir-como-p { font-size:13px; color:var(--ink-2); line-height:1.65; margin:0; }
+/* Bens e Direitos */
+.ir-bd-list { margin-top:4px; }
+.ir-bd { padding:16px 0; border-top:1px solid var(--line); }
+.ir-bd:first-child { border-top:0; padding-top:6px; }
+.ir-bd-top { display:flex; align-items:flex-start; gap:12px; }
+.ir-bd-ic { display:flex; flex-direction:column; align-items:center; gap:5px; flex:none; }
+.ir-bd-main { flex:1; min-width:0; }
+.ir-bd-tk { font-weight:700; font-size:14px; color:var(--ink); letter-spacing:-.01em; }
+.ir-bd-cod { font-size:11.5px; color:var(--ink-4); margin-top:2px; }
+.ir-bd-val { flex:none; text-align:right; white-space:nowrap; }
+.ir-bd-val b { display:block; font-family:var(--mono); font-weight:700; font-size:14px; color:var(--ink); letter-spacing:-.01em; }
+.ir-bd-val span { display:block; font-size:10.5px; color:var(--ink-4); margin-top:2px; }
+/* discriminação: largura total embaixo, texto e botão em linha, sem espremer */
+.ir-bd-disc { display:flex; align-items:center; gap:10px; margin-top:10px; padding:10px 12px;
+  font-size:12px; color:var(--ink-2); line-height:1.55; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-btn); }
+.ir-bd-disc-tx { flex:1; min-width:0; }
+.ir-copy { flex:none; min-height:36px; padding:0 12px; font-size:12px; }
+/* Rendimentos isentos */
+.ir-rend { margin-top:6px; }
+.ir-rend .metric { padding:11px 0; }
+.ir-rend-tot .ml { font-weight:700; color:var(--ink); }
+.ir-rend-tot .mv { font-weight:700; font-size:18px; }
+.ir-apur { color:var(--ink-3); font-size:13px; font-family:var(--sans); }
+.ir-note { margin-top:14px; }
+/* DARF */
+.ir-darf-form { display:flex; flex-direction:column; gap:14px; margin-top:6px; }
+.ir-darf-form .fld > span { font-size:12px; font-weight:600; color:var(--ink-3); }
+.fld-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.ir-darf-res { border:1px solid var(--line); border-radius:var(--r-card); padding:14px 16px; margin-top:2px; background:var(--surface-2); }
+.ir-darf-res .metric { padding:9px 0; }
+@media (max-width:760px){ .sim-grid { grid-template-columns:1fr; } }
+
 </style>
 
 <script src="/vendor/chart.umd.js"></script>
@@ -9532,42 +9571,50 @@ function viewIR(){
     ${emptyState('fa-file-invoice-dollar','Sem posições para declarar','Cadastre seus aportes para gerar o informe de Bens e Direitos e os rendimentos isentos prontos para a declaração anual.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   }
   const ano=new Date().getFullYear()-1, rend=irRendimentos(ano);
-  const bdRows=bd.map(b=>`<div class="ir-bd-row" style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:13px 0;border-bottom:1px solid var(--line)">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">${assetLogo(b.tk,b.k,'sm')}<span class="chip chip-sm">${b.k==='fiis'?'FII':'Ação'}</span></div>
-    <div><div style="font-weight:700;font-size:13.5px;color:var(--ink)">${b.tk}</div><div style="font-size:11.5px;color:var(--ink-3);margin:2px 0 5px">Grupo ${b.grupo} · Código ${b.codigo}</div><div style="font-size:12px;color:var(--ink-2);line-height:1.5;background:var(--surface-3);border-radius:8px;padding:8px 10px">${b.disc} <button class="btn btn-ghost btn-sm" style="margin-left:4px;vertical-align:middle" onclick="copyIR(this,'${encodeURIComponent(b.disc)}')"><i class="fa-regular fa-copy"></i></button></div></div>
-    <div class="ir-bd-val" style="text-align:right"><div class="priv-blur" style="font-weight:700;font-size:14px;color:var(--ink)">${brl(b.custo)}</div><div style="font-size:11px;color:var(--ink-3)">custo (31/12)</div></div>
+  const bdRows=bd.map(b=>`<div class="ir-bd">
+    <div class="ir-bd-top">
+      <div class="ir-bd-ic">${assetLogo(b.tk,b.k,'sm')}<span class="chip chip-sm">${b.k==='fiis'?'FII':'Ação'}</span></div>
+      <div class="ir-bd-main">
+        <div class="ir-bd-tk">${b.tk}</div>
+        <div class="ir-bd-cod">Grupo ${b.grupo} · Código ${b.codigo}</div>
+      </div>
+      <div class="ir-bd-val"><b class="priv-blur">${brl(b.custo)}</b><span>custo (31/12)</span></div>
+    </div>
+    <div class="ir-bd-disc"><span class="ir-bd-disc-tx">${b.disc}</span>
+      <button class="btn btn-ghost btn-sm ir-copy" onclick="copyIR(this,'${encodeURIComponent(b.disc)}')" aria-label="Copiar discriminação"><i class="fa-regular fa-copy"></i> Copiar</button></div>
   </div>`).join('');
+  const apurando='<span class="ir-apur">apurando…</span>';
   return `
-  <div class="card card-pad" style="background:linear-gradient(135deg,var(--gold-l),transparent);margin-bottom:16px">
-    <div class="ds-title" style="margin-bottom:6px"><i class="fa-solid fa-circle-info" style="color:var(--gold)"></i> Como funciona</div>
-    <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">FIIs e dividendos de ações são <strong>isentos</strong> (ficha "Rendimentos Isentos"). Suas posições viram a ficha <strong>"Bens e Direitos"</strong> pelo custo de aquisição. Vendas de ações têm isenção até <strong>R$ 20.000/mês</strong>; acima, 15% sobre o ganho (FII: 20%, sem isenção). Valores estimados — confirme com seu contador.</p>
+  <div class="card card-pad ir-como">
+    <div class="ds-title ir-como-t"><i class="fa-solid fa-circle-info"></i> Como funciona</div>
+    <p class="ir-como-p">FIIs e dividendos de ações são <strong>isentos</strong> (ficha "Rendimentos Isentos"). Suas posições viram a ficha <strong>"Bens e Direitos"</strong> pelo custo de aquisição. Vendas de ações têm isenção até <strong>R$ 20.000/mês</strong>; acima, 15% sobre o ganho (FII: 20%, sem isenção). Valores estimados — confirme com seu contador.</p>
   </div>
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-building-columns"></i></span> Bens e Direitos <span class="card-sub" style="margin-left:6px">· posição em 31/12</span></div></div>
-    <div style="margin-top:6px">${bdRows}</div>
+    <div class="ir-bd-list">${bdRows}</div>
   </div>
-  <div class="sim-grid" style="margin-top:16px">
+  <div class="sim-grid" style="margin-top:var(--gap)">
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-hand-holding-dollar"></i></span> Rendimentos isentos <span class="card-sub" style="margin-left:6px">· ${ano}</span></div></div>
-      <div style="display:flex;flex-direction:column;gap:2px;margin-top:8px">
-        <div class="metric"><div class="ml">FIIs — rendimentos (cód. 26)</div><div class="mv ${rend.pend?'':'priv-blur up'}">${rend.pend?'<span style="color:var(--ink-3);font-size:13px">apurando…</span>':brl(rend.fii)}</div></div>
-        <div class="metric"><div class="ml">Ações — dividendos (cód. 09)</div><div class="mv ${rend.pend?'':'priv-blur up'}">${rend.pend?'<span style="color:var(--ink-3);font-size:13px">apurando…</span>':brl(rend.acoes)}</div></div>
+      <div class="ir-rend">
+        <div class="metric"><div class="ml">FIIs — rendimentos (cód. 26)</div><div class="mv ${rend.pend?'':'priv-blur up'}">${rend.pend?apurando:brl(rend.fii)}</div></div>
+        <div class="metric"><div class="ml">Ações — dividendos (cód. 09)</div><div class="mv ${rend.pend?'':'priv-blur up'}">${rend.pend?apurando:brl(rend.acoes)}</div></div>
         <div class="divider"></div>
-        <div class="metric"><div class="ml" style="font-weight:700">Total isento no ano</div><div class="mv ${rend.pend?'':'priv-blur'}" style="font-weight:700">${rend.pend?'<span style="color:var(--ink-3);font-size:13px">apurando…</span>':brl(rend.total)}</div></div>
+        <div class="metric ir-rend-tot"><div class="ml">Total isento no ano</div><div class="mv ${rend.pend?'':'priv-blur'}">${rend.pend?apurando:brl(rend.total)}</div></div>
       </div>
       <!-- IR é a tela mais sensível do app: nunca imprimir R$ 0,00 como se fosse apuração concluída -->
-      <div class="illus-note" style="margin-top:12px"><i class="fa-solid fa-circle-info"></i> ${rend.pend
+      <div class="illus-note ir-note">${rend.pend
         ? 'Ainda apurando os proventos reais da carteira — nenhum valor é exibido antes de fechar a conta.'
         : `Somente proventos com data-com no histórico da fonte (cerca de 2 anos), em ${ano} — pode estar incompleto. Confira sempre com os informes de rendimentos.`}</div>
     </div>
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-calculator"></i></span> Calculadora de DARF (venda)</div></div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
-        <div><label class="form-label" style="margin-bottom:5px">Ativo vendido</label>
+      <div class="ir-darf-form">
+        <div class="fld"><span>Ativo vendido</span>
           <select id="darfTk" class="form-select" onchange="runDarf()">${bd.map(b=>`<option value="${b.tk}" data-pm="${b.pm}" data-k="${b.k}">${b.tk} · custo ${brl(b.pm)}</option>`).join('')}</select></div>
-        <div class="form-row" style="gap:10px;align-items:stretch">
-          <div class="form-col"><label class="form-label" style="margin-bottom:5px">Qtd vendida</label><input id="darfQt" class="form-input" type="number" min="0" step="1" value="100" oninput="runDarf()"></div>
-          <div class="form-col"><label class="form-label" style="margin-bottom:5px">Preço de venda (R$)</label><input id="darfPx" class="form-input" type="text" inputmode="decimal" placeholder="0,00" value="0,00" oninput="maskBRL(this);runDarf()"></div>
+        <div class="fld-row">
+          <div class="fld"><span>Qtd vendida</span><input id="darfQt" class="form-input" type="number" min="0" step="1" value="100" oninput="runDarf()"></div>
+          <div class="fld"><span>Preço de venda (R$)</span><input id="darfPx" class="form-input" type="text" inputmode="decimal" placeholder="0,00" value="0,00" oninput="maskBRL(this);runDarf()"></div>
         </div>
         <div id="darfResult"><div class="faint" style="font-size:12.5px">Informe quantidade e preço de venda para calcular o imposto.</div></div>
       </div>
@@ -9584,7 +9631,7 @@ function runDarf(){
   const venda=qt*px, custo=qt*pm, ganho=venda-custo, isFii=k==='fiis';
   const isento = !isFii && venda<=20000 && ganho>0, aliq=isFii?0.20:0.15;
   const imposto=(ganho>0 && !isento)? ganho*aliq : 0, cls=ganho>=0?'up':'down';
-  host.innerHTML=`<div style="border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:2px">
+  host.innerHTML=`<div class="ir-darf-res">
     <div class="metric"><div class="ml">Valor da venda</div><div class="mv">${brl(venda)}</div></div>
     <div class="metric"><div class="ml">Custo (${qt}×${brl(pm)})</div><div class="mv">${brl(custo)}</div></div>
     <div class="metric"><div class="ml">Ganho de capital</div><div class="mv ${cls}">${ganho>=0?'+':''}${brl(ganho)}</div></div>
@@ -9592,7 +9639,7 @@ function runDarf(){
     <div class="divider"></div>
     <div class="metric"><div class="ml" style="font-weight:700">${termLabel('darf',`DARF a pagar (${(aliq*100).toFixed(0)}%)`)}</div><div class="mv" style="font-weight:700;color:${imposto>0?'var(--down)':'var(--brand)'}">${brl(imposto)}</div></div>
   </div>
-  <div class="illus-note" style="margin-top:10px"><i class="fa-solid fa-circle-info"></i> Considera apenas esta venda. A isenção de R$ 20k vale para o total de vendas de ações no mês; compense prejuízos acumulados quando aplicável.</div>`;
+  <div class="illus-note ir-note">Considera apenas esta venda. A isenção de R$ 20k vale para o total de vendas de ações no mês; compense prejuízos acumulados quando aplicável.</div>`;
 }
 
 /* ══════════════════════════════════════════════════════════
