@@ -37,6 +37,16 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 >   `.github/workflows/test.yml`; proxies logam com request-id (`lib/log.js`).
 >
 > **Entregue nesta frente (ago/2026):**
+> - **Agenda de Dividendos redesenhada — FEITO (só UI, lógica intacta).** A aba deixou de
+>   ser timelines empilhadas e virou **calendário mensal** (estilo iOS) como protagonista:
+>   setas de navegação + botão **Hoje**, ponto **verde** (confirmado/real) e **cinza**
+>   (estimado) nos dias que pagam, **círculo azul** no dia selecionado. Abaixo, **card de
+>   resumo do mês** com 3 indicadores (Recebido/A receber/Total — ícones verde/azul/violeta,
+>   divisórias discretas) e **card do dia selecionado** (logo, ticker, nome, cotas, valor/cota,
+>   DY, status Confirmado/Estimado, valor em verde). Dados vêm de `provMonthAgenda()` (mesma
+>   fonte única da Proventos — nada de lógica nova); "Proventos do mercado" preservado embaixo
+>   em `agMarketCard()`. Novo token `--viola`/`--viola-l` (claro+escuro). Funções: `agendaBodyHTML`,
+>   `agDayCard`, `agMarketCard`, estado `_agOff/_agDia` (`setAgMes/setAgDia/agHoje`).
 > - **Persistência do Premium — FEITO (server-side).** Tabela `user_entitlement` (só o
 >   dono lê; sem policy de escrita p/ `authenticated`) + RPC provisória `grant_entitlement`
 >   (checkout simulado). `ENT` hidratado no login/boot; `getPlan/planTier/isPremium`
