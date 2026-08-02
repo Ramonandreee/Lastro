@@ -2887,8 +2887,11 @@ body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2
 .rx-reasons { list-style:none; margin:0; padding:0; display:grid; gap:6px; }
 .rx-reasons li { font-size:12.5px; line-height:1.5; color:var(--ink-2); display:flex; gap:8px; align-items:flex-start; }
 .rx-reasons li i { margin-top:3px; font-size:11px; }
-.rx-reasons li.pos i { color:var(--brand); }
+.rx-reasons li.pos i { color:var(--up); }
 .rx-reasons li.neg i { color:var(--gold); }
+.rx-reasons li.neu i { color:var(--ink-4); }
+.rx-forte-h { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-4); margin:2px 0 8px; }
+.rx-quick { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
 .rx-assets { display:grid; gap:2px; }
 .rx-asset { display:flex; align-items:center; gap:11px; padding:9px 6px; border-radius:10px; cursor:pointer; transition:background .15s var(--ease); }
 .rx-asset:hover { background:var(--surface-2,var(--brand-l)); }
@@ -11711,9 +11714,9 @@ function viewRaioX(){
   if(!isProTier()) return `
   ${cartTabsHTML('raiox')}<div class="card premium-gate">${premiumPresentation('raiox')}</div>`;
   const head = `${cartTabsHTML('raiox')}<div class="sec-title">Raio-X da carteira</div>
-  <div class="sec-desc">O retrato completo da carteira: patrimônio, diversificação por setor, ativo e classe, a Nota de Diversificação Lastro e sugestões de melhoria.</div>`;
+  <div class="sec-desc">A diversificação da carteira num raio-X: a Nota Lastro, os pontos fortes, a composição por setor, classe e ativo, a concentração e a segurança dos dividendos.</div>`;
   const lots = null; _rxLots = lots;
-  const p=portfolioStats(lots), d=diversificationGrade(lots);
+  const d=diversificationGrade(lots);
   if(!d) return head + `<div class="card card-pad">${emptyState('fa-magnifying-glass-chart','Sem posições para o Raio-X','Adicione ativos à sua carteira para ver a diversificação, a concentração e a Nota Lastro.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   // agregações
   const byClasse={}; d.pos.forEach(x=> byClasse[x.classe]=(byClasse[x.classe]||0)+x.w);
@@ -11731,64 +11734,33 @@ function viewRaioX(){
       <div class="rx-as-bar"><i style="width:${Math.min(100,x.w*2.5).toFixed(1)}%;background:${alta?'var(--down)':media?'var(--gold)':'var(--brand)'}"></i></div>
       <span class="rx-as-w mono">${pc(x.w,1)}%</span></div>`;
   }).join('');
-  const reasons=d.reasons.map(r=>`<li class="${r.neg?'neg':'pos'}"><i class="fa-solid fa-${r.neg?'triangle-exclamation':'circle-check'}"></i> <span>${r.t}</span></li>`).join('');
-  const provReceb=p.prov||0, provProj=(p.renda||0)*12;
+  // Só os PONTOS FORTES (os motivos positivos já calculados). Alertas de concentração
+  // seguem visíveis, de forma visual, no bloco "Por ativo".
+  const positives = d.reasons.filter(r=>!r.neg);
+  const fortes = positives.length
+    ? positives.map(r=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>${r.t}</span></li>`).join('')
+    : '<li class="neu"><i class="fa-regular fa-circle"></i> <span>Comece a diversificar — mais ativos, setores e classes — para destravar seus pontos fortes.</span></li>';
   const sc=lastroScores(lots);
   const ins=portfolioInsights(lots);
   const _falta=['Ações','FIIs','Exterior'].filter(c=>!d.classes.includes(c));
   const sugItems=[...(ins.rebal||[]), ..._falta.map(c=>`Adicionar exposição a <strong>${c}</strong> para diversificar entre classes.`)]
     .map(t=>`<li><i class="fa-solid fa-arrow-trend-up"></i> <span>${t}</span></li>`).join('')
     || '<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>Carteira equilibrada — sem ajustes urgentes no momento.</span></li>';
-  const eqColor = sc.equilibrio>=80?'#0B2E5E':sc.equilibrio>=65?'#1E56A6':sc.equilibrio>=50?'#A87C2A':sc.equilibrio>=35?'#E2761B':'#DC2626';
-  const eqMsg = sc.equilibrio>=80?'Carteira muito bem equilibrada entre diversificação, qualidade e renda.' : sc.equilibrio>=65?'Bom equilíbrio geral — pequenos ajustes podem elevar o índice.' : sc.equilibrio>=50?'Equilíbrio mediano: revise concentração e mix de qualidade.' : 'Carteira desequilibrada — priorize diversificação e qualidade dos ativos.';
   const divSegRows = sc.divSeg.map(x=>{ const c=x.sc>=7?'var(--brand)':x.sc>=4?'var(--gold)':'var(--down)'; return `<div class="rx-asset" onclick="quickView('${x.tk}')">${assetLogo(x.tk,x.k,'sm')}<div class="rx-as-id"><div class="rx-as-tk">${x.tk}</div><div class="rx-as-nm">${esc(x.nm)} · DY ${pc(x.dy,1)}%</div></div><div class="rx-as-bar"><i style="width:${(x.sc*10).toFixed(0)}%;background:${c}"></i></div><span class="rx-as-w mono" style="color:${c}">${x.sc.toFixed(1)}/10</span></div>`; }).join('') || '<div class="faint" style="font-size:12.5px;padding:6px">Nenhum ativo pagador de dividendos na carteira.</div>';
-  const recs=rxRecommendations(lots);
-  const recRow=x=>`<div class="rx-rec" onclick="quickView('${x.tk}')">${assetLogo(x.tk,x.k,'sm')}<div class="rx-rec-id"><div class="rx-rec-tk">${x.tk} <span class="rx-rec-act ${x.cls}">${x.acao}</span></div><div class="rx-rec-why">${x.reason}</div></div></div>`;
-  const buyRows = recs.buy.map(recRow).join('') || '<div class="faint" style="font-size:12px;padding:6px">Carteira bem coberta — sem compras prioritárias agora.</div>';
-  const sellRows = recs.sell.map(recRow).join('') || '<div class="rx-rec-ok"><i class="fa-solid fa-circle-check"></i> Nada a reduzir: sem concentração excessiva nem ativos de baixa qualidade.</div>';
   return head + `
-  <div class="mstrip" style="grid-template-columns:repeat(6,1fr)">
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Patrimônio</div><div class="vl">${brl0(p.atual)}</div><div class="dl ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}%</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Rentabilidade</div>${p.provPend?`<div class="vl faint" style="font-size:15px">apurando…</div><div class="dl faint">c/ proventos</div>`:`<div class="vl ${p.lucroProvP>=0?'up':'down'}">${p.lucroProvP>=0?'+':''}${pc(p.lucroProvP,1)}%</div><div class="dl faint">c/ proventos</div>`}</div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos recebidos</div><div class="vl">${p.provPend?'—':brl0(provReceb)}</div><div class="dl faint">${p.provPend?(provFetchDown(p._byT)?'indisponível':'apurando…'):'acumulado (real)'}</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Proventos projetados</div><div class="vl">${brl0(provProj)}</div><div class="dl faint">12 meses · est.</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Ativos</div><div class="vl">${d.n}</div><div class="dl faint">posições</div></div>
-    <div class="mcell"><div class="nm" style="margin-bottom:8px">Setores</div><div class="vl">${d.setores.length}</div><div class="dl faint">classes: ${d.classes.length}</div></div>
-  </div>
   <div class="rx-grade card card-pad" style="margin-top:16px;border-color:${d.color}55">
     <div class="rx-grade-badge" style="background:${d.color}14;color:${d.color};border-color:${d.color}55"><span class="rx-grade-letter">${d.grade}</span></div>
     <div class="rx-grade-body">
       <div class="rx-grade-h">${termLabel('notaLastro','Nota de Diversificação Lastro™')} · <strong style="color:${d.color}">${d.label}</strong> <span class="mono faint">${d.score}/100</span></div>
       <div class="rx-grade-track"><i style="width:${d.score}%;background:${d.color}"></i></div>
-      <ul class="rx-reasons">${reasons}</ul>
+      <div class="rx-forte-h">Pontos fortes</div>
+      <ul class="rx-reasons">${fortes}</ul>
     </div>
   </div>
-  <div class="rx-scores" style="margin-top:16px">
-    <div class="card card-pad rx-eq">
-      <div class="card-h" style="margin-bottom:12px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-scale-balanced"></i></span> Índice de Equilíbrio Lastro™</div>
-      <div class="rx-eq-num" style="color:${eqColor}">${sc.equilibrio}<small>/100</small></div>
-      <div class="rx-grade-track"><i style="width:${sc.equilibrio}%;background:${eqColor}"></i></div>
-      <p class="faint" style="font-size:12px;margin:11px 0 0;line-height:1.55">${eqMsg}</p>
-      <div class="rx-eq-sub faint">Qualidade média ${sc.qual}/100 · Consistência ${sc.consist}/100</div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Sugestões de melhoria</div>
-      <ul class="cons-sug">${sugItems}</ul>
-    </div>
-  </div>
-  <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-arrows-rotate"></i></span> Recomendações de ação <span class="card-sub" style="margin-left:6px">· o que comprar e reduzir, com o motivo</span></div></div>
-    <div class="rx-recs">
-      <div class="rx-rec-col">
-        <div class="rx-rec-h up"><i class="fa-solid fa-circle-plus"></i> Considerar comprar</div>
-        ${buyRows}
-      </div>
-      <div class="rx-rec-col">
-        <div class="rx-rec-h down"><i class="fa-solid fa-circle-minus"></i> Considerar reduzir</div>
-        ${sellRows}
-      </div>
-    </div>
-    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sugestões educativas geradas a partir da composição, concentração e qualidade dos ativos — não são recomendação personalizada de investimento.</div>
+  <div class="rx-quick">
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Ativos</div><div class="vl">${d.n}</div><div class="dl faint">posições</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Setores</div><div class="vl">${d.setores.length}</div><div class="dl faint">distintos</div></div>
+    <div class="mcell"><div class="nm" style="margin-bottom:8px">Classes</div><div class="vl">${d.classes.length}</div><div class="dl faint">de ativos</div></div>
   </div>
   <div class="rx-cols" style="margin-top:16px">
     <div class="card card-pad">
@@ -11810,6 +11782,10 @@ function viewRaioX(){
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-shield-halved"></i></span> Segurança dos dividendos <span class="card-sub" style="margin-left:6px">· além do yield</span></div></div>
     <div class="rx-classe-note faint" style="margin:2px 0 12px">Yield alto nem sempre é dividendo seguro. A nota combina consistência histórica, qualidade e sustentabilidade do pagamento (0 a 10).</div>
     <div class="rx-assets">${divSegRows}</div>
+  </div>
+  <div class="card card-pad" style="margin-top:16px">
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Sugestões de melhoria</div></div>
+    <ul class="cons-sug">${sugItems}</ul>
   </div>
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Análise calculada sobre as posições reais da sua carteira. Não é recomendação personalizada de investimento.</div>`;
 }
