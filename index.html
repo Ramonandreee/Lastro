@@ -3678,7 +3678,7 @@ body.pdf-lock { overflow:hidden; }
 .mkt-search:active { transform:scale(.99); }
 .mkt-search > i { font-size:15px; color:var(--brand); }
 .mkt-search span { flex:1; min-width:0; font-size:14.5px; font-weight:500; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.mkt-search .mkt-search-cta { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--brand); background:var(--brand-l); padding:5px 9px; border-radius:999px; }
+.mkt-search .mkt-search-cta { flex:none; display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--brand); background:var(--brand-l); padding:5px 9px; border-radius:999px; }
 
 /* Pulso do mercado — fita compacta de contexto */
 .mkt-pulse { display:grid; grid-template-columns:repeat(3,1fr); background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); overflow:hidden; }
@@ -3729,7 +3729,9 @@ button.mp-cell:active { background:var(--surface-3); }
 .ms-tx small { font-size:12px; color:var(--ink-3); line-height:1.35; }
 .ms-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--gold); background:var(--gold-l); padding:3px 8px; border-radius:999px; margin-left:8px; }
 .ms-cv { color:var(--ink-4); font-size:13px; }
-@media (max-width:420px){ .mkt-pulse { grid-template-columns:1fr 1fr; } .mp-cell:nth-child(3) { grid-column:1 / -1; border-top:1px solid var(--line); } .mp-cell:nth-child(3)::before { display:none; } }
+@media (max-width:420px){ .mp-cell { padding:12px 10px; } .mp-l { font-size:9.5px; letter-spacing:.03em; margin-bottom:5px; } .mp-v { font-size:15px; } .mp-d { font-size:10.5px; } }   /* 3 colunas lado a lado: encolhe a célula em vez de quebrar a linha */
+@media (max-width:360px){ .mp-cell { padding:11px 7px; } .mp-v { font-size:13.5px; } .mp-l { font-size:9px; } .mp-d { font-size:10px; }
+  .mkt-search { padding:12px 13px; gap:8px; } .mkt-search span { font-size:12.5px; }   /* placeholder cabe inteiro em telas de 320px */ }
 
 /* Tela "Mais" (menu + conta em página cheia) */
 .mais-acct { display:flex; align-items:center; gap:13px; width:100%; padding:15px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); cursor:pointer; text-align:left; margin-bottom:6px; }
@@ -10526,7 +10528,7 @@ function viewMercado(){
 
   const rec = getRecent().map(tk=>{ const l=assetLookup(tk); return l?{a:l.a,k:l.k}:null; }).filter(Boolean).slice(0,10);
   const recBlock = rec.length ? `
-    <div class="mkt-sec-t">Vistos recentemente<span class="mkt-sec-hint">deslize →</span></div>
+    <div class="mkt-sec-t">Vistos recentemente</div>
     <div class="mkt-recent">${rec.map(x=>{ const up=(x.a.var||0)>=0;
       return `<button class="mrec" onclick="quickView('${x.a.tk}')">${assetLogo(x.a.tk,x.k,'sm')}<span class="mrec-tk">${x.a.tk}</span><span class="mrec-v ${up?'up':'down'}"><i class="fa-solid fa-caret-${up?'up':'down'}"></i>${pc(Math.abs(x.a.var||0),1)}%</span></button>`;
     }).join('')}</div>` : '';
