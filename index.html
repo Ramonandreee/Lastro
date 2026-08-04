@@ -1746,9 +1746,12 @@ input[type=range]::-moz-range-thumb {
 /* asset detail page */
 .dt-back { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:500; color:var(--ink-3); padding:7px 14px 7px 11px; border:1px solid var(--line); border-radius:999px; background:var(--surface); cursor:pointer; transition:all .15s var(--ease); margin-bottom:14px; }
 .dt-back:hover { color:var(--ink); border-color:var(--line-2); transform:translateX(-2px); }
-.dt-head { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px; padding:18px 20px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); }
-.dt-head > .logo { box-shadow:0 0 0 1px var(--line), 0 4px 14px rgba(15,20,25,.09); }
-.dt-head > .logo.lg { width:58px; height:58px; }
+/* cabeçalho do ativo: duas faixas — identidade+preço (herói) e ações. Compacto: o conteúdo
+   (grade de indicadores) precisa aparecer acima da dobra no iPhone. */
+.dt-head { display:flex; flex-direction:column; gap:14px; margin-bottom:14px; padding:16px 18px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-sm); }
+.dt-top { display:flex; align-items:center; gap:14px; min-width:0; }
+.dt-head .logo { box-shadow:0 0 0 1px var(--line), 0 4px 14px rgba(15,20,25,.09); }
+.dt-head .logo.lg { width:54px; height:54px; }
 .dt-ic { width:56px; height:56px; border-radius:14px; flex:none; background:linear-gradient(135deg,var(--brand),var(--brand-d)); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:14px; font-weight:600; }
 /* logos de empresas/ativos */
 .logo { position:relative; display:inline-flex; align-items:center; justify-content:center; flex:none; overflow:hidden; border:none; background:#fff; }
@@ -1768,16 +1771,17 @@ input[type=range]::-moz-range-thumb {
 .logo.md { width:42px; height:42px; border-radius:12px; font-size:11px; }
 .logo.sm { width:34px; height:34px; border-radius:10px; font-size:9.5px; }
 .logo.xs { width:30px; height:30px; border-radius:8px; font-size:9px; }
-.dt-id .tk { font-family:var(--mono); font-size:24px; font-weight:600; letter-spacing:-.01em; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.dt-id .nm { font-size:14px; font-weight:500; color:var(--ink-2); margin-top:3px; }
-.dt-id .sec { font-size:12px; color:var(--ink-3); margin-top:4px; }
-.dt-px { margin-left:auto; text-align:right; }
-.dt-px .v { font-family:var(--mono); font-size:32px; font-weight:600; letter-spacing:-.02em; line-height:1.05; }
-.dt-px .d { font-family:var(--mono); font-size:13px; font-weight:600; margin-top:6px; display:inline-flex; align-items:center; gap:5px; padding:3px 11px; border-radius:999px; }
+.dt-id { min-width:0; }
+.dt-id .tk { font-family:var(--mono); font-size:23px; font-weight:600; letter-spacing:-.01em; display:flex; align-items:center; gap:8px; flex-wrap:wrap; line-height:1.1; }
+.dt-id .nm { font-size:13.5px; font-weight:500; color:var(--ink-2); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dt-id .sec { font-size:11.5px; color:var(--ink-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dt-px { margin-left:auto; text-align:right; flex:none; }
+.dt-px .v { font-family:var(--mono); font-size:30px; font-weight:600; letter-spacing:-.02em; line-height:1.05; white-space:nowrap; }
+.dt-px .d { font-family:var(--mono); font-size:12.5px; font-weight:600; margin-top:6px; display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; white-space:nowrap; }
 .dt-px .d.up{ color:var(--up); background:var(--up-l); } .dt-px .d.down{ color:var(--down); background:var(--down-l); }
-.dt-actions { display:flex; gap:8px; margin-top:14px; justify-content:flex-end; flex-wrap:wrap; }
-.dt-actions .btn { padding:8px 14px; font-size:12.5px; }
-.dt-actions .btn-primary { font-weight:600; padding:8px 18px; }
+.dt-actions { display:flex; align-items:stretch; gap:8px; justify-content:flex-end; }
+.dt-actions .btn { min-height:40px; padding:0 15px; font-size:12.5px; }
+.dt-actions .btn-primary { font-weight:600; padding:0 20px; }
 .sumgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; margin-bottom:16px; }
 .sumcard { background:var(--surface); padding:14px 16px; }   /* transição/hover ficam no bloco único abaixo (.sumcard,.metric) */
 .sumcard .l { font-size:10.5px; color:var(--ink-3); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
@@ -1813,22 +1817,37 @@ input[type=range]::-moz-range-thumb {
 .dt-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
 @media (max-width:880px){ .dt-grid{ grid-template-columns:1fr; } .about-grid{ grid-template-columns:1fr; } }
 @media (max-width:680px){
-  .dt-head{ flex-wrap:wrap; gap:13px; padding:16px; }
-  .dt-head > .logo.lg{ width:52px; height:52px; }
+  .dt-head{ gap:12px; padding:14px 14px 13px; }
+  .dt-head .logo.lg{ width:46px; height:46px; border-radius:13px; }
+  .dt-top{ gap:11px; }
   .dt-id{ min-width:0; flex:1; }
-  .dt-id .nm{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .dt-px{ margin-left:0; text-align:left; width:100%; padding-top:14px; margin-top:2px; border-top:1px solid var(--line); }
-  .dt-px .v{ font-size:28px; }
-  .dt-actions{ justify-content:flex-start; flex-wrap:wrap; margin-top:10px; }
-  .dt-actions .btn{ flex:1; justify-content:center; }
+  .dt-id .tk{ font-size:19px; gap:6px; }
+  .dt-id .nm{ font-size:12.5px; }
+  .dt-px{ max-width:47%; }
+  .dt-px .v{ font-size:25px; }
+  .dt-px .d{ font-size:11.5px; margin-top:4px; padding:2px 8px; }
+  .dt-actions{ justify-content:stretch; gap:7px; }
+  .dt-actions .btn{ flex:1 1 0; min-width:0; min-height:44px; padding:0 8px; gap:6px; justify-content:center; }
+  .dt-actions .btn-primary{ flex:1.3 1 0; padding:0 10px; }
   .sumgrid{ grid-template-columns:repeat(2,1fr); }
+  /* nunca deixe célula órfã: card ímpar no fim ocupa a linha inteira */
+  .sumgrid .sumcard:last-child:nth-child(odd){ grid-column:1/-1; }
   .range-tabs{ flex-wrap:wrap; justify-content:flex-end; }
   .detail-chart{ height:220px; }
   .fgroup{ grid-template-columns:1fr; }
   .gauge-break{ min-width:0 !important; flex-basis:100%; }
   .drawer-score-row, .ds-head{ flex-wrap:wrap; }
 }
-@media (max-width:380px){ .sumgrid{ grid-template-columns:1fr; } }
+@media (max-width:380px){
+  .sumgrid{ grid-template-columns:1fr; }
+  /* telas estreitas (SE): encolhe herói e chip p/ o ticker não quebrar de linha */
+  .dt-head{ padding:13px 12px 12px; }
+  .dt-top{ gap:10px; }
+  .dt-id .tk{ font-size:18px; }
+  .dt-id .tk .chip{ font-size:9px !important; padding:2px 7px; }
+  .dt-px .v{ font-size:22px; }
+  .dt-actions .btn{ font-size:12px; padding:0 6px; gap:5px; }
+}
 
 /* toast */
 .toast {
@@ -3354,11 +3373,12 @@ body.report-open { overflow:hidden; }
 
 /* ════ PÁGINA DO ATIVO — abas e componentes ════ */
 /* barra de abas do ativo: sticky FORA do scroller horizontal (evita o tremor no iOS) */
-.atabs { padding:10px 2px 12px; margin-bottom:4px; position:sticky; position:-webkit-sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); box-shadow:0 1px 0 var(--line); }
+.atabs { padding:8px 2px 10px; margin-bottom:4px; position:sticky; position:-webkit-sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); box-shadow:0 1px 0 var(--line); }
 /* fade só à DIREITA (onde o conteúdo escapa): a aba ativa começa na esquerda e não pode
    nascer desbotada — 'geral' é sempre a 1ª e o scroller abre em scrollLeft:0. */
-.atabs-inner { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:2px 1px; -webkit-mask:linear-gradient(90deg, #000 0, #000 calc(100% - 14px), transparent 100%); mask:linear-gradient(90deg, #000 0, #000 calc(100% - 14px), transparent 100%); }
+.atabs-inner { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:2px 1px; scroll-snap-type:x proximity; scroll-padding-inline:1px; -webkit-mask:linear-gradient(90deg, #000 0, #000 calc(100% - 34px), transparent 100%); mask:linear-gradient(90deg, #000 0, #000 calc(100% - 34px), transparent 100%); }
 .atabs-inner::-webkit-scrollbar { display:none; }
+.atabs-inner .atab { scroll-snap-align:start; }
 .atab { flex:none; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:0 18px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:500; cursor:pointer; white-space:nowrap; transition:all .16s var(--ease-out); }
 .atab i { font-size:12px; opacity:.7; }
 .atab:hover { border-color:var(--line-2); color:var(--ink); }
@@ -3370,6 +3390,13 @@ body.report-open { overflow:hidden; }
 /* no escuro --brand clareia (#4F8FE8) e o branco perde contraste (3.3:1) — usa --brand-d (5.9:1, passa AA) */
 [data-theme="dark"] .atabs .atab.on { background:var(--brand-d); border-color:var(--brand-d); }
 .atabs .atab.on i { opacity:1; }
+/* mobile: rótulos um pouco menores + fade largo à direita — a aba parcialmente visível
+   se dissolve (lê como "tem mais"), em vez de parecer cortada pela metade. */
+@media (max-width:680px){
+  .atabs { padding:6px 2px 9px; }
+  .atabs .atab { padding:0 13px; font-size:12.5px; }
+  .atabs .atab i { font-size:11px; }
+}
 /* barra de abas genérica (sticky) — reutiliza o botão .atab */
 .stabs { padding:2px 2px 12px; margin-bottom:4px; position:sticky; position:-webkit-sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); box-shadow:0 1px 0 var(--line); }
 .stabs-inner { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
@@ -7430,7 +7457,7 @@ const ASSET_CFG = {
     cols:[
       {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:11.5px">${a.seg}</td>`},
       {h:'Cotação', f:a=>`<td class="mono">${a.px>0?usd(a.px):'—'}</td>`, s:'px'},
-      {h:'Valor mercado', f:a=>`<td class="mono muted">${a.mkt?('$'+a.mkt):'—'}</td>`},
+      {h:'Valor mercado', f:a=>`<td class="mono muted">${fmtMktCap(a.mkt,true)||'—'}</td>`},
       {h:'P/L', f:a=>`<td class="mono ${a.pe<30?'up':''}">${typeof a.pe==='number'?pc(a.pe,1)+'x':'—'}</td>`},
       {h:'DY', f:a=>`<td class="mono ${a.dy>0?'up':'muted'}">${typeof a.dy==='number'?pc(a.dy,1)+'%':'—'}</td>`, s:'dy'},
     ],
@@ -7441,7 +7468,7 @@ const ASSET_CFG = {
     segs:[], sorts:[['v24','Variação 24h'],['px','Maior cotação']],
     cols:[
       {h:'Cotação', f:a=>`<td class="mono">${a.px>=100?brl(Math.round(a.px)):brl(a.px)}</td>`, s:'px'},
-      {h:'Valor mercado', f:a=>`<td class="mono muted">${a.mkt}</td>`},
+      {h:'Valor mercado', f:a=>`<td class="mono muted">${fmtMktCap(a.mkt)||'—'}</td>`},
       {h:'7 dias', f:a=>`<td class="mono ${a.v7>=0?'up':'down'}">${a.v7>=0?'+':''}${pc(a.v7,1)}%</td>`},
     ],
     customVar:'v24',
@@ -7563,6 +7590,17 @@ function usMktStr(n){ if(typeof n!=='number'||!isFinite(n)) return '—'; const 
   if(a>=1e9)  return (n/1e9 ).toLocaleString('pt-BR',{maximumFractionDigits:a>=1e11?0:1})+'B';
   if(a>=1e6)  return (n/1e6 ).toLocaleString('pt-BR',{maximumFractionDigits:0})+'M';
   return String(Math.round(n)); }
+/* VALOR DE MERCADO — formatação à prova de bala.
+   Curados guardam STRING já formatada ("R$ 545,7 bi" / "222,2B"); o universo remoto (brapi
+   market_cap, CoinGecko) guarda NÚMERO cru. Concatenar cru vira "222198010944" na tela.
+   Sempre passe por aqui. Retorna null quando não há dado (o chamador decide o "—"). */
+function fmtMktCap(v, usd){
+  if(v==null || v==='') return null;
+  if(typeof v==='number'){ if(!isFinite(v) || v<=0) return null; return usd ? ('$'+usMktStr(v)) : ('R$ '+fmtBig(v)); }
+  const s=String(v).trim();
+  if(!s || s==='—') return null;
+  return /^(R\$|US\$|\$)/.test(s) ? s : ((usd?'$':'R$ ')+s);
+}
 /* Patrimônio + taxa de administração REAIS de ETFs B3 (CVM cad_fi). Match conservador por nome. */
 function fundinfoEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.FUNDINFO_ENDPOINT) || '/api/fundinfo'; }
 let _etfInfoDone=false;
@@ -12996,10 +13034,10 @@ function initDetailCharts(){ initAssetTabCharts(); }
 function metricsForDetail(a,k){
   if(k==='bdrs') return [['Cotação',brl(a.px)],['Paridade',a.par],['Dividend Yield',pc(a.dy,1)+'%',a.dy>0?'up':''],['Setor',a.seg]];
   if(k==='etfs') return [['Cotação',fmtPx(a,k)],['Patrimônio',a.pat||'—'],['Taxa de adm.',a.tx||'—'],['Índice/Tema',a.seg]];
-  if(k==='stocks') return [['Cotação',usd(a.px)],['Valor de mercado',a.mkt?('$'+a.mkt):'—'],['P/L',typeof a.pe==='number'?pc(a.pe,1)+'x':'—',a.pe<30?'up':''],['Setor',a.seg]];
+  if(k==='stocks') return [['Cotação',usd(a.px)],['Valor de mercado',fmtMktCap(a.mkt,true)||'—'],['P/L',typeof a.pe==='number'?pc(a.pe,1)+'x':'—',a.pe<30?'up':''],['Setor',a.seg]];
   if(k==='cripto'){
     const vc=(v)=> typeof v==='number' ? [(v>=0?'+':'')+pc(v,1)+'%', v>=0?'up':'down'] : null;
-    const out=[['Cotação',fmtPx(a,k)], ['Valor de mercado', a.mkt||'—']];
+    const out=[['Cotação',fmtPx(a,k)], ['Valor de mercado', fmtMktCap(a.mkt)||'—']];
     if(typeof a.rank==='number') out.push(['Ranking','#'+a.rank]);
     const v24=vc(a.v24); if(v24) out.push(['Variação 24h',v24[0],v24[1]]);
     const v7=vc(a.v7);   if(v7)  out.push(['Variação 7d',v7[0],v7[1]]);
@@ -13326,7 +13364,7 @@ function fundamentalsHTML(a,k,f){
         indCard('evebitda', num(f&&f.evebitda,'x')),
         indCard('psr', num(f&&f.psr,'x')),
         indCard('pativo', num(f&&f.pativo,'x')),
-        indCard('mktcap', (f&&f.mkt)||a.mkt||'—'),
+        indCard('mktcap', (f&&f.mkt)||fmtMktCap(a.mkt,a.usd)||'—'),
         indCard('ev', f?f.ev:'—'),
         indCard('dy', num(a.dy,'%',1), interp('dy',a.dy).cls||'up'),
       ])}
@@ -13419,7 +13457,7 @@ function aboutHTML(a,k,f){
   const grid = f ? (isFii
       ? `${fRow('Segmento', a.seg)}${fRow('Tipo', f.tipo)}${fRow('Gestão', f.gestao)}${fRow('Taxa de adm.', f.txadm)}${fRow('Patrimônio líq.', f.plf)}${fRow('Valor de mercado', f.mkt)}${fRow('Nº de cotistas', f.cotistas)}${fRow('Nº de cotas', f.cotas)}`
       : `${fRow('Setor', f.setor)}${fRow('Segmento', f.sub)}${f.func?fRow('Funcionários', (typeof f.func==='number'?f.func.toLocaleString('pt-BR'):f.func)):''}${fRow('Governança', f.gov)}${fRow('Tag Along', f.tag)}${fRow('Free Float', f.ff)}${fRow('Nº de ações', f.shares)}${fRow('Valor de mercado', f.mkt)}${fRow('Valor de firma', f.ev)}`)
-    : `${fRow('Segmento', a.seg)}${fRow('Classe', ASSET_CLASS[k].label)}${a.mkt?fRow('Valor de mercado', a.mkt):''}${fRow('Cotação', fmtPx(a,k))}`;
+    : `${fRow('Segmento', a.seg)}${fRow('Classe', ASSET_CLASS[k].label)}${fmtMktCap(a.mkt,a.usd)?fRow('Valor de mercado', fmtMktCap(a.mkt,a.usd)):''}${fRow('Cotação', fmtPx(a,k))}`;
   let site = f && f.site ? String(f.site).trim() : '';
   if(site && !/^https?:\/\//i.test(site) && /^[\w.-]+\.[a-z]{2,}/i.test(site)) site='https://'+site;   // aceita "empresa.com"
   return `<div class="card card-pad">
@@ -13446,10 +13484,25 @@ function newsHTML(tk){
 
 function summaryCards(a,k,f){
   let cards=[];
-  if(a._uni){ const capv = a.mkt ? ((a.usd?'$':'')+a.mkt) : (a.pat||'—');
-    cards=[['Cotação',fmtPx(a,k)],['Variação hoje',(a.var>=0?'+':'')+pc(a.var)+'%',a.var>=0?'up':'down'],[a.usd&&!a.mkt?'Patrimônio':'Valor de mercado',capv],['Setor',a.seg||'—'],['Classe',ASSET_CLASS[k].label]]; }
-  else if(k==='acoes') cards=[['Valor de mercado',(f&&f.mkt)||a.mkt||'—'],['P/L',pc(a.pl,2)+'x'],['Dividend Yield',pc(a.dy,1)+'%','up'],['ROE',pc(a.roe,1)+'%'],['P/VP',pc(a.pvp,2)],['Valor de firma',f?f.ev:'—']];
-  else if(k==='fiis') cards=[['Valor de mercado',(f&&f.mkt)||a.mkt||'—'],['P/VP',pc(a.pvp,2)],['Dividend Yield',pc(a.dy,1)+'%','up'],['Vacância',pc(a.vac,1)+'%',a.vac<5?'up':'down'],['Último rend.',brl(a.div),'up'],['Patrimônio',f?f.plf:'—']];
+  const cap = (f&&f.mkt) || fmtMktCap(a.mkt, a.usd);
+  /* UNIVERSO REMOTO (sem curadoria): a grade não repete o que o cabeçalho já mostra
+     (cotação, variação, setor e classe). Monta só com o que EXISTE de fato — como os
+     fundamentos chegam depois (loadAssetLive), a grade se completa sozinha. */
+  if(a._uni){
+    const out=[]; const add=(l,v,t)=>{ if(v!=null && v!=='' && v!=='—') out.push([l,v,t||'']); };
+    if(cap) add('Valor de mercado', cap); else add('Patrimônio', a.pat);
+    add('P/L', typeof a.pl==='number'&&isFinite(a.pl) ? pc(a.pl,2)+'x' : (typeof a.pe==='number'?pc(a.pe,1)+'x':null));
+    add('Dividend Yield', (typeof a.dy==='number'&&a.dy>0)?pc(a.dy,1)+'%':null, 'up');
+    add('ROE', typeof a.roe==='number'?pc(a.roe,1)+'%':null);
+    add('P/VP', typeof a.pvp==='number'?pc(a.pvp,2):null);
+    add('Valor de firma', f&&f.ev);
+    if(k==='etfs'){ add('Taxa de adm.', a.tx); }
+    if(out.length<2){ add('Setor', a.seg); }
+    if(out.length<2){ add('Classe', ASSET_CLASS[k].label); }
+    cards=out.slice(0,6);
+  }
+  else if(k==='acoes') cards=[['Valor de mercado',cap||'—'],['P/L',pc(a.pl,2)+'x'],['Dividend Yield',pc(a.dy,1)+'%','up'],['ROE',pc(a.roe,1)+'%'],['P/VP',pc(a.pvp,2)],['Valor de firma',f?f.ev:'—']];
+  else if(k==='fiis') cards=[['Valor de mercado',cap||'—'],['P/VP',pc(a.pvp,2)],['Dividend Yield',pc(a.dy,1)+'%','up'],['Vacância',pc(a.vac,1)+'%',a.vac<5?'up':'down'],['Último rend.',brl(a.div),'up'],['Patrimônio',f?f.plf:'—']];
   else cards=metricsForDetail(a,k).slice(0,6);
   return cards.map(c=>`<div class="sumcard"><div class="l">${c[0]}</div><div class="v ${c[2]||''}">${c[1]}</div></div>`).join('');
 }
@@ -13691,7 +13744,7 @@ function keyStatsHTML(a,k,f){
   } else if(k==='cripto'){
     const supN=(v)=> typeof v==='number' && v>0 ? fmtBig(v)+' '+a.tk : null;
     if(typeof a.rank==='number') add('Ranking', '#'+a.rank);
-    add('Valor de mercado', a.mkt);
+    add('Valor de mercado', fmtMktCap(a.mkt));
     if(typeof a.vol==='number' && a.vol>0) add('Volume 24h', 'R$ '+usMktStr(a.vol));
     const v1h=typeof a.v1h==='number'?(a.v1h>=0?'+':'')+pc(a.v1h,1)+'%':null; add('Variação 1h', v1h);
     add('Máx. 24h', typeof a.high24==='number'?fmtPx({px:a.high24},k):null);
@@ -13703,7 +13756,7 @@ function keyStatsHTML(a,k,f){
     add('Mínima histórica', typeof a.atl==='number'?fmtPx({px:a.atl},k):null);
   } else if(k==='stocks'){
     // fundamentos REAIS via FMP (/api/usdetail) — só exibimos o que vem da fonte.
-    add('Valor de mercado', a.mkt?('$'+a.mkt):null);
+    add('Valor de mercado', fmtMktCap(a.mkt,true));
     add('P/L', typeof a.pe==='number'?pc(a.pe,1)+'x':null);
     add('P/VP', typeof a.pvp==='number'?pc(a.pvp,2):null);
     add('Dividend Yield', (typeof a.dy==='number'&&a.dy>0)?pc(a.dy,2)+'%':null);
@@ -14266,20 +14319,22 @@ function viewAssetDetail(tk){
   return `
   <button class="dt-back" onclick="backFromAsset()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
   <div class="dt-head">
-    ${assetLogo(tk,k,'lg')}
-    <div class="dt-id">
-      <div class="tk">${tk} <span class="chip chip-neu" style="font-size:10px">${cls.label}</span>${k==='etfs'?(/11$/.test(tk)?` <span class="chip" style="font-size:10px;background:var(--brand-l);color:var(--brand)">B3</span>`:` <span class="chip" style="font-size:10px;background:var(--accent-l);color:var(--accent)">Internacional</span>`):''}</div>
-      <div class="nm">${esc(a.nm)}</div>
-      <div class="sec">${esc(f?(f.setor||f.tipo||a.seg||''):(a.seg||cls.label))}</div>
-    </div>
-    <div class="dt-px">
-      <div class="v">${fmtPx(a,k)}</div>
-      <div class="d ${vv>=0?'up':'down'}"><i class="fa-solid fa-caret-${vv>=0?'up':'down'}"></i> ${vv>=0?'+':''}${pc(vv)}% hoje</div>
-      <div class="dt-actions">
-        <button class="btn btn-ghost" id="watchBtn" onclick="toggleWatch('${tk}')">${watchBtnInner(tk)}</button>
-        ${k==='stocks'?'':`<button class="btn btn-ghost" onclick="openAlertModal('${tk}')" title="Criar alerta de preço"><i class="fa-solid fa-bell"></i> Alerta</button>`}
-        <button class="btn btn-primary" onclick="openPosModal('${tk}')"><i class="fa-solid fa-plus"></i> Carteira</button>
+    <div class="dt-top">
+      ${assetLogo(tk,k,'lg')}
+      <div class="dt-id">
+        <div class="tk">${tk} <span class="chip chip-neu" style="font-size:10px">${cls.label}</span>${k==='etfs'?(/11$/.test(tk)?` <span class="chip" style="font-size:10px;background:var(--brand-l);color:var(--brand)">B3</span>`:` <span class="chip" style="font-size:10px;background:var(--accent-l);color:var(--accent)">Internacional</span>`):''}</div>
+        <div class="nm" title="${esc(a.nm)}">${esc(a.nm)}</div>
+        <div class="sec">${esc(f?(f.setor||f.tipo||a.seg||''):(a.seg||cls.label))}</div>
       </div>
+      <div class="dt-px">
+        <div class="v">${fmtPx(a,k)}</div>
+        <div class="d ${vv>=0?'up':'down'}"><i class="fa-solid fa-caret-${vv>=0?'up':'down'}"></i> ${vv>=0?'+':''}${pc(vv)}% hoje</div>
+      </div>
+    </div>
+    <div class="dt-actions">
+      <button class="btn btn-ghost" id="watchBtn" onclick="toggleWatch('${tk}')">${watchBtnInner(tk)}</button>
+      ${k==='stocks'?'':`<button class="btn btn-ghost" onclick="openAlertModal('${tk}')" title="Criar alerta de preço"><i class="fa-solid fa-bell"></i> Alerta</button>`}
+      <button class="btn btn-primary" onclick="openPosModal('${tk}')"><i class="fa-solid fa-plus"></i> Carteira</button>
     </div>
   </div>
 
