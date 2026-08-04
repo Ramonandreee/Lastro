@@ -93,10 +93,10 @@ var _tc=document.createElement('meta');_tc.id='tcOverride';_tc.setAttribute('nam
 
   /* Grid: margem externa, espaço entre cartões e padding interno. Um número só,
      usado em todas as telas — é o que faz tudo parecer o mesmo aplicativo.
-     Em telas muito estreitas (≤360px) a escala cai para 16px: 24px de cada lado
-     comeria 15% da largura e cortaria valores de 6 dígitos. */
-  --gap:  24px;
-  --pad:  24px;
+     Em telas muito estreitas (≤360px) a escala cai mais um degrau: espaço demais
+     de cada lado comeria a largura e cortaria valores de 6 dígitos. */
+  --gap:  18px;
+  --pad:  19px;
   /* margem externa HORIZONTAL no mobile: menor que a vertical para o card usar a largura
      da tela (24px de cada lado + 24px de padding interno empurravam o conteúdo 48px). */
   --gap-x: 14px;
@@ -111,7 +111,7 @@ var _tc=document.createElement('meta');_tc.id='tcOverride';_tc.setAttribute('nam
   --ease: cubic-bezier(.4,0,.2,1);
   --ease-out: cubic-bezier(.16,1,.3,1);
 }
-@media (max-width:360px){ :root { --gap:16px; --pad:16px; --gap-x:11px; --pad-x:14px; } }
+@media (max-width:360px){ :root { --gap:13px; --pad:15px; --gap-x:11px; --pad-x:14px; } }
 
 [data-theme="dark"] {
   --canvas:    #070C16;
@@ -866,7 +866,7 @@ img, svg, canvas, video { max-width: 100%; }
   .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -2px; }
   table.tbl { width: max-content; min-width: 100%; }
   table.tbl th { padding: 0 13px 12px; }
-  table.tbl td { padding: 14px 13px; white-space: nowrap; }
+  table.tbl td { padding: 9px 13px; white-space: nowrap; }
   table.tbl th:first-child, table.tbl td:first-child { position: sticky; left: 0; background: var(--surface); z-index: 1; }
   table.tbl tbody tr:hover td:first-child { background: var(--surface-2); }
   table.tbl .td-asset { gap: 10px; }
@@ -895,15 +895,17 @@ img, svg, canvas, video { max-width: 100%; }
   #dataTbl th:nth-child(n+4), #dataTbl td:nth-child(n+4) { display: none; }
   #dataTbl th, #dataTbl td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 8px; padding-right: 8px; }
   #dataTbl thead th { font-size: 9.5px; letter-spacing: 0; }   /* cabeçalhos compactos p/ caberem no mobile (ex.: SEGMENTO) */
-  #dataTbl th:first-child, #dataTbl td:first-child { position: static; width: 46%; }
-  #dataTbl th:nth-child(2), #dataTbl td:nth-child(2) { width: 22%; }
+  #dataTbl th:first-child, #dataTbl td:first-child { position: static; width: 43%; }
+  /* Setor: largura suficiente p/ "Mineração"/"Energia Elétrica" sem cortar no meio */
+  #dataTbl th:nth-child(2), #dataTbl td:nth-child(2) { width: 29%; }
   /* Cotação: NUNCA truncar — largura suficiente e sem reticências */
-  #dataTbl th:nth-child(3), #dataTbl td:nth-child(3) { width: 32%; overflow: visible; text-overflow: clip; font-size: 12.5px; padding-left: 4px; }
+  #dataTbl th:nth-child(3), #dataTbl td:nth-child(3) { width: 28%; overflow: visible; text-overflow: clip; font-size: 12.5px; padding-left: 4px; }
   #dataTbl .td-asset { gap: 9px; min-width: 0; }
+  #dataTbl .td-asset .logo { width: 30px; height: 30px; border-radius: 9px; }
   #dataTbl .td-asset .nm { min-width: 0; overflow: hidden; }
   #dataTbl .td-asset .tk { font-size: 13.5px; }
   #dataTbl .td-asset .ds { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #dataTbl .tk-meta { display: block; font-size: 11px; color: var(--ink-3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #dataTbl .tk-meta { display: block; font-size: 11px; color: var(--ink-3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* ranking (.tbl-rank): no mobile mostra Ativo · Classificação, SEM rolar */
   table.tbl-rank { width: 100% !important; min-width: 0 !important; table-layout: fixed; }
   table.tbl-rank td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 9px; padding-right: 9px; }
@@ -1461,10 +1463,10 @@ img, svg, canvas, video { max-width: 100%; }
 .rank { display: flex; flex-direction: column; gap: 1px; }
 .rank-row {
   display: grid;
-  grid-template-columns: 20px 1fr 70px 64px;
+  grid-template-columns: 20px 1fr 76px 58px;
   align-items: center;
-  gap: 10px;
-  padding: 9px 8px;
+  gap: 8px;
+  padding: 8px;
   border-radius: var(--r-sm);
   transition: background .18s var(--ease);
   cursor: pointer;
@@ -1472,8 +1474,10 @@ img, svg, canvas, video { max-width: 100%; }
 .rank-row:hover { background: var(--surface-2); }
 .rank-n { font-family: var(--mono); font-size: 11px; color: var(--ink-4); }
 .rank-tk { font-family: var(--mono); font-size: 13px; font-weight: 600; }
-.rank-bar { height: 4px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
-.rank-bar i { display:block; height: 100%; border-radius: 2px; }
+/* a barra cresce da DIREITA para a esquerda: encosta no percentual em vez de flutuar
+   no meio da linha (o vão sobra do lado do ticker, onde é natural). */
+.rank-bar { display: flex; justify-content: flex-end; height: 4px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
+.rank-bar i { display:block; flex:none; height: 100%; border-radius: 2px; }
 .rank-pct { font-family: var(--mono); font-size: 12.5px; font-weight: 600; text-align: right; }
 
 /* data table */
@@ -1500,7 +1504,7 @@ table.tbl th.th-sort:not(.sorted):hover { color: var(--ink); }
 table.tbl th.sorted { color: var(--brand); }
 table.tbl th .sort-i { font-size: 8.5px; margin-left: 5px; color: var(--brand); vertical-align: 1px; }
 table.tbl td {
-  padding: 15px 16px;
+  padding: 12px 16px;
   border-top: 1px solid var(--line);
   font-size: 13.5px;
   white-space: nowrap;
@@ -1513,6 +1517,8 @@ table.tbl tbody tr { transition: background .14s var(--ease); cursor: pointer; -
 table.tbl tbody tr:hover { background: var(--surface-2); }
 table.tbl tbody tr:active { background: var(--surface-3); }
 table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { background: transparent; }
+/* listagens no mobile: linha mais densa (declarado DEPOIS de table.tbl td p/ vencer a cascata) */
+@media (max-width: 760px) { #dataTbl td { padding-top: 10px; padding-bottom: 10px; } }
 .td-asset { display: flex; align-items: center; gap: 12px; }
 .asset-ic {
   width: 34px; height: 34px; border-radius: 9px;
@@ -1522,7 +1528,7 @@ table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { backgrou
   color: var(--brand);
   flex-shrink: 0;
 }
-.td-asset .nm { line-height: 1.28; min-width: 0; }
+.td-asset .nm { line-height: 1.22; min-width: 0; }
 .td-asset .tk { font-family: var(--mono); font-weight: 600; font-size: 14.5px; color: var(--ink); letter-spacing: -.01em; }
 .td-asset .ds { font-size: 11.5px; color: var(--ink-3); font-weight: 450; }
 .tk-meta { display: none; }   /* linha DY só aparece no mobile (desktop mostra nas colunas) */
@@ -1539,26 +1545,26 @@ table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { backgrou
 
 /* filters */
 /* GRID (não flex): os filhos não herdam flex-grow (que esticava vertical no iOS) */
-.filters { display:grid; gap:10px; margin-bottom:18px; }
-.filters > .search-inp { width:100%; min-width:0; height:46px; }
-.filters > .sel-wrap { width:100%; height:46px; }
+.filters { display:grid; gap:8px; margin-bottom:14px; }
+.filters > .search-inp { width:100%; min-width:0; height:44px; }
+.filters > .sel-wrap { width:100%; height:44px; }
 /* linha inferior: Ordenar + Filtros lado a lado (2 colunas) */
-.filters-row2 { display:grid; grid-template-columns:1fr; gap:10px; }
+.filters-row2 { display:grid; grid-template-columns:1fr; gap:8px; }
 .filters-row2.has-adv { grid-template-columns:1fr 1fr; }
 .filters-row2 > * { min-width:0; }
-.filters-row2 .sel-wrap { width:100%; height:46px; }
+.filters-row2 .sel-wrap { width:100%; height:44px; }
 /* Ordenar: rótulo fixo em vez do valor selecionado (mantém o controle enxuto) */
 .sel-ordenar .sel-ghost { color:transparent; }
 .sel-ordenar .sel-ghost option { color:var(--ink); }
 .sel-ordenar .sel-fixed { position:absolute; left:40px; font-size:14px; font-weight:600; color:var(--ink-2); pointer-events:none; }
 /* botão de filtros fundamentalistas (Rastreador embutido) */
-.filters-adv { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:46px; box-sizing:border-box; padding:0 16px; border:1px solid var(--line); border-radius:var(--r-btn); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:600; white-space:nowrap; width:100%; }
+.filters-adv { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; box-sizing:border-box; padding:0 16px; border:1px solid var(--line); border-radius:var(--r-btn); background:var(--surface); color:var(--ink-2); font-size:13.5px; font-weight:600; white-space:nowrap; width:100%; }
 @media (max-width:640px){
   /* mobile: controles finos */
   .filters > .search-inp, .filters > .sel-wrap, .filters-row2 .sel-wrap, .filters-adv { height:44px; border-radius:var(--r-sm); }
-  .filters .sel { border-radius:var(--r-sm); font-size:14.5px; }
-  .filters > .search-inp input { font-size:14.5px; }
-  .sel-ordenar .sel-fixed { font-size:14.5px; }
+  .filters .sel { border-radius:var(--r-sm); font-size:14px; }
+  .filters > .search-inp input { font-size:14px; }
+  .sel-ordenar .sel-fixed { font-size:14px; }
 }
 .filters-adv:hover { border-color:var(--line-2); color:var(--ink); }
 .filters-adv.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
@@ -1575,7 +1581,7 @@ table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { backgrou
 .af-ctrl input[type=range] { width:100%; }
 /* campo de busca e selects compartilham a MESMA altura, raio e peso visual */
 .search-inp {
-  flex: 1 1 220px; min-width: 200px; height: 46px; box-sizing: border-box;
+  flex: 1 1 220px; min-width: 200px; height: 44px; box-sizing: border-box;
   display: flex; align-items: center; gap: 10px;
   background: var(--surface);
   border: 1px solid var(--line);
@@ -1589,7 +1595,7 @@ table.tbl tbody tr.no-hover:hover, table.tbl tbody tr.no-hover:active { backgrou
 .search-inp input::placeholder { color: var(--ink-4); }
 .search-inp i { color: var(--ink-4); font-size: 13px; }
 /* select como componente do design system (chevron próprio) */
-.sel-wrap { position: relative; display: inline-flex; align-items: center; height: 46px; box-sizing: border-box; }
+.sel-wrap { position: relative; display: inline-flex; align-items: center; height: 44px; box-sizing: border-box; }
 .sel-wrap.grow { flex: 1 1 200px; }
 .sel-wrap.full { flex: 1 1 100%; width: 100%; }
 .sel-wrap > .lead { position: absolute; left: 14px; font-size: 13px; color: var(--ink-3); pointer-events: none; }
@@ -1835,8 +1841,8 @@ input[type=range]::-moz-range-thumb {
 .toast i { color: var(--brand); }
 
 /* section title */
-.sec-title { font-family: var(--sans); font-size: 22px; font-weight: 700; letter-spacing: -.022em; margin-bottom: 4px; }
-.sec-desc { font-size: 13.5px; color: var(--ink-2); margin-bottom: 22px; max-width: 620px; }
+.sec-title { font-family: var(--sans); font-size: 19px; font-weight: 700; letter-spacing: -.022em; margin-bottom: 3px; }
+.sec-desc { font-size: 12.5px; color: var(--ink-2); margin-bottom: 16px; max-width: 620px; }
 
 @media (max-width: 1080px) {
   .hero { grid-template-columns: 1fr; }
@@ -1852,8 +1858,8 @@ input[type=range]::-moz-range-thumb {
   .gauge-num { font-size: 26px; }
   .gauge-lbl { font-size: 8.5px; }
   .gauge-break { width: auto; }
-  .sec-title { font-size: 21px; }
-  .sec-desc { font-size: 13px; }
+  .sec-title { font-size: 18px; }
+  .sec-desc { font-size: 12.5px; }
 }
 
 /* news feed */
@@ -2829,7 +2835,8 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 /* ── Carteira: contador, ordenação das posições e atalhos ── */
 /* hero da carteira: reusa .prov-hero/.ph-* (mesmo componente de Proventos) */
 .cart-hero { margin-bottom:16px; }
-.cart-hero .ph-val { color:var(--ink); }
+/* o patrimônio já aparece gigante na Home (hero principal); aqui é reprise → um degrau abaixo */
+.cart-hero .ph-val { color:var(--ink); font-size:clamp(25px,6.6vw,30px); }
 /* ações secundárias em menu "⋯" — só "Adicionar aporte" fica visível */
 .cart-more-wrap { position:relative; display:inline-flex; }
 .cart-more-btn { width:38px; height:38px; border:1px solid var(--line); border-radius:11px; background:var(--surface); color:var(--ink-3); font-size:15px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:border-color .18s var(--ease), color .18s var(--ease); -webkit-tap-highlight-color:transparent; }
@@ -3351,6 +3358,10 @@ body.report-open { overflow:hidden; }
 .stabs { padding:2px 2px 12px; margin-bottom:4px; position:sticky; position:-webkit-sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); box-shadow:0 1px 0 var(--line); }
 .stabs-inner { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
 .stabs-inner::-webkit-scrollbar { display:none; height:0; }
+/* abas da Carteira são navegação SECUNDÁRIA: pílula mais baixa e texto menor que o
+   botão primário (o .atab padrão tem 44px e porte de ação principal). */
+.stabs .atab { min-height:38px; padding:0 14px; font-size:12.5px; gap:7px; }
+.stabs .atab i { font-size:11px; }
 #assetBody { animation:viewIn .3s var(--ease-out); }
 .prov-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
 .prov-tbl td, .prov-tbl th { padding-top:12px; padding-bottom:12px; }
@@ -3557,7 +3568,7 @@ body.pdf-lock { overflow:hidden; }
 .wper.active { background:color-mix(in srgb, var(--brand) 12%, transparent); color:var(--brand); }
 /* gráfico ocupa a base do card (sangra até as bordas) e o rodapé fica por cima,
    com um degradê p/ a cor do card destacando os 3 textos */
-.whero-graph { position:relative; height:184px; margin:18px calc(var(--pad)*-1) 0; }
+.whero-graph { position:relative; height:156px; margin:18px calc(var(--pad)*-1) 0; }
 .whero-graph canvas { position:absolute; inset:0; width:100% !important; height:100% !important; display:block; }
 /* faixa interna: padding menor que o do cartão, senão 3 valores de dinheiro não cabem em 390px */
 .whero-foot { position:absolute; left:0; right:0; bottom:0; display:grid; grid-template-columns:repeat(3,1fr); padding:16px 14px 17px; }
@@ -7332,7 +7343,7 @@ const ASSET_CFG = {
     segs:['Bancos','Petróleo e Gás','Mineração','Bebidas','Bens Industriais','Saúde','Holdings','Serviços Financ.','Aluguel de Carros','Varejo Farma','Logística','Papel e Celulose','Siderurgia','Energia Elétrica','Saneamento','Telecom','Varejo','Alimentos','Tecnologia'],
     sorts:[['dy','Maior DY'],['pl','Menor P/L'],['roe','Maior ROE']],
     cols:[
-      {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
+      {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:11.5px">${a.seg}</td>`},
       {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`},
       {h:'P/L', f:a=>`<td class="mono ${a.pl<10?'up':''}">${pc(a.pl,1)}x</td>`, s:'pl'},
       {h:'P/VP', f:a=>`<td class="mono">${pc(a.pvp,1)}x</td>`},
@@ -7346,7 +7357,7 @@ const ASSET_CFG = {
     segs:['Tecnologia','Semicond.','Consumo','Financeiro','Automotivo','Mídia'],
     sorts:[['var','Maior alta'],['px','Maior cotação'],['dy','Maior DY']],
     cols:[
-      {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
+      {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:11.5px">${a.seg}</td>`},
       {h:'Cotação', f:a=>`<td class="mono">${brl(a.px)}</td>`, s:'px'},
       {h:'Paridade', f:a=>`<td class="mono muted">${a.par}</td>`},
       {h:'DY', f:a=>`<td class="mono ${a.dy>0?'up':'muted'}">${pc(a.dy,1)}%</td>`, s:'dy'},
@@ -7358,7 +7369,7 @@ const ASSET_CFG = {
     segs:['Renda Variável BR','Exterior','Small Caps BR','Dividendos BR','Criptoativos','Commodities','Financeiro BR','Renda Fixa','Imobiliário BR'],
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
-      {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
+      {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:11.5px">${a.seg}</td>`},
       {h:'Cotação', f:a=>`<td class="mono">${a.px>0?brl(a.px):'—'}</td>`, s:'px'},
       {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat||'—'}</td>`},
       {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx||'—'}</td>`},
@@ -7370,7 +7381,7 @@ const ASSET_CFG = {
     segs:['ETF','S&P 500','Nasdaq 100','Total Market US','Tecnologia US','Semicondutores','Crescimento US','Dividendos','Renda + Nasdaq','Renda + S&P','Renda Fixa US','Urânio'],
     sorts:[['var','Maior alta'],['px','Maior cotação']],
     cols:[
-      {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
+      {h:'Índice / Tema', f:a=>`<td class="cell-left muted" style="font-size:11.5px">${a.seg}</td>`},
       {h:'Cotação', f:a=>`<td class="mono">${a.px>0?usd(a.px):'—'}</td>`, s:'px'},
       {h:'Patrimônio', f:a=>`<td class="mono muted">${a.pat||'—'}</td>`},
       {h:'Taxa adm.', f:a=>`<td class="mono">${a.tx||'—'}</td>`},
@@ -7382,7 +7393,7 @@ const ASSET_CFG = {
     segs:['Tecnologia','Semicond.','Consumo','Financeiro','Automotivo'],
     sorts:[['var','Maior alta'],['px','Maior cotação'],['dy','Maior DY']],
     cols:[
-      {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:12px">${a.seg}</td>`},
+      {h:'Setor', f:a=>`<td class="cell-left muted" style="font-size:11.5px">${a.seg}</td>`},
       {h:'Cotação', f:a=>`<td class="mono">${a.px>0?usd(a.px):'—'}</td>`, s:'px'},
       {h:'Valor mercado', f:a=>`<td class="mono muted">${a.mkt?('$'+a.mkt):'—'}</td>`},
       {h:'P/L', f:a=>`<td class="mono ${a.pe<30?'up':''}">${typeof a.pe==='number'?pc(a.pe,1)+'x':'—'}</td>`},
