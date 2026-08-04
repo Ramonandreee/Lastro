@@ -11762,18 +11762,10 @@ function viewRaioX(){
   if(!isProTier()) return `
   ${cartTabsHTML('raiox')}<div class="card premium-gate">${premiumPresentation('raiox')}</div>`;
   const head = `${cartTabsHTML('raiox')}<div class="sec-title">Raio-X da carteira</div>
-  <div class="sec-desc">A diversificação da carteira num raio-X: a Nota Lastro, os pontos fortes, a composição por setor, classe e ativo, a concentração e a segurança dos dividendos.</div>`;
+  <div class="sec-desc">A diversificação da carteira num raio-X: a Nota Lastro, os pontos fortes, a exposição por ativo, a concentração e a segurança dos dividendos.</div>`;
   const lots = null; _rxLots = lots;
   const d=diversificationGrade(lots);
   if(!d) return head + `<div class="card card-pad">${emptyState('fa-magnifying-glass-chart','Sem posições para o Raio-X','Adicione ativos à sua carteira para ver a diversificação, a concentração e a Nota Lastro.', `<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
-  // agregações
-  const byClasse={}; d.pos.forEach(x=> byClasse[x.classe]=(byClasse[x.classe]||0)+x.w);
-  const bySetor={}; d.pos.forEach(x=> bySetor[x.setor]=(bySetor[x.setor]||0)+x.w);
-  const clEnt=Object.entries(byClasse).sort((a,b)=>b[1]-a[1]);
-  const sgEnt=Object.entries(bySetor).sort((a,b)=>b[1]-a[1]);
-  const pal=REC_PALETTE;
-  const clBars=clEnt.map(([k,v],i)=>rxBar(k,v,pal[i%pal.length])).join('');
-  const sgBars=sgEnt.map(([k,v],i)=>rxBar(k,v,pal[i%pal.length])).join('');
   const atRows=d.pos.slice().sort((a,b)=>b.w-a.w).map(x=>{
     const alta=x.w>25, media=x.w>15&&x.w<=25;
     return `<div class="rx-asset" onclick="quickView('${x.tk}')">
@@ -11810,25 +11802,13 @@ function viewRaioX(){
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Setores</div><div class="vl">${d.setores.length}</div><div class="dl faint">distintos</div></div>
     <div class="mcell"><div class="nm" style="margin-bottom:8px">Classes</div><div class="vl">${d.classes.length}</div><div class="dl faint">de ativos</div></div>
   </div>
-  <div class="rx-cols" style="margin-top:16px">
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Por setor</div></div>
-      <div style="position:relative;height:210px;margin:6px 0 14px"><canvas id="rxSetorChart" role="img" aria-label="Diversificação por setor"></canvas></div>
-      <div class="rx-bars">${sgBars}</div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--accent-l,var(--brand-l));color:var(--accent)"><i class="fa-solid fa-layer-group"></i></span> Por classe</div></div>
-      <div class="rx-bars" style="margin-top:6px">${clBars}</div>
-      <div class="rx-classe-note faint">Exposição por classe de ativo — distribuir entre ações, FIIs e exterior reduz a volatilidade.</div>
-    </div>
-  </div>
   <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-weight-scale"></i></span> Por ativo <span class="card-sub" style="margin-left:6px">· peso e concentração</span></div></div>
+    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Por ativo <span class="card-sub" style="margin-left:6px">· peso e concentração</span></div></div>
+    <div style="position:relative;height:210px;margin:6px 0 16px"><canvas id="rxAtivoChart" role="img" aria-label="Exposição por ativo"></canvas></div>
     <div class="rx-assets">${atRows}</div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-shield-halved"></i></span> Segurança dos dividendos <span class="card-sub" style="margin-left:6px">· além do yield</span></div></div>
-    <div class="rx-classe-note faint" style="margin:2px 0 12px">Yield alto nem sempre é dividendo seguro. A nota combina consistência histórica, qualidade e sustentabilidade do pagamento (0 a 10).</div>
     <div class="rx-assets">${divSegRows}</div>
   </div>
   <div class="card card-pad" style="margin-top:16px">
@@ -11838,14 +11818,22 @@ function viewRaioX(){
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Análise calculada sobre as posições reais da sua carteira. Não é recomendação personalizada de investimento.</div>`;
 }
 function initRaioX(){
-  const ctx=$('#rxSetorChart'); if(!ctx) return;
+  const ctx=$('#rxAtivoChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
   const d=diversificationGrade(_rxLots); if(!d) return;
-  const by={}; d.pos.forEach(x=> by[x.setor]=(by[x.setor]||0)+x.w);
-  const ent=Object.entries(by).sort((a,b)=>b[1]-a[1]); const pal=REC_PALETTE;
-  if(charts.rxSetor) charts.rxSetor.destroy();
-  charts.rxSetor=new Chart(ctx,{ type:'doughnut',
-    data:{ labels:ent.map(e=>e[0]), datasets:[{ data:ent.map(e=>e[1]), backgroundColor:ent.map((_,i)=>pal[i%pal.length]), borderWidth:2, borderColor:cssVar('--surface') }] },
+  const sorted=d.pos.slice().sort((a,b)=>b.w-a.w), pal=REC_PALETTE;
+  let labels, data, colors;
+  if(sorted.length>10){                              // muitos ativos: 9 maiores + "Outros" p/ a rosca não poluir
+    const top=sorted.slice(0,9), rest=sorted.slice(9);
+    labels=[...top.map(x=>x.tk),'Outros'];
+    data=[...top.map(x=>x.w), rest.reduce((s,x)=>s+x.w,0)];
+    colors=[...top.map((_,i)=>pal[i%pal.length]), cssVar('--ink-4')];
+  } else {
+    labels=sorted.map(x=>x.tk); data=sorted.map(x=>x.w); colors=sorted.map((_,i)=>pal[i%pal.length]);
+  }
+  if(charts.rxAtivo) charts.rxAtivo.destroy();
+  charts.rxAtivo=new Chart(ctx,{ type:'doughnut',
+    data:{ labels, datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:cssVar('--surface') }] },
     options:{ responsive:true, maintainAspectRatio:false, cutout:'60%',
       plugins:{ legend:{ position:'right', labels:{ color:cssVar('--ink-2'), font:{size:10.5}, usePointStyle:true, pointStyleWidth:8, boxHeight:7, padding:8 } },
                 tooltip:{ callbacks:{ label:c=>c.label+': '+pc(c.parsed,1)+'%' } } } }
