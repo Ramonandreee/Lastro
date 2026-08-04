@@ -18,6 +18,25 @@
       o plano ser forjável no `localStorage`. **Enquanto não rodar, o app funciona como antes**
       (cai no cache local) — não quebra nada, só não persiste o plano ainda.
 
+## 🔴 `FMP_KEY` na Vercel — Stocks (EUA) e ETFs internacionais estão degradados
+
+- [ ] **Configurar `FMP_KEY`** (Vercel → Environment Variables, Production + Preview) e redeploy.
+      **Sintoma:** o hub Mercado mostra **Stocks (EUA) 16** e **ETFs internacionais 12** — exatamente
+      o tamanho das listas curadas. O universo remoto (~300 ações + ~250 ETFs) não chega porque
+      `lib/usuniverse.js` responde `{stocks:[],etfs:[],note:'FMP_KEY ausente'}` (HTTP 200, falha
+      silenciosa) quando a chave não existe.
+      **A mesma chave alimenta:** `/api/us` (P/L e valor de mercado), `lib/usdetail.js` (página do
+      ativo dos EUA) e `lib/history.js` (histórico EUA + **câmbio USDBRL** do backtest) — tudo isso
+      está degradado hoje.
+      **Como conferir (no navegador, sem segredo exposto):**
+      `https://lastro-dun.vercel.app/api/market?fn=health` → esperar `upstreams.fmp: true`.
+      Depois: `…/api/market?fn=usuniverse` → deve vir com arrays cheios, não com `note`.
+
+- [ ] **Fonte oficial da lista de ETFs da B3** (decisão): para completar os ~90-100 ETFs listados,
+      escolher a fonte (arquivo de ETFs listados da B3 ou cadastro CVM) — o time preenche a partir
+      dela. Hoje há 47 candidatos B3 no código; ETFs não confirmados pela brapi ficam invisíveis
+      (nunca aparece ativo inexistente).
+
 ## 🟡 Limpeza recomendada (não urgente)
 
 - [ ] **Vercel — remover a variável de ambiente `ANTHROPIC_API_KEY`** (Project Settings →

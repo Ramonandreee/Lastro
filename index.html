@@ -5175,6 +5175,17 @@ const ETFS = [
   { tk:'ASIA11', nm:'Trend Ásia',          seg:'Exterior',          px:0, pat:'—', tx:'0,75%', var:0, _b3:true },
   { tk:'EURP11', nm:'Trend Europa',        seg:'Exterior',          px:0, pat:'—', tx:'0,75%', var:0, _b3:true },
   { tk:'JOGO11', nm:'Trend Games (eSports)',seg:'Exterior',         px:0, pat:'—', tx:'0,75%', var:0, _b3:true },
+  /* Candidatos adicionais (mesmo mecanismo `_b3`): entram na consulta à brapi e só
+     aparecem se a bolsa confirmar preço. `tx:'—'` onde a taxa não é conhecida com
+     certeza — taxa NUNCA é estimada; o patrimônio real vem da CVM (loadEtfInfo). */
+  { tk:'ISUS11', nm:'It Now ISE (Sustentab.)',seg:'Renda Variável BR', px:0, pat:'—', tx:'—', var:0, _b3:true },
+  { tk:'MATB11', nm:'It Now IMAT (Materiais)',seg:'Renda Variável BR', px:0, pat:'—', tx:'—', var:0, _b3:true },
+  { tk:'SMAC11', nm:'It Now Small Caps',   seg:'Small Caps BR',     px:0, pat:'—', tx:'—', var:0, _b3:true },
+  { tk:'BBOV11', nm:'BB Ibovespa',         seg:'Renda Variável BR', px:0, pat:'—', tx:'—', var:0, _b3:true },
+  { tk:'IB5M11', nm:'It Now IMA-B 5',      seg:'Renda Fixa',        px:0, pat:'—', tx:'—', var:0, _b3:true },
+  { tk:'ALUG11', nm:'Investo REITs (EUA)', seg:'Exterior',          px:0, pat:'—', tx:'—', var:0, _b3:true },
+  { tk:'SOLH11', nm:'Hashdex Solana',      seg:'Criptoativos',      px:0, pat:'—', tx:'—', var:0, _b3:true },
+  { tk:'XRPH11', nm:'Hashdex XRP',         seg:'Criptoativos',      px:0, pat:'—', tx:'—', var:0, _b3:true },
   /* ── ETFs internacionais (listados nos EUA, em USD) ── */
   { tk:'IVV',  nm:'iShares Core S&P 500',        seg:'S&P 500',        px:612.40, pat:'$560B', tx:'0,03%', var:+0.62, usd:true },
   { tk:'VOO',  nm:'Vanguard S&P 500',            seg:'S&P 500',        px:565.10, pat:'$540B', tx:'0,03%', var:+0.61, usd:true },
@@ -7612,8 +7623,17 @@ async function loadCryptoMarkets(){
     CRIPTO.sort((x,y)=>(y.mktN||0)-(x.mktN||0));
     if(any && currentView==='cripto') renderAssets('cripto');
     else if(any && currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView();
-    else if(any && currentView==='mercado') render('mercado', true);   // atualiza a contagem no hub
+    else if(any) refreshMktHub();   // hub aberto: atualiza a contagem por classe
   }catch(e){ _cryptoDone=false; }
+}
+/* Hub Mercado: quando um universo remoto chega, a contagem por classe (data-mkt-count)
+   precisa ser recalculada — ela é lida de cfg.data().length no momento do render.
+   Debounce curto para não re-renderizar 3x quando vários loaders terminam juntos. */
+let _mktHubT=null;
+function refreshMktHub(){
+  if(typeof currentView==='undefined' || currentView!=='mercado') return;
+  clearTimeout(_mktHubT);
+  _mktHubT=setTimeout(()=>{ if(currentView==='mercado') render('mercado', true); }, 150);
 }
 /* universo REAL dos EUA (FMP screener via /api/usuniverse) — enche Stocks e ETFs internacionais. */
 function usUniverseEndpoint(){ return (window.LASTRO_CONFIG && window.LASTRO_CONFIG.USUNIVERSE_ENDPOINT) || '/api/market?fn=usuniverse'; }
@@ -7642,7 +7662,10 @@ async function loadUsUniverse(){
     if(nS+nE){
       console.log(`[Lastro] universo EUA: +${nS} stocks, +${nE} ETFs int.`);
       if(currentView==='stocks'||currentView==='etfsint') renderAssets(currentView);
-      else if(currentView==='mercado') render('mercado', true);   // atualiza a contagem no hub
+      else refreshMktHub();   // hub aberto: atualiza a contagem por classe
+    } else {
+      // diagnóstico honesto: sem chave/sem resposta as listas EUA ficam só com a semente
+      console.warn('[Lastro] universo EUA vazio — listas dos EUA ficam na semente curada.'+(d&&d.note?' Motivo: '+d.note:''));
     }
   }catch(e){ _usUniDone=false; }
 }
@@ -7664,7 +7687,7 @@ async function loadB3EtfQuotes(){
       if(q.name && (a._uni||a._b3)) a.nm=q.name; });   // nome oficial do brapi p/ ativos sem curadoria
     if(any && currentView==='etfs') renderAssets('etfs');
     else if(any && currentView==='asset' && typeof refreshAssetView==='function') refreshAssetView();
-    else if(any && currentView==='mercado') render('mercado', true);   // atualiza a contagem no hub
+    else if(any) refreshMktHub();   // hub aberto: atualiza a contagem por classe
   }catch(e){ _b3EtfDone=false; }
 }
 function renderAssets(kind){
@@ -14540,6 +14563,7 @@ async function loadUniverse(){
       console.log(`[Lastro] universo: +${n} ativos`);
       if(['acoes','fiis','bdrs'].includes(currentView)) renderAssets(currentView);
       else if(currentView==='painel') render('painel', true);   // movers ao vivo no painel
+      else refreshMktHub();   // hub aberto: atualiza a contagem por classe
     }
   }catch(e){ console.warn('[Lastro] universo indisponível:', e.message); }
   finally{ universeLoaded = true; const ch=document.getElementById('uniChip'); if(ch) ch.remove(); }
