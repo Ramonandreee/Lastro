@@ -5470,7 +5470,7 @@ const PAGES = {
   cripto:       { t:'Criptomoedas',          s:'Principais criptoativos por valor de mercado' },
   carteira:     { t:'Minha Carteira',        s:'Diagnóstico, proventos e saúde da sua carteira' },
   proventos:    { t:'Meus Proventos',        s:'Histórico, crescimento e Yield on Cost dos seus dividendos' },
-  aporte:       { t:'Aporte Inteligente',    s:'Onde investir o próximo aporte para rebalancear a carteira' },
+  aporte:       { t:'Aporte Inteligente',    s:'Quanto aportar em cada ativo para igualar os pesos da carteira' },
   fire:         { t:'Independência Financeira',s:'Quanto falta para viver dos seus dividendos' },
   ir:           { t:'Imposto de Renda',      s:'DARF de vendas e informe anual prontos para a declaração' },
   acompanhar:   { t:'Acompanhar',            s:'Watchlist e alertas de preço em um só lugar' },
@@ -5534,7 +5534,7 @@ function ensureTrial(){ if(isAuthed() && !isPremium() && !trialStartTs()){ try{ 
 const PREMIUM_FEATURES = {
   carteira:  { name:'Carteira Real', icon:'fa-wallet', desc:'Acompanhe seus aportes de verdade: patrimônio, proventos e rentabilidade com e sem dividendos, sincronizados na nuvem.', why:'No plano Gratuito você só explora a demonstração. Com a carteira real, cada decisão parte dos seus números.' },
   proventos: { name:'Meus Proventos', icon:'fa-coins', desc:'Painel completo da sua renda passiva: crescimento ano a ano, Yield on Cost e projeção dos próximos 12 meses.', why:'Saiba exatamente quanto seus ativos pagam e como sua renda evolui mês a mês.' },
-  aporte:    { name:'Aporte Inteligente', icon:'fa-scale-balanced', desc:'O Lastro calcula onde investir o próximo aporte para equilibrar sua carteira, em cotas inteiras.', why:'Pare de adivinhar o que comprar — receba a alocação ideal a cada mês.' },
+  aporte:    { name:'Aporte Inteligente', icon:'fa-scale-balanced', desc:'O Lastro calcula quanto aportar em cada ativo para igualar os pesos da sua carteira, em cotas inteiras.', why:'Rebalanceia a carteira para pesos iguais a cada aporte, em cotas inteiras — cálculo, não recomendação.' },
   fire:      { name:'Independência Financeira', icon:'fa-fire', desc:'Descubra quanto falta para viver dos seus dividendos, com número mágico e data projetada de liberdade.', why:'Visualize sua meta de liberdade financeira e o caminho real até ela.' },
   ir:        { name:'Imposto de Renda', icon:'fa-file-invoice-dollar', desc:'Bens e Direitos prontos para a declaração, rendimentos isentos do ano e cálculo de DARF sobre vendas.', why:'Economize horas na declaração e evite erros que custam caro.' },
   alertas:   { name:'Alertas de Preço', icon:'fa-bell', desc:'Seja avisado assim que um ativo atingir o preço-alvo, com cotações ao vivo da B3 e cripto.', why:'Nunca mais perca o momento certo de comprar ou vender.' },
@@ -9658,7 +9658,7 @@ function viewAporte(){
   const groups=portfolioByTicker().filter(g=>g.cotas>0);
   if(!groups.length){
     return `${cartTabsHTML('aporte')}<div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-scale-balanced"></i></span> Aporte Inteligente</div></div>
-    ${emptyState('fa-scale-balanced','Monte sua carteira primeiro','Com seus ativos cadastrados, informo exatamente quanto comprar de cada um no próximo aporte para equilibrar a carteira.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
+    ${emptyState('fa-scale-balanced','Monte sua carteira primeiro','Com seus ativos cadastrados, calculo quanto aportar em cada um para igualar os pesos da carteira, em cotas inteiras.',`<button class="btn btn-primary" onclick="nav('carteira')"><i class="fa-solid fa-plus"></i> Ir para a carteira</button>`)}</div>`;
   }
   return `${cartTabsHTML('aporte')}
   <div class="sec-title">Onde colocar o próximo aporte?</div>
