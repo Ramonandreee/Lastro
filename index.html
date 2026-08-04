@@ -11880,8 +11880,6 @@ function viewRaioX(){
   const fortes = positives.length
     ? positives.map(r=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>${r.t}</span></li>`).join('')
     : '<li class="neu"><i class="fa-regular fa-circle"></i> <span>Comece a diversificar — mais ativos, setores e classes — para destravar seus pontos fortes.</span></li>';
-  const sc=lastroScores(lots);
-  const divSegRows = sc.divSeg.map(x=>{ const c=x.sc>=7?'var(--brand)':x.sc>=4?'var(--gold)':'var(--down)'; return `<div class="rx-asset" onclick="quickView('${x.tk}')">${assetLogo(x.tk,x.k,'sm')}<div class="rx-as-id"><div class="rx-as-tk">${x.tk}</div><div class="rx-as-nm">${esc(x.nm)} · DY ${pc(x.dy,1)}%</div></div><div class="rx-as-bar"><i style="width:${(x.sc*10).toFixed(0)}%;background:${c}"></i></div><span class="rx-as-w mono" style="color:${c}">${x.sc.toFixed(1)}/10</span></div>`; }).join('') || '<div class="faint" style="font-size:12.5px;padding:6px">Nenhum ativo pagador de dividendos na carteira.</div>';
   return head + `
   <div class="rx-grade card card-pad" style="margin-top:16px;border-color:${d.color}55">
     <div class="rx-grade-badge" style="background:${d.color}14;color:${d.color};border-color:${d.color}55"><span class="rx-grade-letter">${d.grade}</span></div>
@@ -11900,10 +11898,6 @@ function viewRaioX(){
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Por ativo</div>${classeSel}</div>
     <div id="rxAtivoBody">${rxAtivoBodyHTML()}</div>
-  </div>
-  <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-shield-halved"></i></span> Segurança dos dividendos <span class="card-sub" style="margin-left:6px">· além do yield</span></div></div>
-    <div class="rx-assets">${divSegRows}</div>
   </div>
   <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Análise calculada sobre as posições reais da sua carteira. Não é recomendação personalizada de investimento.</div>`;
 }
