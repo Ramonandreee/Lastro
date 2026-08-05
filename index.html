@@ -720,7 +720,7 @@ body.acct-open .topbar .acct-menu { pointer-events:auto; }
 .btn-ghost:active { background: var(--surface-3); }
 .icon-btn { cursor: pointer; transition: background .14s var(--ease), color .14s var(--ease), border-color .14s var(--ease), transform .14s var(--ease), box-shadow .14s var(--ease); }
 .icon-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--brand-l); }
-.sel:focus-visible, .pg-sel:focus-visible, .pg-btn:focus-visible, .atab:focus-visible, .rec-chip:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--brand-l); }
+.sel:focus-visible, .pg-sel:focus-visible, .pg-btn:focus-visible, .atab:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--brand-l); }
 
 .divider { height: 1px; background: var(--line); margin: 18px 0; }
 
@@ -873,7 +873,7 @@ img, svg, canvas, video { max-width: 100%; }
   table.tbl .td-asset .tk { font-size: 14px; }
   table.tbl .td-asset .ds { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .market-status, .data-status { display:none; }
-  .atabs, .stabs, .rec-filters { top:calc(64px + env(safe-area-inset-top,0px)); }
+  .atabs, .stabs { top:calc(64px + env(safe-area-inset-top,0px)); }
   /* badge/chip do cabeçalho é redundante no mobile */
   .card-head .chip { display:none; }
   .card-pad { padding: var(--pad) var(--pad-x); }
@@ -1013,10 +1013,9 @@ img, svg, canvas, video { max-width: 100%; }
     </nav>
 
     <nav class="nav-group" data-group="ferramentas">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-toolbox"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Ferramentas</span><span class="nav-ghead-s">Comparador · Carteiras · Simuladores</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-toolbox"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Ferramentas</span><span class="nav-ghead-s">Comparador · Simuladores</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
-        <div class="nav-item" data-view="recomendadas" onclick="nav('recomendadas',this)"><i class="fa-solid fa-layer-group"></i><span>Carteiras Recomendadas</span></div>
         <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-calculator"></i><span>Simuladores</span></div>
       </div>
     </nav>
@@ -2896,19 +2895,6 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .cl-tx b { font-size:14.5px; font-weight:600; color:var(--ink); letter-spacing:-.01em; }
 .cl-tx small { font-size:12px; color:var(--ink-3); line-height:1.35; }
 .cl-cv { color:var(--ink-4); font-size:13px; flex:none; }
-/* carteiras recomendadas */
-.rec-filters { margin-bottom:16px; position:sticky; position:-webkit-sticky; top:calc(72px + env(safe-area-inset-top,0px)); z-index:30; background:var(--canvas); padding:10px 0 12px; box-shadow:0 1px 0 var(--line); }
-.rec-filters-inner { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
-.rec-filters-inner::-webkit-scrollbar { display:none; height:0; }
-.rec-chip { flex:none; padding:8px 15px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .15s var(--ease); }
-.rec-chip:hover { border-color:var(--line-2); color:var(--ink); }
-.rec-chip.on { background:var(--ink); color:var(--canvas); border-color:var(--ink); }
-.rec-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
-@media (max-width:760px){ .rec-grid { grid-template-columns:1fr; } }
-.rec-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:20px; cursor:pointer; transition:transform .2s var(--ease-out), box-shadow .2s var(--ease-out), border-color .2s var(--ease); position:relative; }
-.rec-card-pro { border-color:color-mix(in srgb,var(--gold) 38%,transparent); background:linear-gradient(180deg, color-mix(in srgb,var(--gold) 6%,transparent), var(--surface) 26%); }
-.rec-pro-flag { position:absolute; top:14px; right:14px; display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; letter-spacing:.03em; color:#fff; background:linear-gradient(135deg,#C8911F,#A87C2A); padding:3px 9px; border-radius:20px; box-shadow:0 4px 12px rgba(168,124,42,.3); }
-body.is-premium .rec-pro-flag { background:linear-gradient(135deg,#C8911F,#A87C2A); }
 /* Raio-X da carteira */
 .rx-cols { display:grid; grid-template-columns:1.15fr .85fr; gap:16px; }
 @media (max-width:880px){ .rx-cols { grid-template-columns:1fr; } }
@@ -3047,74 +3033,10 @@ body.report-open { overflow:hidden; }
 .cons-pick-tk { font-size:14.5px; font-weight:700; color:var(--ink-1); }
 .cons-pick-id .faint { font-size:12px; }
 .cons-motivo { font-size:13px; color:var(--ink-2); line-height:1.6; margin:0 0 4px; }
-.rec-card:hover { transform:translateY(-3px); box-shadow:var(--sh-lg); border-color:var(--line-2); }
-.rec-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
-.rec-nm { font-size:18px; font-weight:700; letter-spacing:-.01em; }
-.rec-tags { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
-.rec-ret { text-align:right; flex:none; }
-.rec-ret .faint { font-size:10.5px; } .rec-ret .mono { font-size:18px; font-weight:700; }
-.rec-desc { font-size:13px; color:var(--ink-2); line-height:1.6; margin-bottom:14px; }
-.rec-stats { display:flex; gap:20px; padding:13px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-bottom:13px; }
-.rec-stats > div { display:flex; flex-direction:column; gap:3px; }
-.rec-stats span { font-size:11px; color:var(--ink-3); } .rec-stats b { font-size:15px; font-weight:600; }
-.rec-tks { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
-.rec-tk { font-family:var(--mono); font-size:11px; font-weight:600; color:var(--ink-2); background:var(--surface-3); padding:3px 8px; border-radius:7px; }
-.rec-tk.rec-more { color:var(--brand); }
 .scr-presets { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
 .scr-presets button { display:inline-flex; align-items:center; justify-content:center; gap:6px; font-size:12px; font-weight:600; color:var(--ink-2); background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:8px 6px; cursor:pointer; transition:all .14s var(--ease); }
 .scr-presets button:hover { border-color:var(--brand); color:var(--brand); background:var(--brand-l); }
 .scr-presets button i { font-size:11px; }
-.rec-reveal { display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--ink-3); background:var(--surface-3); border-radius:9px; padding:8px 11px; margin-bottom:13px; }
-.rec-reveal i { font-size:10px; color:var(--ink-4); }
-/* tese de cada ativo (detalhe da carteira recomendada) */
-.rca-list { display:flex; flex-direction:column; }
-.rca-row { padding:14px 0; border-top:1px solid var(--line); }
-.rca-row:first-child { border-top:none; padding-top:4px; }
-.rca-head { display:flex; align-items:center; gap:11px; cursor:pointer; }
-.rca-id { flex:1; min-width:0; }
-.rca-tk { font-family:var(--mono); font-size:14px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:4px; }
-.rca-tag { font-family:var(--sans); font-size:9.5px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; color:var(--brand); background:var(--brand-l); padding:2px 8px; border-radius:20px; }
-.rca-nm { font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.rca-w { flex:none; font-size:13px; font-weight:600; color:var(--ink-2); }
-.rca-bar { height:5px; border-radius:4px; background:var(--surface-3); overflow:hidden; margin:9px 0 9px 45px; }
-.rca-bar i { display:block; height:100%; border-radius:4px; background:var(--brand); }
-.rca-why { font-size:12.5px; line-height:1.6; color:var(--ink-2); margin:0 0 0 45px; }
-.rca-m { display:block; margin-top:5px; font-family:var(--mono); font-size:11px; color:var(--ink-3); }
-@media (max-width:560px){ .rca-bar, .rca-why { margin-left:0; } }
-.rec-cta { font-size:13px; font-weight:600; color:var(--brand); display:flex; align-items:center; gap:7px; }
-.rec-card:hover .rec-cta i { transform:translateX(3px); } .rec-cta i { transition:transform .18s var(--ease); }
-/* detalhe */
-.rc-head { display:flex; gap:7px; margin-bottom:16px; }
-.rc-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
-@media (max-width:640px){ .rc-kpis { grid-template-columns:repeat(2,1fr); } }
-.rc-kpi { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:12px; text-align:center; }
-.rc-kpi .l { font-size:11px; color:var(--ink-3); margin-bottom:5px; } .rc-kpi .v { font-size:17px; font-weight:600; }
-.rc-sec { margin-bottom:18px; } .rc-sec-t { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:9px; }
-.rc-sec p { font-size:13.5px; color:var(--ink-2); line-height:1.7; margin:0; }
-.rc-assets { display:flex; flex-direction:column; }
-.rc-asset { display:flex; align-items:center; gap:11px; padding:9px 0; border-top:1px solid var(--line); cursor:pointer; }
-.rc-asset:first-child { border-top:none; }
-.rc-a-id { flex:1; min-width:0; } .rc-a-tk { font-family:var(--mono); font-weight:600; font-size:13.5px; } .rc-a-nm { font-size:11.5px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.rc-a-w { font-weight:600; color:var(--ink); }
-.rc-risks { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
-.rc-risks li { display:flex; gap:9px; align-items:flex-start; font-size:13px; color:var(--ink-2); line-height:1.5; }
-.rc-risks li i { color:var(--warn); margin-top:2px; font-size:12px; flex:none; }
-.rc-scen { border-radius:var(--r); padding:14px 16px; }
-.rc-scen.up { background:var(--up-l); } .rc-scen.down { background:var(--down-l); }
-.rc-scen-t { font-size:12px; font-weight:700; display:flex; align-items:center; gap:7px; margin-bottom:7px; }
-.rc-scen.up .rc-scen-t { color:var(--up); } .rc-scen.down .rc-scen-t { color:var(--down); }
-.rc-scen p { font-size:12.5px; color:var(--ink-2); line-height:1.6; margin:0; }
-/* página de detalhe da carteira */
-.rcd-hero { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; }
-.rcd-name { font-size:24px; font-weight:700; letter-spacing:-.02em; }
-.rcd-tags { display:flex; gap:6px; margin-top:8px; }
-.rcd-obj { font-size:13.5px; color:var(--ink-2); line-height:1.6; margin:12px 0 0; max-width:620px; }
-.rcd-ret { text-align:right; flex:none; }
-.rcd-ret .faint { font-size:11px; } .rcd-ret-v { font-size:26px; font-weight:700; }
-.rcd-kpis { grid-template-columns:repeat(4,1fr); margin-bottom:16px; }
-@media (max-width:640px){ .rcd-kpis { grid-template-columns:repeat(2,1fr); } .rcd-name { font-size:21px; } .rcd-ret-v { font-size:22px; } }
-.rc-asset .rc-a-bar { flex:1; max-width:120px; height:6px; border-radius:4px; background:var(--surface-3); overflow:hidden; }
-.rc-asset .rc-a-bar i { display:block; height:100%; border-radius:4px; background:var(--brand); }
 /* gestão de assinatura */
 .as-cur { border:1.5px solid color-mix(in srgb,var(--gold) 30%,transparent); background:linear-gradient(165deg,var(--gold-l),transparent 40%); }
 .as-cur-pro { border-color:color-mix(in srgb,var(--gold) 46%,transparent); background:linear-gradient(150deg, color-mix(in srgb,var(--gold) 15%,transparent), transparent 46%); box-shadow:var(--sh); }
@@ -3484,7 +3406,7 @@ body.pdf-lock { overflow:hidden; }
 .ckl-q { font-size:13.5px; font-weight:600; color:var(--ink); line-height:1.3; }
 .ckl-d { font-size:12px; color:var(--ink-3); margin-top:3px; font-family:var(--mono); }
 @media (max-width:640px){
-  .atabs, .stabs, .rec-filters { top:calc(64px + env(safe-area-inset-top,0px)); }
+  .atabs, .stabs { top:calc(64px + env(safe-area-inset-top,0px)); }
   .prov-stats { grid-template-columns:1fr; }
   .donut-wrap { height:200px; }
   .ckl-list { grid-template-columns:1fr; }
@@ -4463,7 +4385,7 @@ button.agc-c:focus-visible b { box-shadow:0 0 0 3px var(--brand-l); }
   /* elevação/deslocamento de hover: só nos elementos que a usam como microinteração
      (NÃO usar seletor universal — quebraria transform de centralização, ex.: logo da topbar) */
   .nav-item:hover i, .nav-ghead:hover .nav-ghead-badge,
-  .mkt-cell:hover, .mcell:hover, .rec-card:hover, .ind-card:hover, .hstat:hover, .opp-card:hover, .qa-card:hover, .ckl-item:hover,
+  .mkt-cell:hover, .mcell:hover, .ind-card:hover, .hstat:hover, .opp-card:hover, .qa-card:hover, .ckl-item:hover,
   .grid > .card:hover, .dt-grid > .card:hover, .about-grid > .card:hover,
   .share-btn:hover, .sup-c:hover, .btn-primary:hover, .btn-premium:hover, .rx-aporte-cta:hover,
   .icon-btn:hover, .search-trigger:hover, .hdr-crown:hover, .insight-send:hover,
@@ -5325,66 +5247,6 @@ const NEWS = [
   { t:'há 4 h',    src:'Bloomberg Línea', tag:'BDRs',      tk:'AAPL34',tt:'Apple revela nova linha de produtos e mercado reage positivamente' },
 ];
 
-/* ─── CARTEIRAS RECOMENDADAS ─── */
-const RECOMENDADAS = [
-  { id:'fii-renda', nome:'Renda Mensal FIIs', perfil:'Conservador', cat:'FIIs', dy:11.4, ret:12.8, vol:'Baixa', n:8,
-    desc:'Foco em proventos mensais com FIIs de papel e tijolo de qualidade.',
-    objetivo:'Gerar renda passiva mensal estável com baixa volatilidade.',
-    estrategia:'Combina FIIs de papel (CRIs indexados ao IPCA/CDI) para renda previsível e FIIs de tijolo bem localizados para proteção do patrimônio. Rebalanceamento trimestral.',
-    riscos:['Sensibilidade à Selic e ao crédito (FIIs de papel)','Vacância e inadimplência (FIIs de tijolo)','Liquidez menor que ações'],
-    bull:'Queda de juros valoriza as cotas e mantém os rendimentos.', bear:'Alta de juros pressiona o preço das cotas no curto prazo.',
-    ativos:['KNCR11','HGLG11','XPML11','VGIR11','BTLG11','KNIP11','VISC11','TRXF11'] },
-  { id:'acoes-div', nome:'Dividendos Ações', perfil:'Moderado', cat:'Dividendos', dy:9.2, ret:18.4, vol:'Média', n:7,
-    desc:'Ações pagadoras consistentes para renda e crescimento.',
-    objetivo:'Renda crescente com empresas sólidas e bom histórico de dividendos.',
-    estrategia:'Seleciona empresas líderes, lucrativas e com payout sustentável. Equilíbrio entre setores defensivos (bancos, energia) e cíclicos de qualidade.',
-    riscos:['Oscilação do preço das ações','Cortes de dividendos em crises','Risco regulatório/político (estatais)'],
-    bull:'Lucros fortes elevam dividendos e a cotação.', bear:'Recessão reduz lucros e proventos.',
-    ativos:['PETR4','BBAS3','VALE3','ITUB4','BBDC4','CXSE3','TAEE11'] },
-  { id:'cresc-br', nome:'Crescimento BR', perfil:'Arrojado', cat:'Arrojada', dy:3.1, ret:24.6, vol:'Alta', n:6,
-    desc:'Empresas com alto ROE e potencial de valorização.',
-    objetivo:'Maximizar valorização de capital no longo prazo.',
-    estrategia:'Concentra em empresas de alto ROE, vantagens competitivas e reinvestimento eficiente do lucro. Menos foco em dividendo, mais em crescimento.',
-    riscos:['Alta volatilidade','Múltiplos exigentes','Sensível a juros e ao ciclo econômico'],
-    bull:'Crescimento de lucros acima do mercado expande os múltiplos.', bear:'Juros altos comprimem ações de crescimento.',
-    ativos:['WEGE3','PRIO3','BPAC11','RADL3','TOTS3','RAIL3'] },
-  { id:'global-tech', nome:'Global Tech', perfil:'Arrojado', cat:'Internacional', dy:0.6, ret:31.2, vol:'Alta', n:6,
-    desc:'Exposição às gigantes de tecnologia via BDRs.',
-    objetivo:'Diversificação internacional e exposição ao dólar e à inovação.',
-    estrategia:'Investe nas líderes globais de tecnologia via BDRs negociados na B3, capturando crescimento e a variação cambial.',
-    riscos:['Risco cambial (real/dólar)','Volatilidade do setor de tecnologia','Liquidez dos BDRs'],
-    bull:'Inovação (IA, nuvem) impulsiona receitas; dólar forte ajuda.', bear:'Correção de tech e real forte reduzem o retorno em reais.',
-    ativos:['AAPL34','MSFT34','NVDC34','GOGL34','AMZO34','META34'] },
-  { id:'aposent', nome:'Aposentadoria', perfil:'Conservador', cat:'Aposentadoria', dy:8.6, ret:13.5, vol:'Baixa', n:8,
-    desc:'Renda perpétua com FIIs e blue-chips defensivas, foco em consistência.',
-    objetivo:'Construir uma renda passiva crescente e resiliente para o longo prazo.',
-    estrategia:'Mistura FIIs de renda, ações perenes de dividendos e setores defensivos (energia, saneamento, bancos). Reinvestimento de proventos.',
-    riscos:['Inflação corroendo a renda real','Concentração em poucos setores','Mudanças tributárias sobre dividendos'],
-    bull:'Juros em queda e dividendos reinvestidos aceleram a bola de neve.', bear:'Inflação alta exige reforço de aportes.',
-    ativos:['KNCR11','HGLG11','TAEE11','BBAS3','SAPR11','CPLE6','VISC11','ITSA4'] },
-  { id:'equil', nome:'Carteira Equilibrada', perfil:'Moderado', cat:'Moderada', dy:6.8, ret:16.9, vol:'Média', n:8,
-    desc:'Mix de ações, FIIs e internacional para crescer com proteção.',
-    objetivo:'Crescimento consistente com diversificação entre classes.',
-    estrategia:'Aloca entre ações de qualidade, FIIs de renda e BDRs internacionais, equilibrando risco e retorno. Rebalanceamento semestral.',
-    riscos:['Exposição a múltiplas classes (risco de mercado amplo)','Risco cambial parcial','Necessita disciplina de rebalanceamento'],
-    bull:'Diversificação captura altas de diferentes mercados.', bear:'Quedas amplas afetam várias classes ao mesmo tempo.',
-    ativos:['ITUB4','WEGE3','KNCR11','HGLG11','AAPL34','VALE3','TAEE11','BTLG11'] },
-  { id:'pro-alfa', nome:'Alfa Quant Pro', perfil:'Arrojado', cat:'Arrojada', dy:7.8, ret:24.6, vol:'Alta', n:9, pro:true,
-    desc:'Carteira quantitativa exclusiva Pro, com seleção por qualidade e momentum.',
-    objetivo:'Maximizar retorno ajustado ao risco combinando qualidade e tendência.',
-    estrategia:'Seleção sistemática dos ativos de maior qualidade fundamentalista com filtro de momentum e controle de concentração setorial. Rebalanceamento mensal disciplinado.',
-    riscos:['Maior rotatividade e custos','Volatilidade elevada','Sensível a reversões de tendência'],
-    bull:'Tendências fortes amplificam o retorno da carteira.', bear:'Reversões bruscas penalizam estratégias de momentum.',
-    ativos:['WEGE3','PETR4','ITUB4','VALE3','BBAS3','HGLG11','KNCR11','TAEE11','BTLG11'] },
-  { id:'pro-global', nome:'Global Renda Pro', perfil:'Moderado', cat:'Internacional', dy:6.4, ret:19.2, vol:'Média', n:8, pro:true,
-    desc:'Renda e crescimento global exclusivo Pro, via BDRs e FIIs de qualidade.',
-    objetivo:'Diversificação internacional com renda em reais e exposição ao dólar.',
-    estrategia:'Combina BDRs de gigantes globais pagadoras de dividendos com FIIs de papel para renda mensal e proteção cambial parcial. Rebalanceamento semestral.',
-    riscos:['Risco cambial','Tributação de dividendos no exterior','Liquidez de BDRs'],
-    bull:'Dólar forte e lucros globais elevam o patrimônio.', bear:'Real forte reduz o retorno em reais.',
-    ativos:['AAPL34','MSFT34','JNJB34','KO34','KNCR11','HGLG11','VGIR11','BTLG11'] },
-];
-
 /* ══════════════════════════════════════════════════════════
    HELPERS
    ══════════════════════════════════════════════════════════ */
@@ -5501,8 +5363,6 @@ const PAGES = {
   comparador:   { t:'Comparador',            s:'Compare ativos lado a lado pelos fundamentos' },
   alertas:      { t:'Alertas de Preço',      s:'Seja avisado quando um ativo atingir o preço-alvo' },
   agenda:       { t:'Agenda de Dividendos',  s:'Calendário de proventos dos seus ativos e do mercado' },
-  recomendadas: { t:'Carteiras Recomendadas',s:'Estratégias montadas pela inteligência Lastro' },
-  recdetail:    { t:'Carteira recomendada',  s:'Composição, desempenho e estratégia' },
   assinatura:   { t:'Gerenciar assinatura',  s:'Plano, pagamentos e cobranças' },
   perfil:       { t:'Meu perfil',            s:'Seus dados, plano, preferências e segurança' },
   noticias:     { t:'Notícias',              s:'Fatos relevantes e mercado em tempo real' },
@@ -5568,10 +5428,9 @@ const PREMIUM_FEATURES = {
   backtest:  { name:'Backtest da Carteira', icon:'fa-chart-line', pro:true, desc:'Simule como a sua carteira teria se comportado no passado: retorno, volatilidade e maior queda, comparados ao CDI e ao IBOV.', why:'Entenda o risco e o retorno histórico da sua estratégia antes de tomar decisões.' },
   raiox:     { name:'Raio-X da Carteira', icon:'fa-magnifying-glass-chart', pro:true, desc:'O retrato completo da sua carteira: diversificação por setor, ativo e classe, com a Nota de Diversificação Lastro e alertas de concentração.', why:'Enxergue de relance onde sua carteira está concentrada e o que melhorar.' },
   stress:    { name:'Stress Test da Carteira', icon:'fa-heart-pulse', pro:true, desc:'Simule cenários de crise — queda de bancos, do petróleo, alta de juros, queda da bolsa, dólar em alta — e veja o impacto estimado em reais na sua carteira.', why:'Saiba quanto a sua carteira pode perder antes de a crise acontecer.' },
-  carteiras: { name:'Carteiras Recomendadas Exclusivas', icon:'fa-layer-group', pro:true, desc:'Estratégias premium montadas pela inteligência Lastro, disponíveis apenas para assinantes Investidor Pro.', why:'Acesse alocações mais sofisticadas, com composição e estratégia detalhadas.' },
 };
 const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador completo de ativos','Alertas de preço ilimitados','Watchlist ilimitada e exportação CSV'];
-const PRO_BENEFITS = ['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test da carteira','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'];
+const PRO_BENEFITS = ['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test da carteira','Backtest histórico da carteira (vs CDI/IBOV)','Relatório mensal da carteira'];
 /* tela de apresentação Premium / Investidor Pro (usada no modal e como paywall inline) */
 function premiumPresentation(key){
   const f = PREMIUM_FEATURES[key] || { name:'Recurso Premium', icon:'fa-crown', desc:'Desbloqueie todo o poder da plataforma Lastro.', why:'' };
@@ -7145,7 +7004,7 @@ const VIEW_TAB = {
   mercado:'mercado', acoes:'mercado', fiis:'mercado', etfs:'mercado', etfsint:'mercado', bdrs:'mercado', stocks:'mercado', cripto:'mercado',
   carteira:'carteira', proventos:'carteira', agenda:'carteira', aporte:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira',
   noticias:'noticias',
-  mais:'mais', simulador:'mais', comparador:'mais', recomendadas:'mais', recdetail:'mais', planos:'mais', indicar:'mais', assinatura:'mais', perfil:'mais', admin:'mais'
+  mais:'mais', simulador:'mais', comparador:'mais', planos:'mais', indicar:'mais', assinatura:'mais', perfil:'mais', admin:'mais'
 };
 function syncTabBar(v){
   const key = (v==='asset' && typeof prevView!=='undefined') ? prevView : v;   // detalhe herda a aba da origem
@@ -7172,8 +7031,6 @@ function render(v, soft){
   else if(v==='comparador')  c.innerHTML = viewComparador();
   else if(v==='alertas')     c.innerHTML = viewAlertas();
   else if(v==='agenda')      c.innerHTML = viewAgenda();
-  else if(v==='recomendadas')c.innerHTML = viewRecomendadas();
-  else if(v==='recdetail')   c.innerHTML = viewCarteiraDetail();
   else if(v==='assinatura')  c.innerHTML = viewAssinatura();
   else if(v==='perfil')      c.innerHTML = viewPerfil();
   else if(v==='noticias')    c.innerHTML = viewNoticias();
@@ -8116,7 +7973,7 @@ const PLANS = {
     feats:['Tudo do Gratuito, sem limites','Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador completo de ativos','Alertas de preço ilimitados','Watchlist ilimitada + exportação CSV'] },
   pro: { key:'pro', name:'Investidor Pro', popular:false, desc:'Tudo do Premium, com análises, relatórios e prioridade.',
     anual:39.90, mensal:49.90, anchorA:54.90, anchorM:64.90, anualTotal:478.80,
-    feats:['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test da carteira','Backtest histórico da carteira (vs CDI/IBOV)','Carteiras recomendadas exclusivas'] },
+    feats:['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test da carteira','Backtest histórico da carteira (vs CDI/IBOV)','Relatório mensal da carteira'] },
 };
 let planCycle = 'anual';
 function setPlanCycle(c){ planCycle = c==='mensal'?'mensal':'anual'; render('planos'); }
@@ -8194,7 +8051,6 @@ function viewPlanos(){
       ['Raio-X da carteira (Nota Lastro)', false, false, true],
       ['Stress Test da carteira', false, false, true],
       ['Backtest histórico da carteira', false, false, true],
-      ['Carteiras recomendadas exclusivas', false, false, true],
       ['Relatório mensal da carteira', false, false, true],
       ['Suporte', 'Padrão', 'Padrão', 'Prioritário'],
     ].map(([f,g,p,pr])=>`<div class="cmp-row cmp-row-3"><span class="cmp-f">${f}</span><span>${cmpCell(g)}</span><span class="cmp-pro">${cmpCell(p)}</span><span>${cmpCell(pr)}</span></div>`).join('')}
@@ -8541,7 +8397,7 @@ const ADMIN_EXTRA=[
   {id:'indicacoes', gen:m=>({id:'indicacoes',ic:'fa-share-nodes',st:'pos',impact:'médio',title:`Ativar indicações (${m.clientes} elegíveis)`,detail:`${m.clientes} cliente(s) pagante(s) podem indicar amigos e reduzir o CAC.`,plan:['Convidar clientes satisfeitos a indicar','Recompensa recorrente por indicação (PIX)','Kit de compartilhamento pronto','Acompanhar indicados → convertidos'],cta:'Campanha de indicações'})},
   {id:'anual', gen:m=>({id:'anual',ic:'fa-calendar-check',st:'pos',impact:'alto',title:'Migrar mensais para o plano anual',detail:'Planos anuais reduzem churn e melhoram o caixa. Incentive a migração.',plan:['Oferecer 2 meses grátis no anual','Destacar a economia vs mensal','Focar em quem tem 3+ meses de casa','Medir % de adesão ao anual'],cta:'Campanha de plano anual'})},
   {id:'conteudo', gen:m=>({id:'conteudo',ic:'fa-bullhorn',st:'neu',impact:'médio',title:`Conteúdo focado em "${m.topGoal?m.topGoal[0]:'renda passiva'}"`,detail:`O objetivo mais comum da base é "${m.topGoal?m.topGoal[0]:'—'}". Produza conteúdo que fale com ele.`,plan:['Série de posts/vídeos sobre o objetivo dominante','Newsletter segmentada por objetivo','CTA para recursos Premium relacionados','Medir engajamento → conversão'],cta:'Calendário de conteúdo'})},
-  {id:'risco', gen:m=>({id:'risco',ic:'fa-gauge',st:'neu',impact:'baixo',title:`Personalizar por perfil "${m.topRisk?m.topRisk[0]:'Moderado'}"`,detail:`Perfil de risco predominante: ${m.topRisk?m.topRisk[0]:'—'}. Adapte recomendações e comunicação.`,plan:['Onboarding por perfil de risco','Carteiras recomendadas por perfil','Alertas e conteúdo alinhados ao perfil','Testar mensagens por segmento'],cta:'Personalização por perfil'})},
+  {id:'risco', gen:m=>({id:'risco',ic:'fa-gauge',st:'neu',impact:'baixo',title:`Personalizar por perfil "${m.topRisk?m.topRisk[0]:'Moderado'}"`,detail:`Perfil de risco predominante: ${m.topRisk?m.topRisk[0]:'—'}. Adapte recomendações e comunicação.`,plan:['Onboarding por perfil de risco','Conteúdo educacional por perfil de risco','Alertas e conteúdo alinhados ao perfil','Testar mensagens por segmento'],cta:'Personalização por perfil'})},
 ];
 function adminExtraIds(){ const p=getProfile(); return Array.isArray(p.adminExtra)?p.adminExtra:[]; }
 function adminExtraActions(all){ const ids=adminExtraIds(), m=adminMetrics(all); return ids.map(id=>{ const t=ADMIN_EXTRA.find(x=>x.id===id); return t?t.gen(m):null; }).filter(Boolean); }
@@ -10402,149 +10258,6 @@ function agMarketCard(loading){
 }
 
 /* ══════════════════════════════════════════════════════════
-   VIEW: CARTEIRAS RECOMENDADAS
-   ══════════════════════════════════════════════════════════ */
-let recFilter = 'Todas';
-const REC_CATS = ['Todas','Conservadora','Moderada','Arrojada','Dividendos','FIIs','Internacional','Aposentadoria'];
-function perfilCls(p){ return p==='Conservador'?'chip-up': p==='Moderado'?'chip-blue':'chip-gold'; }
-function recCard(c){
-  const proLock = c.pro && !isProTier();
-  return `<div class="rec-card${c.pro?' rec-card-pro':''}" onclick="openCarteira('${c.id}')">
-    ${c.pro?`<div class="rec-pro-flag"><i class="fa-solid fa-crown"></i> Pro${proLock?' · exclusiva':''}</div>`:''}
-    <div class="rec-top">
-      <div class="rec-id"><div class="rec-nm">${c.nome}</div><div class="rec-tags"><span class="chip ${perfilCls(c.perfil)}">${c.perfil}</span> <span class="chip chip-neu">${c.cat}</span></div></div>
-      <div class="rec-ret"><div class="faint">retorno 12m</div><div class="mono up">+${pc(c.ret,1)}%</div></div>
-    </div>
-    <div class="rec-desc">${c.desc}</div>
-    <div class="rec-stats">
-      <div><span>DY médio</span><b class="mono" style="color:var(--brand)">${pc(c.dy,1)}%</b></div>
-      <div><span>Risco</span><b>${c.vol}</b></div>
-      <div><span>Ativos</span><b class="mono">${c.n}</b></div>
-    </div>
-    <div class="rec-reveal"><i class="fa-solid fa-lock"></i> Composição e a tese de cada ativo ao abrir</div>
-    <div class="rec-cta">Ver detalhes e composição <i class="fa-solid fa-arrow-right"></i></div>
-  </div>`;
-}
-function viewRecomendadas(){
-  const matches = c => recFilter==='Todas' || c.cat===recFilter || (recFilter==='Conservadora'&&c.perfil==='Conservador') || (recFilter==='Moderada'&&c.perfil==='Moderado') || (recFilter==='Arrojada'&&c.perfil==='Arrojado');
-  const list = RECOMENDADAS.filter(matches);
-  const chips = REC_CATS.map(cat=>`<button class="rec-chip ${cat===recFilter?'on':''}" onclick="setRecFilter('${cat}')">${cat}</button>`).join('');
-  return `
-  <div class="sec-title">Carteiras recomendadas</div>
-  <div class="sec-desc">Estratégias prontas montadas pela inteligência Lastro para diferentes perfis e objetivos. Referência de alocação — não é recomendação personalizada de investimento.</div>
-  <div class="rec-filters"><div class="rec-filters-inner">${chips}</div></div>
-  <div class="rec-grid">${list.map(recCard).join('')||'<div class="search-empty">Nenhuma carteira nesta categoria.</div>'}</div>`;
-}
-function setRecFilter(c){ recFilter=c; render('recomendadas'); }
-/* detalhe da carteira recomendada (composição, estratégia, riscos, cenários) */
-let currentRecId=null;
-const REC_PALETTE=['#0B2E5E','#2563EB','#8B4FB8','#A87C2A','#0EA5A0','#E2761B','#5B7CFA','#1E56A6','#0891B2','#BE185D'];
-/* classifica o ativo num "grupo" para a quebra por classe/segmento */
-function recGroupOf(tk){ const lk=assetLookup(tk); if(!lk) return 'Outros'; if(lk.k==='fiis') return 'FIIs'; if(lk.k==='bdrs') return 'Internacional'; if(lk.k==='stocks') return 'Internacional'; return lk.a.seg||'Ações'; }
-function openCarteira(id){ const _c=RECOMENDADAS.find(x=>x.id===id); if(_c&&_c.pro&&!isProTier()){ openPremiumModal('carteiras'); return; } currentRecId=id; currentView='recdetail'; document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); render('recdetail'); animateContent(); $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'}); closeSidebar(); }
-/* tese de investimento (por que está na carteira) — única por ativo, a partir do segmento + fundamentos */
-function recAssetRationale(tk){
-  const lk=assetLookup(tk); if(!lk) return { role:'Compõe a diversificação da carteira.', tag:'Diversificação' };
-  const a=lk.a, k=lk.k, seg=(a.seg||'').toLowerCase(); let role='', tag='';
-  if(k==='fiis'){
-    if(/papel|cr[ií]dito/.test(seg)){ role='FII de papel (CRIs indexados a CDI/IPCA): entra como <strong>âncora de renda mensal previsível</strong>, com baixa volatilidade e proteção em ciclos de juros altos.'; tag='Renda previsível'; }
-    else if(/log[íi]st/.test(seg)){ role='FII logístico de galpões locados a operadores de e-commerce e indústria: <strong>contratos longos e atípicos</strong> que sustentam a distribuição e surfam a expansão da logística.'; tag='Renda + contratos longos'; }
-    else if(/shopping/.test(seg)){ role='FII de shoppings: captura o <strong>fluxo de consumo</strong> e o reajuste de aluguéis, com potencial de valorização na retomada da economia.'; tag='Consumo'; }
-    else if(/laje|corporat|escrit/.test(seg)){ role='FII de lajes corporativas: patrimônio físico de escritórios bem localizados, com <strong>potencial de reajuste de aluguéis</strong> e ganho de capital.'; tag='Tijolo premium'; }
-    else if(/h[íi]brid|fof|fundos/.test(seg)){ role='FII diversificado: <strong>uma cesta de fundos/ativos</strong> que dilui o risco específico de um único imóvel ou gestor.'; tag='Diversificação imobiliária'; }
-    else { role='FII que adiciona <strong>renda imobiliária mensal</strong> e diversificação de tijolo/papel à carteira.'; tag='Renda imobiliária'; }
-  } else {
-    if(/banc|financ/.test(seg)){ role='Banco/financeira líder: <strong>lucros consistentes e dividendos robustos</strong> em qualquer ciclo — o pilar defensivo e pagador da carteira.'; tag='Defensiva pagadora'; }
-    else if(/energia|el[ée]tric|saneament/.test(seg)){ role='Utility de receita regulada e previsível: <strong>defensiva e ótima pagadora</strong>, reduz a volatilidade total da carteira.'; tag='Defensiva regulada'; }
-    else if(/petr[óo]leo|g[áa]s|miner/.test(seg)){ role='Gigante de commodities: <strong>exposição ao ciclo global e ao dólar</strong>, com dividendos elevados nos anos de preço forte.'; tag='Cíclica + dólar'; }
-    else if(/seguro|previd/.test(seg)){ role='Seguradora: crescimento estrutural com <strong>baixo endividamento</strong> e alta rentabilidade sobre o capital.'; tag='Crescimento sólido'; }
-    else if(/bens|industri|sider/.test(seg)){ role='Indústria de qualidade com marca global: <strong>crescimento de receita e exportação</strong>, equilibrando o perfil pagador da carteira.'; tag='Crescimento'; }
-    else if(/varejo|consumo|aliment|bebida/.test(seg)){ role='Consumo/varejo: <strong>exposição à renda das famílias</strong> e à retomada do consumo interno.'; tag='Consumo interno'; }
-    else { role=`${esc(a.seg||'Empresa')} de qualidade que equilibra <strong>crescimento e solidez</strong> dentro da estratégia.`; tag='Qualidade'; }
-  }
-  const bits=[];
-  if((a.dy||0)>0) bits.push(`DY ${pc(a.dy,1)}%`);
-  if(k==='fiis' && typeof a.pvp==='number') bits.push(`P/VP ${pc(a.pvp,2)}`);
-  if(k!=='fiis' && typeof a.pl==='number') bits.push(`P/L ${pc(a.pl,1)}x`);
-  return { role, tag, metrics:bits.join(' · ') };
-}
-function viewCarteiraDetail(){
-  const c = RECOMENDADAS.find(x=>x.id===currentRecId); if(!c) return '<div class="card card-pad">Carteira não encontrada.</div>';
-  const w = 100/c.ativos.length;
-  window._RECCOMP = c.ativos.map((t,i)=>({ n:t, v:1/c.ativos.length, p:pc(w,1)+'%', c:REC_PALETTE[i%REC_PALETTE.length] }));
-  // quebra por grupo (classe/segmento)
-  const grp={}; c.ativos.forEach(t=>{ const g=recGroupOf(t); grp[g]=(grp[g]||0)+w; });
-  window._RECGRP = Object.entries(grp).map(([n,v],i)=>({n, v:v/100, p:pc(v,0)+'%', c:REC_PALETTE[i%REC_PALETTE.length]}));
-  const ativosRich = c.ativos.map(t=>{ const lk=assetLookup(t); const a=lk?lk.a:{}, k=lk?lk.k:'acoes'; const r=recAssetRationale(t);
-    return `<div class="rca-row">
-      <div class="rca-head" onclick="quickView('${t}')">${assetLogo(t,k,'sm')}<div class="rca-id"><div class="rca-tk">${t} <span class="rca-tag">${r.tag}</span></div><div class="rca-nm">${esc(a.nm||'')}</div></div><span class="rca-w mono">${pc(w,1)}%</span></div>
-      <div class="rca-bar"><i style="width:${Math.min(100,w*3).toFixed(0)}%"></i></div>
-      <p class="rca-why">${r.role}${r.metrics?` <span class="rca-m">${r.metrics}</span>`:''}</p>
-    </div>`; }).join('');
-  return `
-  <button class="dt-back" onclick="goView('recomendadas')"><i class="fa-solid fa-arrow-left"></i> Carteiras recomendadas</button>
-  <div class="rcd-hero">
-    <div class="rcd-hero-l">
-      <div class="rcd-name">${c.nome}</div>
-      <div class="rcd-tags"><span class="chip ${perfilCls(c.perfil)}">${c.perfil}</span> <span class="chip chip-neu">${c.cat}</span></div>
-      <p class="rcd-obj">${c.objetivo}</p>
-    </div>
-    <div class="rcd-ret"><div class="faint">retorno 12 meses</div><div class="mono up rcd-ret-v">+${pc(c.ret,1)}%</div></div>
-  </div>
-  <div class="rc-kpis rcd-kpis">
-    <div class="rc-kpi"><div class="l">DY médio</div><div class="v mono" style="color:var(--brand)">${pc(c.dy,1)}%</div></div>
-    <div class="rc-kpi"><div class="l">Risco</div><div class="v">${c.vol}</div></div>
-    <div class="rc-kpi"><div class="l">Ativos</div><div class="v mono">${c.n}</div></div>
-    <div class="rc-kpi"><div class="l">Perfil</div><div class="v">${c.perfil}</div></div>
-  </div>
-  <div class="card card-pad" style="margin-bottom:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Desempenho acumulado (12 meses)</div></div>
-    <div style="position:relative;height:240px"><canvas id="recPerfChart"></canvas></div>
-    ${illusNote('Curva estimada de desempenho · educacional, não é recomendação.')}
-  </div>
-  <div class="dt-grid">
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-chart-pie"></i></span> Composição</div></div>
-      <div class="donut-wrap"><canvas id="recCompChart"></canvas></div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-layer-group"></i></span> Por classe / segmento</div></div>
-      <div class="donut-wrap"><canvas id="recGrpChart"></canvas></div>
-      <div class="donut-leg">${donutLegend(window._RECGRP)}</div>
-    </div>
-  </div>
-  <div class="card card-pad" style="margin-top:16px">
-    <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> A tese de cada ativo <span class="card-sub" style="margin-left:6px">· por que está na carteira</span></div></div>
-    <div class="rca-list">${ativosRich}</div>
-  </div>
-  <div class="card card-pad" style="margin-top:16px">
-    <div class="rc-sec" style="margin-bottom:0"><div class="rc-sec-t">Estratégia</div><p>${c.estrategia}</p></div>
-  </div>
-  <div class="dt-grid" style="margin-top:16px">
-    <div class="card card-pad"><div class="rc-sec" style="margin:0"><div class="rc-sec-t">Riscos</div><ul class="rc-risks">${c.riscos.map(r=>`<li><i class="fa-solid fa-triangle-exclamation"></i> ${r}</li>`).join('')}</ul></div></div>
-    <div class="card card-pad" style="display:flex;flex-direction:column;gap:12px">
-      <div class="rc-scen up"><div class="rc-scen-t"><i class="fa-solid fa-arrow-trend-up"></i> Cenário favorável</div><p>${c.bull}</p></div>
-      <div class="rc-scen down"><div class="rc-scen-t"><i class="fa-solid fa-arrow-trend-down"></i> Cenário desfavorável</div><p>${c.bear}</p></div>
-    </div>
-  </div>
-  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Retornos, composição e desempenho estimados, para fins educacionais. Não constitui recomendação personalizada de investimento.</div>`;
-}
-function initRecCharts(){
-  const c = RECOMENDADAS.find(x=>x.id===currentRecId); if(!c) return;
-  charts.recComp=donutChart('recCompChart', window._RECCOMP);
-  charts.recGrp=donutChart('recGrpChart', window._RECGRP);
-  const ctx=$('#recPerfChart'); if(ctx && HAS_CHART){
-    const r=rngF(seedFrom(c.id+'perf')); const n=13, d=[]; let v=100;
-    for(let i=0;i<n;i++){ v=v*(1+(c.ret/100/12)+(r()-0.5)*0.04); d.push(+v.toFixed(1)); }
-    const labels=['','','','','','','','','','','','','hoje']; const col=cssVar('--brand');
-    const grd=ctx.getContext('2d').createLinearGradient(0,0,0,240); grd.addColorStop(0,col+'2e'); grd.addColorStop(1,col+'00');
-    charts.recPerf=new Chart(ctx,{type:'line',data:{labels:d.map((_,i)=>i),datasets:[{data:d,borderColor:col,backgroundColor:grd,fill:true,borderWidth:2.6,tension:.4,cubicInterpolationMode:'monotone',pointRadius:0,pointHoverRadius:5}]},
-      options:{responsive:true,maintainAspectRatio:false,animation:{duration:1000,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{title:()=>'',label:cc=>'Base 100 → '+cc.parsed.y}}},
-        scales:{x:{display:false},y:{position:'right',grid:{color:cssVar('--line')},ticks:{color:cssVar('--ink-3'),font:{size:10},maxTicksLimit:5}}}}});
-  }
-}
-
-/* ══════════════════════════════════════════════════════════
    VIEW: NOTÍCIAS
    ══════════════════════════════════════════════════════════ */
 const NEWS_TAG_CLS = { 'Ações':'chip-blue','FIIs':'chip-gold','Mercado':'chip-neu','Stocks':'chip-up','Cripto':'chip-gold','BDRs':'chip-blue' };
@@ -10601,7 +10314,6 @@ function viewMais(){
   const GROUPS=[
     {t:'Ferramentas', items:[
       ['comparador','fa-code-compare','Comparador',0,'Ativos lado a lado pelos fundamentos'],
-      ['recomendadas','fa-layer-group','Carteiras Recomendadas',0,'Estratégias montadas pela Lastro'],
       ['simulador','fa-calculator','Simuladores',0,'Juros compostos, renda passiva e FIRE'],
       ['metarenda','fa-bullseye','Meta de Renda',0,'Quanto você quer receber por mês'],
     ]},
@@ -10863,7 +10575,6 @@ function afterRender(v, soft){
   if(v==='simulador'){ initSimActive(); }
   if(v==='agenda'){ initAgenda(); }
   if(v==='planos'){ initPlanCarousel(); }
-  if(v==='recdetail'){ initRecCharts(); }
   if(v==='asset'){ initDetailCharts(); animateGauges(); animateCounts(); }
   if(v==='admin'){ initAdminCharts(); }
   if(v==='mercado'){ initMktHub(); }
@@ -11886,13 +11597,15 @@ function rxAtivoBodyHTML(){
   return `<div style="position:relative;height:210px;margin:6px 0 16px"><canvas id="rxAtivoChart" role="img" aria-label="Exposição por ativo"></canvas></div>
     <div class="rx-assets">${list}</div>`;
 }
+/* paleta das roscas (exposição por ativo/classe) */
+const CHART_PALETTE=['#0B2E5E','#2563EB','#8B4FB8','#A87C2A','#0EA5A0','#E2761B','#5B7CFA','#1E56A6','#0891B2','#BE185D'];
 function rxDrawAtivoChart(){
   const ctx=$('#rxAtivoChart'); if(!ctx) return;
   if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
   const pos=rxFilteredPos();
   if(charts.rxAtivo){ charts.rxAtivo.destroy(); charts.rxAtivo=null; }
   if(!pos.length) return;
-  const pal=REC_PALETTE; let labels,data,colors;
+  const pal=CHART_PALETTE; let labels,data,colors;
   if(pos.length>10){                                 // muitos ativos: 9 maiores + "Outros" p/ a rosca não poluir
     const top=pos.slice(0,9), rest=pos.slice(9);
     labels=[...top.map(x=>x.tk),'Outros']; data=[...top.map(x=>x.wShow), rest.reduce((s,x)=>s+x.wShow,0)];
@@ -14177,7 +13890,6 @@ function donutChart(id, items){
     options:{responsive:true,maintainAspectRatio:false,cutout:'66%',animation:{duration:1000},
       plugins:{legend:{display:false},tooltip:{displayColors:false,callbacks:{label:c=>`${c.label}: ${c.parsed.toFixed(2)}%`}}}}});
 }
-function initRecDonuts(){ charts.recTipo=donutChart('recTipoChart', window._RECT); charts.recReg=donutChart('recRegiaoChart', window._RECR); }
 function initAssetTabCharts(){
   if(assetTab==='geral') initDetailPriceChart();
   else if(assetTab==='proventos'){ initDyHistChart(); initDetailDivChart(); }
@@ -14432,11 +14144,11 @@ function quickView(tk){ openAsset(tk); }
    Ativo → lista de origem → Início. Demais telas → Início. */
 function canGoBack(){ return currentView==='asset' || currentView!=='painel'; }
 // Pais EXPLÍCITOS (nesting mais profundo que a aba): detalhe→lista, sub-abas→wrapper.
-const VIEW_PARENT = { recdetail:'recomendadas', watchlist:'acompanhar', alertas:'acompanhar' };
+const VIEW_PARENT = { watchlist:'acompanhar', alertas:'acompanhar' };
 function goBack(){
   if(currentView==='asset'){ backFromAsset(); return true; }      // ativo → lista de origem (prevView)
   const parent = VIEW_PARENT[currentView];
-  if(parent){ goView(parent); return true; }                      // nesting explícito (ex.: detalhe → recomendadas)
+  if(parent){ goView(parent); return true; }                      // nesting explícito (ex.: sub-aba → wrapper)
   const hub = (typeof VIEW_TAB!=='undefined') ? VIEW_TAB[currentView] : null;
   if(hub && hub!==currentView){ goView(hub); return true; }       // sub-página → HUB da aba de origem (Mercado/Carteira/Mais)
   if(currentView!=='painel'){ goView('painel'); return true; }    // aba-raiz → Início

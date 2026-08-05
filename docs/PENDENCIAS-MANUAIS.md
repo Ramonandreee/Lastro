@@ -37,6 +37,26 @@
       dela. Hoje há 47 candidatos B3 no código; ETFs não confirmados pela brapi ficam invisíveis
       (nunca aparece ativo inexistente).
 
+## 🟠 Carteiras Recomendadas — aposentada; o que decidir antes de retomar
+
+A tela foi **removida do app (ago/2026)** por dois motivos: era recomendação de valores
+mobiliários sem CNPI (atividade privativa de analista, CVM) e exibia rentabilidade
+**fabricada** (`ret`/`dy`/`vol` chumbados no código). A retomada desejada é um **agregador
+de carteiras públicas de instituições** (BTG, XP, etc.). Antes de construir, três coisas
+precisam estar resolvidas — nenhuma é técnica:
+
+- [ ] **Fonte de dados.** Não existe API pública dessas carteiras. Saem em **PDF/relatório
+      mensal**, boa parte só para clientes logados. Definir de onde vem (e se é acessível
+      sem login).
+- [ ] **Direito de uso.** A composição (ativos + pesos) é o miolo do relatório de análise
+      da instituição. Republicar costuma ferir os termos de uso. O caminho defensável é
+      **nome da instituição + data de publicação + LINK para o relatório original**, sem
+      reproduzir a análise. Vale checar programas de parceria/afiliados, que já resolvem
+      a permissão. **Recomendo validar com o jurídico antes de publicar.**
+- [ ] **Expectativa de atualização.** A composição muda **mensalmente**, não em tempo real.
+      O que dá para atualizar ao vivo é a **cotação dos ativos** que compõem cada carteira —
+      e aí o desempenho passa a ser calculado de dado real, nunca chumbado.
+
 ## 🟡 Limpeza recomendada (não urgente)
 
 - [ ] **Vercel — remover a variável de ambiente `ANTHROPIC_API_KEY`** (Project Settings →

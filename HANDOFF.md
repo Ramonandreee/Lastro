@@ -66,8 +66,13 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 > - **Livro de Movimentações — Fase 1 UI:** o NÚCLEO já está no ar (MOVS como fonte de
 >   verdade, migração, sync — `vendor/movs.js`, sem mudança visível). Falta a **interface**:
 >   botão "Registrar" (Compra/Venda/Provento/Caixa) + extrato + saldo em caixa na Carteira.
-> - **Carteiras Recomendadas reais:** substituir os números fabricados por **carteiras
->   públicas de corretoras** que publicam mensalmente (feature de dados a planejar).
+> - **Carteiras Recomendadas — APOSENTADA (ago/2026).** Removida do app por dois motivos:
+>   (a) **regulatório** — "estratégias montadas pela inteligência Lastro" é recomendação de
+>   valores mobiliários, atividade privativa de analista certificado (CVM); os donos não são
+>   CNPI; (b) os números exibidos (`ret`, `dy`, `vol`) eram **chumbados no código** e apareciam
+>   como "retorno 12m". Retomada possível como **agregador de carteiras públicas de
+>   instituições** (nome + data + LINK para o relatório original, desempenho calculado de
+>   cotação real) — ver os pré-requisitos em `docs/PENDENCIAS-MANUAIS.md`.
 >
 > **App funcional (jul/2026) — dados reais, sem demo fora do dev.** Dados fictícios
 > agora vivem **só no Modo desenvolvedor** (donos). Fora dele, sem aportes, o painel
@@ -108,7 +113,7 @@ Muito além do MVP inicial. Já implementado e no ar (`main`):
 - **Mercado:** Início, Ações, FIIs, ETFs (B3), Cripto, Notícias, Agenda, Score Lastro™. Filtros fundamentalistas (o antigo Rastreador) **embutidos** em cada listagem (botão Filtros) — **gratuitos**.
 - **Internacional:** Stocks (EUA), BDRs, ETFs internacionais (listados nos EUA, em US$). Os ETFs foram separados: a página de Mercado mostra só os da B3 (sem filtro de região); os internacionais têm página própria.
 - **Carteira:** Carteira, Proventos, Aporte, Imposto de Renda, Acompanhar (watchlist+alertas), Comparador.
-- **Ferramentas Pro:** Raio-X, **Backtest (real — fechamentos históricos)**, Stress Test, Carteiras Recomendadas, **Simuladores** (renda, juros compostos, aposentadoria e **Independência/FIRE** — FIRE foi fundido aqui). *Aposentados (jul/2026): Radar de Barganhas, Consultor IA, Detector de Deterioração, Rastreador standalone.*
+- **Ferramentas Pro:** Raio-X, **Backtest (real — fechamentos históricos)**, Stress Test, **Simuladores** (renda, juros compostos, aposentadoria e **Independência/FIRE** — FIRE foi fundido aqui). *Aposentados (jul/2026): Radar de Barganhas, Consultor IA, Detector de Deterioração, Rastreador standalone, Score Lastro, Carteiras Recomendadas.*
 - **Conta/negócio:** cadastro em etapas com **captação de leads**, Perfil completo (dados cadastrais + perfil de investidor + contas conectadas + segurança/2FA), Assinatura, **Indique e Ganhe** (com simulador de comissão), Suporte (FAQ + tour), Planos.
 - **Painel administrativo** (só para o e‑mail do dono): visão geral, clientes, leads, financeiro (MRR/ARR), aba **Ações** (plano de ação por sugestão, aprovar/arquivar, persistido) e aba **Relatórios** — construtor de relatórios com 5 tipos (geral, receita, crescimento, clientes, conversão), período preset (3M–36M) ou personalizado (de/até), filtros por plano e estado, gráficos (linha + barras), tabela de detalhamento e exportação em **PDF/CSV/compartilhar**. Séries ainda estimadas a partir dos dados atuais (`adminRamp`), prontas para virar histórico real quando o backend registrar snapshots mensais.
 - **Gráfico "Patrimônio Total" (Início) + seletor de período:** seletor **7D / 30D / 3M / 6M / 1A / MAX** compacto e discreto (`.whero-periods`/`.wper`; padrão **7D**, memoriza na sessão via `sessionStorage['lastro_wperiod']` → `homeWealthPeriod`). O **gráfico** é **100% real, sem estimativa** (`wealthSeries`, MOVS + fechamentos reais, cents via `LastroMoney`) — plota **patrimônio** (inclui aportes; a linha degraus p/ cima quando você aporta). O **chip verde e a célula "Resultado"** mostram o **LUCRO real do período, aporte-neutro** — via `wealthPeriodKPI`/`portfolioPeriodVar` (mesmo método do `portfolioWeekVar`, generalizado; por lote base = fechamento real no início do período, e lote comprado dentro do período usa o preço de compra → **aporte não vira lucro**). **Rótulo honesto:** "desde {1ª aplicação}" quando ainda não completou o período (não mente "3 meses"). Chip, rodapé e SSR usam o MESMO `wealthPeriodKPI` → tudo bate. O **tooltip do gráfico** também é **aporte-neutro** (`periodProfitAsOf` por ponto, usando `dates[]` da série) — o % de cada dia é o lucro real acumulado até ali e, no último ponto, bate EXATAMENTE com o chip; o R$ do tooltip segue o patrimônio do dia (a linha é patrimônio, inclui aportes). **Obs.: `wealthSeries()`/`wealthPeriodKPI()`/`periodProfitAsOf()`/`initWealthSpark()` são editadas pelos dois donos — coordenar antes de mexer.**
@@ -237,7 +242,6 @@ Estrutura de arquivos e como rodar: ver **README.md** (seções 3 e 4). Configur
    `docs/PLANO-livro-movimentacoes.md` (MVP = venda + provento + caixa; `MOVS` como fonte de
    verdade e `CARTEIRA` como projeção derivada; sync reusa o blob `user_state`, sem endpoint novo).
 4. **Import de carteira** (B3/CEI ou nota/extrato da corretora).
-4. **Carteiras Recomendadas reais** (corretoras que publicam mensalmente).
 5. **Proventos e IR reais** (data-com, DARF, informe anual); **2FA real** + rodapé
    institucional (CNPJ, termos, LGPD).
 6. Rentabilidade real (TWR/MWR) vs CDI/IBOV/IPCA; exportar relatórios (PDF/Excel);
