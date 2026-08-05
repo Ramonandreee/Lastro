@@ -9559,16 +9559,12 @@ function initProvClassChart(){
 /* ══════════════════════════════════════════════════════════
    VIEW: APORTE INTELIGENTE
    ══════════════════════════════════════════════════════════ */
-function aporteMotivo(g, total){
-  const wOld=total? g.val/total*100 : 0;
-  return `Peso atual de ${pc(wOld,1)}% — recompõe a participação rumo aos pesos iguais.`;
-}
 function aportePlan(valor){
   const groups=portfolioByTicker().filter(g=>g.cotas>0 && g.f.a.px>0);
   if(!groups.length) return null;
   const total=groups.reduce((s,g)=>s+g.val,0), newTotal=total+valor, n=groups.length;
   const targets=groups.map(()=>newTotal/n);   // meta mecânica: pesos iguais entre os ativos da carteira
-  const items=groups.map((g,i)=>({ g, tk:g.tk, px:g.f.a.px, cur:g.val, target:targets[i], deficit:Math.max(0,targets[i]-g.val), cotas:0, invest:0, motivo:aporteMotivo(g,total) }));
+  const items=groups.map((g,i)=>({ g, tk:g.tk, px:g.f.a.px, cur:g.val, target:targets[i], deficit:Math.max(0,targets[i]-g.val), cotas:0, invest:0 }));
   const totDef=items.reduce((s,x)=>s+x.deficit,0);
   items.forEach(x=>{ x.alloc = totDef>0 ? x.deficit/totDef*valor : valor/n; const c=Math.floor(x.alloc/x.px); x.cotas=c; x.invest=c*x.px; });
   let budget=valor-items.reduce((s,x)=>s+x.invest,0), guard=0;
@@ -9583,7 +9579,7 @@ function viewAporte(){
   }
   return `${cartTabsHTML('aporte')}
   <div class="sec-title">Onde colocar o próximo aporte?</div>
-  <div class="sec-desc">Informe quanto vai investir. O Lastro calcula a compra (em cotas inteiras) que mais aproxima sua carteira de <strong>pesos iguais entre os ativos</strong> — aportando mais em quem está abaixo do peso.</div>
+  <div class="sec-desc">Informe quanto vai investir. O Lastro calcula, em cotas inteiras, quanto aportar em cada ativo para deixar os pesos mais iguais, priorizando quem está abaixo do peso.</div>
   <div class="card card-pad">
     <div class="form-row">
       <div class="form-col"><label class="form-label">Valor do aporte</label>
@@ -9600,12 +9596,11 @@ function runAporte(){
   const rows=r.items.map(x=>{ const wOld=r.total? x.cur/r.total*100:0, wNew=r.newTotal? (x.cur+x.invest)/r.newTotal*100:0;
     return `<div class="ap-item" onclick="quickView('${x.tk}')">
       <div class="ap-top">${assetLogo(x.tk,x.g.f.k,'sm')}<div class="pex-id"><div class="pex-tk">${x.tk}</div><div class="pex-d">${pc(wOld,1)}% → <strong style="color:var(--brand)">${pc(wNew,1)}%</strong></div></div><div class="pex-r"><div class="pex-v">${x.cotas} cota${x.cotas>1?'s':''}</div><div class="pex-s priv-blur">${brl(x.invest)}</div></div></div>
-      <div class="ap-why">${x.motivo}</div>
     </div>`; }).join('');
   const investido=r.items.reduce((s,x)=>s+x.invest,0);
   host.innerHTML=`<div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-cart-shopping"></i></span> Plano de compra</div><div class="pex-total"><div class="pex-total-v priv-blur">${brl(investido)}</div><div class="pex-total-l">a investir · troco ${brl(r.sobra)}</div></div></div>
-    <div class="prov-extract" style="margin-top:8px">${rows||'<div class="faint" style="padding:12px;text-align:center">Nenhuma cota inteira cabe nesse valor — aumente o aporte.</div>'}</div>
+    <div class="prov-extract" style="margin-top:8px">${rows||'<div class="faint" style="padding:12px;text-align:center">Nenhuma cota inteira cabe nesse valor. Aumente o aporte.</div>'}</div>
     <div class="ap-legal" style="margin-top:12px;display:flex;gap:8px;align-items:flex-start;font-size:11px;line-height:1.5;color:var(--ink-4)"><i class="fa-solid fa-circle-info" style="margin-top:2px"></i> <span>Cálculo mecânico para igualar os pesos dos ativos que <strong>você</strong> escolheu, com preços atuais e cotas inteiras. <strong>Não é recomendação de investimento.</strong></span></div>
   </div>`;
 }
