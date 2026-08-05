@@ -3840,8 +3840,15 @@ button.mp-cell:active { background:var(--surface-3); }
 .cmp-chip-nm { font-size:11px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .cmp-x { flex:none; width:26px; height:26px; border-radius:7px; border:none; background:var(--surface-3); color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
 .cmp-x:hover { background:var(--down-l); color:var(--down); }
-.sel-locked.cmp-slot { display:inline-flex; align-items:center; justify-content:center; gap:8px; border-style:dashed; }
-@media (max-width:640px){ .cmp-slot { flex:1 1 100%; } }
+/* um único botão discreto de adicionar (44px) no lugar dos slots vazios; vira campo de busca ao clicar */
+.cmp-addwrap { flex:0 0 auto; display:flex; }
+.cmp-addwrap.open { flex:1 1 200px; min-width:160px; }
+.cmp-add { height:44px; min-height:44px; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:0 16px; background:transparent; border:1px dashed var(--line-2); border-radius:var(--r); color:var(--ink-2); font-family:inherit; font-size:13.5px; font-weight:600; cursor:pointer; transition:all .16s var(--ease); }
+.cmp-add:hover { border-color:var(--brand); color:var(--brand); background:var(--brand-l); }
+.cmp-add i { font-size:11px; color:var(--ink-3); transition:color .16s var(--ease); }
+.cmp-add:hover i { color:var(--brand); }
+.cmp-add .pro-tag { margin-left:2px; }
+@media (max-width:640px){ .cmp-slot { flex:1 1 100%; } .cmp-addwrap, .cmp-addwrap.open { flex:1 1 100%; } .cmp-add { width:100%; } }
 /* comparador: legenda (dot na cor do ativo), veredito, mini-barras transpostas e gráfico */
 .cmp-dot { width:9px; height:9px; border-radius:50%; flex:none; box-shadow:0 0 0 2px color-mix(in srgb,var(--surface) 70%,transparent); }
 .cmp-verdict { display:flex; align-items:center; gap:11px; padding:14px 16px; margin-bottom:14px; border-radius:var(--r); background:var(--brand-l); border:1px solid color-mix(in srgb,var(--brand) 20%,transparent); font-size:13px; line-height:1.45; color:var(--ink-2); }
@@ -3860,6 +3867,17 @@ button.mp-cell:active { background:var(--surface-3); }
 .cmp-mbar-track { min-width:0; }
 .cmp-mbar-empty { height:6px; }
 .cmp-mbar-na .gb-bar { background:repeating-linear-gradient(90deg, var(--surface-3) 0 5px, transparent 5px 9px); }
+/* zona de referência: ficha técnica sem barra — MESMO grid das mini-barras (ticker 44px / valor 78px) */
+.cmp-ref { margin:18px calc(var(--pad) * -1) calc(var(--pad) * -1); padding:13px var(--pad) 13px; background:var(--surface-2); border-top:1px solid var(--line); border-radius:0 0 var(--r-card) var(--r-card); }
+.cmp-ref-h { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:8px; }
+.cmp-ref-tag { text-transform:none; letter-spacing:0; font-size:10.5px; font-weight:600; color:var(--ink-4); background:var(--surface-3); border-radius:999px; padding:2px 8px; }
+.cmp-refrow { display:grid; grid-template-columns:44px 1fr 78px; align-items:center; gap:11px; padding:7px 0; border-top:1px solid var(--line); }
+.cmp-refrow .tk { font-family:var(--mono); font-size:12px; font-weight:500; color:var(--ink-3); white-space:nowrap; }
+.cmp-refrow .mid, .cmp-refrow .val { font-family:var(--mono); font-size:12.5px; font-weight:600; color:var(--ink-2); text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.cmp-refhead { padding:0 0 6px; border-top:none; }
+.cmp-refhead .mid, .cmp-refhead .val { font-family:inherit; font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-4); }
+.cmp-noind { display:flex; align-items:flex-start; gap:9px; font-size:12.5px; line-height:1.5; color:var(--ink-3); }
+.cmp-noind i { color:var(--ink-4); margin-top:2px; }
 .cmp-chart-card { margin-top:16px; }
 .cmp-chart-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .cmp-chart-ttl { font-size:13.5px; font-weight:700; color:var(--ink); }
@@ -9858,21 +9876,38 @@ function runDarf(){
    ══════════════════════════════════════════════════════════ */
 const ALL_ASSETS_FLAT = ()=>[...FIIS.map(a=>({...a,_k:'fiis'})), ...ACOES.map(a=>({...a,_k:'acoes'}))];
 let cmpSel = ['KNCR11','HGLG11','VGIR11'];
-function cmpSlot(i){
-  const pro=isPro(), cap=isPro()?4:PLAN_LIMITS.comparador;
-  if(i>=cap) return `<button class="sel sel-locked cmp-slot" onclick="upsell()" title="Premium"><i class="fa-solid fa-lock" style="font-size:10px"></i> + Ativo ${i+1} <span class="pro-tag">Premium</span></button>`;
-  const tk=cmpSel[i];
-  if(tk){ const lk=assetLookup(tk), k=lk?lk.k:'acoes', a=lk?lk.a:{};
-    return `<div class="cmp-chip cmp-slot"><span class="cmp-dot" style="background:${cmpColor(i)}"></span>${assetLogo(tk,k,'sm')}<div class="cmp-chip-id"><div class="cmp-chip-tk">${tk}</div><div class="cmp-chip-nm">${esc(a.nm||'')}</div></div><button class="cmp-x" title="Remover" onclick="clearCmp(${i})"><i class="fa-solid fa-xmark"></i></button></div>`;
-  }
-  return `<div class="fld-rel cmp-slot"><input id="cmpIn${i}" class="cmp-input" placeholder="+ Ativo ${i+1}" autocomplete="off" oninput="this.value=this.value.toUpperCase();cmpSuggest(${i})" onfocus="cmpSuggest(${i})" onblur="cmpHide(${i})" onkeydown="cmpKey(event,${i})"><div id="cmpSug${i}" class="pos-sug"></div></div>`;
+function cmpSlot(i){   // chip do ativo já escolhido
+  const tk=cmpSel[i]; if(!tk) return '';
+  const lk=assetLookup(tk), k=lk?lk.k:'acoes', a=lk?lk.a:{};
+  return `<div class="cmp-chip cmp-slot"><span class="cmp-dot" style="background:${cmpColor(i)}"></span>${assetLogo(tk,k,'sm')}<div class="cmp-chip-id"><div class="cmp-chip-tk">${tk}</div><div class="cmp-chip-nm">${esc(a.nm||'')}</div></div><button class="cmp-x" title="Remover" onclick="clearCmp(${i})"><i class="fa-solid fa-xmark"></i></button></div>`;
+}
+// campo de busca do PRÓXIMO slot livre (só existe quando o usuário clica em "Adicionar ativo")
+function cmpInputSlot(i){
+  return `<div class="fld-rel cmp-slot"><input id="cmpIn${i}" class="cmp-input" placeholder="Buscar ticker ou nome…" autocomplete="off" oninput="this.value=this.value.toUpperCase();cmpSuggest(${i})" onfocus="cmpSuggest(${i})" onblur="cmpHide(${i})" onkeydown="cmpKey(event,${i})"><div id="cmpSug${i}" class="pos-sug"></div></div>`;
+}
+function cmpAddBtn(){
+  const pro=isPro(), cap=pro?4:PLAN_LIMITS.comparador, n=cmpSel.filter(Boolean).length;
+  if(n<cap) return `<button class="cmp-add" onclick="cmpAddOpen()"><i class="fa-solid fa-plus"></i> Adicionar ativo</button>`;
+  if(!pro && n<4) return `<button class="cmp-add cmp-add-pro" onclick="upsell()" title="Premium"><i class="fa-solid fa-lock"></i> Comparar até 4 <span class="pro-tag">Premium</span></button>`;
+  return '';   // limite preenchido: nenhum botão
+}
+function cmpAddHTML(){ const b=cmpAddBtn(); return b?`<div id="cmpAddWrap" class="cmp-addwrap">${b}</div>`:''; }
+function cmpAddOpen(){
+  const w=$('#cmpAddWrap'); if(!w) return;
+  const i=cmpSel.filter(Boolean).length;
+  w.classList.add('open'); w.innerHTML=cmpInputSlot(i);
+  const inp=$('#cmpIn'+i); if(inp) inp.focus();
+}
+function cmpAddClose(){
+  const w=$('#cmpAddWrap'); if(!w||!w.classList.contains('open')) return;
+  w.classList.remove('open'); w.innerHTML=cmpAddBtn();
 }
 function viewComparador(){
   const pro = isPro();
   return `
   <div class="sec-title">Comparador de ativos</div>
   <div class="sec-desc">Compare ativos lado a lado pelos principais fundamentos. ${pro?'Até 4 ativos.':'No plano Gratuito você compara 2 — faça upgrade para 4.'}</div>
-  <div class="filters cmp-filters">${[0,1,2,3].map(cmpSlot).join('')}</div>
+  <div class="filters cmp-filters">${[0,1,2,3].map(cmpSlot).join('')}${cmpAddHTML()}</div>
   <div id="cmpBody"></div>`;
 }
 let _cmpSug=[], _cmpIdx=-1;
@@ -9889,13 +9924,13 @@ function cmpSuggest(i){
     return `<div class="sug-row" data-j="${j}" onmousedown="event.preventDefault();pickCmp(${i},'${a.tk}')">${assetLogo(a.tk,k,'sm')}<div class="sug-id"><div class="sug-tk">${a.tk}</div><div class="sug-nm">${esc(a.nm||'')}</div></div><span class="sug-k">${ASSET_CLASS[k]?ASSET_CLASS[k].label:''}</span></div>`; }).join('');
   box.classList.add('on');
 }
-function cmpHide(i){ const b=$('#cmpSug'+i); if(b) setTimeout(()=>b.classList.remove('on'),120); }
+function cmpHide(i){ const b=$('#cmpSug'+i); if(b) setTimeout(()=>{ b.classList.remove('on'); cmpAddClose(); },120); }
 function cmpHl(i){ document.querySelectorAll('#cmpSug'+i+' .sug-row').forEach((r,j)=>r.classList.toggle('on', j===_cmpIdx)); }
 function cmpKey(e,i){ const box=$('#cmpSug'+i), open=box&&box.classList.contains('on')&&_cmpSug.length;
   if(e.key==='ArrowDown'&&open){ e.preventDefault(); _cmpIdx=Math.min(_cmpIdx+1,_cmpSug.length-1); cmpHl(i); }
   else if(e.key==='ArrowUp'&&open){ e.preventDefault(); _cmpIdx=Math.max(_cmpIdx-1,0); cmpHl(i); }
   else if(e.key==='Enter'&&open&&_cmpIdx>=0){ e.preventDefault(); pickCmp(i,_cmpSug[_cmpIdx].tk); }
-  else if(e.key==='Escape'){ box&&box.classList.remove('on'); }
+  else if(e.key==='Escape'){ box&&box.classList.remove('on'); cmpAddClose(); }
 }
 function pickCmp(i,tk){ setCmp(i,tk); }
 function clearCmp(i){ cmpSel.splice(i,1); cmpSel=cmpSel.filter(Boolean); render('comparador'); }
@@ -9933,13 +9968,19 @@ function initComparador(){
       { key:'div', label:'Dividendo/mês', dir:'max', get:a=>num(a.div), band:v=>v>=0, fmt:(a,v)=> v==null?'—':brl(v) },
       { key:'vac', label:'Vacância', dir:'min', get:a=>num(a.vac), band:v=>v>=0&&v<=100, fmt:(a,v)=> v==null?'—':pc(v,1)+'%' },
     ]:[]),
-    { key:'var', label:'Variação hoje', dir:'none', get:a=>num(a.var),
+    { key:'var', label:'Variação hoje', short:'Var. hoje', dir:'none', get:a=>num(a.var),
       fmt:(a,v)=> v==null?'—':`<span class="${v>=0?'up':'down'}">${v>=0?'+':''}${pc(v)}%</span>` },
   ];
 
   const wins = items.map(()=>0);
   let contests = 0;   // indicadores destacáveis com pelo menos 2 concorrentes elegíveis
-  const rowsHTML = metrics.map(m=>{
+  // só entra na tela o indicador que EXISTE para pelo menos 2 dos ativos comparados —
+  // comparar "—" contra "—" (ex.: P/L entre FIIs) não informa nada.
+  const shown = metrics.filter(m=> items.map(m.get).filter(v=>v!=null).length>=2);
+  const rankM = shown.filter(m=>m.dir!=='none');   // zona de comparação (com barra)
+  const refM  = shown.filter(m=>m.dir==='none');   // zona de referência (ficha técnica, sem barra)
+
+  const rowsHTML = rankM.map(m=>{
     const raw = items.map(m.get);
     const ok  = raw.map(v=> v!=null && m.dir!=='none' && (m.band?m.band(v):true));   // elegível ao ranking
     const eligN = ok.filter(Boolean).length;
@@ -9963,8 +10004,7 @@ function initComparador(){
       const v = raw[i], isOk = ok[i];
       const cls = ['cmp-mbar'];
       let track;
-      if(m.dir==='none'){ track = '<div class="cmp-mbar-empty"></div>'; }
-      else if(v!=null && !isOk){ cls.push('cmp-mbar-na'); track = '<div class="gb-bar"></div>'; }   // fora da banda / outlier: hachura, nunca best
+      if(v!=null && !isOk){ cls.push('cmp-mbar-na'); track = '<div class="gb-bar"></div>'; }   // fora da banda / outlier: hachura, nunca best
       else if(v==null){ track = '<div class="gb-bar"></div>'; }
       else { if(i===best) cls.push('best'); const w=(fillOf(v)*100).toFixed(1); track = `<div class="gb-bar"><i style="width:0%;background:${cmpColor(i)}" data-w="${w}%"></i></div>`; }
       const valTxt = m.fmt(a, v, isOk) + (i===best && m.dir!=='none' ? ' <i class="fa-solid fa-check cmp-ok"></i>' : '');
@@ -9973,6 +10013,21 @@ function initComparador(){
     const head = m.term ? termLabel(m.term, m.label) : m.label;
     return `<div class="cmp-mrow"><div class="cmp-mrow-h">${head}</div>${bars}</div>`;
   }).join('');
+
+  // ZONA DE REFERÊNCIA — Cotação e Variação hoje não são "bom/ruim": viram ficha técnica
+  // compacta (sem barra), no MESMO grid das mini-barras p/ ticker e valor alinharem.
+  const refHTML = (()=>{
+    if(!refM.length) return '';
+    const cols = refM.length>1 ? refM : [null, ...refM];   // 1 indicador: célula vazia no meio
+    const cell = (c,a) => c ? c.fmt(a, c.get(a), true) : '';
+    const rows = items.map(a=>`<div class="cmp-refrow"><span class="tk">${a.tk}</span>${cols.map((c,j)=>`<span class="${j===cols.length-1?'val':'mid'}">${cell(c,a)}</span>`).join('')}</div>`).join('');
+    const head = cols.map((c,j)=>`<span class="${j===cols.length-1?'val':'mid'}">${c?(c.short||c.label):''}</span>`).join('');
+    return `<div class="cmp-ref"><div class="cmp-ref-h">Referência <span class="cmp-ref-tag">sem ranking</span></div>
+      <div class="cmp-refrow cmp-refhead"><span class="tk"></span>${head}</div>${rows}</div>`;
+  })();
+
+  const emptyRows = rankM.length ? '' :
+    `<div class="cmp-noind"><i class="fa-solid fa-circle-info"></i> Nenhum indicador comparável: os ativos escolhidos não têm o mesmo conjunto de fundamentos publicado. Compare ativos da mesma classe (FII com FII, ação com ação) para ver o ranking.</div>`;
 
   // veredito honesto: líder = mais vitórias; empate ou <2 disputas = equilibrada
   const order = items.map((a,i)=>i).sort((x,y)=> wins[y]-wins[x]);
@@ -9996,7 +10051,7 @@ function initComparador(){
     ? '<div style="font-size:12px;color:var(--ink-3);margin-top:14px"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando fundamentos reais…</div>'
     : '';
 
-  body.innerHTML = `${verdictHTML}<div class="card card-pad">${rowsHTML}${foot}</div>${chartCard}`;
+  body.innerHTML = `${verdictHTML}<div class="card card-pad">${emptyRows}${rowsHTML}${foot}${refHTML}</div>${chartCard}`;
   animateGauges();      // as barras nascem em 0% e só animam aqui (view 'comparador' não passa pelo animateGauges do asset)
   loadCmpHistory();     // dispara a busca do histórico e desenha o gráfico
   drawCmpChart();       // desenha já com o que houver em cache (placeholder se ainda não há dados)
