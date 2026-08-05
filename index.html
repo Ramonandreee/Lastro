@@ -3862,15 +3862,14 @@ button.mp-cell:active { background:var(--surface-3); }
 .cmp-mbar .tk { font-family:var(--mono); font-size:12px; font-weight:500; color:var(--ink-3); white-space:nowrap; }
 .cmp-mbar .val { font-family:var(--mono); font-size:13px; font-weight:600; color:var(--ink); text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
 .cmp-mbar .val .muted { color:var(--ink-3); font-weight:500; }
-.cmp-mbar.best .tk, .cmp-mbar.best .val { color:var(--ink); font-weight:700; }
-.cmp-mbar .cmp-ok { color:var(--up); margin-left:5px; font-size:11px; }
+.cmp-mbar.best .tk { color:var(--ink); font-weight:700; }
+.cmp-mbar.best .val { color:var(--up); font-weight:700; }   /* vencedor do indicador: só a cor marca (sem ícone, p/ os números não desalinharem) */
 .cmp-mbar-track { min-width:0; }
 .cmp-mbar-empty { height:6px; }
 .cmp-mbar-na .gb-bar { background:repeating-linear-gradient(90deg, var(--surface-3) 0 5px, transparent 5px 9px); }
 /* zona de referência: ficha técnica sem barra — MESMO grid das mini-barras (ticker 44px / valor 78px) */
 .cmp-ref { margin:18px calc(var(--pad) * -1) calc(var(--pad) * -1); padding:13px var(--pad) 13px; background:var(--surface-2); border-top:1px solid var(--line); border-radius:0 0 var(--r-card) var(--r-card); }
 .cmp-ref-h { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:8px; }
-.cmp-ref-tag { text-transform:none; letter-spacing:0; font-size:10.5px; font-weight:600; color:var(--ink-4); background:var(--surface-3); border-radius:999px; padding:2px 8px; }
 .cmp-refrow { display:grid; grid-template-columns:44px 1fr 78px; align-items:center; gap:11px; padding:7px 0; border-top:1px solid var(--line); }
 .cmp-refrow .tk { font-family:var(--mono); font-size:12px; font-weight:500; color:var(--ink-3); white-space:nowrap; }
 .cmp-refrow .mid, .cmp-refrow .val { font-family:var(--mono); font-size:12.5px; font-weight:600; color:var(--ink-2); text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
@@ -10007,7 +10006,7 @@ function initComparador(){
       if(v!=null && !isOk){ cls.push('cmp-mbar-na'); track = '<div class="gb-bar"></div>'; }   // fora da banda / outlier: hachura, nunca best
       else if(v==null){ track = '<div class="gb-bar"></div>'; }
       else { if(i===best) cls.push('best'); const w=(fillOf(v)*100).toFixed(1); track = `<div class="gb-bar"><i style="width:0%;background:${cmpColor(i)}" data-w="${w}%"></i></div>`; }
-      const valTxt = m.fmt(a, v, isOk) + (i===best && m.dir!=='none' ? ' <i class="fa-solid fa-check cmp-ok"></i>' : '');
+      const valTxt = m.fmt(a, v, isOk);   // vencedor é marcado só pela COR (o ✓ desalinhava os números)
       return `<div class="${cls.join(' ')}"><span class="tk">${a.tk}</span><div class="cmp-mbar-track">${track}</div><span class="val">${valTxt}</span></div>`;
     }).join('');
     const head = m.term ? termLabel(m.term, m.label) : m.label;
@@ -10022,7 +10021,7 @@ function initComparador(){
     const cell = (c,a) => c ? c.fmt(a, c.get(a), true) : '';
     const rows = items.map(a=>`<div class="cmp-refrow"><span class="tk">${a.tk}</span>${cols.map((c,j)=>`<span class="${j===cols.length-1?'val':'mid'}">${cell(c,a)}</span>`).join('')}</div>`).join('');
     const head = cols.map((c,j)=>`<span class="${j===cols.length-1?'val':'mid'}">${c?(c.short||c.label):''}</span>`).join('');
-    return `<div class="cmp-ref"><div class="cmp-ref-h">Referência <span class="cmp-ref-tag">sem ranking</span></div>
+    return `<div class="cmp-ref"><div class="cmp-ref-h">Referência</div>
       <div class="cmp-refrow cmp-refhead"><span class="tk"></span>${head}</div>${rows}</div>`;
   })();
 
