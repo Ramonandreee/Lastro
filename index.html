@@ -1188,12 +1188,6 @@ img, svg, canvas, video { max-width: 100%; }
     <div class="modal-foot"><button class="btn btn-ghost" onclick="closeCropper()">Cancelar</button><button class="btn btn-primary" onclick="saveCrop()"><i class="fa-solid fa-check"></i> Salvar foto</button></div>
   </div>
 </div>
-<div class="modal-scrim" id="carModal" onclick="if(event.target===this)closeCarteira()">
-  <div class="modal-card hist-card" role="dialog" aria-modal="true" aria-label="Carteira recomendada">
-    <div class="modal-head"><span><i class="fa-solid fa-star" style="color:var(--gold);margin-right:8px"></i><span id="carTitle">Carteira</span></span><button class="drawer-close" onclick="closeCarteira()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="hist-body" id="carBody"></div>
-  </div>
-</div>
 <div class="modal-scrim" id="indModal" onclick="if(event.target===this)closeIndHistory()">
   <div class="modal-card hist-card" role="dialog" aria-modal="true" aria-label="Histórico de indicadores">
     <div class="modal-head"><span><i class="fa-solid fa-chart-column" style="color:var(--gold);margin-right:8px"></i><span id="indMTitle">Histórico de Indicadores</span></span><button class="drawer-close" onclick="closeIndHistory()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
@@ -4490,12 +4484,55 @@ button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l);
 .illus-note.illus-c.illus-open > i { width:auto; height:auto; background:transparent; color:var(--ink-4); margin-top:3px; }
 .illus-note.illus-c.illus-open .illus-body { display:inline; }
 
+/* ── Carteiras de instituições (composições públicas de casas de análise) ── */
+.ci-list { display:grid; gap:10px; }
+.ci-grp-t { font-size:11.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--ink-4); margin:14px 2px 2px; }
+.ci-grp-t:first-child { margin-top:2px; }
+.ci-card { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:14px; cursor:pointer;
+  transition:border-color .18s var(--ease), transform .18s var(--ease), box-shadow .18s var(--ease); }
+@media (hover:hover){ .ci-card:hover { border-color:var(--brand); box-shadow:var(--sh-sm, 0 2px 10px rgba(0,0,0,.05)); } }
+.ci-card:active { transform:scale(.995); }
+.ci-av { flex:none; width:42px; height:42px; border-radius:12px; display:grid; place-items:center; color:#fff; font-size:12px; font-weight:700; letter-spacing:.3px; }
+.ci-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
+.ci-h { font-size:14px; color:var(--ink); line-height:1.35; }
+.ci-h b { font-weight:700; }
+.ci-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-3); }
+.ci-chip { background:var(--brand-l); color:var(--brand); border-radius:999px; padding:2px 8px; font-weight:600; font-size:11px; }
+.ci-sub { font-size:11.5px; color:var(--ink-4); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ci-cv { color:var(--ink-4); font-size:12px; flex:none; }
+.ci-hero { display:flex; align-items:center; gap:13px; margin-bottom:12px; }
+.ci-hero .ci-av { width:46px; height:46px; border-radius:13px; font-size:13px; }
+.ci-hero-t { font-size:16px; font-weight:700; color:var(--ink); line-height:1.3; }
+.ci-hero-s { font-size:12px; color:var(--ink-3); margin-top:3px; }
+.ci-srcbtn { width:100%; justify-content:center; }
+.ci-note { font-size:11.5px; color:var(--ink-4); margin-top:8px; text-align:center; }
+.ci-foot { font-size:11.5px; color:var(--ink-4); line-height:1.6; margin-top:12px; padding-top:11px; border-top:1px solid var(--line); }
+.ci-foot strong { color:var(--ink-2); font-weight:600; }
+.ci-disc { font-size:12.5px; color:var(--ink-2); line-height:1.75; margin:0 0 10px; }
+.ci-disc:last-child { margin-bottom:0; }
+.ci-disc strong { color:var(--ink); font-weight:600; }
+/* composição */
+.cix-rows { display:grid; gap:2px; }
+.cix-row { display:flex; align-items:center; gap:11px; padding:9px 6px; border-radius:10px; cursor:pointer; transition:background .15s var(--ease); }
+@media (hover:hover){ .cix-row:hover { background:var(--surface-2); } }
+.cix-row.cix-off { cursor:default; opacity:.72; }
+.cix-id { flex:1; min-width:0; }
+.cix-tk { font-size:13px; font-weight:600; color:var(--ink); }
+.cix-nm { font-size:11px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cix-bar { flex:none; width:78px; height:7px; background:var(--line); border-radius:5px; overflow:hidden; }
+.cix-bar i { display:block; height:100%; border-radius:5px; background:var(--brand); transition:width .5s var(--ease-out); }
+.cix-w { flex:none; width:52px; text-align:right; font-size:12.5px; font-weight:600; color:var(--ink-2); font-family:var(--mono); }
+.cix-px { flex:none; width:98px; text-align:right; }
+.cix-px b { display:block; font-size:12.5px; font-family:var(--mono); font-weight:600; color:var(--ink); }
+.cix-px small { font-size:11px; font-family:var(--mono); }
+@media (max-width:560px){ .cix-bar { display:none; } .cix-px { width:84px; } .cix-nm { font-size:10.5px; } }
 </style>
 
 <script src="/vendor/chart.umd.js"></script>
 <script src="/vendor/money.js"></script>
 <script src="/vendor/movs.js"></script>
 <script src="/vendor/entitlement.js"></script>
+<script src="/vendor/instport.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════
    LASTRO — DADOS
@@ -5373,6 +5410,8 @@ const PAGES = {
   planos:       { t:'Planos e Preços',       s:'Escolha o plano ideal para a sua jornada de investimentos' },
   indicar:      { t:'Indique e Ganhe',       s:'Ganhe 20% da assinatura de cada amigo que você indicar, via PIX' },
   admin:        { t:'Painel administrativo',  s:'Clientes, leads, financeiro e métricas da Lastro' },
+  carteirasinst:{ t:'Carteiras de instituições', s:'Composições publicadas por casas de análise, com indicadores calculados a partir de dados reais' },
+  carteirainst: { t:'Carteira publicada',      s:'Composição, setores e procedência da carteira divulgada pela instituição' },
 };
 let currentView = 'painel';
 
@@ -6938,6 +6977,7 @@ function nav(v, el, noHist){
   if(v==='admin' && !isOwner()) v='painel';
   if(v==='screener'){ v='acoes'; if(isPro()) tableState.acoes.fopen=true; }   // Rastreador incorporado às listagens
   if(v==='fire'){ simTab='fire'; v='simulador'; }                             // FIRE virou aba do Simulador (deep-link preservado)
+  if(v==='carteirainst' && !currentCartId) v='carteirasinst';                 // detalhe sem carteira escolhida → volta à lista
   if(!noHist && currentView && currentView!==v) navStack.push(currentView);
   if(navStack.length>30) navStack.shift();
   currentView = v;
@@ -7002,6 +7042,7 @@ function syncNavGroups(){
 const VIEW_TAB = {
   painel:'painel',
   mercado:'mercado', acoes:'mercado', fiis:'mercado', etfs:'mercado', etfsint:'mercado', bdrs:'mercado', stocks:'mercado', cripto:'mercado',
+  carteirasinst:'mercado', carteirainst:'mercado',
   carteira:'carteira', proventos:'carteira', agenda:'carteira', aporte:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira',
   noticias:'noticias',
   mais:'mais', simulador:'mais', comparador:'mais', planos:'mais', indicar:'mais', assinatura:'mais', perfil:'mais', admin:'mais'
@@ -7041,6 +7082,8 @@ function render(v, soft){
   else if(v==='raiox')       c.innerHTML = viewRaioX();
   else if(v==='stress')      c.innerHTML = viewStress();
   else if(v==='admin')       c.innerHTML = isOwner()? viewAdmin() : viewPainel();
+  else if(v==='carteirasinst') c.innerHTML = viewCarteirasInst();
+  else if(v==='carteirainst')  c.innerHTML = viewCarteiraInst(currentCartId);
   else if(v==='asset')       c.innerHTML = viewAssetDetail(currentAssetTk);
   afterRender(v, soft);
 }
@@ -10318,6 +10361,11 @@ function viewMais(){
       ['metarenda','fa-bullseye','Meta de Renda',0,'Quanto você quer receber por mês'],
     ]},
   ];   // Internacional (Stocks/BDRs/ETFs int.) sai do menu — já vive no hub Mercado
+  // Conteúdo só aparece quando HÁ composição publicada no índice (ninguém topa com tela vazia)
+  if(typeof hasCarteirasInst==='function' && hasCarteirasInst()) GROUPS.push(
+    {t:'Conteúdo', items:[
+      ['carteirasinst','fa-building-columns','Carteiras de instituições',0,'Composições públicas de casas de análise'],
+    ]});
   const grpHTML = GROUPS.map(g=>`
     <div class="mais-sec-t">${g.t}</div>
     <div class="mais-grp">${g.items.map(it=>{
@@ -10409,6 +10457,19 @@ function viewMercado(){
     <button class="mp-cell" onclick="goView('painel')"><div class="mp-l">No dia</div><div class="mp-v"><span style="color:var(--up)">${ups}</span> <span style="color:var(--ink-4);font-weight:500">·</span> <span style="color:var(--down)">${downs}</span></div><div class="mp-d faint">altas · baixas</div></button>
   </div>`;
 
+  // Conteúdo: só entra quando há composição publicada no índice (senão o card levaria a uma tela vazia)
+  const nCart = (typeof cartList==='function') ? cartList().length : 0;
+  const conteudo = nCart ? `
+  <div class="mkt-sec-t">Conteúdo</div>
+  <div class="ci-list"><button class="ci-card" onclick="goView('carteirasinst')">
+    <span class="ci-av" style="background:var(--brand)"><i class="fa-solid fa-building-columns"></i></span>
+    <span class="ci-tx">
+      <span class="ci-h"><b>Carteiras de instituições</b></span>
+      <span class="ci-sub">${nCart} composiç${nCart>1?'ões':'ão'} publicada${nCart>1?'s':''} por casas de análise · o Lastro só apresenta e calcula</span>
+    </span>
+    <i class="fa-solid fa-chevron-right ci-cv"></i>
+  </button></div>` : '';
+
   const search = `<button class="mkt-search" onclick="openSearch()">
     <i class="fa-solid fa-magnifying-glass"></i>
     <span>Buscar ação, FII, cripto…</span>
@@ -10423,7 +10484,8 @@ function viewMercado(){
   <div class="mkt-sec-t">Explorar por classe</div>
   <div class="mkt-classes">${cards}</div>
   <div class="mkt-sec-t">Internacional</div>
-  <div class="mkt-classes">${cardsIntl}</div>`;
+  <div class="mkt-classes">${cardsIntl}</div>
+  ${conteudo}`;
 }
 
 function viewNoticias(){
@@ -10578,6 +10640,16 @@ function afterRender(v, soft){
   if(v==='asset'){ initDetailCharts(); animateGauges(); animateCounts(); }
   if(v==='admin'){ initAdminCharts(); }
   if(v==='mercado'){ initMktHub(); }
+  // Carteiras de instituições: o índice é estático (/data/carteiras.json) e o Mais/Mercado
+  // só mostram a entrada quando houver ao menos uma carteira publicada.
+  if(['carteirasinst','carteirainst','mais','mercado'].includes(v)) loadCarteirasIndex();
+  if(v==='carteirainst'){
+    initCarteiraInstCharts();
+    if(!soft){
+      const c=cartAtual();
+      if(c){ const us=[...new Set(c.ativos.map(x=>assetLookup(x.tk)).filter(lk=>isUsAsset(lk)).map(lk=>lk.a.tk))]; if(us.length) loadUsQuotes(us); }
+    }
+  }
 }
 
 /* Hub Mercado — contagem progressiva discreta dos ativos por classe */
@@ -12998,6 +13070,7 @@ const TERM_CARDS={
   cagr:{ nome:'Retorno anualizado (CAGR)', icon:'fa-chart-line', descricao:'A taxa média de crescimento por ano, como se o retorno tivesse sido constante.', formula:'(Valor final ÷ inicial)^(1/anos) − 1', interpretacao:'Facilita comparar investimentos de prazos diferentes.', faixaIdeal:'Compare com CDI e IBOV no mesmo período.' },
   magico:{ nome:'Número mágico', icon:'fa-wand-sparkles', descricao:'O patrimônio que você precisa acumular para viver dos rendimentos, sem vender ativos.', formula:'Renda mensal desejada × 12 ÷ rendimento anual (%)', interpretacao:'É a sua meta de liberdade financeira em reais.', faixaIdeal:'Quanto antes atingir, mais cedo a independência.' },
   dyMed:{ nome:'DY médio da carteira', icon:'fa-percent', descricao:'A média do dividend yield dos seus ativos, ponderada pelo valor de cada um.', formula:'Proventos anuais da carteira ÷ patrimônio', interpretacao:'Estima quanto a carteira paga de proventos por ano sobre o patrimônio.', faixaIdeal:'FIIs costumam elevar essa média.' },
+  hhi:{ nome:'Índice HHI (concentração)', icon:'fa-compress', descricao:'Mede o quanto a carteira está concentrada em poucos ativos.', formula:'Soma dos quadrados dos pesos (em %) — de 0 a 10.000', interpretacao:'Abaixo de 1.500 é pulverizada; acima de 2.500, concentrada.', faixaIdeal:'É uma medida descritiva, não um julgamento da carteira.' },
   cobertura:{ nome:'Cobertura da meta', icon:'fa-bullseye', descricao:'Quanto da sua renda-alvo os proventos projetados já cobrem.', formula:'Renda projetada ÷ renda desejada × 100', interpretacao:'100% significa que a carteira paga toda a renda que você quer.', faixaIdeal:'Objetivo: chegar e passar de 100%.' },
   notaLastro:{ nome:'Nota de Diversificação Lastro™', icon:'fa-shield-halved', descricao:'Nota de 0 a 100 que resume o equilíbrio da sua carteira.', formula:'Diversificação entre classes e setores + concentração + qualidade dos ativos', interpretacao:'Quanto maior, mais equilibrada e resiliente a carteira.', faixaIdeal:'Acima de 70 indica boa diversificação.' },
   darf:{ nome:'DARF', icon:'fa-file-invoice-dollar', descricao:'Guia de pagamento do imposto sobre o lucro nas vendas de ativos.', formula:'Lucro tributável × alíquota (15% ações · 20% FIIs/day trade)', interpretacao:'Ações têm isenção até R$ 20 mil vendidos no mês; o que passa é tributado.', pontosAtencao:'Emitir e pagar até o último dia útil do mês seguinte à venda.' },
@@ -14140,11 +14213,256 @@ function backFromAsset(){
 function closeAsset(){ if(currentView==='asset') backFromAsset(); }
 function quickView(tk){ openAsset(tk); }
 
+/* ══════════════════════════════════════════════════════════
+   CARTEIRAS DE INSTITUIÇÕES (agregador de composições públicas)
+   ──────────────────────────────────────────────────────────
+   REGRA INVIOLÁVEL: o ÚNICO dado importado de fora é a COMPOSIÇÃO publicada
+   (instituição, nome, competência, data, URL da fonte e {ticker, peso}), que vive em
+   /data/carteiras.json. Setor, cotação e variação são DERIVADOS do dado real que o app
+   já opera. Nada aqui inventa retorno, DY, risco ou nota — se o dado falta, a tela diz
+   que falta. As derivações puras vêm de /vendor/instport.js (testado em node:test).
+   ══════════════════════════════════════════════════════════ */
+let CARTS = null;                 // {carteiras:[...], updatedAt, erro} — null enquanto não carregou
+let _cartsLoading = null;
+let currentCartId = null, cartFiltroInst = 'todas', cartFiltroTipo = 'todos';
+function instPort(){ return window.LastroInstPort || null; }
+/* adaptador: o JSON usa {ativos:[...]}; o módulo puro espera {itens:[{tk,peso}]} */
+function cartPort(c){ return c ? { instituicao:c.inst, nome:c.nome, competencia:c.competencia, publicadoEm:c.publicadoEm, fonteUrl:c.fonteUrl, itens:c.ativos } : { itens:[] }; }
+function cartHttpsOk(u){ try{ const x=new URL(String(u)); return x.protocol==='https:' && !!x.hostname; }catch(e){ return false; } }
+/* só vai ao ar a carteira que passa no validador do módulo puro (fonte, datas e soma dos pesos) */
+function cartUsavel(c){
+  const P=instPort(); if(!P || !c || !c.id || !c.instSlug) return false;
+  if(!cartHttpsOk(c.fonteUrl)) return false;
+  return P.validar(cartPort(c)).length === 0;
+}
+function cartList(){ return (CARTS && Array.isArray(CARTS.carteiras)) ? CARTS.carteiras : []; }
+function cartById(id){ return cartList().find(c=>c.id===id) || null; }
+function cartAtual(){ return cartById(currentCartId); }
+/* índice estático — sem fetch bem-sucedido não há tela, e NUNCA um dado de reserva inventado */
+function loadCarteirasIndex(){
+  if(CARTS) return Promise.resolve(CARTS);
+  if(_cartsLoading) return _cartsLoading;
+  _cartsLoading = fetch('/data/carteiras.json', { cache:'no-cache' })
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(j=>{ CARTS = { carteiras:(Array.isArray(j&&j.carteiras)?j.carteiras:[]).filter(cartUsavel), updatedAt:(j&&j.updatedAt)||null, erro:false }; })
+    .catch(e=>{ console.warn('[Lastro] carteiras.json indisponível:', e&&e.message); CARTS = { carteiras:[], updatedAt:null, erro:true }; })
+    .then(()=>{ _cartsLoading=null; onCartsLoaded(); return CARTS; });
+  return _cartsLoading;
+}
+function retryCarteirasIndex(){ CARTS=null; _cartsLoading=null; render(currentView, true); loadCarteirasIndex(); }
+/* re-render suave quando o índice chega (o menu/hub só exibem a entrada se houver carteira) */
+function onCartsLoaded(){
+  if(currentView==='carteirasinst' || currentView==='carteirainst'){ render(currentView); return; }
+  if((currentView==='mais' || currentView==='mercado') && cartList().length) render(currentView, true);
+}
+function hasCarteirasInst(){ return cartList().length > 0; }
+
+/* ── resolução de ativo (dado real do app) ── */
+/* setor do ativo: segmento curado quando existe; senão a própria classe. null = não resolvido */
+function cartSetorOf(tk){
+  const lk = assetLookup(tk); if(!lk) return null;
+  return segOf(tk) || rxClasseOf(lk.k);
+}
+function cartResolvidos(c){ const P=instPort(); return P ? P.itens(cartPort(c)).filter(it=>!!assetLookup(it.tk)) : []; }
+/* cobertura das derivações: % do peso publicado que o app consegue resolver */
+function cartCobertura(c){
+  const P=instPort(); if(!P) return { pct:0, n:0, m:0 };
+  const its=P.itens(cartPort(c));
+  const r=P.ponderado(cartPort(c), tk=> assetLookup(tk)?1:null);
+  return { pct:r.cobertura||0, n:its.length-(r.faltando||[]).length, m:its.length };
+}
+function cartCoberturaTxt(cov){ return `cobre ${pc(cov.pct,0)}% do peso (${cov.n} de ${cov.m} ativos)`; }
+
+/* ── rótulos ── */
+const CART_TIPOS = { acoes:'Ações', fiis:'FIIs', dividendos:'Dividendos', 'small-caps':'Small Caps', bdrs:'BDRs', mista:'Mista' };
+function cartTipoLabel(t){ return CART_TIPOS[t] || (t ? String(t).charAt(0).toUpperCase()+String(t).slice(1) : '—'); }
+const CART_MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+function cartCompLabel(comp){ const m=/^(\d{4})-(\d{2})$/.exec(String(comp||'')); return m ? `${CART_MESES[+m[2]-1]}/${m[1]}` : String(comp||''); }
+function cartHost(u){ try{ return new URL(String(u)).hostname.replace(/^www\./,''); }catch(e){ return ''; } }
+function cartAvatar(c, cls){ return `<span class="ci-av ${cls||''}" style="background:${avatarColor(c.instSlug)}">${esc(avatarInitials(c.inst))}</span>`; }
+
+/* ══ LISTA ══ */
+function cartFiltradas(){
+  let l = cartList().slice().sort((a,b)=> String(b.publicadoEm||'').localeCompare(String(a.publicadoEm||'')));
+  if(cartFiltroInst!=='todas') l = l.filter(c=> c.instSlug===cartFiltroInst);
+  if(cartFiltroTipo!=='todos') l = l.filter(c=> c.tipo===cartFiltroTipo);
+  return l;
+}
+function setCartInst(v){ cartFiltroInst=v; render('carteirasinst', true); }
+function setCartTipo(v){ cartFiltroTipo=v; render('carteirasinst', true); }
+function openCarteiraInst(id){ currentCartId=id; nav('carteirainst'); }
+function cartCardHTML(c){
+  const n=(c.ativos||[]).length, host=cartHost(c.fonteUrl);
+  return `<button class="ci-card" onclick="openCarteiraInst('${esc(c.id)}')">
+    ${cartAvatar(c)}
+    <span class="ci-tx">
+      <span class="ci-h"><b>${esc(c.inst)}</b> · ${esc(c.nome)}</span>
+      <span class="ci-meta"><span class="ci-chip">Referência ${esc(cartCompLabel(c.competencia))}</span><span>${n} ativo${n===1?'':'s'}</span><span>·</span><span>${esc(cartTipoLabel(c.tipo))}</span></span>
+      <span class="ci-sub">Publicada em ${fmtDateBR(c.publicadoEm)}${host?` · Fonte: ${esc(host)}`:''}</span>
+    </span>
+    <i class="fa-solid fa-chevron-right ci-cv"></i>
+  </button>`;
+}
+function viewCarteirasInst(){
+  const head = `
+  <div class="sec-title">Carteiras de instituições</div>
+  <div class="sec-desc">Estas carteiras são publicadas pelas próprias instituições. O Lastro apenas <strong>apresenta a composição divulgada</strong> e calcula indicadores a partir de cotações públicas. Não são recomendações da Lastro.</div>`;
+  if(!CARTS) return head + `<div class="card card-pad"><div style="text-align:center;padding:26px 10px;color:var(--ink-3)"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:20px;color:var(--brand)"></i><div style="margin-top:10px;font-size:13px">Carregando as composições publicadas…</div></div></div>`;
+  if(CARTS.erro) return head + `<div class="card card-pad">${emptyState('fa-building-columns','Não foi possível carregar as carteiras agora','Verifique sua conexão e tente de novo — preferimos não mostrar nada a mostrar um dado que não veio da fonte.', `<button class="btn btn-primary" onclick="retryCarteirasIndex()"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>`)}</div>`;
+  const todas = cartList();
+  if(!todas.length) return head + `<div class="card card-pad">${emptyState('fa-building-columns','Nenhuma carteira disponível ainda','Assim que novas composições públicas forem publicadas, elas aparecem aqui.')}</div>`;
+
+  const insts=[]; todas.forEach(c=>{ if(!insts.some(x=>x.slug===c.instSlug)) insts.push({slug:c.instSlug, nome:c.inst}); });
+  insts.sort((a,b)=> a.nome.localeCompare(b.nome));
+  const tipos=[...new Set(todas.map(c=>c.tipo))].sort((a,b)=> cartTipoLabel(a).localeCompare(cartTipoLabel(b)));
+  const chip=(on,label,fn,val)=>`<button class="atab ${on?'on':''}" onclick="${fn}('${esc(val)}')">${esc(label)}</button>`;
+  const barInst = insts.length>1 ? `<div class="stabs"><div class="stabs-inner">
+    ${chip(cartFiltroInst==='todas','Todas','setCartInst','todas')}${insts.map(i=>chip(cartFiltroInst===i.slug,i.nome,'setCartInst',i.slug)).join('')}
+  </div></div>` : '';
+  const barTipo = tipos.length>1 ? `<div class="stabs" style="top:auto;position:static;box-shadow:none;padding-bottom:10px"><div class="stabs-inner">
+    ${chip(cartFiltroTipo==='todos','Todos os tipos','setCartTipo','todos')}${tipos.map(t=>chip(cartFiltroTipo===t,cartTipoLabel(t),'setCartTipo',t)).join('')}
+  </div></div>` : '';
+
+  const lista = cartFiltradas();
+  let corpo;
+  if(!lista.length){
+    corpo = `<div class="card card-pad">${emptyState('fa-filter','Nenhuma carteira com esses filtros','Ajuste a instituição ou o tipo para ver as demais composições.')}</div>`;
+  } else if(cartFiltroInst==='todas' && insts.length>1){
+    // agrupado por instituição, cada grupo já em ordem de publicação (mais recente primeiro)
+    const porInst = insts.map(i=>({ i, cs:lista.filter(c=>c.instSlug===i.slug) })).filter(g=>g.cs.length);
+    corpo = porInst.map(g=>`<div class="ci-grp-t">${esc(g.i.nome)}</div><div class="ci-list">${g.cs.map(cartCardHTML).join('')}</div>`).join('');
+  } else {
+    corpo = `<div class="ci-list">${lista.map(cartCardHTML).join('')}</div>`;
+  }
+  const atual = CARTS.updatedAt ? `<div class="illus-note"><i class="fa-solid fa-circle-info"></i> <span>Composições transcritas dos relatórios públicos das instituições · índice atualizado em <strong>${fmtDateBR(CARTS.updatedAt)}</strong>.</span></div>` : '';
+  return head + barInst + barTipo + corpo + atual;
+}
+
+/* ══ DETALHE ══ */
+/* fatias da rosca por setor — só sobre os ativos que o app resolve (peso renormalizado),
+   com a cobertura declarada logo abaixo. Setor < 3% vira "Outros" p/ a rosca não poluir. */
+function cartSetorItems(c){
+  const P=instPort(); if(!P) return [];
+  const port={ itens:cartResolvidos(c) };
+  const tot=P.somaPesos(port); if(!tot) return [];
+  const nAt = s => port.itens.filter(it=> (cartSetorOf(it.tk)||'Não classificado')===s).length;
+  const setores=P.porSetor(port, cartSetorOf);
+  const gr=[], pq=[];
+  setores.forEach(s=> (s.peso/tot*100 < 3 ? pq : gr).push(s));
+  const items = gr.map((s,i)=>({ n:s.setor, v:s.peso/tot, c:CHART_PALETTE[i%CHART_PALETTE.length], p:pc(s.peso/tot*100,1)+'%', s:`${nAt(s.setor)} ativo${nAt(s.setor)>1?'s':''}` }));
+  if(pq.length){
+    const soma=pq.reduce((a,s)=>a+s.peso,0), n=pq.reduce((a,s)=>a+nAt(s.setor),0);
+    items.push({ n:'Outros', v:soma/tot, c:cssVar('--ink-4')||'#8A94A6', p:pc(soma/tot*100,1)+'%', s:`${n} ativo${n>1?'s':''} em ${pq.length} setor${pq.length>1?'es':''}` });
+  }
+  return items;
+}
+function initCarteiraInstCharts(){
+  const c=cartAtual(); if(!c) return;
+  const items=cartSetorItems(c); if(!items.length) return;
+  const leg=$('#cartSetorLeg'); if(leg) leg.innerHTML = donutLegend(items);
+  const ctx=$('#cartSetorChart'); if(!ctx) return;
+  if(!HAS_CHART){ ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-4);font-size:12.5px">Gráfico disponível com conexão</div>'; return; }
+  if(charts.cartSetor){ try{ charts.cartSetor.destroy(); }catch(e){} charts.cartSetor=null; }
+  charts.cartSetor = donutChart('cartSetorChart', items);
+}
+function cartLinhaAtivo(c, it, maxPeso){
+  const lk=assetLookup(it.tk);
+  if(!lk) return `<div class="cix-row cix-off">
+    <span class="logo sm"><span class="logo-mono" style="background:var(--ink-4);color:#fff">${esc(it.tk.slice(0,2))}</span></span>
+    <div class="cix-id"><div class="cix-tk">${esc(it.tk)}</div><div class="cix-nm">Ativo não localizado na base — fora dos cálculos</div></div>
+    <div class="cix-bar"><i style="width:${Math.min(100,it.peso/maxPeso*100).toFixed(1)}%;background:var(--ink-4)"></i></div>
+    <span class="cix-w">${pc(it.peso,1)}%</span>
+    <span class="cix-px"><b>—</b><small class="faint">sem cotação</small></span>
+  </div>`;
+  const a=lk.a, setor=cartSetorOf(it.tk)||'—';
+  const px = a.px>0 ? fmtCur(a.px, curOf(it.tk)) : '—';
+  const v = (typeof a.var==='number' && isFinite(a.var)) ? a.var : null;
+  return `<div class="cix-row" onclick="quickView('${esc(it.tk)}')">
+    ${assetLogo(it.tk, lk.k, 'sm')}
+    <div class="cix-id"><div class="cix-tk">${esc(it.tk)}</div><div class="cix-nm">${esc(a.nm||'')} · ${esc(setor)}</div></div>
+    <div class="cix-bar"><i style="width:${Math.min(100,it.peso/maxPeso*100).toFixed(1)}%"></i></div>
+    <span class="cix-w">${pc(it.peso,1)}%</span>
+    <span class="cix-px"><b>${px}</b><small class="${v==null?'faint':(v>=0?'up':'down')}">${v==null?'—':(v>=0?'+':'')+pc(v,2)+'%'}</small></span>
+  </div>`;
+}
+function viewCarteiraInst(id){
+  const P=instPort();
+  if(!CARTS) return `<div class="card card-pad"><div style="text-align:center;padding:26px 10px;color:var(--ink-3)"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:20px;color:var(--brand)"></i><div style="margin-top:10px;font-size:13px">Carregando a composição publicada…</div></div></div>`;
+  const c=cartById(id);
+  if(!c || !P) return `<div class="card card-pad">${emptyState('fa-building-columns','Carteira não encontrada','Ela pode ter saído do índice de composições públicas.', `<button class="btn btn-primary" onclick="goView('carteirasinst')"><i class="fa-solid fa-arrow-left"></i> Ver as carteiras</button>`)}</div>`;
+
+  const its = P.itens(cartPort(c)), soma = P.somaPesos(cartPort(c)), n = its.length;
+  const host = cartHost(c.fonteUrl);
+  const ordenados = its.slice().sort((a,b)=> b.peso-a.peso);
+  const maxPeso = ordenados[0] ? ordenados[0].peso : 1;
+  const cov = cartCobertura(c);
+
+  /* 1. procedência antes de tudo — o link para a fonte fica acima da dobra */
+  const head = `
+  <div class="card card-pad">
+    <div class="ci-hero">${cartAvatar(c)}<div><div class="ci-hero-t">${esc(c.nome)}</div><div class="ci-hero-s">de <strong>${esc(c.inst)}</strong></div></div></div>
+    <div class="ci-meta" style="margin-bottom:14px">
+      <span class="ci-chip">Referência ${esc(cartCompLabel(c.competencia))}</span>
+      <span>Publicada em ${fmtDateBR(c.publicadoEm)}</span><span>·</span><span>${n} ativo${n===1?'':'s'}</span><span>·</span><span>${esc(cartTipoLabel(c.tipo))}</span>
+    </div>
+    <a class="btn btn-primary ci-srcbtn" href="${esc(c.fonteUrl)}" target="_blank" rel="noopener noreferrer nofollow">Ver relatório original na ${esc(c.inst)} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px"></i></a>
+    ${c.acessoLivre===false ? `<div class="ci-note">O acesso pode exigir login de cliente da instituição.</div>` : ''}
+  </div>`;
+
+  /* 2. composição — o dado publicado, com cotação e variação ao vivo do próprio app */
+  const composicao = `
+  <div class="card card-pad" style="margin-top:var(--gap)">
+    <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-list-ul"></i></span> Composição publicada <span class="card-sub" style="margin-left:6px">· ${n} ativo${n===1?'':'s'}</span></div>
+    <div class="cix-rows">${ordenados.map(it=>cartLinhaAtivo(c,it,maxPeso)).join('')}</div>
+    <div class="ci-foot">
+      Pesos exatamente como publicados pela fonte. Soma: <strong>${pc(soma,1)}%</strong>.
+      ${c.pesoUniforme ? ' A fonte publica <strong>pesos iguais</strong> entre os ativos.' : ''}
+      ${cov.n<cov.m ? `<br>${cov.m-cov.n} ativo${cov.m-cov.n>1?'s não foram localizados':' não foi localizado'} na base do Lastro e fica${cov.m-cov.n>1?'m':''} fora dos cálculos derivados — ${cartCoberturaTxt(cov)}.` : ''}
+    </div>
+  </div>`;
+
+  /* 3. setores — derivado do segmento curado/classe de cada ativo (nada importado) */
+  const items = cartSetorItems(c);
+  const setores = items.length ? `
+  <div class="card card-pad" style="margin-top:var(--gap)">
+    <div class="card-h" style="margin-bottom:6px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Divisão por setor</div>
+    <div class="donut-wrap"><canvas id="cartSetorChart" role="img" aria-label="Divisão da carteira por setor"></canvas></div>
+    <div class="donut-leg" id="cartSetorLeg"></div>
+    <div class="ci-foot">Setor de cada ativo pela base do Lastro, com o peso publicado redistribuído entre os ativos localizados — ${cartCoberturaTxt(cov)}.</div>
+  </div>` : '';
+
+  /* 4. concentração — descritiva (§2.5): números, nunca nota ou julgamento */
+  const conc = P.concentracao(cartPort(c), 5);
+  const nTop = conc ? Math.min(5, conc.ativos) : 0;
+  const concentracao = conc ? `
+  <div class="card card-pad" style="margin-top:var(--gap)">
+    <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-compress"></i></span> Concentração da composição</div>
+    <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
+      <div class="mcell"><div class="nm" style="margin-bottom:8px">Maior posição</div><div class="vl">${pc(conc.maior?conc.maior.peso:0,1)}%</div><div class="dl faint">${esc(conc.maior?conc.maior.tk:'—')}</div></div>
+      <div class="mcell"><div class="nm" style="margin-bottom:8px">${nTop} maiores</div><div class="vl">${pc(conc.topPeso,1)}%</div><div class="dl faint">do peso publicado</div></div>
+      <div class="mcell"><div class="nm" style="margin-bottom:8px">${termLabel('hhi','HHI')}</div><div class="vl">${Math.round(conc.hhi).toLocaleString('pt-BR')}</div><div class="dl faint">escala de 0 a 10.000</div></div>
+      <div class="mcell"><div class="nm" style="margin-bottom:8px">Ativos equivalentes</div><div class="vl">${pc(conc.efetivos,1)}</div><div class="dl faint">de ${conc.ativos} na carteira</div></div>
+    </div>
+    <div class="ci-foot">Medidas <strong>descritivas</strong> da composição publicada, calculadas só com os pesos da fonte. Não são nota, ranking nem avaliação da carteira da instituição.</div>
+  </div>` : '';
+
+  /* 5. atribuição e disclaimer — sempre visível, nunca colapsado */
+  const atribuicao = `
+  <div class="card card-pad" style="margin-top:var(--gap)">
+    <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-scale-balanced"></i></span> Sobre esta carteira</div>
+    <p class="ci-disc">A composição acima foi <strong>publicada por ${esc(c.inst)}</strong> em <strong>${fmtDateBR(c.publicadoEm)}</strong>, com referência a <strong>${esc(cartCompLabel(c.competencia))}</strong>, e está disponível publicamente em <strong>${esc(host||cartHost(c.fonteUrl))}</strong>. Os direitos sobre o conteúdo original são da instituição.</p>
+    <p class="ci-disc">O <strong>Lastro não elabora, não endossa e não recomenda</strong> esta carteira: apenas a apresenta e calcula indicadores (setores, peso, DY médio, desempenho) a partir de <strong>cotações e fundamentos públicos</strong>. Nada aqui é recomendação de investimento, análise de valores mobiliários ou consultoria personalizada — não considera seu perfil, seus objetivos nem sua situação financeira. Antes de investir, <strong>consulte o relatório original</strong> e, se precisar, um profissional certificado.</p>
+    ${c.obs ? `<p class="ci-disc faint">${esc(c.obs)}</p>` : ''}
+  </div>`;
+
+  return head + composicao + setores + concentracao + atribuicao;
+}
+
 /* navegação "voltar" — segue a HIERARQUIA do app, não o histórico:
    Ativo → lista de origem → Início. Demais telas → Início. */
 function canGoBack(){ return currentView==='asset' || currentView!=='painel'; }
 // Pais EXPLÍCITOS (nesting mais profundo que a aba): detalhe→lista, sub-abas→wrapper.
-const VIEW_PARENT = { watchlist:'acompanhar', alertas:'acompanhar' };
+const VIEW_PARENT = { watchlist:'acompanhar', alertas:'acompanhar', carteirainst:'carteirasinst' };
 function goBack(){
   if(currentView==='asset'){ backFromAsset(); return true; }      // ativo → lista de origem (prevView)
   const parent = VIEW_PARENT[currentView];
@@ -14215,7 +14533,7 @@ function toggleTheme(){ const cur=getThemePref(); const next=THEME_SEQ[(THEME_SE
 document.addEventListener('keydown', e=>{
   if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); openSearch(); }
   if(e.key==='Escape'){ closeSearch(); closeAsset(); closeSidebar(); closePosModal(); closeAuthGuarded(); closeCropper&&closeCropper(); closeConfirm&&closeConfirm();
-    typeof closeAlertModal==='function'&&closeAlertModal(); typeof closeIndHistory==='function'&&closeIndHistory(); typeof closeCarteira==='function'&&closeCarteira(); typeof closeOnboarding==='function'&&closeOnboarding(); typeof closePremiumModal==='function'&&closePremiumModal(); }
+    typeof closeAlertModal==='function'&&closeAlertModal(); typeof closeIndHistory==='function'&&closeIndHistory(); typeof closeOnboarding==='function'&&closeOnboarding(); typeof closePremiumModal==='function'&&closePremiumModal(); }
   // trap de foco: mantém o Tab dentro do modal/painel aberto (acessibilidade)
   if(e.key==='Tab'){
     const box = document.querySelector('.modal-scrim.open .modal-card, .search-modal.open .search-panel');
@@ -14278,6 +14596,13 @@ function screenSymbols(){
     case 'painel': CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(f&&f.k==='cripto') crypto.add(c.tk); else if(f&&!isUsAsset(f)) b3.add(c.tk); }); ['BOVA11','IVVB11','SMAL11','DIVO11'].forEach(t=>b3.add(t)); break;   // + benchmarks ao vivo (Performance Diária)
     case 'carteira': CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(f&&f.k==='cripto') crypto.add(c.tk); else if(f&&!isUsAsset(f)) b3.add(c.tk); }); break;
     case 'noticias': ACOES.filter(isLiquidStock).forEach(a=> b3.add(a.tk)); break;   // "Em alta agora" ao vivo
+    case 'carteirasinst': break;   // a lista mostra só procedência (sem cotação) — nada a buscar
+    case 'carteirainst': {         // composição da carteira aberta (+ BOVA11, base do desempenho)
+      const c = (typeof cartAtual==='function') ? cartAtual() : null;
+      if(c) c.ativos.forEach(x=>{ const f=assetLookup(x.tk); if(!f) return; if(f.k==='cripto') crypto.add(f.a.tk); else if(!isUsAsset(f)) b3.add(f.a.tk); });
+      b3.add('BOVA11');
+      break;
+    }
     case 'watchlist': watchlist().forEach(tk=>{ const f=assetLookup(tk); if(f){ if(f.k==='cripto') crypto.add(tk); else if(f.k!=='stocks') b3.add(tk); } }); break;
     case 'asset': {
       const f = currentAssetTk && assetLookup(currentAssetTk);
@@ -14343,7 +14668,7 @@ function softRefreshView(){
   if(['fiis','acoes','bdrs','etfs','etfsint','stocks','cripto'].includes(v)){
     if(typing) return;            // não recriar a tabela enquanto o usuário digita/filtra
     renderAssets(v);
-  } else if(['painel','carteira','asset','watchlist','alertas','acompanhar'].includes(v) && !typing){
+  } else if(['painel','carteira','asset','watchlist','alertas','acompanhar','carteirainst'].includes(v) && !typing){
     render(v, true);             // soft: re-renderiza sem re-disparar buscas (evita loop)
   } else if(v==='noticias' && !typing){
     renderNewsAlta();            // atualiza "Em alta agora" sem recriar o feed de notícias
