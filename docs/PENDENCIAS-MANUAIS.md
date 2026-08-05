@@ -56,6 +56,13 @@ precisam estar resolvidas — nenhuma é técnica:
 - [ ] **Expectativa de atualização.** A composição muda **mensalmente**, não em tempo real.
       O que dá para atualizar ao vivo é a **cotação dos ativos** que compõem cada carteira —
       e aí o desempenho passa a ser calculado de dado real, nunca chumbado.
+      **Definir quem alimenta** `/data/carteiras.json` todo mês (fluxo de 3–5 min por carteira
+      descrito na spec).
+
+> **A spec técnica já existe:** `docs/SPEC-carteiras-instituicoes.md` (ago/2026) — modelo de
+> dados, derivações função por função, telas, textos de disclaimer, gate e plano faseado.
+> Ela mostra a **composição** (ativos + pesos), então depende da validação de **direito de uso**
+> acima. **Não construir/publicar antes do jurídico.** Fase 0 do plano = as decisões desta lista.
 
 ## 🟡 Limpeza recomendada (não urgente)
 
