@@ -9874,7 +9874,7 @@ function runDarf(){
    VIEW: COMPARADOR
    ══════════════════════════════════════════════════════════ */
 const ALL_ASSETS_FLAT = ()=>[...FIIS.map(a=>({...a,_k:'fiis'})), ...ACOES.map(a=>({...a,_k:'acoes'}))];
-let cmpSel = ['KNCR11','HGLG11','VGIR11'];
+let cmpSel = [];   // abre vazio: quem compara escolhe os ativos (nada pré-selecionado)
 function cmpSlot(i){   // chip do ativo já escolhido
   const tk=cmpSel[i]; if(!tk) return '';
   const lk=assetLookup(tk), k=lk?lk.k:'acoes', a=lk?lk.a:{};
