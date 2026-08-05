@@ -4496,7 +4496,7 @@ button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l);
 .ci-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
 .ci-h { font-size:14px; color:var(--ink); line-height:1.35; }
 .ci-h b { font-weight:700; }
-.ci-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-3); }
+.ci-meta { display:flex; align-items:center; gap:7px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-3); }
 .ci-chip { background:var(--brand-l); color:var(--brand); border-radius:999px; padding:2px 8px; font-weight:600; font-size:11px; }
 .ci-sub { font-size:11.5px; color:var(--ink-4); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .ci-cv { color:var(--ink-4); font-size:12px; flex:none; }
@@ -4512,7 +4512,7 @@ button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l);
 .ci-disc:last-child { margin-bottom:0; }
 .ci-disc strong { color:var(--ink); font-weight:600; }
 /* composição */
-.cix-rows { display:grid; gap:2px; }
+.cix-rows { display:grid; grid-template-columns:minmax(0,1fr); gap:2px; }   /* trilha limitada: o nome do ativo trunca em vez de esticar a linha */
 .cix-row { display:flex; align-items:center; gap:11px; padding:9px 6px; border-radius:10px; cursor:pointer; transition:background .15s var(--ease); }
 @media (hover:hover){ .cix-row:hover { background:var(--surface-2); } }
 .cix-row.cix-off { cursor:default; opacity:.72; }
@@ -4521,11 +4521,10 @@ button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l);
 .cix-nm { font-size:11px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .cix-bar { flex:none; width:78px; height:7px; background:var(--line); border-radius:5px; overflow:hidden; }
 .cix-bar i { display:block; height:100%; border-radius:5px; background:var(--brand); transition:width .5s var(--ease-out); }
-.cix-w { flex:none; width:52px; text-align:right; font-size:12.5px; font-weight:600; color:var(--ink-2); font-family:var(--mono); }
-.cix-px { flex:none; width:98px; text-align:right; }
-.cix-px b { display:block; font-size:12.5px; font-family:var(--mono); font-weight:600; color:var(--ink); }
-.cix-px small { font-size:11px; font-family:var(--mono); }
-@media (max-width:560px){ .cix-bar { display:none; } .cix-px { width:84px; } .cix-nm { font-size:10.5px; } }
+.cix-rt { flex:none; width:120px; display:flex; flex-direction:column; align-items:flex-end; gap:1px; }
+.cix-rt b { font-size:13px; font-family:var(--mono); font-weight:600; color:var(--ink); }
+.cix-rt small { font-size:11px; font-family:var(--mono); color:var(--ink-3); display:flex; align-items:center; gap:5px; }
+@media (max-width:560px){ .cix-bar { display:none; } .cix-rt { width:106px; } }
 </style>
 
 <script src="/vendor/chart.umd.js"></script>
@@ -10465,7 +10464,7 @@ function viewMercado(){
     <span class="ci-av" style="background:var(--brand)"><i class="fa-solid fa-building-columns"></i></span>
     <span class="ci-tx">
       <span class="ci-h"><b>Carteiras de instituições</b></span>
-      <span class="ci-sub">${nCart} composiç${nCart>1?'ões':'ão'} publicada${nCart>1?'s':''} por casas de análise · o Lastro só apresenta e calcula</span>
+      <span class="ci-sub">${nCart} composiç${nCart>1?'ões':'ão'} publicada${nCart>1?'s':''} por casas de análise</span>
     </span>
     <i class="fa-solid fa-chevron-right ci-cv"></i>
   </button></div>` : '';
@@ -14291,13 +14290,13 @@ function cartFiltradas(){
 function setCartInst(v){ cartFiltroInst=v; render('carteirasinst', true); }
 function setCartTipo(v){ cartFiltroTipo=v; render('carteirasinst', true); }
 function openCarteiraInst(id){ currentCartId=id; nav('carteirainst'); }
-function cartCardHTML(c){
+function cartCardHTML(c, semInst){
   const n=(c.ativos||[]).length, host=cartHost(c.fonteUrl);
   return `<button class="ci-card" onclick="openCarteiraInst('${esc(c.id)}')">
     ${cartAvatar(c)}
     <span class="ci-tx">
-      <span class="ci-h"><b>${esc(c.inst)}</b> · ${esc(c.nome)}</span>
-      <span class="ci-meta"><span class="ci-chip">Referência ${esc(cartCompLabel(c.competencia))}</span><span>${n} ativo${n===1?'':'s'}</span><span>·</span><span>${esc(cartTipoLabel(c.tipo))}</span></span>
+      <span class="ci-h">${semInst?`<b>${esc(c.nome)}</b>`:`<b>${esc(c.inst)}</b> · ${esc(c.nome)}`}</span>
+      <span class="ci-meta"><span class="ci-chip">Referência ${esc(cartCompLabel(c.competencia))}</span><span>${n} ativo${n===1?'':'s'} · ${esc(cartTipoLabel(c.tipo))}</span></span>
       <span class="ci-sub">Publicada em ${fmtDateBR(c.publicadoEm)}${host?` · Fonte: ${esc(host)}`:''}</span>
     </span>
     <i class="fa-solid fa-chevron-right ci-cv"></i>
@@ -14330,9 +14329,9 @@ function viewCarteirasInst(){
   } else if(cartFiltroInst==='todas' && insts.length>1){
     // agrupado por instituição, cada grupo já em ordem de publicação (mais recente primeiro)
     const porInst = insts.map(i=>({ i, cs:lista.filter(c=>c.instSlug===i.slug) })).filter(g=>g.cs.length);
-    corpo = porInst.map(g=>`<div class="ci-grp-t">${esc(g.i.nome)}</div><div class="ci-list">${g.cs.map(cartCardHTML).join('')}</div>`).join('');
+    corpo = porInst.map(g=>`<div class="ci-grp-t">${esc(g.i.nome)}</div><div class="ci-list">${g.cs.map(c=>cartCardHTML(c,true)).join('')}</div>`).join('');
   } else {
-    corpo = `<div class="ci-list">${lista.map(cartCardHTML).join('')}</div>`;
+    corpo = `<div class="ci-list">${lista.map(c=>cartCardHTML(c)).join('')}</div>`;
   }
   const atual = CARTS.updatedAt ? `<div class="illus-note"><i class="fa-solid fa-circle-info"></i> <span>Composições transcritas dos relatórios públicos das instituições · índice atualizado em <strong>${fmtDateBR(CARTS.updatedAt)}</strong>.</span></div>` : '';
   return head + barInst + barTipo + corpo + atual;
@@ -14371,8 +14370,7 @@ function cartLinhaAtivo(c, it, maxPeso){
     <span class="logo sm"><span class="logo-mono" style="background:var(--ink-4);color:#fff">${esc(it.tk.slice(0,2))}</span></span>
     <div class="cix-id"><div class="cix-tk">${esc(it.tk)}</div><div class="cix-nm">Ativo não localizado na base — fora dos cálculos</div></div>
     <div class="cix-bar"><i style="width:${Math.min(100,it.peso/maxPeso*100).toFixed(1)}%;background:var(--ink-4)"></i></div>
-    <span class="cix-w">${pc(it.peso,1)}%</span>
-    <span class="cix-px"><b>—</b><small class="faint">sem cotação</small></span>
+    <span class="cix-rt"><b>${pc(it.peso,1)}%</b><small>sem cotação</small></span>
   </div>`;
   const a=lk.a, setor=cartSetorOf(it.tk)||'—';
   const px = a.px>0 ? fmtCur(a.px, curOf(it.tk)) : '—';
@@ -14381,8 +14379,7 @@ function cartLinhaAtivo(c, it, maxPeso){
     ${assetLogo(it.tk, lk.k, 'sm')}
     <div class="cix-id"><div class="cix-tk">${esc(it.tk)}</div><div class="cix-nm">${esc(a.nm||'')} · ${esc(setor)}</div></div>
     <div class="cix-bar"><i style="width:${Math.min(100,it.peso/maxPeso*100).toFixed(1)}%"></i></div>
-    <span class="cix-w">${pc(it.peso,1)}%</span>
-    <span class="cix-px"><b>${px}</b><small class="${v==null?'faint':(v>=0?'up':'down')}">${v==null?'—':(v>=0?'+':'')+pc(v,2)+'%'}</small></span>
+    <span class="cix-rt"><b>${pc(it.peso,1)}%</b><small>${px}${v==null?'':` <span class="${v>=0?'up':'down'}">${v>=0?'+':''}${pc(v,2)}%</span>`}</small></span>
   </div>`;
 }
 function viewCarteiraInst(id){
@@ -14403,7 +14400,7 @@ function viewCarteiraInst(id){
     <div class="ci-hero">${cartAvatar(c)}<div><div class="ci-hero-t">${esc(c.nome)}</div><div class="ci-hero-s">de <strong>${esc(c.inst)}</strong></div></div></div>
     <div class="ci-meta" style="margin-bottom:14px">
       <span class="ci-chip">Referência ${esc(cartCompLabel(c.competencia))}</span>
-      <span>Publicada em ${fmtDateBR(c.publicadoEm)}</span><span>·</span><span>${n} ativo${n===1?'':'s'}</span><span>·</span><span>${esc(cartTipoLabel(c.tipo))}</span>
+      <span>Publicada em ${fmtDateBR(c.publicadoEm)} · ${n} ativo${n===1?'':'s'} · ${esc(cartTipoLabel(c.tipo))}</span>
     </div>
     <a class="btn btn-primary ci-srcbtn" href="${esc(c.fonteUrl)}" target="_blank" rel="noopener noreferrer nofollow">Ver relatório original na ${esc(c.inst)} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px"></i></a>
     ${c.acessoLivre===false ? `<div class="ci-note">O acesso pode exigir login de cliente da instituição.</div>` : ''}
@@ -14412,7 +14409,7 @@ function viewCarteiraInst(id){
   /* 2. composição — o dado publicado, com cotação e variação ao vivo do próprio app */
   const composicao = `
   <div class="card card-pad" style="margin-top:var(--gap)">
-    <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-list-ul"></i></span> Composição publicada <span class="card-sub" style="margin-left:6px">· ${n} ativo${n===1?'':'s'}</span></div>
+    <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-list-ul"></i></span> Composição publicada</div>
     <div class="cix-rows">${ordenados.map(it=>cartLinhaAtivo(c,it,maxPeso)).join('')}</div>
     <div class="ci-foot">
       Pesos exatamente como publicados pela fonte. Soma: <strong>${pc(soma,1)}%</strong>.
