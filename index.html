@@ -4453,10 +4453,7 @@ button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l);
 .ir-bd-val b { display:block; font-family:var(--mono); font-weight:700; font-size:14px; color:var(--ink); letter-spacing:-.01em; }
 .ir-bd-val span { display:block; font-size:10.5px; color:var(--ink-4); margin-top:2px; }
 /* discriminação: largura total embaixo, texto e botão em linha, sem espremer */
-.ir-bd-disc { display:flex; align-items:center; gap:10px; margin-top:10px; padding:10px 12px;
-  font-size:12px; color:var(--ink-2); line-height:1.55; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-btn); }
-.ir-bd-disc-tx { flex:1; min-width:0; }
-.ir-copy { flex:none; min-height:36px; padding:0 12px; font-size:12px; }
+.ir-copy { display:inline-flex; align-items:center; gap:6px; width:auto; min-height:32px; padding:0 14px; font-size:11.5px; margin-top:10px; white-space:nowrap; }
 /* Rendimentos isentos */
 .ir-rend { margin-top:6px; }
 .ir-rend .metric { padding:11px 0; }
@@ -9704,18 +9701,14 @@ function viewIR(){
       <div class="ir-bd-main">
         <div class="ir-bd-tk">${b.tk}</div>
         <div class="ir-bd-cod">Grupo ${b.grupo} · Código ${b.codigo}</div>
+        <button class="btn btn-ghost btn-sm ir-copy" onclick="copyIR(this,'${encodeURIComponent(b.disc)}')" aria-label="Copiar discriminação para a declaração"><i class="fa-regular fa-copy"></i> Copiar</button>
       </div>
       <div class="ir-bd-val"><b class="priv-blur">${brl(b.custo)}</b><span>custo (31/12)</span></div>
     </div>
-    <div class="ir-bd-disc"><span class="ir-bd-disc-tx">${b.disc}</span>
-      <button class="btn btn-ghost btn-sm ir-copy" onclick="copyIR(this,'${encodeURIComponent(b.disc)}')" aria-label="Copiar discriminação"><i class="fa-regular fa-copy"></i> Copiar</button></div>
   </div>`).join('');
   const apurando='<span class="ir-apur">apurando…</span>';
   return `${cartTabsHTML('ir')}
-  <div class="card card-pad ir-como">
-    <div class="ds-title ir-como-t"><i class="fa-solid fa-circle-info"></i> Como funciona</div>
-    <p class="ir-como-p">FIIs e dividendos de ações são <strong>isentos</strong>. Suas posições entram em <strong>Bens e Direitos</strong> pelo custo de aquisição. Venda de ações é isenta até <strong>R$ 20.000</strong> no mês; acima disso, 15% sobre o ganho (FII: 20%, sem isenção). Confirme sempre com seu contador.</p>
-  </div>
+  <div class="illus-note ir-como-note"><i class="fa-solid fa-circle-info"></i> <span>FIIs e dividendos de ações são <strong>isentos</strong>. Suas posições entram em <strong>Bens e Direitos</strong> pelo custo de aquisição. Venda de ações é isenta até <strong>R$ 20.000</strong> no mês; acima disso, 15% sobre o ganho (FII: 20%, sem isenção). Confirme sempre com seu contador.</span></div>
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-building-columns"></i></span> Bens e Direitos <span class="card-sub" style="margin-left:6px">· posição em 31/12</span></div></div>
     <div class="ir-bd-list">${bdRows}</div>
