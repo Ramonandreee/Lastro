@@ -9685,7 +9685,7 @@ function runFire(){
 function irBensDireitos(){
   return portfolioByTicker().filter(g=>g.cotas>0).map(g=>{ const isFii=g.f.k==='fiis';
     return { tk:g.tk, k:g.f.k, grupo:isFii?'07 – Fundos':'03 – Participações societárias', codigo:isFii?'03 – FII/Fiagro':'01 – Ações',
-      qtd:g.cotas, custo:g.custo, pm:g.pm, disc:`${g.cotas} ${isFii?'cotas':'ações'} de ${g.tk} (${g.f.a.nm||''}) — custo médio ${brl(g.pm)}, custo total ${brl(g.custo)}.` };
+      qtd:g.cotas, custo:g.custo, pm:g.pm, disc:`${g.cotas} ${isFii?'cotas':'ações'} de ${g.tk} (${g.f.a.nm||''}): custo médio ${brl(g.pm)}, custo total ${brl(g.custo)}.` };
   });
 }
 function irRendimentos(year){ const pays=provPayments(); let fii=0, acoes=0;   // valores em BRL (valorBRL)
@@ -9714,7 +9714,7 @@ function viewIR(){
   return `${cartTabsHTML('ir')}
   <div class="card card-pad ir-como">
     <div class="ds-title ir-como-t"><i class="fa-solid fa-circle-info"></i> Como funciona</div>
-    <p class="ir-como-p">FIIs e dividendos de ações são <strong>isentos</strong> (ficha "Rendimentos Isentos"). Suas posições viram a ficha <strong>"Bens e Direitos"</strong> pelo custo de aquisição. Vendas de ações têm isenção até <strong>R$ 20.000/mês</strong>; acima, 15% sobre o ganho (FII: 20%, sem isenção). Valores estimados — confirme com seu contador.</p>
+    <p class="ir-como-p">FIIs e dividendos de ações são <strong>isentos</strong>. Suas posições entram em <strong>Bens e Direitos</strong> pelo custo de aquisição. Venda de ações é isenta até <strong>R$ 20.000</strong> no mês; acima disso, 15% sobre o ganho (FII: 20%, sem isenção). Confirme sempre com seu contador.</p>
   </div>
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-building-columns"></i></span> Bens e Direitos <span class="card-sub" style="margin-left:6px">· posição em 31/12</span></div></div>
@@ -9724,15 +9724,15 @@ function viewIR(){
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-hand-holding-dollar"></i></span> Rendimentos isentos <span class="card-sub" style="margin-left:6px">· ${ano}</span></div></div>
       <div class="ir-rend">
-        <div class="metric"><div class="ml">FIIs — rendimentos (cód. 26)</div><div class="mv ${rend.pend?'':'priv-blur up'}">${rend.pend?apurando:brl(rend.fii)}</div></div>
-        <div class="metric"><div class="ml">Ações — dividendos (cód. 09)</div><div class="mv ${rend.pend?'':'priv-blur up'}">${rend.pend?apurando:brl(rend.acoes)}</div></div>
+        <div class="metric"><div class="ml">Rendimentos de FIIs (cód. 26)</div><div class="mv ${rend.pend?'':'priv-blur up'}">${rend.pend?apurando:brl(rend.fii)}</div></div>
+        <div class="metric"><div class="ml">Dividendos de ações (cód. 09)</div><div class="mv ${rend.pend?'':'priv-blur up'}">${rend.pend?apurando:brl(rend.acoes)}</div></div>
         <div class="divider"></div>
         <div class="metric ir-rend-tot"><div class="ml">Total isento no ano</div><div class="mv ${rend.pend?'':'priv-blur'}">${rend.pend?apurando:brl(rend.total)}</div></div>
       </div>
       <!-- IR é a tela mais sensível do app: nunca imprimir R$ 0,00 como se fosse apuração concluída -->
       <div class="illus-note ir-note">${rend.pend
-        ? 'Ainda apurando os proventos reais da carteira — nenhum valor é exibido antes de fechar a conta.'
-        : `Somente proventos com data-com no histórico da fonte (cerca de 2 anos), em ${ano} — pode estar incompleto. Confira sempre com os informes de rendimentos.`}</div>
+        ? 'Ainda apurando os proventos reais da carteira. Nenhum valor é exibido antes de fechar a conta.'
+        : `Somente proventos com data-com no histórico da fonte (cerca de 2 anos), em ${ano}. Pode estar incompleto: confira sempre com os informes de rendimentos.`}</div>
     </div>
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-calculator"></i></span> Calculadora de DARF (venda)</div></div>
