@@ -39,7 +39,12 @@
 
 ## 🟠 Carteiras Recomendadas — aposentada; o que decidir antes de retomar
 
-A tela foi **removida do app (ago/2026)** por dois motivos: era recomendação de valores
+> **Situação em ago/2026:** o agregador que a substitui **já está construído e no ar**
+> (telas + validador). O que segura a publicação é o **`data/carteiras.json` estar vazio** —
+> preencher o arquivo publica a feature. Portanto as decisões abaixo continuam valendo, só
+> que agora o portão é o arquivo de dados, não o código.
+
+A tela antiga foi **removida do app (ago/2026)** por dois motivos: era recomendação de valores
 mobiliários sem CNPI (atividade privativa de analista, CVM) e exibia rentabilidade
 **fabricada** (`ret`/`dy`/`vol` chumbados no código). A retomada desejada é um **agregador
 de carteiras públicas de instituições** (BTG, XP, etc.). Antes de construir, três coisas

@@ -102,6 +102,27 @@ function chavesProibidas(valor, caminho, achados) {
   return achados;
 }
 
+/**
+ * A lista negra acima olha NOMES de campo. Isso não basta: `obs`/`nome`/`fonteTitulo`
+ * são texto livre e vão à tela verbatim, então uma frase como
+ * "acumula +32% em 12 meses, vs +11% do IBOV" passaria no CI e publicaria um número
+ * de rentabilidade de origem não verificada — exatamente o que aposentou a feature
+ * anterior. Aqui o CONTEÚDO também é barrado.
+ */
+const CAMPOS_TEXTO = ['nome', 'fonteTitulo', 'obs'];
+const RX_PERCENTUAL = /\d+([.,]\d+)?\s*%/;
+const RX_DESEMPENHO = /\b(retorno|rentabilidade|rendeu|rendimento|valoriza\w*|desempenho|yield|dy|vol(atilidade)?|cdi|ibov(espa)?|ifix)\b/i;
+
+function textoProibido(c, caminho, achados) {
+  for (const campo of CAMPOS_TEXTO) {
+    const v = c && c[campo];
+    if (typeof v !== 'string' || !v) continue;
+    if (RX_PERCENTUAL.test(v)) achados.push(`${caminho}.${campo}: contém percentual ("${v}")`);
+    else if (RX_DESEMPENHO.test(v)) achados.push(`${caminho}.${campo}: fala de desempenho ("${v}")`);
+  }
+  return achados;
+}
+
 /* ───────────────────────────── o validador ───────────────────────────── */
 
 /**
@@ -134,6 +155,12 @@ export function validarArquivo(doc, hoje = new Date()) {
   doc.carteiras.forEach((c, i) => {
     const rot = `carteiras[${i}]${c && c.id ? ` (${c.id})` : ''}`;
     if (!c || typeof c !== 'object' || Array.isArray(c)) { e.push(`${rot}: deve ser um objeto`); return; }
+
+    // 0. texto livre não pode carregar número/afirmação de desempenho (vai à tela verbatim)
+    for (const p of textoProibido(c, rot, [])) {
+      e.push(`${p}. Texto livre não pode trazer rentabilidade, percentual nem comparação com ` +
+        `benchmark: esses números são DERIVADOS de dado real pelo app, nunca transcritos — ver ${SPEC}.`);
+    }
 
     // 1. campos obrigatórios
     for (const f of OBRIGATORIOS) {
@@ -364,6 +391,30 @@ test('lista negra ignora acento e caixa (recomendação/RET/Nota)', () => {
 
 test('lista negra não pega campos legítimos parecidos (nome, peso, pesoUniforme)', () => {
   assert.deepEqual(validarArquivo(com({ nome: 'Carteira Nota 10' }), HOJE), []);
+});
+
+/* ── texto livre: a lista negra olha CHAVES; estes olham o CONTEÚDO ──────
+   `obs`/`nome`/`fonteTitulo` vão à tela verbatim. Sem isto, uma frase com
+   rentabilidade passaria no CI e publicaria número de origem não verificada. */
+
+test('obs com percentual falha (número de rentabilidade por texto livre)', () => {
+  const errs = validarArquivo(com({ obs: 'a carteira acumula +32% em 12 meses' }), HOJE);
+  assert.ok(temErro(errs, 'percentual'));
+});
+
+test('obs comparando com benchmark falha mesmo sem percentual', () => {
+  assert.ok(temErro(validarArquivo(com({ obs: 'rendeu acima do IBOV no período' }), HOJE), 'desempenho'));
+  assert.ok(temErro(validarArquivo(com({ obs: 'foco em dividend yield alto' }), HOJE), 'desempenho'));
+});
+
+test('nome e fonteTitulo também são barrados', () => {
+  assert.ok(temErro(validarArquivo(com({ nome: 'Carteira 10% ao ano' }), HOJE), 'percentual'));
+  assert.ok(temErro(validarArquivo(com({ fonteTitulo: 'Relatório: a carteira que rendeu mais' }), HOJE), 'desempenho'));
+});
+
+test('obs legítima (atribuição/ressalva) continua passando', () => {
+  assert.deepEqual(validarArquivo(com({ obs: 'A fonte publica pesos iguais entre os ativos.' }), HOJE), []);
+  assert.deepEqual(validarArquivo(com({ obs: 'Houve troca de um ativo na competência anterior.' }), HOJE), []);
 });
 
 /* ────────────────────── pesos (via vendor) e tickers ────────────────── */

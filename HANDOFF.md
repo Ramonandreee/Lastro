@@ -73,11 +73,18 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 >   como "retorno 12m". Retomada possível como **agregador de carteiras públicas de
 >   instituições** (nome + data + LINK para o relatório original, desempenho calculado de
 >   cotação real) — ver os pré-requisitos em `docs/PENDENCIAS-MANUAIS.md`.
-> - **Carteiras de instituições (agregador) — SPEC PRONTA, não construída (ago/2026):**
+> - **Carteiras de instituições (agregador) — CONSTRUÍDA, SEM DADOS PUBLICADOS (ago/2026).**
+>   **Atenção ao portão:** as Fases 1–4 estão NO AR (telas, loader, validador). O que segura a
+>   feature não é mais "não construir": é o **`data/carteiras.json` estar vazio**. Enquanto o
+>   array `carteiras` tiver zero itens, as entradas no menu e no hub Mercado ficam ocultas
+>   (`hasCarteirasInst()`) e nada aparece ao usuário. **Preencher o JSON PUBLICA a feature** —
+>   por isso o gate jurídico agora mora no arquivo de dados, não no código. Não preencha antes
+>   da validação de direito de uso. Falta ainda a Fase 5 (desempenho vs IBOV), a 6
+>   (indicadores ponderados) e a 7 (gate Premium). Detalhe da spec abaixo:
 >   `docs/SPEC-carteiras-instituicoes.md`. Princípio: o único dado importado é a **composição
 >   publicada** (instituição, nome, competência, data, URL da fonte, `{ticker, peso}`) num
 >   arquivo estático **`/data/carteiras.json`** (não conta no limite de 12 funções da Vercel,
->   validado por `test/carteiras.mjs` no CI, com lista negra que **reprova** campos `ret`/`dy`/
+>   validado por `test/carteiras.test.mjs` no CI, com lista negra que **reprova** campos `ret`/`dy`/
 >   `vol`). Todo o resto é **derivado** do que o app já busca: setor (`segOf`/`a.seg`), cotação
 >   (`screenSymbols`+`applyQuotes`, `loadUsQuotes`), fundamentos (`loadAssetLive` → DY/P-L/P-VP
 >   ponderados **com cobertura declarada**) e desempenho desde a publicação vs **IBOV (BOVA11)**
@@ -86,8 +93,9 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 >   (órfãos desde a aposentadoria) e o padrão de linha do `initBacktest`. Gate: composição e
 >   setor **free**, desempenho/indicadores **Premium**. **Bloqueadores não técnicos:** validar
 >   direito de uso da composição (jurídico) e definir quem atualiza o JSON todo mês.
->   Dívida relacionada: o modal órfão `#carModal` (`index.html` l.1191–1196) ficou sem
->   `openCarteira()` — remover ou reaproveitar.
+>   O validador barra tanto **campos** proibidos (`ret`/`dy`/`vol`/`score`…) quanto **texto
+>   livre** com percentual ou afirmação de desempenho em `obs`/`nome`/`fonteTitulo`, que vão
+>   à tela verbatim. (Dívida do `#carModal` já resolvida: removido.)
 >
 > **App funcional (jul/2026) — dados reais, sem demo fora do dev.** Dados fictícios
 > agora vivem **só no Modo desenvolvedor** (donos). Fora dele, sem aportes, o painel

@@ -4504,6 +4504,7 @@ button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l);
 .ci-cv { color:var(--ink-4); font-size:12px; flex:none; }
 .ci-hero { display:flex; align-items:center; gap:13px; margin-bottom:12px; }
 .ci-hero .ci-av { width:46px; height:46px; border-radius:13px; font-size:13px; }
+.ci-av-ic { background:var(--brand-l); color:var(--brand); font-size:15px; }
 .ci-hero-t { font-size:16px; font-weight:700; color:var(--ink); line-height:1.3; }
 .ci-hero-s { font-size:12px; color:var(--ink-3); margin-top:3px; }
 .ci-srcbtn { width:100%; justify-content:center; }
@@ -6861,7 +6862,7 @@ const TOUR=[
   { sel:'[data-tour="carteira"]', pre:tourGroupPre, title:'Minha Carteira', text:'Cadastre seus aportes e acompanhe patrimônio, proventos, agenda de dividendos, watchlist, alertas e o Aporte Inteligente, tudo sincronizado na nuvem.' },
   { sel:'[data-tour="analise"]', pre:tourGroupPre, title:'Análise', text:'Ferramentas de decisão: Raio-X da carteira, Backtest, Stress Test e Rastreador.' },
   { sel:'.hcard-health', pre:tourContentPre, title:'Saúde da carteira', text:'Um retrato rápido da diversificação da sua carteira. Toque para abrir o Raio-X completo com concentração por ativo, setor e classe.' },
-  { sel:'.hdr-profile', pre:tourTopPre, title:'Sua conta', text:'Perfil, plano e tema claro/escuro ficam aqui no seu avatar. Para rever este tour, abra Suporte → Recursos.' },
+  { sel:'.hdr-profile', pre:tourTopPre, title:'Sua conta', text:'Perfil, plano e tema claro/escuro ficam aqui no seu avatar. Para rever este tour, abra Mais → Ajuda e Suporte.' },
   { center:true, ic:'fa-circle-check', title:'Tudo pronto!', text:'Explore à vontade. Você pode rever este tour quando quiser no menu da conta.' },
 ];
 function ensureTourEls(){ if(document.getElementById('tourOv')) return; const o=document.createElement('div'); o.id='tourOv'; o.className='tour-ov'; o.innerHTML='<div class="tour-blur" id="tourBlur"></div><div id="tourSpot" class="tour-spot"></div><div id="tourPop" class="tour-pop"></div>'; document.body.appendChild(o); }
@@ -9729,7 +9730,7 @@ function viewIR(){
   </div>`).join('');
   const apurando='<span class="ir-apur">apurando…</span>';
   return `${cartTabsHTML('ir')}
-  <div class="illus-note ir-como-note"><i class="fa-solid fa-circle-info"></i> <span>FIIs e dividendos de ações são <strong>isentos</strong>. Suas posições entram em <strong>Bens e Direitos</strong> pelo custo de aquisição. Venda de ações é isenta até <strong>R$ 20.000</strong> no mês; acima disso, 15% sobre o ganho (FII: 20%, sem isenção). Confirme sempre com seu contador.</span></div>
+  <div class="illus-note ir-como-note"><i class="fa-solid fa-circle-info"></i> <span>FIIs e dividendos de ações são <strong>isentos</strong>. Suas posições entram em <strong>Bens e Direitos</strong> pelo custo de aquisição. Venda de ações é isenta até <strong>R$ 20.000</strong> no mês; acima disso, 15% sobre o ganho (FII: 20%, sem isenção). Valores estimados: confirme sempre com seu contador.</span></div>
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-building-columns"></i></span> Bens e Direitos <span class="card-sub" style="margin-left:6px">· posição em 31/12</span></div></div>
     <div class="ir-bd-list">${bdRows}</div>
@@ -10468,7 +10469,7 @@ function viewMercado(){
   const conteudo = nCart ? `
   <div class="mkt-sec-t">Conteúdo</div>
   <div class="ci-list"><button class="ci-card" onclick="goView('carteirasinst')">
-    <span class="ci-av" style="background:var(--brand)"><i class="fa-solid fa-building-columns"></i></span>
+    <span class="ci-av ci-av-ic"><i class="fa-solid fa-building-columns"></i></span>
     <span class="ci-tx">
       <span class="ci-h"><b>Carteiras de instituições</b></span>
       <span class="ci-sub">${nCart} composiç${nCart>1?'ões':'ão'} publicada${nCart>1?'s':''} por casas de análise</span>
@@ -14446,7 +14447,7 @@ function viewCarteiraInst(id){
   const concentracao = conc ? `
   <div class="card card-pad" style="margin-top:var(--gap)">
     <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-compress"></i></span> Concentração da composição</div>
-    <div class="mstrip" style="grid-template-columns:repeat(4,1fr)">
+    <div class="mstrip">
       <div class="mcell"><div class="nm" style="margin-bottom:8px">Maior posição</div><div class="vl">${pc(conc.maior?conc.maior.peso:0,1)}%</div><div class="dl faint">${esc(conc.maior?conc.maior.tk:'—')}</div></div>
       <div class="mcell"><div class="nm" style="margin-bottom:8px">${nTop} maiores</div><div class="vl">${pc(conc.topPeso,1)}%</div><div class="dl faint">do peso publicado</div></div>
       <div class="mcell"><div class="nm" style="margin-bottom:8px">${termLabel('hhi','HHI')}</div><div class="vl">${Math.round(conc.hhi).toLocaleString('pt-BR')}</div><div class="dl faint">escala de 0 a 10.000</div></div>
@@ -14459,8 +14460,8 @@ function viewCarteiraInst(id){
   const atribuicao = `
   <div class="card card-pad" style="margin-top:var(--gap)">
     <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-scale-balanced"></i></span> Sobre esta carteira</div>
-    <p class="ci-disc">A composição acima foi <strong>publicada por ${esc(c.inst)}</strong> em <strong>${fmtDateBR(c.publicadoEm)}</strong>, com referência a <strong>${esc(cartCompLabel(c.competencia))}</strong>, e está disponível publicamente em <strong>${esc(host||cartHost(c.fonteUrl))}</strong>. Os direitos sobre o conteúdo original são da instituição.</p>
-    <p class="ci-disc">O <strong>Lastro não elabora, não endossa e não recomenda</strong> esta carteira: apenas a apresenta e calcula indicadores (setores, peso, DY médio, desempenho) a partir de <strong>cotações e fundamentos públicos</strong>. Nada aqui é recomendação de investimento, análise de valores mobiliários ou consultoria personalizada: não considera seu perfil, seus objetivos ou sua situação financeira. Antes de investir, <strong>consulte o relatório original</strong> e, se precisar, um profissional certificado.</p>
+    <p class="ci-disc">A composição acima foi <strong>publicada por ${esc(c.inst)}</strong> em <strong>${fmtDateBR(c.publicadoEm)}</strong>, com referência a <strong>${esc(cartCompLabel(c.competencia))}</strong>, e está disponível publicamente em <strong>${esc(host)}</strong>. Os direitos sobre o conteúdo original são da instituição.</p>
+    <p class="ci-disc">O <strong>Lastro não elabora, não endossa e não recomenda</strong> esta carteira: apenas a apresenta e calcula indicadores (setores, pesos e medidas de concentração) a partir de <strong>cotações e fundamentos públicos</strong>. Nada aqui é recomendação de investimento, análise de valores mobiliários ou consultoria personalizada: não considera seu perfil, seus objetivos ou sua situação financeira. Antes de investir, <strong>consulte o relatório original</strong> e, se precisar, um profissional certificado.</p>
     ${c.obs ? `<p class="ci-disc faint">${esc(c.obs)}</p>` : ''}
   </div>`;
 
@@ -14606,10 +14607,9 @@ function screenSymbols(){
     case 'carteira': CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(f&&f.k==='cripto') crypto.add(c.tk); else if(f&&!isUsAsset(f)) b3.add(c.tk); }); break;
     case 'noticias': ACOES.filter(isLiquidStock).forEach(a=> b3.add(a.tk)); break;   // "Em alta agora" ao vivo
     case 'carteirasinst': break;   // a lista mostra só procedência (sem cotação) — nada a buscar
-    case 'carteirainst': {         // composição da carteira aberta (+ BOVA11, base do desempenho)
+    case 'carteirainst': {         // composição da carteira aberta (BOVA11 entra na Fase 5, com o desempenho)
       const c = (typeof cartAtual==='function') ? cartAtual() : null;
       if(c) c.ativos.forEach(x=>{ const f=assetLookup(x.tk); if(!f) return; if(f.k==='cripto') crypto.add(f.a.tk); else if(!isUsAsset(f)) b3.add(f.a.tk); });
-      b3.add('BOVA11');
       break;
     }
     case 'watchlist': watchlist().forEach(tk=>{ const f=assetLookup(tk); if(f){ if(f.k==='cripto') crypto.add(tk); else if(f.k!=='stocks') b3.add(tk); } }); break;
