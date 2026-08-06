@@ -63,6 +63,16 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 > - **Barra inferior (mobile):** ilha flutuante mais baixa (`max(6px, safe-area)`).
 >
 > **Pendências (próximos passos):**
+> - **SINCRONIZAÇÃO — PRIORIDADE MÁXIMA antes do beta com amigos (ago/2026).** Pedido do Ramon:
+>   *"não quero perder dados… celular e computador com dados diferentes, a carteira não bate,
+>   quero tudo sincronizado em tempo real"*. **Causa estrutural:** o estado sobe como **blob
+>   único com last-write-wins** — dois aparelhos editando coisas diferentes e o mais novo leva
+>   TUDO (o outro aporte some, em silêncio). **Plano de desenho pronto:**
+>   `docs/PLANO-sync-tempo-real.md` — Fase 0 (hoje: tornar o sync visível, fila de pendências
+>   com backoff, poll barato por `rev`, backup local + exportar JSON), Fase 1 (**merge por união
+>   de MOVS** com tombstones em `vendor/sync.js` puro + `test/sync.test.mjs`, `CARTEIRA` só
+>   derivada, CAS por `rev` na RPC `save_state_v2`), Fase 2 (**Supabase Realtime** como
+>   notificação de `rev` — payload minúsculo — com degradação para poll). Zero função Vercel nova.
 > - **Livro de Movimentações — Fase 1 UI:** o NÚCLEO já está no ar (MOVS como fonte de
 >   verdade, migração, sync — `vendor/movs.js`, sem mudança visível). Falta a **interface**:
 >   botão "Registrar" (Compra/Venda/Provento/Caixa) + extrato + saldo em caixa na Carteira.
@@ -123,8 +133,11 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 > local pendente (`_dirty`, persistido em `lastro_dirty`) o aparelho **empurra o local**
 > em vez de adotar a nuvem; **(2)** carteira **vazia da nuvem nunca apaga** carteira
 > local com posições. `authLogout` só apaga os dados do aparelho se confirmar o flush
-> (senão pede confirmação). Há **status de sync visível** no menu da conta + "Sincronizar
-> agora" (`syncNow`, puxa antes de subir). **Trade-offs conhecidos (by-design):** *(M1)*
+> (senão pede confirmação). **CORREÇÃO (ago/2026): o status de sync NÃO está visível.**
+> `syncLabel()` e `syncNow()` (l. ~6315-6331) existem mas **não têm nenhum ponto de chamada** —
+> `acctMenuHTML()` não renderiza a linha de sync (perdida numa refatoração do menu). Hoje uma
+> gravação que falha é **invisível** para o usuário. Correção planejada na Fase 0 de
+> `docs/PLANO-sync-tempo-real.md`. **Trade-offs conhecidos (by-design):** *(M1)*
 > não dá para **esvaziar a carteira de forma sincronizada** — a blindagem (2) faz os
 > ativos "voltarem" no outro aparelho; *(M2)* um aparelho `_dirty` vence a nuvem sem
 > comparar `ts`, então edição concorrente do peer pode ser descartada. Ambos erram para

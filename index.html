@@ -1807,6 +1807,9 @@ input[type=range]::-moz-range-thumb {
 .range-tabs { display:flex; gap:3px; background:var(--surface-3); padding:3px; border-radius:9px; }
 .range-tabs button { font-size:11.5px; font-weight:500; padding:5px 11px; border-radius:6px; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
 .range-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
+.mais-devwarn { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; margin-bottom:var(--gap); border-radius:var(--r); background:color-mix(in srgb,var(--gold) 12%,transparent); border:1px solid color-mix(in srgb,var(--gold) 34%,transparent); font-size:12.5px; line-height:1.5; color:var(--ink-2); }
+.mais-devwarn i { color:var(--gold); margin-top:2px; }
+.mais-ic-warn { background:var(--down-l) !important; color:var(--down) !important; }
 .ds-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-3); margin-bottom:14px; }
 /* setor do bloco de pares: o título diz o CRITÉRIO, esta linha diz QUAL setor é */
 .ds-title + .peers-seg { margin:-10px 0 14px; font-size:13px; font-weight:600; color:var(--ink); letter-spacing:-.01em; }
@@ -6249,7 +6252,7 @@ async function authSignup(email, pass){
     const r=await fetch(`${c.SUPABASE_URL}/auth/v1/signup`, {method:'POST', headers:authHeaders(), body:JSON.stringify({email, password:pass})});
     const d=await r.json().catch(()=>({}));
     if(!r.ok) return {error: d.msg||d.error_description||d.error||'Falha no cadastro'};
-    if(d.access_token){ saveSession({access_token:d.access_token, refresh_token:d.refresh_token, user:{id:d.user.id, email:d.user.email}}); await saveCloudState(); return {ok:true}; }
+    if(d.access_token){ saveSession({access_token:d.access_token, refresh_token:d.refresh_token, user:{id:d.user.id, email:d.user.email}}); markCloudLoaded(); await saveCloudState(); return {ok:true}; }
     return {ok:true, confirm:true, email};
   }catch(e){ return {error:'Sem conexão com o servidor'}; }
 }
@@ -6266,7 +6269,10 @@ async function authLogin(email, pass){
   }catch(e){ return {error:'Sem conexão com o servidor'}; }
 }
 async function authLogout(){
-  const hadData = Array.isArray(CARTEIRA) && CARTEIRA.length>0;
+  // qualquer dado do usuário conta, não só posições em aberto (quem vendeu tudo ainda tem
+  // movimentações, watchlist e alertas — sair sem sincronizar apagaria tudo deste aparelho)
+  const hadData = (Array.isArray(CARTEIRA) && CARTEIRA.length>0) || (Array.isArray(MOVS) && MOVS.length>0)
+    || ((watchlist()||[]).length>0) || ((getAlerts()||[]).length>0);
   // FORÇA salvar na nuvem antes de sair. Só apagamos os dados deste aparelho se confirmarmos
   // que estão salvos — senão o usuário perderia a carteira (foi o bug relatado no PC).
   let flushed=true; try{ flushed = await flushCloudState(false, true); }catch(e){ flushed=false; }
@@ -6283,7 +6289,7 @@ function _doLogout(){
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
-  ['lastro_carteira','lastro_movs','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts','lastro_dirty'].forEach(k=>localStorage.removeItem(k));
+  ['lastro_carteira','lastro_movs','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts','lastro_dirty','lastro_testmode','lastro_dev_bkp'].forEach(k=>localStorage.removeItem(k));
   _stateTs = 0; clearDirty(); setSync('idle','');   // zera o relógio de sync — o próximo login adota o estado da nuvem
   try{ sessionStorage.removeItem('lastro_unlocked'); }catch(e){}   // ao sair, o próximo acesso pede biometria de novo
   localStorage.setItem('lastro_plan','free');          // cache visual → Gratuito; o próximo login rehidrata do servidor
@@ -6308,6 +6314,16 @@ let _applyingCloud=false;   // enquanto aplicamos a nuvem, nenhuma escrita re-em
    aparelho que editou mas não conseguiu subir (ex.: token expirado) não perde a prioridade
    ao recarregar — ele empurra o local em vez de adotar uma nuvem possivelmente vazia/antiga. */
 let _dirty=(function(){ try{ return localStorage.getItem('lastro_dirty')==='1'; }catch(e){ return false; } })();
+/* TRAVA DE SEGURANÇA (a mais importante deste bloco): enquanto NÃO tivermos lido a nuvem com
+   sucesso nesta sessão, NADA sobe. Sem isto, um login em que o GET falha (rede ruim, 500,
+   portal de Wi-Fi) mostrava "carteira vazia"; o usuário cadastrava um aporte e esse blob
+   quase-vazio subia por cima da conta inteira — e as blindagens de "array vazio" não pegavam,
+   porque o array não estava vazio, tinha 1 item. Perda total e silenciosa. */
+let _cloudLoaded=false;
+function markCloudLoaded(){ _cloudLoaded=true; }
+/* true = pode gravar. Enquanto false, a mutação fica marcada como pendente (dirty) e sobe
+   assim que a primeira leitura der certo — nada se perde, só adia. */
+function canPushCloud(){ return _cloudLoaded; }
 function clearDirty(){ _dirty=false; try{ localStorage.removeItem('lastro_dirty'); }catch(e){} }
 /* estado de sincronização VISÍVEL (diagnóstico): idle | saving | ok | error (com mensagem do servidor) */
 const SYNC = { state:'idle', at:0, msg:'' };
@@ -6333,28 +6349,37 @@ async function syncNow(){
    adotado da nuvem). Assim, mesmo num aparelho com relógio atrasado, uma edição local feita
    DEPOIS de adotar a nuvem ainda supera o ts da nuvem — evita perder a própria edição. */
 function touchState(){ _stateTs = Math.max(Date.now(), _stateTs+1); _dirty=true; try{ localStorage.setItem('lastro_state_ts', String(_stateTs)); localStorage.setItem('lastro_dirty','1'); }catch(e){} }
-function syncOnReturn(){ if(!isAuthed()) return; const now=Date.now(); if(now-_lastSync<4000) return; _lastSync=now; try{ loadCloudState(); }catch(e){} }
+/* NÃO adotar a nuvem no meio de uma edição: trocar CARTEIRA/MOVS por baixo de um modal
+   aberto faz o "Salvar" gravar em cima de um lote que já não é o mesmo. A guarda estava só
+   no poll de 15s; focus/visibilitychange entravam sem ela. */
+function syncBusy(){
+  const ae=document.activeElement;
+  if(ae && (ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable)) return true;
+  return !!document.querySelector('.modal-scrim.open');
+}
+function syncOnReturn(){ if(!isAuthed() || syncBusy()) return; const now=Date.now(); if(now-_lastSync<4000) return; _lastSync=now; try{ loadCloudState(); }catch(e){} }
 async function loadCloudState(){
   if(typeof testModeOn==='function' && testModeOn()) return;   // modo dev: não puxa a nuvem por cima dos dados de teste
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return;
   // PROTEÇÃO 1: temos mutação local ainda não confirmada na nuvem (ex.: token estava expirado) →
   // a nossa versão manda. Não puxa nada: empurra o local (agora com o token renovado no sbFetch).
-  if(_dirty){ try{ saveCloudState(); }catch(e){} return; }
+  if(_dirty){ try{ saveCloudState(true); }catch(e){} return; }
   try{
     const r=await sbFetch(`${c.SUPABASE_URL}/rest/v1/user_state?select=data&user_id=eq.${s.user.id}`, {});
-    if(!r.ok){ if(r.status===401) setSync('error','401 · sessão expirada'); return; } const rows=await r.json();
+    if(!r.ok){ setSync('error', r.status===401 ? '401 · sessão expirada' : 'HTTP '+r.status); return; } const rows=await r.json();
     const d = rows[0] && rows[0].data;
-    if(!d){ await saveCloudState(); return; }   // primeira vez: envia o estado local
+    markCloudLoaded();   // 200 confirmado: a partir daqui sabemos o que existe lá e pode gravar
+    if(!d){ await saveCloudState(); return; }   // conta nova (200 com 0 linhas): envia o estado local
     // PROTEÇÃO 2: nuvem com carteira VAZIA nunca apaga uma carteira local com posições —
     // mantém o local e o empurra. (Um portfólio real jamais é "sincronizado para vazio".)
     // EXCEÇÃO: se a nuvem traz `movs` não-vazio, a carteira vazia é um estado LEGÍTIMO (100%
     // vendida) — não é wipe; deixa seguir para a comparação por ts (o ts atrasado ainda protege).
-    if(Array.isArray(d.carteira) && d.carteira.length===0 && Array.isArray(CARTEIRA) && CARTEIRA.length>0 && !(Array.isArray(d.movs) && d.movs.length>0)){ try{ saveCloudState(); }catch(e){} return; }
+    if(Array.isArray(d.carteira) && d.carteira.length===0 && Array.isArray(CARTEIRA) && CARTEIRA.length>0 && !(Array.isArray(d.movs) && d.movs.length>0)){ try{ saveCloudState(true); }catch(e){} return; }
     // Quem é mais novo? Se o local tem mutações e a nuvem não é mais recente, mantemos o local
     // (e, se estivermos à frente, empurramos). Só adotamos a nuvem quando ela é de fato mais nova.
     const cts = +d.ts || 0;
     if(_stateTs > 0 && cts <= _stateTs){
-      if(cts < _stateTs){ try{ saveCloudState(); }catch(e){} }   // nuvem atrasada → sobe o local
+      if(cts < _stateTs){ try{ saveCloudState(true); }catch(e){} }   // nuvem atrasada → sobe o local
       return;
     }
     // migração (nuvem e local sem carimbo): não deixe uma nuvem VAZIA apagar dados reais locais
@@ -6398,7 +6423,7 @@ async function loadCloudState(){
     } finally { _applyingCloud=false; }
     // adota o carimbo da nuvem para não re-empurrar (se ela não tinha ts, estabelece um agora)
     _stateTs = cts || Date.now(); try{ localStorage.setItem('lastro_state_ts', String(_stateTs)); }catch(e){}
-    if(_movsPushBack){ try{ saveCloudState(); }catch(e){} }   // nuvem tentou zerar movs local → reempurra o local rico
+    if(_movsPushBack){ try{ saveCloudState(true); }catch(e){} }   // nuvem tentou zerar movs local → reempurra o local rico
     refreshPlanUI();
     render(currentView);   // reflete preferências (tema/visualização) imediatamente
   }catch(e){}
@@ -6413,29 +6438,56 @@ function _postCloudDirect(s,c,keepalive){
 /* grava via RPC save_state: o SERVIDOR carimba o ts (resolve clock-skew entre aparelhos) e
    devolve esse ts autoritativo, que adotamos localmente. Se a função não existir no projeto
    (404/404-ish), cai no upsert direto — o app continua sincronizando mesmo sem a migração. */
-async function _postCloud(s,c,keepalive){
+let _inflight = Promise.resolve();   // FILA: uma gravação por vez (ver _postCloud)
+/* SERIALIZADO. Sem a fila, duas gravações em voo podiam chegar fora de ordem em rede ruim: a
+   resposta lenta com o payload ANTIGO chegava depois e virava a versão mais nova no servidor,
+   ressuscitando um estado já superado — e ainda limpava o "pendente", então nem havia retry.
+   Além disso só se limpa o pendente se NADA mudou entre montar o payload e a resposta. */
+function _postCloud(s,c,keepalive){
+  const run = () => _postCloudOnce(s,c,keepalive);
+  const p = _inflight.then(run, run);
+  _inflight = p.catch(()=>{});   // a fila nunca quebra por causa de uma falha
+  return p;
+}
+async function _postCloudOnce(s,c,keepalive){
   setSync('saving');
-  // 1) tenta a RPC (carimbo do servidor); em QUALQUER falha, cai no upsert direto.
+  const sent = _stateTs;   // versão que está sendo enviada
+  // só declara "salvo" se nenhuma mutação nova entrou enquanto a requisição estava em voo
+  const settle = () => { if(_stateTs===sent) clearDirty(); setSync('ok'); };
+  const body = JSON.stringify({ p_data: cloudPayload() });
+  // keepalive tem teto de 64KB no fetch: acima disso a requisição falha CALADA. Payload
+  // grande (muitas movimentações + foto de perfil) sai sem keepalive — melhor arriscar o
+  // corte ao fechar a aba do que garantir que nada suba.
+  const ka = !!keepalive && body.length < 60000;
   try{
-    const r=await sbFetch(`${c.SUPABASE_URL}/rest/v1/rpc/save_state`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ p_data: cloudPayload() }), keepalive:!!keepalive});
-    if(r.ok){ try{ const ts=await r.clone().json(); const n=Number(ts); if(isFinite(n) && n>0){ _stateTs=n; try{ localStorage.setItem('lastro_state_ts', String(n)); }catch(e){} } }catch(e){} clearDirty(); setSync('ok'); return r; }
+    const r=await sbFetch(`${c.SUPABASE_URL}/rest/v1/rpc/save_state`, {method:'POST', headers:{'Content-Type':'application/json'}, body, keepalive:ka});
+    if(r.ok){ try{ const ts=await r.clone().json(); const n=Number(ts); if(isFinite(n) && n>0 && _stateTs===sent){ _stateTs=n; try{ localStorage.setItem('lastro_state_ts', String(n)); }catch(e){} } }catch(e){} settle(); return r; }
   }catch(e){ /* rede/rpc indisponível → tenta o upsert direto abaixo */ }
   // 2) fallback: grava direto na tabela user_state
   try{
-    const r2=await _postCloudDirect(s,c,keepalive);
-    if(r2 && r2.ok){ clearDirty(); setSync('ok'); return r2; }
+    const r2=await _postCloudDirect(s,c,ka);
+    if(r2 && r2.ok){ settle(); return r2; }
     let reason=''; try{ const b=await r2.clone().json(); reason=(b&&(b.message||b.hint||b.details||b.code))||''; }catch(e){}
     setSync('error', `HTTP ${r2?r2.status:'?'}${reason?' · '+String(reason).slice(0,80):''}`);
     return r2 || {ok:false, status:0};
   }catch(e){ setSync('error','sem conexão'); return {ok:false, status:0}; }
 }
-function saveCloudState(){
+/* `fromPull=true` = empurrão disparado por uma LEITURA (nuvem atrasada/ausente), não por
+   edição do usuário. Nesse caso não se chama touchState(): inflar o carimbo sem mutação real
+   fazia um aparelho com dados velhos vencer o outro, e marcá-lo dirty o prendia no estado
+   "só empurra, nunca puxa" mesmo sem ninguém ter editado nada. */
+function saveCloudState(fromPull){
   if(_applyingCloud) return Promise.resolve();   // enquanto adotamos a nuvem, não re-empurramos (sem eco)
   if(typeof testModeOn==='function' && testModeOn()) return Promise.resolve();   // modo dev: nunca grava dados de teste na nuvem
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
-  touchState();   // registra o momento desta mutação local (só com sessão real — base da reconciliação)
-  clearTimeout(_cloudT);
-  return new Promise(res=>{ _cloudT=setTimeout(async()=>{ try{ const r=await _postCloud(s,c); if(r&&r.ok) clearDirty(); }catch(e){} res(); }, 700); });
+  if(!fromPull) touchState();   // registra o momento desta mutação local (base da reconciliação)
+  // TRAVA: sem ter lido a nuvem nesta sessão, não grava. A mutação fica pendente e sobe depois.
+  if(!canPushCloud()) return Promise.resolve();
+  if(_cloudT){ clearTimeout(_cloudT.id); _cloudT.res(); }   // resolve o anterior: await não pode ficar preso
+  return new Promise(res=>{
+    const id=setTimeout(async()=>{ _cloudT=null; try{ await _postCloud(s,c); }catch(e){} res(); }, 700);
+    _cloudT={id, res};
+  });
 }
 /* envia imediatamente o que estiver pendente (evita perder dados ao sair/fechar).
    IMPORTANTE: só grava se houver mutação local pendente (_dirty) OU force=true. Assim, um
@@ -6444,12 +6496,33 @@ function saveCloudState(){
 function flushCloudState(keepalive, force){
   if(typeof testModeOn==='function' && testModeOn()) return Promise.resolve(true);   // modo dev: não sincroniza
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve(true);
-  if(!force && !_dirty){ clearTimeout(_cloudT); return Promise.resolve(true); }   // nada pendente: não clobbera a nuvem
-  clearTimeout(_cloudT);
-  return _postCloud(s,c,keepalive).then(r=>{ const ok=!!(r&&r.ok); if(ok) clearDirty(); return ok; }).catch(()=>false);
+  if(!canPushCloud()) return Promise.resolve(false);   // não li a nuvem nesta sessão: não gravo por cima dela
+  if(!force && !_dirty){ if(_cloudT){ clearTimeout(_cloudT.id); _cloudT.res(); _cloudT=null; } return Promise.resolve(true); }
+  if(_cloudT){ clearTimeout(_cloudT.id); _cloudT.res(); _cloudT=null; }
+  return _postCloud(s,c,keepalive).then(r=>!!(r&&r.ok)).catch(()=>false);
 }
-window.addEventListener('pagehide', ()=>{ try{ flushCloudState(true); }catch(e){} });
-document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden'){ try{ flushCloudState(true); }catch(e){} } });
+/* No iOS, ir para segundo plano dispara pagehide E visibilitychange: sem esta trava saíam
+   DUAS gravações concorrentes do mesmo estado, que era justamente a corrida a evitar. */
+let _flushAt=0;
+function flushOnLeave(){ const n=Date.now(); if(n-_flushAt<1500) return; _flushAt=n; try{ flushCloudState(true); }catch(e){} }
+window.addEventListener('pagehide', flushOnLeave);
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') flushOnLeave(); });
+/* voltou a rede → tenta subir o que ficou pendente (sem isso, só na próxima edição) */
+window.addEventListener('online', ()=>{ try{ if(_dirty) flushCloudState(false, true); }catch(e){} });
+/* DUAS ABAS do mesmo navegador: CARTEIRA/MOVS eram lidos do localStorage só no boot e viviam
+   em memória. A aba B, aberta antes, salvava a SUA cópia por cima do que a aba A acabara de
+   lançar — e ainda subia esse blob incompleto. O evento 'storage' só chega nas OUTRAS abas. */
+window.addEventListener('storage', (e)=>{
+  if(!e || !e.key) return;
+  if(e.key==='lastro_movs' || e.key==='lastro_carteira'){
+    try{
+      if(e.key==='lastro_movs' && typeof MOVS!=='undefined'){ MOVS=JSON.parse(localStorage.getItem('lastro_movs')||'[]'); if(typeof rebuildCarteira==='function'){ rebuildCarteira(); } }
+      else { CARTEIRA=JSON.parse(localStorage.getItem('lastro_carteira')||'[]'); if(typeof normLots==='function') normLots(); }
+      _stateTs = Math.max(_stateTs, +localStorage.getItem('lastro_state_ts')||0);
+      if(!syncBusy()) render(currentView);
+    }catch(err){}
+  }
+});
 /* validade (ms) do access_token atual, lida do próprio JWT (claim exp) */
 function tokenExpMs(){ try{ const s=getSession(); if(!s||!s.access_token) return 0; let p=s.access_token.split('.')[1]; if(!p) return 0; p=p.replace(/-/g,'+').replace(/_/g,'/'); if(p.length%4) p+='='.repeat(4-p.length%4); const j=JSON.parse(atob(p)); return (+j.exp||0)*1000; }catch(e){ return 0; } }
 /* Renova o token ANTES de expirar (proativo). É o que impede o "JWT expired" que travava a
@@ -10465,7 +10538,14 @@ function viewMais(){
   const planItem = isPremium()
     ? `<button class="mais-row" onclick="nav('assinatura')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-txt"><span class="mais-lbl">Minha assinatura</span><span class="mais-sub">${_renew||'Gerencie seu plano e cobranças'}</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`
     : `<button class="mais-row" onclick="nav('planos')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-txt"><span class="mais-lbl">Planos e assinatura</span><span class="mais-sub">Compare os planos e assine</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`;
+  /* SINCRONIZAÇÃO VISÍVEL. syncLabel()/syncNow() existiam mas NUNCA eram chamadas: uma
+     gravação que falhava era 100% invisível e o usuário não tinha como forçar. Agora o
+     estado aparece e dá para tocar para sincronizar na hora. */
+  const syncRow = authed ? `<button class="mais-row" id="maisSyncRow" onclick="syncNow()"><span class="mais-ic ${SYNC.state==='error'?'mais-ic-warn':''}"><i class="fa-solid ${SYNC.state==='error'?'fa-triangle-exclamation':'fa-cloud-arrow-up'}"></i></span><span class="mais-txt"><span class="mais-lbl">Sincronização</span><span class="mais-sub" id="maisSyncLbl">${esc(syncLabel())}</span></span><i class="fa-solid fa-rotate mais-cv"></i></button>` : '';
+  /* modo dev desliga o sync INTEIRO: sem este aviso o aparelho fica numa ilha em silêncio */
+  const devWarn = (typeof devModeOn==='function' && devModeOn()) ? `<div class="mais-devwarn"><i class="fa-solid fa-triangle-exclamation"></i> <span><b>Modo desenvolvedor ligado.</b> Este aparelho não sincroniza com a nuvem. Desligue no menu da conta para voltar a sincronizar.</span></div>` : '';
   const conta=`<div class="mais-sec-t">Conta</div><div class="mais-grp">
+    ${syncRow}
     ${planItem}
     ${authed?`<button class="mais-row" onclick="nav('indicar')"><span class="mais-ic"><i class="fa-solid fa-gift"></i></span><span class="mais-txt"><span class="mais-lbl">Indique e Ganhe</span><span class="mais-sub">Ganhe 20% de cada amigo, via PIX</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
     <button class="mais-row" onclick="nav('ajuda')"><span class="mais-ic"><i class="fa-solid fa-headset"></i></span><span class="mais-txt"><span class="mais-lbl">Ajuda &amp; Suporte</span><span class="mais-sub">Central de ajuda e FAQ</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
@@ -10477,7 +10557,7 @@ function viewMais(){
     <button class="${pref==='dark'?'on':''}" onclick="setThemePref('dark')" aria-label="Tema escuro"><i class="fa-solid fa-moon"></i></button>
     <button class="${pref==='auto'?'on':''}" onclick="setThemePref('auto')" aria-label="Tema automático"><i class="fa-solid fa-circle-half-stroke"></i></button>
   </div></div>`;
-  return `${head}${upsell}${searchBox}${grpHTML}${conta}${themeRow}${authed?`<button class="mais-logout" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>`:''}`;
+  return `${head}${devWarn}${upsell}${searchBox}${grpHTML}${conta}${themeRow}${authed?`<button class="mais-logout" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>`:''}`;
 }
 function filterMais(q){ q=(q||'').trim().toLowerCase();
   document.querySelectorAll('.mais-grp').forEach(grp=>{ let any=false;

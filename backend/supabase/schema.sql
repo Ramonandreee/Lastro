@@ -72,6 +72,39 @@ drop policy if exists "user_state update own" on public.user_state;
 create policy "user_state update own" on public.user_state for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ════════════════════════════════════════════════════════════
+-- ════════════════════════════════════════════════════════════
+-- HISTÓRICO DO ESTADO (rede de segurança contra perda de dados)
+-- ════════════════════════════════════════════════════════════
+-- Toda gravação via save_state arquiva aqui a versão anterior. É o que transforma
+-- "perdi a carteira" em "dá para recuperar". O dono LÊ o próprio histórico; ninguém
+-- escreve direto (a escrita acontece dentro da função, como o próprio usuário).
+create table if not exists public.user_state_history (
+  id         bigint generated always as identity primary key,
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  data       jsonb not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists user_state_history_user_idx
+  on public.user_state_history (user_id, created_at desc);
+
+alter table public.user_state_history enable row level security;
+
+drop policy if exists "own history read" on public.user_state_history;
+create policy "own history read" on public.user_state_history
+  for select using (auth.uid() = user_id);
+
+-- a inserção vem de dentro de save_state (security invoker = roda como o usuário)
+drop policy if exists "own history insert" on public.user_state_history;
+create policy "own history insert" on public.user_state_history
+  for insert with check (auth.uid() = user_id);
+
+-- poda: mantém as 50 versões mais recentes por usuário (evita a tabela crescer sem limite).
+-- Rode manualmente de tempos em tempos, ou agende com pg_cron se disponível.
+-- delete from public.user_state_history h using (
+--   select id from public.user_state_history where user_id = h.user_id
+--   order by created_at desc offset 50
+-- ) old where h.id = old.id;
+
 -- SINCRONIZAÇÃO entre aparelhos: gravação com carimbo do SERVIDOR.
 -- Resolve o "clock-skew" (um aparelho com a hora errada ganhando sempre): o carimbo (ts) que
 -- decide "quem é mais novo" passa a vir do relógio do BANCO, não do celular/PC. O cliente chama
@@ -91,6 +124,11 @@ begin
   end if;
   v_ts   := (extract(epoch from clock_timestamp()) * 1000)::bigint;
   v_data := coalesce(p_data, '{}'::jsonb) || jsonb_build_object('ts', v_ts);
+  -- REDE DE SEGURANÇA: guarda a versão ANTERIOR antes de sobrescrever. Sem isto, uma única
+  -- gravação ruim (aparelho com estado velho, bug de cliente, usuário apagando sem querer)
+  -- destrói a carteira de forma IRRECUPERÁVEL. Com o histórico, recuperar é um select.
+  insert into public.user_state_history (user_id, data)
+    select user_id, data from public.user_state where user_id = auth.uid();
   insert into public.user_state (user_id, data, updated_at)
     values (auth.uid(), v_data, now())
   on conflict (user_id) do update
