@@ -7057,6 +7057,17 @@ function syncTabBar(v){
   const tab = VIEW_TAB[key] || '';
   document.querySelectorAll('#tabbar .tab-item').forEach(b=>{ b.classList.toggle('active', b.dataset.tab===tab); });
 }
+/* Mantém a aba ativa (Resumo/Proventos/…/IR) VISÍVEL na barra horizontal. Sem isso, ao
+   trocar de aba a barra volta ao início e a aba escolhida (ex.: IR, à direita) fica fora
+   da tela — dá a impressão de ter "voltado pro Resumo". Só rola quando ela não está à vista. */
+function scrollCartTabIntoView(){
+  const inner=document.querySelector('.cart-tabs .stabs-inner'); if(!inner) return;
+  const on=inner.querySelector('.atab.on'); if(!on) return;
+  const left=on.offsetLeft, right=left+on.offsetWidth;
+  const viewL=inner.scrollLeft, viewR=viewL+inner.clientWidth;
+  if(left < viewL+16) inner.scrollLeft = Math.max(0, left-16);
+  else if(right > viewR-16) inner.scrollLeft = right - inner.clientWidth + 40;   // +40 passa o fade da direita
+}
 /* ── Vistos recentemente (gancho de retenção do Hub Mercado) ── */
 function getRecent(){ try{ return JSON.parse(localStorage.getItem('lastro_recent')||'[]'); }catch(e){ return []; } }
 function pushRecent(tk){ try{ let r=getRecent().filter(x=>x!==tk); r.unshift(tk); localStorage.setItem('lastro_recent', JSON.stringify(r.slice(0,8))); }catch(e){} }
@@ -10583,6 +10594,7 @@ function destroyCharts(){ Object.values(charts).forEach(c=>{try{c.destroy()}catc
 function afterRender(v, soft){
   destroyCharts();
   syncTabBar(v);                                    // acende a aba da seção (cobre boot e render() direto)
+  scrollCartTabIntoView();                          // deixa a aba ativa (ex.: IR) visível na barra horizontal
   if(typeof applyPriv==='function') applyPriv();   // reaplica máscara de privacidade nos valores recém-renderizados
   illusInit();                                     // recolhe as notas explicativas (ⓘ)
   document.body.classList.toggle('view-inicio', v==='painel');
