@@ -4128,6 +4128,8 @@ button.mp-cell:active { background:var(--surface-3); }
 .phm-lg > span { margin:0 4px; }
 
 @media (min-width:620px){ .ph-foot { grid-template-columns:repeat(3,1fr); } }
+/* hero da Carteira tem 2 células: não deve virar 3 colunas com uma vazia */
+.ph-foot.ph-foot-2 { grid-template-columns:repeat(2,1fr); }
 /* seletor Compra/Venda do modal de movimento */
 .pos-mode { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; background:var(--surface-3); border-radius:12px; margin-bottom:4px; }
 .pm-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:10px 0; border:none; border-radius:9px; background:transparent; color:var(--ink-3); font-family:var(--sans); font-size:13.5px; font-weight:600; cursor:pointer; transition:background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease); -webkit-tap-highlight-color:transparent; }
@@ -7924,8 +7926,6 @@ function viewCarteira(){
   const p = portfolioStats();
   const byT = p._byT;
   const n = byT.length;
-  const concentracao = n ? Math.max(...byT.map(g=>p.atual? g.val/p.atual*100 : 0)) : 0;
-  const saude = n ? Math.max(0, Math.round(100 - (concentracao>30?15:6) - (n<6?12:0) - (n<3?10:0))) : 0;
   // Carteira real é Premium: no teste/assinatura adiciona normalmente; fora disso o botão vira "Criar conta / Desbloquear"
   const addBtn = isPro()
     ? `<button class="btn btn-primary" onclick="openPosModal()"><i class="fa-solid fa-plus"></i> Adicionar aporte</button>`
@@ -7958,19 +7958,20 @@ function viewCarteira(){
   <div class="cart-sum-head"><div class="sec-title" style="margin:0;font-size:19px">Minha carteira${demoMode?' <span class="chip ilus" style="vertical-align:middle"><i class="fa-solid fa-flask"></i> demonstração</span>':''}</div><button class="priv-eye" onclick="togglePriv()" title="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
   <!-- resumo em bloco único (mesmo componente do hero de Proventos) — antes eram 4 células em 2 linhas -->
   <div class="prov-hero cart-hero">
-    <div class="ph-top"><span class="ph-eyebrow">Patrimônio</span>${p.provPend?`<span class="ag-tag" style="background:var(--surface-3);color:var(--ink-3)"><i class="fa-solid fa-hourglass-half"></i> ${_provDown?'proventos indisponíveis':'apurando proventos'}</span>`:`<span class="ag-tag ag-tag-real"><i class="fa-solid fa-circle-check"></i> proventos reais</span>`}</div>
+    <!-- sem selo no caminho feliz: "proventos reais" é o esperado, não notícia. Só os estados
+         degradados (apurando/indisponível) aparecem, porque aí o número da tela está incompleto. -->
+    <div class="ph-top"><span class="ph-eyebrow">Patrimônio</span>${p.provPend?`<span class="ag-tag" style="background:var(--surface-3);color:var(--ink-3)"><i class="fa-solid fa-hourglass-half"></i> ${_provDown?'proventos indisponíveis':'apurando proventos'}</span>`:''}</div>
     <div class="ph-val priv-blur">${brl(p.atual)}</div>
     <!-- linha de variação: o resultado COM proventos é o número-título da tela. Enquanto os
          proventos não fecham, mostra a valorização e diz que é só ela — nunca um total incompleto. -->
     <div class="ph-meta">${p.provPend
       ? deltaHTML(p.lucro, p.lucroP, 'de valorização desde o 1º aporte')
       : deltaHTML(p.lucroProv, p.lucroProvP, 'desde o 1º aporte')}</div>
-    <div class="ph-foot">
+    <div class="ph-foot ph-foot-2">
       <!-- o resultado c/ proventos subiu para a linha de variação; aqui fica a valorização pura,
            que é a outra metade da conta (preço × proventos) e antes não aparecia em lugar nenhum -->
       <div class="ph-stat"><span class="l">Valorização</span><b class="v priv-blur ${p.lucro>=0?'up':'down'}">${p.lucro>=0?'+':''}${brl(p.lucro)}</b><span class="s ${p.lucroP>=0?'up':'down'}">${p.lucroP>=0?'+':''}${pc(p.lucroP,1)}% <span style="color:var(--ink-4)">sem proventos</span></span></div>
       <div class="ph-stat"><span class="l">Proventos recebidos</span>${p.provPend?`<b class="v faint" style="font-size:13px">${_provDown?'indisponível':'apurando…'}</b>`:`<b class="v priv-blur up">${brl(p.prov)}</b><span class="s">~${brl(p.renda)}/mês (est.)</span>`}</div>
-      <div class="ph-stat"><span class="l">Saúde da carteira</span><b class="v" style="color:${scoreColor(saude)}">${saude}<span style="font-size:11px;color:var(--ink-4)">/100</span></b><span class="s" style="color:${scoreColor(saude)}">${scoreTier(saude)}</span></div>
     </div>
   </div>
 
