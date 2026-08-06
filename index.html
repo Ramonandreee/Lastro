@@ -7060,16 +7060,28 @@ function syncTabBar(v){
   const tab = VIEW_TAB[key] || '';
   document.querySelectorAll('#tabbar .tab-item').forEach(b=>{ b.classList.toggle('active', b.dataset.tab===tab); });
 }
-/* Mantém a aba ativa (Resumo/Proventos/…/IR) VISÍVEL na barra horizontal. Sem isso, ao
-   trocar de aba a barra volta ao início e a aba escolhida (ex.: IR, à direita) fica fora
-   da tela — dá a impressão de ter "voltado pro Resumo". Só rola quando ela não está à vista. */
+/* A barra de abas é RECRIADA a cada render, então o scroll dela voltaria a 0 e a aba
+   escolhida (ex.: IR, à direita) sumiria da tela — parecia ter "voltado pro Resumo".
+   Guardamos a posição antes do render e devolvemos depois: tocar numa aba que já está
+   à vista não mexe a barra um pixel. Só quando, mesmo assim, a aba ativa ficar fora da
+   vista (ex.: chegar por atalho de outra tela) é que rolamos o mínimo para revelá-la. */
+let _cartTabsX = 0;
+function saveCartTabScroll(){
+  const inner=document.querySelector('.cart-tabs .stabs-inner');
+  _cartTabsX = inner ? inner.scrollLeft : 0;
+}
 function scrollCartTabIntoView(){
-  const inner=document.querySelector('.cart-tabs .stabs-inner'); if(!inner) return;
+  const inner=document.querySelector('.cart-tabs .stabs-inner');
+  if(!inner){ _cartTabsX = 0; return; }
+  inner.scrollLeft = _cartTabsX;                 // devolve a posição: sem rolagem automática
   const on=inner.querySelector('.atab.on'); if(!on) return;
-  const left=on.offsetLeft, right=left+on.offsetWidth;
-  const viewL=inner.scrollLeft, viewR=viewL+inner.clientWidth;
-  if(left < viewL+16) inner.scrollLeft = Math.max(0, left-16);
-  else if(right > viewR-16) inner.scrollLeft = right - inner.clientWidth + 40;   // +40 passa o fade da direita
+  // geometria REAL: .stabs-inner não é position:relative, então offsetLeft não é relativo
+  // a ele e a conta de "está visível?" daria errado. Rect é sempre no mesmo referencial.
+  const rIn=inner.getBoundingClientRect(), rOn=on.getBoundingClientRect();
+  const M=16;                                  // respiro; à direita há o fade do scroller
+  if(rOn.left < rIn.left + M)        inner.scrollLeft -= (rIn.left + M) - rOn.left;
+  else if(rOn.right > rIn.right - M) inner.scrollLeft += rOn.right - (rIn.right - M) + 24;
+  _cartTabsX = inner.scrollLeft;
 }
 /* ── Vistos recentemente (gancho de retenção do Hub Mercado) ── */
 function getRecent(){ try{ return JSON.parse(localStorage.getItem('lastro_recent')||'[]'); }catch(e){ return []; } }
@@ -7077,6 +7089,7 @@ function pushRecent(tk){ try{ let r=getRecent().filter(x=>x!==tk); r.unshift(tk)
 
 function render(v, soft){
   const c = $('#content');
+  saveCartTabScroll();          // a barra de abas some no innerHTML abaixo: guarda onde ela estava
   if(v==='painel')       c.innerHTML = viewPainel();
   else if(v==='mercado')     c.innerHTML = viewMercado();
   else if(v==='mais')        c.innerHTML = viewMais();
