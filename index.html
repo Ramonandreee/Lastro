@@ -5602,8 +5602,6 @@ const SUPPORT_FAQ=[
 function faqToggle(el){ const it=el.closest('.faq-item'); if(it) it.classList.toggle('open'); }
 /* ── VIEW: Central de ajuda (página inteira, irmã de Perfil/Assinatura) ── */
 function viewAjuda(){
-  const u=currentUser(); const tier=planTier();
-  const planChip = tier==='pro'?'<span class="acct-plan pro"><i class="fa-solid fa-crown"></i> Investidor Pro</span>':tier==='premium'?'<span class="acct-plan prem"><i class="fa-solid fa-crown"></i> Premium</span>':'<span class="acct-plan free">Gratuito</span>';
   const faq=SUPPORT_FAQ.map(([q,a])=>`<div class="faq-item"><button class="faq-q" onclick="faqToggle(this)"><span>${q}</span><i class="fa-solid fa-chevron-down"></i></button><div class="faq-a"><p>${a}</p></div></div>`).join('');
   /* título padrão em vez do hero: "Como podemos ajudar?/Fale com a gente" repetia o 1º card */
   return `<div class="ajuda-page">
@@ -5626,7 +5624,7 @@ function viewAjuda(){
       </div>
       <div class="card card-pad">
         <div class="perfil-card-t"><i class="fa-solid fa-compass"></i> Primeiros passos</div>
-        <p class="ajuda-p">Um tour guiado pelas telas principais da Lastro — leva menos de um minuto e mostra onde fica cada coisa.</p>
+        <p class="ajuda-p">Um tour rápido pelas telas principais, em menos de um minuto.</p>
         <button class="btn btn-ghost prof-btn" onclick="if(typeof startTour==='function') startTour()"><i class="fa-solid fa-circle-play" style="color:var(--brand)"></i> Como funciona</button>
       </div>
     </div>
@@ -5636,7 +5634,7 @@ function viewAjuda(){
     </div>
     <div class="sup-foot">
       <span class="sup-status"><span class="sup-dot"></span> Todos os sistemas operando</span>
-      <span>${u?planChip+' · ':''}Versão ${APP_VERSION}</span>
+      <span>Versão ${APP_VERSION}</span>
     </div>
   </div>`;
 }
