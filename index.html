@@ -13489,58 +13489,15 @@ function dimRatings(a,k,f){
   }
   return dims;
 }
+/* Veredito do card de decisão. Depende SÓ do score — os "pontos fortes/atenção"
+   que este bloco montava saíram do card a pedido do Ramon, e com eles as ~45 linhas
+   que os calculavam (nada mais consumia `pros`/`cons`). */
 function assetInsights(a,k,f){
-  const pros=[], cons=[];
-  if(k==='acoes'){
-    if(typeof a.dy==='number'){
-      if(a.dy>=8) pros.push(`Dividend Yield de ${pc(a.dy,1)}%, bem acima da média da B3 (~6%): forte gerador de renda.`);
-      else if(a.dy>=4) pros.push(`Paga dividendos consistentes (DY ${pc(a.dy,1)}%), na faixa de boas pagadoras.`);
-      else if(a.dy>0 && a.dy<2) cons.push(`Dividend Yield baixo (${pc(a.dy,1)}%): perfil de crescimento, não de renda.`);
-      else if(a.dy===0) cons.push(`Não distribui dividendos no momento: o foco é reinvestir o lucro.`);
-    }
-    if(typeof a.pl==='number'){
-      if(a.pl>0 && a.pl<8) pros.push(`P/L de ${pc(a.pl,1)}: valuation atrativo, o preço equivale a ~${Math.round(a.pl)} anos de lucro.`);
-      else if(a.pl>=25) cons.push(`P/L de ${pc(a.pl,1)}, elevado: o preço já embute forte expectativa de crescimento.`);
-    }
-    if(typeof a.pvp==='number'){
-      if(a.pvp<1) pros.push(`Negocia a ${pc(a.pvp,2)}x o valor patrimonial, abaixo do patrimônio contábil.`);
-      else if(a.pvp>5) cons.push(`P/VP de ${pc(a.pvp,1)}x: prêmio alto sobre o patrimônio, exige crescimento para justificar.`);
-    }
-    if(typeof a.roe==='number'){
-      if(a.roe>=18) pros.push(`ROE de ${pc(a.roe,1)}%: rentabilidade alta sobre o capital dos acionistas.`);
-      else if(a.roe<8) cons.push(`ROE de ${pc(a.roe,1)}%: rentabilidade baixa frente ao mercado.`);
-    }
-    if(f){
-      if(typeof f.dleb==='number'){
-        if(f.dleb<=0) pros.push(`Caixa líquido (sem dívida líquida): balanço robusto e resiliente a juros altos.`);
-        else if(f.dleb>3) cons.push(`Dívida líquida/EBITDA de ${pc(f.dleb,1)}x: alavancagem elevada, sensível à Selic.`);
-      }
-      if(typeof f.cagrL==='number' && f.cagrL>=15) pros.push(`Lucros cresceram ~${pc(f.cagrL,0)}% ao ano nos últimos 5 anos.`);
-    }
-  } else if(k==='fiis'){
-    if(typeof a.dy==='number'){
-      if(a.dy>=11) pros.push(`Dividend Yield de ${pc(a.dy,1)}%, bem acima da média de FIIs.`);
-      else if(a.dy>=8) pros.push(`Rendimento saudável para FIIs (DY ${pc(a.dy,1)}%).`);
-    }
-    if(typeof a.pvp==='number'){
-      if(a.pvp<0.95) pros.push(`Negocia com desconto: P/VP de ${pc(a.pvp,2)} (abaixo do valor patrimonial).`);
-      else if(a.pvp>1.1) cons.push(`P/VP de ${pc(a.pvp,2)}: ágio sobre o patrimônio, margem de segurança menor.`);
-    }
-    if(typeof a.vac==='number' && !/papel/i.test(a.seg)){
-      if(a.vac>10) cons.push(`Vacância de ${pc(a.vac,1)}%, elevada: pressiona a distribuição de renda.`);
-      else if(a.vac<=3) pros.push(`Vacância baixa (${pc(a.vac,1)}%): imóveis bem ocupados, renda estável.`);
-    }
-    if(typeof a.div==='number') pros.push(`Último rendimento de ${brl(a.div)} por cota, com pagamentos mensais.`);
-    if(typeof a.consist==='number' && a.consist<0.78) cons.push(`Histórico de distribuição menos regular: atenção à previsibilidade.`);
-  }
-  let verdict='Fundamentos detalhados em breve para este ativo.', tone='neu';
-  if(typeof a.score==='number'){
-    if(a.score>=80){ verdict='Ativo de alta qualidade, com fundamentos sólidos em vários pilares.'; tone='pos'; }
-    else if(a.score>=65){ verdict='Ativo sólido, com bons fundamentos e alguns pontos de atenção a observar.'; tone='pos'; }
-    else if(a.score>=50){ verdict='Qualidade razoável: pese os pontos de atenção antes de investir.'; tone='neu'; }
-    else { verdict='Há fragilidades relevantes nos fundamentos, o que exige cautela.'; tone='neg'; }
-  }
-  return { verdict, tone, pros: pros.slice(0,4), cons: cons.slice(0,3) };
+  if(typeof a.score!=='number') return { verdict:'Fundamentos detalhados em breve para este ativo.', tone:'neu' };
+  if(a.score>=80) return { verdict:'Ativo de alta qualidade, com fundamentos sólidos em vários pilares.', tone:'pos' };
+  if(a.score>=65) return { verdict:'Ativo sólido, com bons fundamentos e alguns pilares mais fracos.', tone:'pos' };
+  if(a.score>=50) return { verdict:'Qualidade razoável: avalie os pilares mais fracos antes de investir.', tone:'neu' };
+  return { verdict:'Há fragilidades relevantes nos fundamentos, o que exige cautela.', tone:'neg' };
 }
 function fairValueHTML(a,k){
   if(typeof a.px!=='number' || a.px<=0) return '';
@@ -13581,18 +13538,15 @@ function decisionCard(a,k,f){
     'Consistência':'Regularidade histórica das distribuições. Alta = pagamentos previsíveis.'
   };
   const dimHtml = dims.map(d=>`<div class="dim" data-tip="${esc(DIM_HINTS[d.label]||'')}"><div class="dim-l">${d.label} <i class="fa-regular fa-circle-question frq"></i></div><div class="dim-r tone-${d.tone}">${d.rating}</div></div>`).join('');
-  const pros = ins.pros.map(t=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>${t}</span></li>`).join('');
-  const cons = ins.cons.map(t=>`<li class="neg"><i class="fa-solid fa-triangle-exclamation"></i> <span>${t}</span></li>`).join('');
   return `<div class="card card-pad decision">
     <div class="dec-head">
       <div class="dec-verdict"><i class="fa-solid fa-${icon} tone-${ins.tone}"></i> <span>${ins.verdict}</span></div>
     </div>
     <div class="dims">${dimHtml}</div>
-    <div class="proscons">
-      <div class="pc-col"><div class="pc-t pos"><i class="fa-solid fa-thumbs-up"></i> Pontos fortes</div><ul>${pros||'<li class="muted">—</li>'}</ul></div>
-      <div class="pc-col"><div class="pc-t neg"><i class="fa-solid fa-circle-exclamation"></i> Pontos de atenção</div><ul>${cons||'<li class="muted">Sem alertas relevantes nos indicadores disponíveis.</li>'}</ul></div>
-    </div>
-    <div class="dec-foot"><i class="fa-solid fa-circle-info faint"></i> Resumo automático a partir dos fundamentos. Não é recomendação de compra ou venda.</div>
+    <!-- "Pontos fortes / Pontos de atenção" e a nota de resumo saíram a pedido do Ramon.
+         A ressalva de não-recomendação FICA: o card ainda emite um veredito ("Ativo de
+         alta qualidade") e notas por pilar ("Atrativo", "Alta"), que são avaliativos. -->
+    <div class="dec-foot"><i class="fa-solid fa-circle-info faint"></i> Não é recomendação de compra ou venda.</div>
   </div>`;
 }
 
