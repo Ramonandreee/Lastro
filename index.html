@@ -1477,6 +1477,9 @@ img, svg, canvas, video { max-width: 100%; }
 .rank-bar { display: flex; justify-content: flex-end; height: 6px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
 .rank-bar i { display:block; flex:none; height: 100%; border-radius: 999px; }
 .rank-pct { font-family: var(--mono); font-size: 12.5px; font-weight: 600; text-align: right; letter-spacing: -.02em; }
+/* "Mais citados": a última coluna leva "3 notícias" (58px quebrava em 2 linhas) */
+.rank-row.rank-news { grid-template-columns: 16px 72px minmax(0,1fr) 76px; }
+.rank-row.rank-news .rank-pct { white-space: nowrap; font-size: 12px; }
 
 /* data table */
 .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
@@ -4537,6 +4540,7 @@ button.pcal-c:focus-visible { outline:none; box-shadow:0 0 0 3px var(--brand-l);
 <script src="/vendor/movs.js"></script>
 <script src="/vendor/entitlement.js"></script>
 <script src="/vendor/instport.js"></script>
+<script src="/vendor/newsmatch.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════════
    LASTRO — DADOS
@@ -4640,6 +4644,13 @@ const ACOES = [
   { tk:'TOTS3', nm:'TOTVS',          seg:'Tecnologia',      px:32.50, pl:28.0, pvp:6.0,  dy:1.5,  roe:22.0, mgl:14.0, var:-0.52, consist:0.85, liq:38 },
 ];
 ACOES.forEach(a => a.score = scoreLastro(a));
+
+/* Nomes dos ativos CURADOS alimentam o casamento notícia→ativo (o mapa curado do
+   /vendor/newsmatch.js tem precedência e o portão recusa nome de 1 palavra que
+   seja substantivo comum). A razão social do universo remoto (brapi) NÃO entra:
+   é nome legal em caixa alta, que a manchete não usa, e só ampliaria o risco de
+   ligar notícia ao ativo errado. */
+try{ if(window.LastroNewsMatch) window.LastroNewsMatch.learn(ACOES); }catch(e){}
 
 /* ─── FUNDAMENTOS DETALHADOS (dataset expandido p/ a página do ativo) ───
    Valores estáticos realistas; cotação/variação seguem ao vivo. Pronto p/
@@ -10353,7 +10364,11 @@ function newsItemHTML(n){
   const tag = n.tag || 'Mercado';
   const src = n.source || n.src || '';
   const tt  = n.title || n.tt || '';
-  const tk  = n.ticker || n.tk || null;
+  /* etiqueta do ativo: usa a marcação do banco e, quando ela não existe (notícia
+     antiga, gravada antes do casamento por nome), infere do título pela MESMA
+     regra conservadora de /vendor/newsmatch.js */
+  let tk  = n.ticker || n.tk || null;
+  if(!tk && window.LastroNewsMatch){ try{ tk = window.LastroNewsMatch.primaryTicker(tt); }catch(e){} }
   const tm  = n.published_at ? timeAgo(n.published_at) : (n.t || '');
   const oficial = n.is_official ? `<span class="chip chip-up" style="font-size:10px"><i class="fa-solid fa-certificate" style="font-size:9px"></i> Oficial</span>` : '';
   const clickable = (n.url || tk) ? `onclick="openNews(this)" style="cursor:pointer"` : '';
@@ -10364,11 +10379,44 @@ function newsItemHTML(n){
   </div>`;
 }
 
+/* Quantas notícias a tela "Últimas" mostra (o cache buscado é maior, p/ a página do ativo). */
+const NEWS_FEED_N = 100;
+/* Ativos mais citados nas ÚLTIMAS NOTÍCIAS (não é preço).
+   Antes o card trazia as maiores altas do pregão, o que não conversava com o feed
+   logo abaixo: a ação que mais subiu costumava não ter nenhuma notícia no banco, e
+   abrir o ativo dava "sem notícias recentes". Agora o card sai do mesmo pool que o
+   feed, então todo ativo listado TEM notícia para mostrar.
+   Conta pela marcação do banco e, quando ela falta, pelo casamento por nome do
+   /vendor/newsmatch.js — a mesma regra conservadora usada na página do ativo. */
+function newsCitados(n){
+  const pool = (Array.isArray(window.LAST_NEWS) && window.LAST_NEWS.length) ? window.LAST_NEWS : NEWS;
+  const NM = window.LastroNewsMatch;
+  const cont = new Map();                      // tk -> {n, i} (i = posição da 1ª citação = recência)
+  pool.slice(0, NEWS_FEED_N).forEach((it, i) => {
+    const tt = it.title || it.tt || '';
+    let tks = [];
+    if(Array.isArray(it.tickers) && it.tickers.length) tks = it.tickers.slice();
+    else if(it.ticker || it.tk) tks = [it.ticker || it.tk];
+    if(NM){ try{ NM.matchTickers(tt).forEach(t=>{ if(tks.indexOf(t)<0) tks.push(t); }); }catch(e){} }
+    tks.forEach(tk => {
+      if(!tk || !assetLookup(tk)) return;       // só ativo que o app conhece (nada de ticker solto)
+      const c = cont.get(tk);
+      if(c) c.n++; else cont.set(tk, {n:1, i});
+    });
+  });
+  return [...cont.entries()]
+    .map(([tk,v]) => ({tk, n:v.n, i:v.i}))
+    .sort((a,b) => b.n - a.n || a.i - b.i)      // mais citado; empate pela citação mais recente
+    .slice(0, n||3);
+}
 function newsAltaHTML(){
-  const mv=topMovers('up',3);
-  if(!mv.length) return '<div class="drawer-empty" style="padding:10px 0">Carregando…</div>';
-  const mx=Math.max(...mv.map(a=>a.var||0),0.1);
-  return mv.map((a,i)=>`<div class="rank-row" onclick="quickView('${a.tk}')"><span class="rank-n">${i+1}</span><span class="rank-tk">${a.tk}</span><span class="rank-bar"><i style="width:${Math.max(8,(a.var/mx)*100).toFixed(0)}%;background:var(--up)"></i></span><span class="rank-pct up">+${pc(a.var)}%</span></div>`).join('');
+  const pronto = Array.isArray(window.LAST_NEWS) && window.LAST_NEWS.length;
+  const top = newsCitados(3);
+  if(!top.length) return pronto
+    ? '<div class="drawer-empty" style="padding:10px 0">Nenhum ativo citado nas últimas notícias.</div>'
+    : '<div class="drawer-empty" style="padding:10px 0">Carregando…</div>';
+  const mx = Math.max(...top.map(a=>a.n), 1);
+  return top.map((a,i)=>`<div class="rank-row rank-news" onclick="quickView('${a.tk}')"><span class="rank-n">${i+1}</span><span class="rank-tk">${a.tk}</span><span class="rank-bar"><i style="width:${Math.max(8,(a.n/mx)*100).toFixed(0)}%;background:var(--brand)"></i></span><span class="rank-pct">${a.n} <span style="color:var(--ink-4);font-weight:500">notícia${a.n>1?'s':''}</span></span></div>`).join('');
 }
 function renderNewsAlta(){ const el=$('#newsAlta'); if(el) el.innerHTML=newsAltaHTML(); }
 /* ══════════════════════════════════════════════════════════
@@ -10522,7 +10570,7 @@ function viewNoticias(){
   <div class="news-grid">
     <div class="card card-pad news-alta">
       <div class="card-h"><span class="ico" style="background:var(--down-l);color:var(--down)"><i class="fa-solid fa-fire"></i></span> Em alta agora</div>
-      <div class="nw-alta-sub">Maiores altas do pregão</div>
+      <div class="nw-alta-sub">Mais citados nas últimas notícias</div>
       <div class="rank" id="newsAlta">${newsAltaHTML()}</div>
     </div>
     <div class="card card-pad news-feed-wrap">
@@ -10553,13 +10601,17 @@ async function loadNewsFeed(){
     feed.innerHTML = Array.from({length:6}).map(()=>`<div class="news-skel"><div class="skeleton skel-line sk-40" style="height:9px"></div><div class="skeleton skel-line sk-90" style="height:14px;margin-top:10px"></div></div>`).join('');
   }
   try{
-    const url = `${cfg.SUPABASE_URL}/rest/v1/news?select=*&order=published_at.desc&limit=30`;
+    /* Busca 200 e MOSTRA 100. O pool maior que a lista é de propósito: a página do
+       ativo procura notícia dentro deste mesmo cache, e um ativo com notícia de
+       ontem aparecia como "sem notícias recentes" quando o pool era curto. */
+    const url = `${cfg.SUPABASE_URL}/rest/v1/news?select=*&order=published_at.desc&limit=200`;
     const r = await fetch(url, { headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: `Bearer ${cfg.SUPABASE_ANON_KEY}` } });
     if(!r.ok) throw new Error('HTTP '+r.status);
     const rows = await r.json();
     if(Array.isArray(rows)) window.LAST_NEWS = rows;   // cache p/ o drawer de detalhe
+    renderNewsAlta();            // "Mais citados" sai deste pool: só dá para montar agora
     if(Array.isArray(rows) && rows.length){
-      feed.innerHTML = rows.map(newsItemHTML).join('');
+      feed.innerHTML = rows.slice(0,NEWS_FEED_N).map(newsItemHTML).join('');
       feed.dataset.loaded = '1';
       setNewsStatus('');   // feed ao vivo: sem selo (evita passar ideia de tempo real)
     } else if(!feed.dataset.loaded){
@@ -12180,9 +12232,25 @@ function assetLogo(tk,k,cls){
   return `<span class="logo ${cls||''}${isCr?' logo-cr':''}">${img}${mono}</span>`;
 }
 function kindFromLabel(lbl){ return lbl==='FII'?'fiis': lbl==='Ação'?'acoes': lbl==='BDR'?'bdrs': lbl==='ETF'?'etfs': lbl==='Stock'?'stocks':'cripto'; }
+/* Notícias DESTE ativo.
+   A marcação gravada no banco (`ticker`) é só metade da história: a manchete real
+   quase nunca escreve o ticker de uma AÇÃO ("Raia Drogasil abre 300 lojas"), e as
+   notícias JÁ gravadas não voltam a ser coletadas — não adianta corrigir só o
+   coletor. Por isso o casamento por NOME roda também aqui, no cliente, sobre o
+   título: é o que liga retroativamente o que já está no banco.
+   O casamento vive em /vendor/newsmatch.js (puro e testado) para as duas pontas
+   usarem a MESMA regra — e é conservador de propósito: nome ambíguo só casa com
+   contexto setorial, porque notícia errada na página do ativo é pior que nenhuma. */
 function assetNews(tk){
   const pool = (Array.isArray(window.LAST_NEWS) && window.LAST_NEWS.length) ? window.LAST_NEWS : NEWS;
-  return pool.filter(n => (n.ticker||n.tk)===tk).slice(0,5);
+  const NM = window.LastroNewsMatch;
+  return pool.filter(n => {
+    if((n.ticker||n.tk)===tk) return true;
+    const list = n.tickers;                      // marcação múltipla (quando o banco tem a coluna)
+    if(Array.isArray(list) && list.indexOf(tk)>=0) return true;
+    if(!NM) return false;                        // sem o vendor: comportamento antigo, nunca quebra
+    try{ return NM.matchesTicker(n.title||n.tt||'', tk); }catch(e){ return false; }
+  }).slice(0,5);
 }
 
 /* watchlist (persistida no navegador) */
@@ -14619,7 +14687,7 @@ function screenSymbols(){
     case 'cripto': CRIPTO.forEach(c=> crypto.add(c.tk)); break;
     case 'painel': CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(f&&f.k==='cripto') crypto.add(c.tk); else if(f&&!isUsAsset(f)) b3.add(c.tk); }); ['BOVA11','IVVB11','SMAL11','DIVO11'].forEach(t=>b3.add(t)); break;   // + benchmarks ao vivo (Performance Diária)
     case 'carteira': CARTEIRA.forEach(c=>{ const f=assetLookup(c.tk); if(f&&f.k==='cripto') crypto.add(c.tk); else if(f&&!isUsAsset(f)) b3.add(c.tk); }); break;
-    case 'noticias': ACOES.filter(isLiquidStock).forEach(a=> b3.add(a.tk)); break;   // "Em alta agora" ao vivo
+    case 'noticias': break;   // o card virou "mais citados nas notícias": não usa cotação
     case 'carteirasinst': break;   // a lista mostra só procedência (sem cotação) — nada a buscar
     case 'carteirainst': {         // composição da carteira aberta (BOVA11 entra na Fase 5, com o desempenho)
       const c = (typeof cartAtual==='function') ? cartAtual() : null;
@@ -14693,9 +14761,7 @@ function softRefreshView(){
     renderAssets(v);
   } else if(['painel','carteira','asset','watchlist','alertas','acompanhar','carteirainst'].includes(v) && !typing){
     render(v, true);             // soft: re-renderiza sem re-disparar buscas (evita loop)
-  } else if(v==='noticias' && !typing){
-    renderNewsAlta();            // atualiza "Em alta agora" sem recriar o feed de notícias
-  }
+  }   // 'noticias': o card "Mais citados" conta notícia, não preço — cotação não o altera
 }
 
 async function refreshQuotes(manual){

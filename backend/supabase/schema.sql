@@ -11,14 +11,21 @@ create table if not exists public.news (
   url           text,
   source        text,                            -- InfoMoney, CVM, etc.
   tag           text,                            -- Ações | FIIs | Stocks | Cripto | Mercado | BDRs
-  ticker        text,                            -- ticker citado (ex: PETR4), se houver
+  ticker        text,                            -- ticker principal citado (ex: PETR4), se houver
+  tickers       text[],                          -- TODOS os ativos citados (uma manchete cita vários)
   is_official   boolean default false,           -- true para Fato Relevante/CVM
   published_at  timestamptz,
   created_at    timestamptz default now()
 );
 
+-- Migração para bancos criados antes da coluna `tickers` (idempotente).
+-- Sem ela o coletor continua funcionando (grava só `ticker`), mas a marcação
+-- múltipla ("Petrobras e Vale sobem") fica limitada ao primeiro ativo.
+alter table public.news add column if not exists tickers text[];
+
 create index if not exists news_published_idx on public.news (published_at desc);
 create index if not exists news_tag_idx        on public.news (tag);
+create index if not exists news_ticker_idx     on public.news (ticker);
 
 -- Tabela de metadados (ex: resumo do dia gerado por IA)
 create table if not exists public.meta (
