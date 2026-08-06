@@ -1013,10 +1013,9 @@ img, svg, canvas, video { max-width: 100%; }
     </nav>
 
     <nav class="nav-group" data-group="ferramentas">
-      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-toolbox"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Ferramentas</span><span class="nav-ghead-s">Comparador · Simuladores</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
+      <button class="nav-ghead" type="button" onclick="toggleNavGroup(this)"><span class="nav-ghead-badge"><i class="fa-solid fa-toolbox"></i></span><span class="nav-ghead-tx"><span class="nav-ghead-t">Ferramentas</span><span class="nav-ghead-s">Ativos lado a lado</span></span><i class="fa-solid fa-chevron-down nav-chev"></i></button>
       <div class="nav-gitems">
         <div class="nav-item" data-view="comparador" onclick="nav('comparador',this)"><i class="fa-solid fa-code-compare"></i><span>Comparador</span></div>
-        <div class="nav-item" data-view="simulador" onclick="nav('simulador',this)"><i class="fa-solid fa-calculator"></i><span>Simuladores</span></div>
       </div>
     </nav>
 
@@ -1057,7 +1056,7 @@ img, svg, canvas, video { max-width: 100%; }
         <a href="https://instagram.com/lastro.app" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
         <a href="https://threads.net/@lastro.app" target="_blank" rel="noopener" title="Threads" aria-label="Threads"><i class="fa-brands fa-threads"></i></a>
         <a href="https://open.spotify.com/playlist/0DD1ZDwEl18IigMy3hdRCc" target="_blank" rel="noopener" title="Spotify" aria-label="Spotify"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M7 9.9c3.2-1 7.1-.6 9.7 1.1"/><path d="M7.6 12.8c2.6-.8 5.7-.4 7.9 1"/><path d="M8.2 15.4c2-.6 4.2-.3 5.9.8"/></svg></a>
-        <a onclick="closeSidebar();openSupport()" style="cursor:pointer" title="Ajuda & Suporte" aria-label="Suporte"><i class="fa-solid fa-headset"></i></a>
+        <a onclick="closeSidebar();nav('ajuda')" style="cursor:pointer" title="Ajuda & Suporte" aria-label="Suporte"><i class="fa-solid fa-headset"></i></a>
       </div>
     </div>
   </aside>
@@ -2823,10 +2822,6 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .perfil-foot .prof-out { width:100%; margin-top:0; }
 @media (max-width:560px){ .perfil-hero { gap:15px; } .perfil-av-lg { width:62px; height:62px; } .perfil-av-lg .prof-av-inner { font-size:23px; } .perfil-hero-nm { font-size:17.5px; } .perfil-card-t { margin-bottom:14px; } }
 /* central de ajuda (suporte) */
-.sup-hero { display:flex; align-items:center; gap:13px; padding:14px 16px; border-radius:var(--r); background:linear-gradient(120deg, color-mix(in srgb,var(--brand) 12%,transparent), transparent 72%); border:1px solid color-mix(in srgb,var(--brand) 18%,transparent); margin-bottom:14px; }
-.sup-hero-ic { width:46px; height:46px; flex:none; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:20px; color:#fff; background:linear-gradient(135deg,var(--brand),var(--accent)); box-shadow:0 6px 18px color-mix(in srgb,var(--brand) 38%,transparent); }
-.sup-hero-t { font-weight:700; font-size:16px; letter-spacing:-.01em; }
-.sup-hero-s { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
 .sup-contact { display:flex; flex-direction:column; gap:10px; margin-bottom:4px; }
 .sup-c { display:flex; align-items:center; gap:12px; width:100%; padding:13px 14px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); cursor:pointer; text-align:left; transition:transform .14s var(--ease), box-shadow .14s var(--ease), border-color .14s var(--ease); }
 .sup-c:hover { transform:translateY(-1px); box-shadow:var(--sh-sm); border-color:var(--line-2); }
@@ -2849,6 +2844,13 @@ html:has(.modal-scrim.open), html:has(.search-modal.open), html:has(.nav-open) {
 .sup-status { display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--up); }
 .sup-dot { width:8px; height:8px; border-radius:50%; background:var(--up); box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 60%,transparent); animation:supPulse 2s infinite; }
 @keyframes supPulse { 0%{ box-shadow:0 0 0 0 color-mix(in srgb,var(--up) 55%,transparent); } 70%{ box-shadow:0 0 0 6px transparent; } 100%{ box-shadow:0 0 0 0 transparent; } }
+/* ── Central de ajuda (página inteira) ── */
+.ajuda-page { max-width:900px; margin:0 auto; display:flex; flex-direction:column; gap:var(--gap); }
+.ajuda-page .sup-foot { margin-top:2px; }
+.ajuda-page .prof-btn { margin-top:0; }
+.ajuda-cols { display:grid; gap:var(--gap); align-items:start; }
+.ajuda-p { margin:0 0 14px; font-size:13.5px; line-height:1.55; color:var(--ink-3); }
+@media (min-width:820px){ .ajuda-cols { grid-template-columns:1.15fr .85fr; } }
 /* privacidade: o mascaramento é feito por JS (applyPriv) — só os DÍGITOS viram '*',
    preservando títulos, símbolos (R$, %, +/−) e separadores. */
 .priv-blur { transition:opacity .2s var(--ease); }
@@ -5398,6 +5400,7 @@ const PAGES = {
   agenda:       { t:'Agenda de Dividendos',  s:'Calendário de proventos dos seus ativos e do mercado' },
   assinatura:   { t:'Gerenciar assinatura',  s:'Plano, pagamentos e cobranças' },
   perfil:       { t:'Meu perfil',            s:'Seus dados, plano, preferências e segurança' },
+  ajuda:        { t:'Central de ajuda',      s:'Fale com a gente ou encontre respostas rápidas' },
   noticias:     { t:'Notícias',              s:'Fatos relevantes e mercado em tempo real' },
   simulador:    { t:'Simuladores',           s:'Renda passiva, juros compostos e meta de aposentadoria' },
   backtest:     { t:'Backtest da Carteira',  s:'Simulação histórica da sua carteira vs CDI e IBOV' },
@@ -5548,7 +5551,7 @@ function acctMenuHTML(){
       ${item('fa-user','Meu perfil',"closeAcctMenu();openProfile()")}
       ${item('fa-crown','Gerenciar assinatura',"closeAcctMenu();openAssinatura()")}
       ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
-      ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
+      ${item('fa-headset','Suporte',"closeAcctMenu();nav('ajuda')")}
       ${themeRow}
       ${isOwner()? `<div class="acct-sep"></div>
       ${item('fa-gauge-high','Painel administrativo',"closeAcctMenu();nav('admin')",'acct-admin')}
@@ -5560,7 +5563,7 @@ function acctMenuHTML(){
     <div class="acct-sep"></div>
     ${item('fa-crown','Assinar Premium',"closeAcctMenu();goPricing()")}
     ${item('fa-gift','Indique e Ganhe',"closeAcctMenu();nav('indicar')",'acct-gift')}
-    ${item('fa-headset','Suporte',"closeAcctMenu();openSupport()")}
+    ${item('fa-headset','Suporte',"closeAcctMenu();nav('ajuda')")}
     ${themeRow}`;
 }
 /* scrim invisível: o primeiro toque fora fecha o menu SEM interagir com o fundo */
@@ -5594,40 +5597,45 @@ const SUPPORT_FAQ=[
   ['A Lastro dá recomendação de compra ou venda?','Não. A Lastro é uma ferramenta de organização e análise. Todos os indicadores e scores são informativos e educacionais — a decisão de investimento é sempre sua.'],
 ];
 function faqToggle(el){ const it=el.closest('.faq-item'); if(it) it.classList.toggle('open'); }
-function openSupport(){
-  _profileOpen=false;
+/* ── VIEW: Central de ajuda (página inteira, irmã de Perfil/Assinatura) ── */
+function viewAjuda(){
   const u=currentUser(); const tier=planTier();
   const planChip = tier==='pro'?'<span class="acct-plan pro"><i class="fa-solid fa-crown"></i> Investidor Pro</span>':tier==='premium'?'<span class="acct-plan prem"><i class="fa-solid fa-crown"></i> Premium</span>':'<span class="acct-plan free">Gratuito</span>';
   const faq=SUPPORT_FAQ.map(([q,a])=>`<div class="faq-item"><button class="faq-q" onclick="faqToggle(this)"><span>${q}</span><i class="fa-solid fa-chevron-down"></i></button><div class="faq-a"><p>${a}</p></div></div>`).join('');
-  $('#authTitle').textContent='Central de ajuda';
-  $('#authBody').innerHTML=`
-    <div class="sup-hero">
-      <div class="sup-hero-ic"><i class="fa-solid fa-headset"></i></div>
-      <div><div class="sup-hero-t">Como podemos ajudar?</div><div class="sup-hero-s">Fale com a gente ou encontre respostas rápidas abaixo.</div></div>
+  /* título padrão em vez do hero: "Como podemos ajudar?/Fale com a gente" repetia o 1º card */
+  return `<div class="ajuda-page">
+    <div class="sec-title">Central de ajuda</div>
+    <div class="ajuda-cols">
+      <div class="card card-pad">
+        <div class="perfil-card-t"><i class="fa-solid fa-comments"></i> Falar com a gente</div>
+        <div class="sup-contact">
+          <button class="sup-c sup-wa" onclick="supportWhatsapp()">
+            <span class="sup-c-ic"><i class="fa-brands fa-whatsapp"></i></span>
+            <span class="sup-c-tx"><b>WhatsApp</b><small>Resposta rápida, em horário comercial</small></span>
+            <i class="fa-solid fa-arrow-up-right-from-square sup-c-go"></i>
+          </button>
+          <button class="sup-c" onclick="supportEmail()">
+            <span class="sup-c-ic sup-c-mail"><i class="fa-solid fa-envelope"></i></span>
+            <span class="sup-c-tx"><b>E-mail</b><small>suporte@lastro.app</small></span>
+            <i class="fa-solid fa-arrow-up-right-from-square sup-c-go"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card card-pad">
+        <div class="perfil-card-t"><i class="fa-solid fa-compass"></i> Primeiros passos</div>
+        <p class="ajuda-p">Um tour guiado pelas telas principais da Lastro — leva menos de um minuto e mostra onde fica cada coisa.</p>
+        <button class="btn btn-ghost prof-btn" onclick="if(typeof startTour==='function') startTour()"><i class="fa-solid fa-circle-play" style="color:var(--brand)"></i> Como funciona</button>
+      </div>
     </div>
-    <div class="sup-contact">
-      <button class="sup-c sup-wa" onclick="supportWhatsapp()">
-        <span class="sup-c-ic"><i class="fa-brands fa-whatsapp"></i></span>
-        <span class="sup-c-tx"><b>WhatsApp</b><small>Resposta rápida, em horário comercial</small></span>
-        <i class="fa-solid fa-arrow-up-right-from-square sup-c-go"></i>
-      </button>
-      <button class="sup-c" onclick="supportEmail()">
-        <span class="sup-c-ic sup-c-mail"><i class="fa-solid fa-envelope"></i></span>
-        <span class="sup-c-tx"><b>E-mail</b><small>suporte@lastro.app</small></span>
-        <i class="fa-solid fa-arrow-up-right-from-square sup-c-go"></i>
-      </button>
-    </div>
-    <div class="prof-sec"><div class="prof-sec-t">Perguntas frequentes</div>
+    <div class="card card-pad">
+      <div class="perfil-card-t"><i class="fa-solid fa-circle-question"></i> Perguntas frequentes</div>
       <div class="faq-list">${faq}</div>
-    </div>
-    <div class="prof-sec"><div class="prof-sec-t">Recursos</div>
-      <button class="btn btn-ghost prof-btn" onclick="closeAuth();startTour&&startTour()"><i class="fa-solid fa-circle-play" style="color:var(--brand)"></i> Como funciona</button>
     </div>
     <div class="sup-foot">
       <span class="sup-status"><span class="sup-dot"></span> Todos os sistemas operando</span>
       <span>${u?planChip+' · ':''}Versão ${APP_VERSION}</span>
-    </div>`;
-  $('#authModal').classList.add('open');
+    </div>
+  </div>`;
 }
 /* o fechamento por toque fora é feito pelo scrim (intercepta o toque). Só fecha em resize. */
 window.addEventListener('resize', ()=>{ const m=$('#acctMenu'); if(m && m.classList.contains('open')) closeAcctMenu(); });
@@ -7041,7 +7049,7 @@ const VIEW_TAB = {
   carteirasinst:'mercado', carteirainst:'mercado',
   carteira:'carteira', proventos:'carteira', agenda:'carteira', aporte:'carteira', ir:'carteira', acompanhar:'carteira', watchlist:'carteira', alertas:'carteira', raiox:'carteira', backtest:'carteira', stress:'carteira',
   noticias:'noticias',
-  mais:'mais', simulador:'mais', comparador:'mais', planos:'mais', indicar:'mais', assinatura:'mais', perfil:'mais', admin:'mais'
+  mais:'mais', simulador:'mais', comparador:'mais', planos:'mais', indicar:'mais', assinatura:'mais', perfil:'mais', ajuda:'mais', admin:'mais'
 };
 function syncTabBar(v){
   const key = (v==='asset' && typeof prevView!=='undefined') ? prevView : v;   // detalhe herda a aba da origem
@@ -7070,6 +7078,7 @@ function render(v, soft){
   else if(v==='agenda')      c.innerHTML = viewAgenda();
   else if(v==='assinatura')  c.innerHTML = viewAssinatura();
   else if(v==='perfil')      c.innerHTML = viewPerfil();
+  else if(v==='ajuda')       c.innerHTML = viewAjuda();
   else if(v==='noticias')    c.innerHTML = viewNoticias();
   else if(v==='simulador')   c.innerHTML = viewSimulador();
   else if(v==='planos')      c.innerHTML = viewPlanos();
@@ -10344,8 +10353,6 @@ function viewMais(){
   const GROUPS=[
     {t:'Ferramentas', items:[
       ['comparador','fa-code-compare','Comparador',0,'Ativos lado a lado pelos fundamentos'],
-      ['simulador','fa-calculator','Simuladores',0,'Juros compostos, renda passiva e FIRE'],
-      ['metarenda','fa-bullseye','Meta de Renda',0,'Quanto você quer receber por mês'],
     ]},
   ];   // Internacional (Stocks/BDRs/ETFs int.) sai do menu — já vive no hub Mercado
   // Conteúdo só aparece quando HÁ composição publicada no índice (ninguém topa com tela vazia)
@@ -10380,7 +10387,7 @@ function viewMais(){
   const conta=`<div class="mais-sec-t">Conta</div><div class="mais-grp">
     ${planItem}
     ${authed?`<button class="mais-row" onclick="nav('indicar')"><span class="mais-ic"><i class="fa-solid fa-gift"></i></span><span class="mais-txt"><span class="mais-lbl">Indique e Ganhe</span><span class="mais-sub">Ganhe 20% de cada amigo, via PIX</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
-    <button class="mais-row" onclick="openSupport()"><span class="mais-ic"><i class="fa-solid fa-headset"></i></span><span class="mais-txt"><span class="mais-lbl">Ajuda &amp; Suporte</span><span class="mais-sub">Central de ajuda e FAQ</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
+    <button class="mais-row" onclick="nav('ajuda')"><span class="mais-ic"><i class="fa-solid fa-headset"></i></span><span class="mais-txt"><span class="mais-lbl">Ajuda &amp; Suporte</span><span class="mais-sub">Central de ajuda e FAQ</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
   </div>`;
   const upsell=(authed&&!isPremium())?`<button class="mais-upsell" onclick="nav('planos')"><span class="mu-ic"><i class="fa-solid fa-crown"></i></span><span class="mu-tx"><b>${trialActive()?`Teste Premium · ${trialDaysLeft()} dias`:'Desbloqueie o Investidor Pro'}</b><small>Raio-X, Stress Test, Backtest, Aporte e IR</small></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:'';
   const searchBox=`<div class="mais-search"><i class="fa-solid fa-magnifying-glass"></i><input id="maisFilter" placeholder="Buscar no menu…" oninput="filterMais(this.value)" autocomplete="off"></div>`;
