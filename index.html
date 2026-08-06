@@ -3962,6 +3962,9 @@ button.mp-cell:active { background:var(--surface-3); }
 
 /* ── lista "Proventos a receber" — mesmo card (.pnext), escalado para N itens ── */
 .prc { display:block; }
+/* o espaço depois do "a receber" vem do margin-top do bloco seguinte (.pgrid). Quando o próximo
+   é um .card simples (estado vazio de proventos), não havia margem nenhuma e os dois encostavam. */
+.prc + .card { margin-top:var(--gap); }
 .prc-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-top:18px; }
 .prc-h-t { font-size:16.5px; font-weight:700; letter-spacing:-.015em; color:var(--ink); }
 .prc-h-s { margin-top:3px; font-size:12px; color:var(--ink-3); }
