@@ -243,6 +243,13 @@ Estrutura de arquivos e como rodar: ver **README.md** (seções 3 e 4). Configur
 - **Limite da Vercel:** **máximo 12 Serverless Functions** no plano. Estourar faz TODO
   deploy falhar em silêncio. Hoje 11/12 — novos endpoints entram como `?fn=` no
   dispatcher `api/market.js`, com a lógica em `lib/*` (helpers não contam).
+- **`viewMetaRenda` está SEM ponto de entrada** (ago/2026). O Ramon pediu para tirar
+  "Simuladores" e "Meta de Renda" do menu — *"não faz sentido **no momento**"*, ou seja,
+  é reversível, por isso as views e as entradas em `PAGES` foram mantidas. O
+  `simulador` continua alcançável pelo atalho **"Simular"** do Início; a **Meta de
+  Renda não tem nenhuma**: existe só o ramo em `render`. **Decidir antes que vire a
+  próxima tela órfã** (foi o caso do Rastreador): ou volta ao menu, ou ganha entrada em
+  Proventos (onde já existe um card "Meta de Renda"), ou é aposentada de vez.
 - **Assinatura de commit:** neste ambiente os commits aparecem como "Unverified" (sem
   assinatura GPG/SSH — não disponível aqui). O e‑mail do committer está correto — é só a
   assinatura ausente, sem impacto no código.
