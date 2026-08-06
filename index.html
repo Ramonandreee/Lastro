@@ -1808,6 +1808,8 @@ input[type=range]::-moz-range-thumb {
 .range-tabs button { font-size:11.5px; font-weight:500; padding:5px 11px; border-radius:6px; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
 .range-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
 .ds-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-3); margin-bottom:14px; }
+/* setor do bloco de pares: o título diz o CRITÉRIO, esta linha diz QUAL setor é */
+.ds-title + .peers-seg { margin:-10px 0 14px; font-size:13px; font-weight:600; color:var(--ink); letter-spacing:-.01em; }
 .ds-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:12px; flex-wrap:wrap; }
 .dt-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
 @media (max-width:880px){ .dt-grid{ grid-template-columns:1fr; } .about-grid{ grid-template-columns:1fr; } }
@@ -4399,8 +4401,12 @@ button.agc-c:focus-visible b { box-shadow:0 0 0 3px var(--brand-l); }
   .nav-item:hover { background: transparent !important; color: var(--ink-2) !important; }
   .nav-item:hover i { color: var(--ink-2) !important; }
   .nav-ghead:hover { background: transparent !important; }
-  table.tbl tbody tr:hover, table.tbl tbody tr:hover td:first-child,
+  table.tbl tbody tr:hover,
   .sr:hover, .mv-row:hover, .rank-row:hover, .sc-row:hover, .ag-card .tl-item:hover { background: transparent !important; }
+  /* a 1ª coluna é STICKY: o fundo opaco dela é estrutural, não realce de hover. Entrando no
+     reset acima ela ficava transparente e, ao arrastar a tabela, as colunas roladas
+     apareciam POR BAIXO do nome do ativo. Aqui só se desfaz o tom de hover. */
+  table.tbl tbody tr:hover td:first-child { background: var(--surface) !important; }
   .nav-social a:hover, .brand .brand-home:hover { background: var(--surface-3) !important; color: var(--ink-3) !important; }
   .brand .brand-home.active { background: var(--brand-l) !important; color: var(--brand) !important; }
 }
@@ -13371,7 +13377,8 @@ function peersHTML(tk,a,k){
     </tr>`;
   }).join('');
   return `<div class="card card-pad">
-    <div class="ds-title">Comparação com pares · ${esc(a.seg)}</div>
+    <div class="ds-title">Comparação no mesmo setor</div>
+    <div class="peers-seg">${esc(a.seg)}</div>
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr><th class="cell-left">Ativo</th><th>Cotação</th><th>${isF?'P/VP':'P/L'}</th><th>DY</th></tr></thead>
       <tbody>${rows}</tbody>
