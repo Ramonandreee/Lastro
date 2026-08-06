@@ -14258,7 +14258,11 @@ function cartCobertura(c){
   const r=P.ponderado(cartPort(c), tk=> assetLookup(tk)?1:null);
   return { pct:r.cobertura||0, n:its.length-(r.faltando||[]).length, m:its.length };
 }
-function cartCoberturaTxt(cov){ return `cobre ${pc(cov.pct,0)}% do peso (${cov.n} de ${cov.m} ativos)`; }
+/* trunca (não arredonda): 99,6% NUNCA pode virar "cobre 100%" — seria reivindicar completude que não há */
+function cartCoberturaTxt(cov){
+  const p = (typeof cov.pct==='number' && isFinite(cov.pct)) ? Math.floor(cov.pct) : 0;
+  return `cobre ${p}% do peso (${cov.n} de ${cov.m} ativos)`;
+}
 
 /* ── rótulos ── */
 const CART_TIPOS = { acoes:'Ações', fiis:'FIIs', dividendos:'Dividendos', 'small-caps':'Small Caps', bdrs:'BDRs', mista:'Mista' };
