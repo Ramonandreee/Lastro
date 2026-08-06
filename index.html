@@ -1807,8 +1807,6 @@ input[type=range]::-moz-range-thumb {
 .range-tabs { display:flex; gap:3px; background:var(--surface-3); padding:3px; border-radius:9px; }
 .range-tabs button { font-size:11.5px; font-weight:500; padding:5px 11px; border-radius:6px; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
 .range-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
-.mais-devwarn { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; margin-bottom:var(--gap); border-radius:var(--r); background:color-mix(in srgb,var(--gold) 12%,transparent); border:1px solid color-mix(in srgb,var(--gold) 34%,transparent); font-size:12.5px; line-height:1.5; color:var(--ink-2); }
-.mais-devwarn i { color:var(--gold); margin-top:2px; }
 .mais-ic-warn { background:var(--down-l) !important; color:var(--down) !important; }
 .ds-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-3); margin-bottom:14px; }
 /* setor do bloco de pares: o título diz o CRITÉRIO, esta linha diz QUAL setor é */
@@ -2197,9 +2195,6 @@ canvas { touch-action:none; }
 .ind-page .indique-hero { margin-bottom:0; }
 .acct-item.acct-gift { color:var(--up); }
 .acct-item.acct-gift i { color:var(--up); }
-.acct-test .acct-toggle { margin-left:auto; font-size:9.5px; font-weight:800; letter-spacing:.05em; padding:2px 8px; border-radius:20px; background:var(--surface-3); color:var(--ink-3); }
-.acct-test.on .acct-toggle { background:var(--brand); color:#fff; }
-.acct-test.on i { color:var(--brand); }
 .nav-gift-badge { background:color-mix(in srgb,var(--up) 16%,transparent) !important; color:var(--up) !important; }
 .nav-item-gift > i:first-child { color:var(--up); }
 .indique-hero { display:flex; align-items:center; gap:16px; padding:20px 22px; border-radius:var(--r-lg); background:linear-gradient(120deg, color-mix(in srgb,var(--brand) 12%,transparent), transparent 72%); border:1px solid color-mix(in srgb,var(--brand) 20%,transparent); margin-bottom:16px; }
@@ -4698,6 +4693,22 @@ const CARTEIRA_SEED = [
   { tk:'VISC11', cotas:105, pm:99.80  },
   { tk:'VGIR11', cotas:100, pm:96.20  },
 ];
+/* ── MIGRAÇÃO ÚNICA: aposentadoria do modo desenvolvedor (ago/2026) ──────────
+   O modo dev guardava os dados REAIS em `lastro_dev_bkp` e colocava dados fictícios
+   no lugar. Removendo o modo sem isto, quem estivesse com ele ligado ficaria com os
+   fictícios como se fossem reais e os verdadeiros presos num campo que ninguém mais lê.
+   Roda antes de qualquer leitura da carteira. */
+(function retiraModoDev(){
+  try{
+    const KEYS=['lastro_carteira','lastro_movs','lastro_watch','lastro_alerts','lastro_sub','lastro_plan','lastro_profile','lastro_priv','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_pat_hist','lastro_state_ts'];
+    const ligado = localStorage.getItem('lastro_testmode')==='1';
+    let bkp=null; try{ bkp=JSON.parse(localStorage.getItem('lastro_dev_bkp')||'null'); }catch(e){}
+    if(ligado && bkp) KEYS.forEach(k=>{ if(bkp[k]!=null) localStorage.setItem(k, bkp[k]); else localStorage.removeItem(k); });
+    else if(ligado) KEYS.forEach(k=>localStorage.removeItem(k));   // sem backup: os fictícios não podem virar reais
+    localStorage.removeItem('lastro_testmode');
+    localStorage.removeItem('lastro_dev_bkp');
+  }catch(e){}
+})();
 let CARTEIRA = loadPortfolio();
 function loadPortfolio(){
   // sem demo: carteira só existe a partir do que o próprio usuário cadastrou (e sincroniza ao logar)
@@ -4720,11 +4731,11 @@ function validDate(date){ if(!date) return false; const d=new Date(date); if(isN
 let MOVS = [];
 function hasMovs(){ return typeof window.LastroMovs!=='undefined' && !!window.LastroMovs; }
 /* livro ATIVO: vendor presente e fora do modo demo/dev (onde a carteira é efêmera e não migra) */
-function movsActive(){ return hasMovs() && !(typeof demoMode!=='undefined'&&demoMode) && !(typeof testModeOn==='function'&&testModeOn()); }
+function movsActive(){ return hasMovs() && !(typeof demoMode!=='undefined'&&demoMode); }
 /* lê e valida MOVS do localStorage (nunca lança) */
 function movsArr(){ try{ const s=JSON.parse(localStorage.getItem('lastro_movs')); if(Array.isArray(s)) return s.filter(m=>m&&m.type); }catch(e){} return []; }
 /* grava MOVS (cap generoso) e reflete em memória; não grava em demo/modo dev */
-function movsSave(a){ MOVS=Array.isArray(a)?a.slice(-5000):[]; if(demoMode||(typeof testModeOn==='function'&&testModeOn())) return; try{ localStorage.setItem('lastro_movs', JSON.stringify(MOVS)); }catch(e){} }
+function movsSave(a){ MOVS=Array.isArray(a)?a.slice(-5000):[]; if(demoMode) return; try{ localStorage.setItem('lastro_movs', JSON.stringify(MOVS)); }catch(e){} }
 /* câmbio p/ o redutor: USD→BRL pelo fechamento do dia (ou câmbio atual); BRL=1 */
 function movsFx(){ return (cur,date)=> cur==='usd' ? ((typeof closeOn==='function'&&closeOn('USDBRL',String(date||'').slice(0,10)))||(typeof usdBrlRate==='function'?usdBrlRate():1)) : 1; }
 /* estado derivado (posições+caixa+realizado) numa data D (default: tudo/hoje) */
@@ -4746,14 +4757,14 @@ function portfolioCaixa(D){ const st=movsState(D); return st? window.LastroMoney
    preservando o id (estabilidade de sync). Depois deriva CARTEIRA=rebuildLots(MOVS) (mesmos lotes). */
 function migrateMovsIfNeeded(){
   if(!hasMovs()) return;
-  if(demoMode||(typeof testModeOn==='function'&&testModeOn())){ MOVS=[]; return; }   // demo/dev: não persiste
+  if(demoMode){ MOVS=[]; return; }   // demonstração não persiste
   let raw=null; try{ raw=localStorage.getItem('lastro_movs'); }catch(e){}
   if(raw!=null){ MOVS=movsArr(); rebuildCarteira(); return; }   // já migrado: só carrega e projeta
   const gen=(Array.isArray(CARTEIRA)?CARTEIRA:[]).map(lot=>({ id:lot.id||uid(), type:'compra', tk:lot.tk, cotas:lot.cotas, preco:lot.pm, date:lot.date||todayISO(), cur:curOf(lot.tk) }));
   movsSave(gen); rebuildCarteira();
 }
 /* mutações do livro — gravam lastro_movs, refazem a projeção CARTEIRA e sincronizam (igual savePortfolio) */
-function _movsAfterMutate(){ rebuildCarteira(); try{ if(!(demoMode||(typeof testModeOn==='function'&&testModeOn()))) localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} if(typeof recordPatSnapshot==='function') recordPatSnapshot(); if(typeof saveCloudState==='function') saveCloudState(); }
+function _movsAfterMutate(){ rebuildCarteira(); try{ if(!demoMode) localStorage.setItem('lastro_carteira', JSON.stringify(CARTEIRA)); }catch(e){} if(typeof recordPatSnapshot==='function') recordPatSnapshot(); if(typeof saveCloudState==='function') saveCloudState(); }
 function addMov(mov){ if(!hasMovs()||!mov||!mov.type) return { ok:false, msg:'Movimento inválido' }; if(!mov.id) mov.id=uid(); MOVS.push(mov); movsSave(MOVS); _movsAfterMutate(); return { ok:true, id:mov.id }; }
 function editMov(id, patch){ if(!hasMovs()) return { ok:false }; const m=MOVS.find(x=>x.id===id); if(!m) return { ok:false, msg:'Movimento não encontrado' }; Object.assign(m, patch||{}); movsSave(MOVS); _movsAfterMutate(); return { ok:true }; }
 function removeMov(id){ if(!hasMovs()) return { ok:false }; MOVS=MOVS.filter(x=>x.id!==id); movsSave(MOVS); _movsAfterMutate(); return { ok:true }; }
@@ -5381,7 +5392,7 @@ function portfolioStats(lots){
   // CAIXA do livro (Fase 1 só-compra ⇒ 0). Só entra no total quando NÃO recebemos lots custom
   // (senão o caixa global contaminaria uma projeção pontual passada a portfolioStats(lots)).
   let caixaCents=0;
-  const _noMovs=(typeof demoMode!=='undefined'&&demoMode)||(typeof testModeOn==='function'&&testModeOn());
+  const _noMovs=(typeof demoMode!=='undefined'&&demoMode);
   if(!lots && !_noMovs && typeof MOVS!=='undefined' && MOVS.length){ const st=(typeof movsState==='function')?movsState():null; if(st&&isFinite(st.caixaCents)) caixaCents=st.caixaCents; }
   const atualCentsTot=posAtualCents+caixaCents;
   const invest=M.fromCents(investCents), atual=M.fromCents(atualCentsTot), prov=M.fromCents(provCents);
@@ -5452,7 +5463,6 @@ let demoMode = false;   // carteira de demonstração (efêmera, só em memória
    local (para permitir forçar o plano em testes). A gravação legítima é via RPC grant_entitlement. */
 let ENT = null;   // {plan,tier,status,periodEnd} do servidor; null = ainda não carregado
 function entEffective(){
-  if(typeof testModeOn==='function' && testModeOn()) return null;   // modo dev → usa cache local
   if(!ENT) return null;                                             // ainda não hidratado → usa cache local
   if(window.LastroEnt) return window.LastroEnt.effectivePlan(ENT, Date.now());   // derivação pura (testada)
   // fallback inline (se /vendor/entitlement.js não carregar)
@@ -5580,8 +5590,7 @@ function acctMenuHTML(){
       ${item('fa-headset','Suporte',"closeAcctMenu();nav('ajuda')")}
       ${themeRow}
       ${isOwner()? `<div class="acct-sep"></div>
-      ${item('fa-gauge-high','Painel administrativo',"closeAcctMenu();nav('admin')",'acct-admin')}
-      <button class="acct-item acct-test ${devModeOn()?'on':''}" onclick="toggleDevMode()"><i class="fa-solid fa-code"></i> Modo desenvolvedor<span class="acct-toggle">${devModeOn()?'ON':'OFF'}</span></button>`:''}
+      ${item('fa-gauge-high','Painel administrativo',"closeAcctMenu();nav('admin')",'acct-admin')}`:''}
       <div class="acct-sep"></div>
       ${item('fa-arrow-right-from-bracket','Sair',"closeAcctMenu();confirmLogout()",'danger')}`;
   }
@@ -6289,7 +6298,7 @@ function _doLogout(){
   if(s && c.SUPABASE_URL) fetch(`${c.SUPABASE_URL}/auth/v1/logout`, {method:'POST', headers:{...authHeaders(), Authorization:`Bearer ${s.access_token}`}}).catch(()=>{});
   clearSession();
   // limpa TODOS os dados do usuário deste dispositivo (nada pessoal deve permanecer)
-  ['lastro_carteira','lastro_movs','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts','lastro_dirty','lastro_testmode','lastro_dev_bkp'].forEach(k=>localStorage.removeItem(k));
+  ['lastro_carteira','lastro_movs','lastro_watch','lastro_alerts','lastro_priv','lastro_profile','lastro_sub','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_bio','lastro_bio_cred','lastro_pat_hist','lastro_state_ts','lastro_dirty'].forEach(k=>localStorage.removeItem(k));
   _stateTs = 0; clearDirty(); setSync('idle','');   // zera o relógio de sync — o próximo login adota o estado da nuvem
   try{ sessionStorage.removeItem('lastro_unlocked'); }catch(e){}   // ao sair, o próximo acesso pede biometria de novo
   localStorage.setItem('lastro_plan','free');          // cache visual → Gratuito; o próximo login rehidrata do servidor
@@ -6359,7 +6368,6 @@ function syncBusy(){
 }
 function syncOnReturn(){ if(!isAuthed() || syncBusy()) return; const now=Date.now(); if(now-_lastSync<4000) return; _lastSync=now; try{ loadCloudState(); }catch(e){} }
 async function loadCloudState(){
-  if(typeof testModeOn==='function' && testModeOn()) return;   // modo dev: não puxa a nuvem por cima dos dados de teste
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return;
   // PROTEÇÃO 1: temos mutação local ainda não confirmada na nuvem (ex.: token estava expirado) →
   // a nossa versão manda. Não puxa nada: empurra o local (agora com o token renovado no sbFetch).
@@ -6478,7 +6486,6 @@ async function _postCloudOnce(s,c,keepalive){
    "só empurra, nunca puxa" mesmo sem ninguém ter editado nada. */
 function saveCloudState(fromPull){
   if(_applyingCloud) return Promise.resolve();   // enquanto adotamos a nuvem, não re-empurramos (sem eco)
-  if(typeof testModeOn==='function' && testModeOn()) return Promise.resolve();   // modo dev: nunca grava dados de teste na nuvem
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve();
   if(!fromPull) touchState();   // registra o momento desta mutação local (base da reconciliação)
   // TRAVA: sem ter lido a nuvem nesta sessão, não grava. A mutação fica pendente e sobe depois.
@@ -6494,7 +6501,6 @@ function saveCloudState(fromPull){
    aparelho que apenas VISUALIZOU (sem editar) não sobrescreve, ao fechar/ocultar, uma versão
    MAIS NOVA que outro aparelho acabou de subir. Resolve true/false conforme a gravação. */
 function flushCloudState(keepalive, force){
-  if(typeof testModeOn==='function' && testModeOn()) return Promise.resolve(true);   // modo dev: não sincroniza
   const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return Promise.resolve(true);
   if(!canPushCloud()) return Promise.resolve(false);   // não li a nuvem nesta sessão: não gravo por cima dela
   if(!force && !_dirty){ if(_cloudT){ clearTimeout(_cloudT.id); _cloudT.res(); _cloudT=null; } return Promise.resolve(true); }
@@ -8311,7 +8317,7 @@ function openRefSimAdv(){
 }
 /* dados de indicações — populados no Modo desenvolvedor (para demonstrar a leads) */
 function refStats(){
-  if(typeof devModeOn!=='function' || !devModeOn()) return null;
+  return null;
   const rate=isProTier()?REF_RATE_PRO:REF_RATE, M=PLANS.premium.mensal, A=PLANS.premium.anualTotal;
   const raw=[
     ['Marina Alves','Anual','SP','2026-01-15','ativo'],
@@ -8473,18 +8479,6 @@ function setAdminRepField(k,v){ adminRep[k]= (k==='from'||k==='to')? +v : v; if(
 function adminRepMonthsCount(){ return adminRep.custom ? Math.max(1, Math.abs(adminRep.from-adminRep.to)+1) : adminRep.range; }
 const adminOpenAct=new Set(); /* ids das ações expandidas — preserva o "aberto" entre re-renders */
 function adminGoto(t){ adminTab=t; render('admin'); animateContent(); scrollToTop(); }
-const ADMIN_DEMO=[
-  { name:'Marina Alves',      email:'marina.alves@gmail.com',   phone:'(11) 98812-4471', uf:'SP', city:'São Paulo',      plan:'pro',     trial:false, mrr:49, since:'2026-01-08', risk:'Arrojado',    goal:'Crescimento do patrimônio' },
-  { name:'Rafael Souza',      email:'rafael.souza@outlook.com', phone:'(21) 99145-2093', uf:'RJ', city:'Niterói',        plan:'premium', trial:false, mrr:29, since:'2026-02-14', risk:'Moderado',    goal:'Renda passiva / dividendos' },
-  { name:'Carla Menezes',     email:'carla.m@hotmail.com',      phone:'(31) 98770-1188', uf:'MG', city:'Belo Horizonte', plan:'premium', trial:false, mrr:29, since:'2026-03-02', risk:'Conservador', goal:'Aposentadoria' },
-  { name:'Bruno Carvalho',    email:'brunoc.dev@gmail.com',     phone:'(41) 99632-7741', uf:'PR', city:'Curitiba',       plan:'pro',     trial:false, mrr:49, since:'2026-03-19', risk:'Arrojado',    goal:'Especulação de curto prazo' },
-  { name:'Patrícia Lima',     email:'paty.lima@gmail.com',      phone:'(51) 98123-9987', uf:'RS', city:'Porto Alegre',   plan:'premium', trial:false, mrr:29, since:'2026-04-05', risk:'Moderado',    goal:'Renda passiva / dividendos' },
-  { name:'Diego Fernandes',   email:'diego.fs@gmail.com',       phone:'(85) 99871-2210', uf:'CE', city:'Fortaleza',      plan:'free',    trial:true,  mrr:0,  since:'2026-06-21', risk:'Moderado',    goal:'Reserva de emergência' },
-  { name:'Juliana Rocha',     email:'ju.rocha@gmail.com',       phone:'(47) 99210-5567', uf:'SC', city:'Joinville',      plan:'free',    trial:true,  mrr:0,  since:'2026-06-27', risk:'Conservador', goal:'Renda passiva / dividendos' },
-  { name:'Anderson Pereira',  email:'anderson.p@yahoo.com',     phone:'(62) 98345-6621', uf:'GO', city:'Goiânia',        plan:'free',    trial:false, mrr:0,  since:'2026-05-30', risk:'Arrojado',    goal:'Crescimento do patrimônio' },
-  { name:'Fernanda Dias',     email:'fer.dias@gmail.com',       phone:'(71) 99988-3312', uf:'BA', city:'Salvador',       plan:'free',    trial:false, mrr:0,  since:'2026-06-11', risk:'Moderado',    goal:'Aposentadoria' },
-  { name:'Lucas Martins',     email:'lucas.mrt@gmail.com',      phone:'(11) 97654-8890', uf:'SP', city:'Campinas',       plan:'free',    trial:true,  mrr:0,  since:'2026-06-29', risk:'Iniciante',   goal:'Renda passiva / dividendos' },
-];
 const OWNER_NAMES={ 'ramonandreee@gmail.com':'Ramon Andree', 'mikaelsouza2506@gmail.com':'Mikael Souza' };
 /* contas reais dos donos (você + co-administradores). Para a conta logada usamos
    os dados reais do perfil; a do outro dono aparece como Admin (dados completos
@@ -8501,7 +8495,7 @@ function adminAll(){
   const owners=ownerAccounts();
   // Modo dev: soma a base de demonstração para visualizar o painel cheio.
   // Sem o modo dev: só as contas reais (donos) — números reais, sem inventar.
-  return devModeOn() ? [...owners, ...ADMIN_DEMO] : owners;
+  return owners;
 }
 /* sugestões com plano de ação pronto (para aprovação) */
 function adminSuggestions(all){
@@ -10542,8 +10536,6 @@ function viewMais(){
      gravação que falhava era 100% invisível e o usuário não tinha como forçar. Agora o
      estado aparece e dá para tocar para sincronizar na hora. */
   const syncRow = authed ? `<button class="mais-row" id="maisSyncRow" onclick="syncNow()"><span class="mais-ic ${SYNC.state==='error'?'mais-ic-warn':''}"><i class="fa-solid ${SYNC.state==='error'?'fa-triangle-exclamation':'fa-cloud-arrow-up'}"></i></span><span class="mais-txt"><span class="mais-lbl">Sincronização</span><span class="mais-sub" id="maisSyncLbl">${esc(syncLabel())}</span></span><i class="fa-solid fa-rotate mais-cv"></i></button>` : '';
-  /* modo dev desliga o sync INTEIRO: sem este aviso o aparelho fica numa ilha em silêncio */
-  const devWarn = (typeof devModeOn==='function' && devModeOn()) ? `<div class="mais-devwarn"><i class="fa-solid fa-triangle-exclamation"></i> <span><b>Modo desenvolvedor ligado.</b> Este aparelho não sincroniza com a nuvem. Desligue no menu da conta para voltar a sincronizar.</span></div>` : '';
   const conta=`<div class="mais-sec-t">Conta</div><div class="mais-grp">
     ${syncRow}
     ${planItem}
@@ -10557,7 +10549,7 @@ function viewMais(){
     <button class="${pref==='dark'?'on':''}" onclick="setThemePref('dark')" aria-label="Tema escuro"><i class="fa-solid fa-moon"></i></button>
     <button class="${pref==='auto'?'on':''}" onclick="setThemePref('auto')" aria-label="Tema automático"><i class="fa-solid fa-circle-half-stroke"></i></button>
   </div></div>`;
-  return `${head}${devWarn}${upsell}${searchBox}${grpHTML}${conta}${themeRow}${authed?`<button class="mais-logout" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>`:''}`;
+  return `${head}${upsell}${searchBox}${grpHTML}${conta}${themeRow}${authed?`<button class="mais-logout" onclick="confirmLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair da conta</button>`:''}`;
 }
 function filterMais(q){ q=(q||'').trim().toLowerCase();
   document.querySelectorAll('.mais-grp').forEach(grp=>{ let any=false;
@@ -11187,7 +11179,7 @@ function _patDay(dt){ const d=dt||new Date(); const p=n=>String(n).padStart(2,'0
 function patHistArr(){ try{ const a=JSON.parse(localStorage.getItem('lastro_pat_hist')||'[]'); return Array.isArray(a)?a.filter(x=>x&&x.d&&typeof x.v==='number').sort((p,q)=>p.d<q.d?-1:1):[]; }catch(e){ return []; } }
 function patHistSave(a){ try{ localStorage.setItem('lastro_pat_hist', JSON.stringify(a.slice(-400))); }catch(e){} }
 function recordPatSnapshot(){
-  if(demoMode || (typeof testModeOn==='function' && testModeOn())) return;   // não registra demo/modo dev
+  if(demoMode) return;   // demonstração não registra
   if(!CARTEIRA.length) return;
   const p=(typeof portfolioStats==='function')?portfolioStats():null; const v=p&&p.atual; if(!(v>0)) return;
   const today=_patDay(); const a=patHistArr(); const last=a[a.length-1];
@@ -11381,7 +11373,7 @@ function wealthSeries(period){
   // fonte de lotes por dia = deriveState(MOVS,D).posByTk (líquido de venda) + caixa. Fora do modo
   // demo/dev (onde a carteira é efêmera e MOVS não reflete os lotes de teste) e só quando há MOVS.
   const useMovs = hasMovs() && Array.isArray(MOVS) && MOVS.length>0
-    && !(typeof demoMode!=='undefined'&&demoMode) && !(typeof testModeOn==='function'&&testModeOn());
+    && !(typeof demoMode!=='undefined'&&demoMode);
   const ps=(typeof portfolioStats==='function')?portfolioStats():null; const atual=(ps&&ps.atual>0)?ps.atual:null;
   // ── Janela pelo PERÍODO escolhido (seletor 7D/30D/3M/6M/1A/MAX). MAX = desde o 1º aporte. ──
   const PWIN={'7D':7,'30D':30,'3M':91,'6M':182,'1A':365,'MAX':1000000};
@@ -11395,7 +11387,7 @@ function wealthSeries(period){
   const fmtLbl=d=>d.toLocaleDateString('pt-BR', spanLong?{day:'2-digit',month:'2-digit',year:'2-digit'}:{day:'2-digit',month:'2-digit'});
   const ph=(typeof patHistArr==='function')?patHistArr():[]; const phMap={}; ph.forEach(x=>{ phMap[x.d]=x.v; });
   const usdRate=(typeof usdBrlRate==='function')?usdBrlRate():1;
-  const isDemo=(typeof demoMode!=='undefined'&&demoMode)||(typeof testModeOn==='function'&&testModeOn());
+  const isDemo=(typeof demoMode!=='undefined'&&demoMode);
   // ── Reconstrução dia a dia: SÓ pontos reais entram (dias sem cobertura são pulados) ──
   const labels=[], cart=[], dates=[]; let usedSnap=false, usedRecon=false; const persist=[];
   for(const i of idxs){
@@ -12647,76 +12639,10 @@ function importCarteiraCSV(){
   }; inp.click();
 }
 /* ── Carteira de demonstração (1 clique) — permite ver valor antes de digitar ── */
-/* ── Modo desenvolvedor dos donos (Ramon e Mikael): gera dados + Investidor Pro + acesso admin ── */
+/* ── Donos do projeto (acesso ao painel administrativo) ── */
 const OWNER_EMAILS = ['ramonandreee@gmail.com', 'mikaelsouza2506@gmail.com'];
 const OWNER_EMAIL = OWNER_EMAILS[0];   // compat.: primeiro dono (referências legadas)
 function isOwner(){ const u=currentUser(); return !!u && OWNER_EMAILS.includes(String(u.email||'').toLowerCase()); }
-function testModeOn(){ return localStorage.getItem('lastro_testmode')==='1'; }
-function devModeOn(){ return testModeOn(); }
-function toggleDevMode(){ toggleTestMode(); }
-function genTestCarteira(){
-  const shuffle=arr=>{ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; };
-  // garante pagadores de proventos (FIIs têm div; ações com DY>0) e NUNCA BDRs/stocks
-  const fiis  = shuffle(FIIS.filter(a=>a&&a.px>0).map(a=>a.tk)).slice(0,4);
-  const acoes = shuffle(ACOES.filter(a=>a&&a.px>0 && (a.dy||0)>0).map(a=>a.tk)).slice(0,5);
-  const pick=[...fiis, ...acoes], now=new Date(), lots=[];
-  pick.forEach(tk=>{ const lk=assetLookup(tk); if(!lk || (lk.k!=='acoes' && lk.k!=='fiis')) return; const px=lk.a.px||10;
-    const cotas=Math.max(1, Math.round((1500+Math.random()*9000)/px));
-    const monthsAgo=Math.floor(Math.random()*21)+3;
-    const dt=new Date(now.getFullYear(), now.getMonth()-monthsAgo, 4+Math.floor(Math.random()*22)).toISOString().slice(0,10);
-    const pm=+(px*(0.68+Math.random()*0.5)).toFixed(2);
-    lots.push({ id:uid(), tk, cotas, pm, date:dt });
-  });
-  return lots;
-}
-function genTestWatch(){
-  const cart=new Set(CARTEIRA.map(l=>l.tk));
-  const pool=[...FIIS,...ACOES].filter(a=>a&&a.px>0&&!cart.has(a.tk)).map(a=>a.tk);
-  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
-  return pool.slice(0,6);
-}
-function genTestAlerts(){
-  const list=[]; CARTEIRA.slice(0,4).forEach((l,idx)=>{ const r=assetLookup(l.tk); if(!r||!(r.a.px>0)) return;
-    const dir= idx%2 ? 'abaixo':'acima'; const price=+(r.a.px*(dir==='acima'?1.08:0.92)).toFixed(2);
-    list.push({ id:uid(), tk:r.a.tk, k:r.k, dir, price, created:Date.now(), status:idx===3?'disparado':'ativo', firedAt:idx===3?Date.now():undefined, firedPx:idx===3?r.a.px:undefined }); });
-  return list;
-}
-/* TODOS os dados do usuário que o modo dev pode tocar — guardados/restaurados por inteiro */
-const DEV_DATA_KEYS = ['lastro_carteira','lastro_movs','lastro_watch','lastro_alerts','lastro_sub','lastro_plan','lastro_profile','lastro_priv','lastro_despesa','lastro_fire_aporte','lastro_renda_meta','lastro_trial_start','lastro_pat_hist','lastro_state_ts'];
-function toggleTestMode(){
-  closeAcctMenu();
-  if(!testModeOn()){
-    // Backup COMPLETO dos dados reais (tudo volta ao sair do modo dev)
-    try{ const bkp={}; DEV_DATA_KEYS.forEach(k=>{ bkp[k]=localStorage.getItem(k); }); localStorage.setItem('lastro_dev_bkp', JSON.stringify(bkp)); }catch(e){}
-    localStorage.setItem('lastro_testmode','1'); demoMode=false;
-    setPlan('premium');
-    localStorage.setItem('lastro_sub', JSON.stringify({ tier:'pro', plano:'Investidor Pro', cycle:'anual', amount:588, brand:'Visa', card:'4242', canceled:false }));
-    CARTEIRA=genTestCarteira(); savePortfolio();   // dados de teste ficam só localmente (a nuvem está protegida)
-    localStorage.setItem('lastro_watch', JSON.stringify(genTestWatch()));
-    setAlerts(genTestAlerts());
-    toast('Modo desenvolvedor ON: dados de teste. Seus dados reais ficam guardados ✓');
-  } else {
-    localStorage.removeItem('lastro_testmode');
-    let bkp=null; try{ bkp=JSON.parse(localStorage.getItem('lastro_dev_bkp')||'null'); }catch(e){}
-    if(bkp){
-      // Restaura TODOS os dados reais exatamente como estavam
-      DEV_DATA_KEYS.forEach(k=>{ if(bkp[k]!=null) localStorage.setItem(k, bkp[k]); else localStorage.removeItem(k); });
-      localStorage.removeItem('lastro_dev_bkp');
-      // recarrega o estado em memória a partir do que foi restaurado
-      try{ CARTEIRA = loadPortfolio(); normLots(); }catch(e){ CARTEIRA=[]; }
-      try{ MOVS = movsArr(); rebuildCarteira(); }catch(e){ MOVS=[]; }   // livro real volta ao estado guardado
-      try{ _stateTs = +localStorage.getItem('lastro_state_ts')||0; }catch(e){}   // relógio de sync volta ao valor real
-      if(typeof flushCloudState==='function') flushCloudState(false, true);   // fora do modo dev: re-sincroniza os dados reais (força)
-      toast('Modo desenvolvedor OFF: todos os seus dados reais foram restaurados ✓');
-    } else {
-      CARTEIRA=[]; savePortfolio();
-      localStorage.removeItem('lastro_watch'); setAlerts([]);
-      localStorage.removeItem('lastro_sub'); setPlan('free');
-      toast('Modo desenvolvedor OFF ✓');
-    }
-  }
-  refreshPlanUI(); applyPriv(); nav('painel');
-}
 function loadDemoCarteira(){
   const demo=[['HGLG11',50,158.00],['KNCR11',80,103.00],['VISC11',60,108.00],['PETR4',100,36.50],['ITSA4',200,9.80]];
   const now=new Date(); const lots=[];
