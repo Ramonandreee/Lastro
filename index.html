@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="description" content="Lastro — Inteligência para o investidor brasileiro. Análise de FIIs, ações B3, indicadores fundamentalistas.">
+<meta name="description" content="Lastro: inteligência para o investidor brasileiro. Análise de FIIs, ações B3, indicadores fundamentalistas.">
 <meta name="theme-color" content="#F1F3F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#070C16" media="(prefers-color-scheme: dark)">
 <title>Lastro · Inteligência de Investimentos</title>
@@ -4747,7 +4747,7 @@ function sellPosition(tk, cotas, preco, date){
   const g=(typeof portfolioByTicker==='function'?portfolioByTicker():[]).find(x=>x.tk===tk);
   const tem=g?g.cotas:0;
   if(!(tem>0)) return { ok:false, msg:`Você não tem ${tk} na carteira` };
-  if(cotas>tem+1e-9) return { ok:false, msg:`Você tem ${pc(tem,0)} cota(s) de ${tk} — não dá para vender ${pc(cotas,0)}` };
+  if(cotas>tem+1e-9) return { ok:false, msg:`Você tem ${pc(tem,0)} cota(s) de ${tk}. Não dá para vender ${pc(cotas,0)}` };
   if(!movsActive()) return { ok:false, msg:'Registro de venda indisponível nesta carteira. Adicione um novo aporte para ativar o livro de movimentos.' };
   addMov({ id:uid(), type:'venda', tk, cotas, preco, date, cur:curOf(tk) });
   return { ok:true };
@@ -5388,8 +5388,8 @@ const PAGES = {
   fiis:         { t:'Fundos Imobiliários',   s:'Indicadores fundamentalistas de FIIs' },
   bdrs:         { t:'BDRs',                   s:'Recibos de ações estrangeiras negociados na B3' },
   etfs:         { t:'ETFs',                   s:'Fundos de índice negociados na B3' },
-  etfsint:      { t:'ETFs internacionais',    s:'ETFs listados nos EUA (em dólar) — S&P 500, Nasdaq, setores e renda' },
-  stocks:       { t:'Stocks',                s:'Ações internacionais — bolsas dos EUA' },
+  etfsint:      { t:'ETFs internacionais',    s:'ETFs em dólar listados nos EUA: S&P 500, Nasdaq, setores e renda' },
+  stocks:       { t:'Stocks',                s:'Ações das bolsas dos EUA' },
   cripto:       { t:'Criptomoedas',          s:'Principais criptoativos por valor de mercado' },
   carteira:     { t:'Minha Carteira',        s:'Diagnóstico, proventos e saúde da sua carteira' },
   proventos:    { t:'Meus Proventos',        s:'Histórico, crescimento e Yield on Cost dos seus dividendos' },
@@ -5458,17 +5458,17 @@ function ensureTrial(){ if(isAuthed() && !isPremium() && !trialStartTs()){ try{ 
 const PREMIUM_FEATURES = {
   carteira:  { name:'Carteira Real', icon:'fa-wallet', desc:'Acompanhe seus aportes de verdade: patrimônio, proventos e rentabilidade com e sem dividendos, sincronizados na nuvem.', why:'No plano Gratuito você só explora a demonstração. Com a carteira real, cada decisão parte dos seus números.' },
   proventos: { name:'Meus Proventos', icon:'fa-coins', desc:'Painel completo da sua renda passiva: crescimento ano a ano, Yield on Cost e projeção dos próximos 12 meses.', why:'Saiba exatamente quanto seus ativos pagam e como sua renda evolui mês a mês.' },
-  aporte:    { name:'Aporte Inteligente', icon:'fa-scale-balanced', desc:'O Lastro calcula quanto aportar em cada ativo para igualar os pesos da sua carteira, em cotas inteiras.', why:'Rebalanceia a carteira para pesos iguais a cada aporte, em cotas inteiras — cálculo, não recomendação.' },
+  aporte:    { name:'Aporte Inteligente', icon:'fa-scale-balanced', desc:'O Lastro calcula quanto aportar em cada ativo para igualar os pesos da sua carteira, em cotas inteiras.', why:'Rebalanceia a carteira para pesos iguais a cada aporte, em cotas inteiras. É cálculo, não recomendação.' },
   fire:      { name:'Independência Financeira', icon:'fa-fire', desc:'Descubra quanto falta para viver dos seus dividendos, com número mágico e data projetada de liberdade.', why:'Visualize sua meta de liberdade financeira e o caminho real até ela.' },
   ir:        { name:'Imposto de Renda', icon:'fa-file-invoice-dollar', desc:'Bens e Direitos prontos para a declaração, rendimentos isentos do ano e cálculo de DARF sobre vendas.', why:'Economize horas na declaração e evite erros que custam caro.' },
   alertas:   { name:'Alertas de Preço', icon:'fa-bell', desc:'Seja avisado assim que um ativo atingir o preço-alvo, com cotações ao vivo da B3 e cripto.', why:'Nunca mais perca o momento certo de comprar ou vender.' },
   comparador:{ name:'Comparador Completo', icon:'fa-code-compare', desc:'Compare até 4 ativos lado a lado pelos principais fundamentos.', why:'Decida entre vários ativos com tudo na mesma tela.' },
   watchlist: { name:'Watchlist Ilimitada', icon:'fa-star', desc:'Acompanhe quantos ativos quiser, sem limite.', why:'Monitore todas as suas ideias de investimento em um só lugar.' },
   export:    { name:'Exportar Carteira', icon:'fa-file-csv', desc:'Baixe sua carteira completa em CSV para usar onde quiser.', why:'Leve seus dados com você, com total liberdade.' },
-  relatorio: { name:'Relatório Mensal da Carteira', icon:'fa-file-lines', pro:true, desc:'Um relatório completo e imprimível da sua carteira: patrimônio, resultado, proventos do mês e alocação.', why:'Acompanhe sua evolução com um documento profissional — ideal para guardar ou compartilhar com seu contador.' },
+  relatorio: { name:'Relatório Mensal da Carteira', icon:'fa-file-lines', pro:true, desc:'Um relatório completo e imprimível da sua carteira: patrimônio, resultado, proventos do mês e alocação.', why:'Acompanhe sua evolução com um documento profissional, ideal para guardar ou enviar ao seu contador.' },
   backtest:  { name:'Backtest da Carteira', icon:'fa-chart-line', pro:true, desc:'Simule como a sua carteira teria se comportado no passado: retorno, volatilidade e maior queda, comparados ao CDI e ao IBOV.', why:'Entenda o risco e o retorno histórico da sua estratégia antes de tomar decisões.' },
   raiox:     { name:'Raio-X da Carteira', icon:'fa-magnifying-glass-chart', pro:true, desc:'O retrato completo da sua carteira: diversificação por setor, ativo e classe, com a Nota de Diversificação Lastro e alertas de concentração.', why:'Enxergue de relance onde sua carteira está concentrada e o que melhorar.' },
-  stress:    { name:'Stress Test da Carteira', icon:'fa-heart-pulse', pro:true, desc:'Simule cenários de crise — queda de bancos, do petróleo, alta de juros, queda da bolsa, dólar em alta — e veja o impacto estimado em reais na sua carteira.', why:'Saiba quanto a sua carteira pode perder antes de a crise acontecer.' },
+  stress:    { name:'Stress Test da Carteira', icon:'fa-heart-pulse', pro:true, desc:'Simule cenários de crise (queda de bancos, do petróleo, da bolsa, alta de juros, dólar em alta) e veja o impacto estimado em reais na sua carteira.', why:'Saiba quanto a sua carteira pode perder antes de a crise acontecer.' },
 };
 const PREMIUM_BENEFITS = ['Carteira real ilimitada e sincronizada','Meus Proventos, Aporte, FIRE e Imposto de Renda','Rastreador completo de ativos','Alertas de preço ilimitados','Watchlist ilimitada e exportação CSV'];
 const PRO_BENEFITS = ['Tudo do Premium, sem limites','Raio-X da carteira com Nota de Diversificação Lastro','Stress Test da carteira','Backtest histórico da carteira (vs CDI/IBOV)','Relatório mensal da carteira'];
@@ -5587,17 +5587,17 @@ function supportWhatsapp(){
   window.open(`https://wa.me/5547992464048?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
 }
 function supportEmail(){
-  const s=encodeURIComponent('Ajuda — Lastro'); const b=encodeURIComponent(`Olá, preciso de ajuda com:\n\n\n—\nVersão: ${APP_VERSION}`);
+  const s=encodeURIComponent('Ajuda Lastro'); const b=encodeURIComponent(`Olá, preciso de ajuda com:\n\n\nVersão: ${APP_VERSION}`);
   window.open(`mailto:suporte@lastro.app?subject=${s}&body=${b}`, '_blank');
 }
 const SUPPORT_FAQ=[
   ['Meus dados de investimento ficam seguros?','Sim. Sua carteira fica salva no seu dispositivo e sincronizada de forma privada na sua conta. Nunca compartilhamos seus dados com terceiros.'],
   ['Como cadastro meus ativos na carteira?','Vá em Carteira → Adicionar ativo, busque pelo ticker (ex.: PETR4, HGLG11) e informe a quantidade e o preço médio. O restante é calculado automaticamente.'],
-  ['Como funciona o teste grátis do Premium?','São 7 dias com acesso completo, sem precisar de cartão. Ao final, você escolhe se quer continuar — sem cobrança automática surpresa.'],
+  ['Como funciona o teste grátis do Premium?','São 7 dias com acesso completo, sem precisar de cartão. Ao final, você escolhe se quer continuar. Não há cobrança automática surpresa.'],
   ['Como cancelo minha assinatura?','Em Gerenciar assinatura você pode cancelar quando quiser. O acesso permanece até o fim do período já pago.'],
   ['Qual a diferença entre Premium e Investidor Pro?','O Premium libera carteira real, proventos, aporte, IR, rastreador e alertas. O Investidor Pro acrescenta Raio-X com Nota Lastro, detector de deterioração, backtest, stress test e comissão de indicação dobrada (40%).'],
-  ['Como funciona o programa Indique e Ganhe?','Você compartilha seu link exclusivo e ganha uma comissão recorrente (20%, ou 40% sendo Investidor Pro) sobre a assinatura de cada amigo que assinar — paga via PIX enquanto ele permanecer ativo.'],
-  ['A Lastro dá recomendação de compra ou venda?','Não. A Lastro é uma ferramenta de organização e análise. Todos os indicadores e scores são informativos e educacionais — a decisão de investimento é sempre sua.'],
+  ['Como funciona o programa Indique e Ganhe?','Você compartilha seu link exclusivo e ganha uma comissão recorrente (20%, ou 40% sendo Investidor Pro) sobre a assinatura de cada amigo que assinar. A comissão é paga via PIX enquanto ele permanecer ativo.'],
+  ['A Lastro dá recomendação de compra ou venda?','Não. A Lastro é uma ferramenta de organização e análise. Todos os indicadores e scores são informativos e educacionais. A decisão de investimento é sempre sua.'],
 ];
 function faqToggle(el){ const it=el.closest('.faq-item'); if(it) it.classList.toggle('open'); }
 /* ── VIEW: Central de ajuda (página inteira, irmã de Perfil/Assinatura) ── */
@@ -5835,7 +5835,7 @@ function verifyCode(){
   const el=document.getElementById('codeModal'); if(el) el.classList.remove('open');
   const cb=_codeCb; _codeCb=null; if(cb) cb();
 }
-function changePassword(){ openCodeVerify({ title:'Alterar senha', desc:'Para sua segurança, enviamos um código de confirmação para o seu e-mail.', onVerify:()=>toast('Código confirmado — em breve: definição da nova senha') }); }
+function changePassword(){ openCodeVerify({ title:'Alterar senha', desc:'Para sua segurança, enviamos um código de confirmação para o seu e-mail.', onVerify:()=>toast('Código confirmado. Em breve: definição da nova senha') }); }
 function toggle2FA(kind){
   const p=getProfile(); const key=kind==='wa'?'twofaWa':'twofaEmail';
   const _sc=profScope(); const sw=_sc&&_sc.querySelector(`.prof-switch[data-2fa="${kind}"]`);
@@ -5864,14 +5864,14 @@ async function saveProfileCadastro(silent){
     }
   }
   updateAuthUI(); refreshProfileAvatar();
-  if(!silent) toast(okSync ? 'Dados cadastrais salvos e sincronizados ✓' : 'Salvo neste aparelho — não foi possível sincronizar agora. Tente novamente com internet.');
+  if(!silent) toast(okSync ? 'Dados cadastrais salvos e sincronizados ✓' : 'Salvo neste aparelho. Não foi possível sincronizar agora; tente novamente com internet.');
 }
 async function saveProfileInvestidor(silent){
   const p=getProfile(); const risk=currentRiskSel(); if(risk) p.risk=risk; else delete p.risk;
   PROF_INVEST.forEach(k=>{ const el=document.getElementById('prof_'+k); if(el){ const val=(el.value||'').trim(); if(val) p[k]=val; else delete p[k]; } });
   saveProfile(p);
   const okSync = await flushCloudState();
-  if(!silent) toast(okSync ? 'Perfil de investidor salvo e sincronizado ✓' : 'Salvo neste aparelho — não foi possível sincronizar agora. Tente novamente com internet.');
+  if(!silent) toast(okSync ? 'Perfil de investidor salvo e sincronizado ✓' : 'Salvo neste aparelho. Não foi possível sincronizar agora; tente novamente com internet.');
 }
 /* aviso de alterações não salvas ao fechar o perfil */
 let _profileOpen=false;
@@ -5957,7 +5957,7 @@ function renderQuizResult(){
   let goal=null, exp=null; ans.forEach(a=>{ if(a&&a.goal) goal=a.goal; if(a&&a.exp) exp=a.exp; });
   _quiz.result={risk, goal, exp};
   const ic = risk==='Conservador'?'fa-shield-halved':risk==='Moderado'?'fa-scale-balanced':'fa-arrow-trend-up';
-  const desc = risk==='Conservador'?'Você prioriza segurança e previsibilidade — foco em preservar o capital e ter renda estável.'
+  const desc = risk==='Conservador'?'Você prioriza segurança e previsibilidade: preservar o capital e ter renda estável.'
     : risk==='Moderado'?'Você equilibra segurança e crescimento, aceitando oscilações moderadas por mais retorno.'
     : 'Você tolera bem o risco em troca de maior potencial de retorno no longo prazo.';
   const tt=document.getElementById('quizTitle'); if(tt) tt.textContent='Seu perfil de investidor';
@@ -6014,7 +6014,7 @@ function viewPerfil(){
       </div>
       <div class="prof-actions" style="margin-top:12px"><button class="btn btn-ghost btn-sm prof-btn" onclick="openInvestorQuiz()"><i class="fa-solid fa-rotate"></i> Refazer o teste</button></div>
       ` : `
-      <p style="font-size:13.5px;color:var(--ink-3);line-height:1.55;margin:0 0 14px">Responda um teste rápido de 5 perguntas e a Lastro define seu perfil — conservador, moderado ou arrojado — para personalizar as análises.</p>
+      <p style="font-size:13.5px;color:var(--ink-3);line-height:1.55;margin:0 0 14px">São 5 perguntas rápidas. A Lastro define se você é conservador, moderado ou arrojado e personaliza as análises.</p>
       <button class="btn btn-primary btn-sm prof-btn" onclick="openInvestorQuiz()"><i class="fa-solid fa-clipboard-question"></i> Descobrir meu perfil</button>
       `}
     </div>
@@ -6073,7 +6073,7 @@ function subscribePremium(tier, cycle){
   openAssinatura();
 }
 function downgradeFree(){ setSub(null); setPlan('free'); grantEntitlement('free', null, 0).then(()=>{ if(typeof refreshPlanUI==='function') refreshPlanUI(); }); toast('Plano alterado para Gratuito'); openAssinatura(); }
-function cancelSub(){ showConfirm('Cancelar assinatura?','Você manterá o Premium até o fim do período já pago e depois volta ao plano Gratuito.','Cancelar assinatura', ()=>{ const s=getSub(); if(s){ s.canceled=true; setSub(s); } toast('Assinatura cancelada — ativa até o fim do período'); openAssinatura(); }, true); }
+function cancelSub(){ showConfirm('Cancelar assinatura?','Você manterá o Premium até o fim do período já pago e depois volta ao plano Gratuito.','Cancelar assinatura', ()=>{ const s=getSub(); if(s){ s.canceled=true; setSub(s); } toast('Assinatura cancelada. Fica ativa até o fim do período'); openAssinatura(); }, true); }
 function openAssinatura(){ closeAcctMenu(); currentView='assinatura'; document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); render('assinatura'); animateContent(); $('#content').scrollTop=0; window.scrollTo({top:0,behavior:'instant'}); closeSidebar(); }
 function viewAssinatura(){
   const pro=isPremium(); let s=getSub();
@@ -6306,7 +6306,7 @@ async function syncNow(){
   // Assim um aparelho com a carteira vazia não empurra vazio por cima de dados reais na nuvem.
   try{ await loadCloudState(); if(_dirty) await flushCloudState(false, true); }catch(e){}
   const ok = SYNC.state!=='error';
-  toast(ok ? 'Sincronizado ✓' : ('Falha ao sincronizar' + (SYNC.msg?': '+SYNC.msg:' — verifique sua conexão')));
+  toast(ok ? 'Sincronizado ✓' : ('Falha ao sincronizar' + (SYNC.msg?': '+SYNC.msg:'. Verifique sua conexão')));
   if(currentView==='painel'||currentView==='carteira') render(currentView);
 }
 /* carimbo monotônico: nunca anda pra trás em relação ao que este aparelho já viu (inclui o ts
@@ -6481,7 +6481,7 @@ function renderAuth(mode){
     <div class="auth-hero">
       <div class="auth-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg></div>
       <div class="auth-h">Olá.<br>Boas-vindas!</div>
-      <div class="auth-sub">Acesse sua carteira, watchlist e preferências — sincronizadas onde você estiver.</div>
+      <div class="auth-sub">Sua carteira, watchlist e preferências sincronizadas onde você estiver.</div>
     </div>
     <label class="fld auth-fld"><span>E-mail</span><div class="auth-input"><i class="fa-regular fa-envelope"></i><input id="auEmail" type="email" inputmode="email" placeholder="voce@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('#auPass').focus()"></div></label>
     <label class="fld auth-fld"><span>Senha</span><div class="auth-input"><i class="fa-solid fa-lock"></i><input id="auPass" type="password" placeholder="sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')authSubmit('login')"><button type="button" class="auth-eye" onclick="togglePass(this)" aria-label="Mostrar senha"><i class="fa-regular fa-eye"></i></button></div></label>
@@ -6548,7 +6548,7 @@ function renderSignup(){
       <div class="fld-grid" style="margin-top:14px">
         <label class="fld"><span>Objetivo principal</span><select id="suGoal">${['','Renda passiva / dividendos','Crescimento do patrimônio','Aposentadoria','Reserva de emergência','Máximo retorno no curto prazo'].map(o=>`<option ${(_signup.goal||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
         <label class="fld"><span>Experiência</span><select id="suExp">${['','Iniciante','Intermediário','Avançado'].map(o=>`<option ${(_signup.exp||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
-        <label class="fld"><span>Patrimônio para investir</span><select id="suWealth">${['','Até R$ 10 mil','R$ 10 mil – R$ 50 mil','R$ 50 mil – R$ 250 mil','R$ 250 mil – R$ 1 mi','Acima de R$ 1 mi'].map(o=>`<option ${(_signup.wealth||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
+        <label class="fld"><span>Patrimônio para investir</span><select id="suWealth">${['','Até R$ 10 mil','De R$ 10 mil a R$ 50 mil','De R$ 50 mil a R$ 250 mil','De R$ 250 mil a R$ 1 mi','Acima de R$ 1 mi'].map(o=>`<option ${(_signup.wealth||'')===o?'selected':''} value="${o}">${o||'Selecione…'}</option>`).join('')}</select></label>
       </div>
       <div id="auErr" class="fld-err" style="margin-top:8px"></div>
       <button class="btn btn-primary auth-submit" onclick="signupCreate()">Criar conta grátis <i class="fa-solid fa-arrow-right"></i></button>
@@ -6659,9 +6659,9 @@ function maybeOnboard(){
 }
 const OB_LOGO='<svg viewBox="0 0 24 24" fill="none" style="width:30px;height:30px"><path d="M5 14L9 10L13 13L19 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="6" r="2.4" fill="white"/><path d="M4 19H20" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".5"/></svg>';
 const OB_STEPS=[
-  { logo:true, title:'Bem-vindo à Lastro', sub:'Inteligência para o investidor brasileiro — renda variável com dados ao vivo e fundamentos completos. Veja em 30 segundos o que dá pra fazer aqui.' },
-  { ic:'fa-chart-column', bg:'brand', title:'Explore o mercado', sub:'Ações, FIIs, BDRs, ETFs, Stocks e cripto — com fundamentos completos.', feats:[['fa-chart-simple','Fundamentos completos','DY, P/VP, P/L, ROE e mais de cada ativo'],['fa-filter','Rastreador','Filtre por DY, P/VP, P/L, ROE, setor e mais']] },
-  { ic:'fa-wallet', bg:'accent', title:'Sua carteira, viva', sub:'Acompanhe patrimônio, proventos e rentabilidade — sincronizados na nuvem no seu login.', feats:[['fa-magnifying-glass-chart','Raio-X da Carteira','Diversificação, Nota Lastro e recomendações'],['fa-coins','Proventos','Histórico, Yield on Cost e projeção de renda']] },
+  { logo:true, title:'Bem-vindo à Lastro', sub:'Renda variável com dados ao vivo e fundamentos completos. Veja em 30 segundos o que dá pra fazer aqui.' },
+  { ic:'fa-chart-column', bg:'brand', title:'Explore o mercado', sub:'Ações, FIIs, BDRs, ETFs, Stocks e cripto com fundamentos completos.', feats:[['fa-chart-simple','Fundamentos completos','DY, P/VP, P/L, ROE e mais de cada ativo'],['fa-filter','Rastreador','Filtre por DY, P/VP, P/L, ROE, setor e mais']] },
+  { ic:'fa-wallet', bg:'accent', title:'Sua carteira, viva', sub:'Patrimônio, proventos e rentabilidade sincronizados na nuvem no seu login.', feats:[['fa-magnifying-glass-chart','Raio-X da Carteira','Diversificação, Nota Lastro e recomendações'],['fa-coins','Proventos','Histórico, Yield on Cost e projeção de renda']] },
   { ic:'fa-crown', bg:'gold', title:'Ferramentas Investidor Pro', sub:'Decisões com o nível de uma mesa profissional.', feats:[['fa-chart-line','Backtest','Histórico da carteira vs CDI e IBOV'],['fa-heart-pulse','Stress Test','Simule crises e veja o impacto em reais'],['fa-magnifying-glass-chart','Raio-X da Carteira','Diversificação e concentração com Nota Lastro']] },
 ];
 let obStep=0;
@@ -6857,10 +6857,10 @@ function tourContentPre(){ closeSidebar(); if(currentView!=='painel') nav('paine
 function tourTopPre(){ closeSidebar(); }
 const TOUR=[
   { center:true, ic:'fa-hand-sparkles', title:'Bora conhecer o app?', text:'Em poucos passos eu te mostro as seções e o que dá pra fazer em cada uma. Use Próximo, as setas do teclado ou arraste.' },
-  { sel:'[data-tour="mercado"]', pre:tourGroupPre, title:'Mercado', text:'Explore Ações, FIIs, BDRs, ETFs, Stocks e Cripto — com fundamentos completos de cada ativo. As Notícias também ficam aqui.' },
-  { sel:'[data-tour="carteira"]', pre:tourGroupPre, title:'Minha Carteira', text:'Cadastre seus aportes e acompanhe patrimônio, proventos, agenda de dividendos, watchlist, alertas e o Aporte Inteligente — sincronizado na nuvem.' },
+  { sel:'[data-tour="mercado"]', pre:tourGroupPre, title:'Mercado', text:'Ações, FIIs, BDRs, ETFs, Stocks e Cripto com fundamentos completos de cada ativo. As Notícias também ficam aqui.' },
+  { sel:'[data-tour="carteira"]', pre:tourGroupPre, title:'Minha Carteira', text:'Cadastre seus aportes e acompanhe patrimônio, proventos, agenda de dividendos, watchlist, alertas e o Aporte Inteligente, tudo sincronizado na nuvem.' },
   { sel:'[data-tour="analise"]', pre:tourGroupPre, title:'Análise', text:'Ferramentas de decisão: Raio-X da carteira, Backtest, Stress Test e Rastreador.' },
-  { sel:'.hcard-health', pre:tourContentPre, title:'Saúde da carteira', text:'Um retrato rápido da diversificação da sua carteira — toque para abrir o Raio-X completo com concentração por ativo, setor e classe.' },
+  { sel:'.hcard-health', pre:tourContentPre, title:'Saúde da carteira', text:'Um retrato rápido da diversificação da sua carteira. Toque para abrir o Raio-X completo com concentração por ativo, setor e classe.' },
   { sel:'.hdr-profile', pre:tourTopPre, title:'Sua conta', text:'Perfil, plano e tema claro/escuro ficam aqui no seu avatar. Para rever este tour, abra Suporte → Recursos.' },
   { center:true, ic:'fa-circle-check', title:'Tudo pronto!', text:'Explore à vontade. Você pode rever este tour quando quiser no menu da conta.' },
 ];
@@ -7220,7 +7220,7 @@ function viewPainel(){
   const totalUpc = upc.reduce((s,x)=>s+x.total,0);
   const MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   const timeline = upc.length ? upc.map(x=>`
-    <div class="tl-item" onclick="quickView('${x.tk}')" title="Data-com${x.real?'':' estimada'}: ${fmtDateBR(_patDay(x.com))} — só contam as cotas compradas até essa data. Valor por cota é estimativa (${x.tipo==='Rendimento'?'último rendimento declarado':'DY/12'})">
+    <div class="tl-item" onclick="quickView('${x.tk}')" title="Data-com${x.real?'':' estimada'}: ${fmtDateBR(_patDay(x.com))}. Só contam as cotas compradas até essa data. Valor por cota é estimativa (${x.tipo==='Rendimento'?'último rendimento declarado':'DY/12'})">
       <div class="tl-date"><div class="d">${String(x.date.getDate()).padStart(2,'0')}</div><div class="m">${MES[x.date.getMonth()]}</div></div>
       <div class="tl-info"><div class="tk">${x.tk}</div><div class="ds">${x.tipo} · ${x.cotas} cota${x.cotas!==1?'s':''}</div></div>
       <div class="tl-val"><div class="v priv-blur">${brl(x.total)}</div><div class="t">${x.real?'estimado · data-com real':'estimado'}</div></div>
@@ -7753,7 +7753,7 @@ function pagerHTML(kind, page, pages, total, ps, start, shown){
   const nums = pageWindow(page,pages).map(p=> p==='…'?'<span class="pg-ell">…</span>': btn(p, p, p===page?'on':'', 'Página '+p)).join('');
   const nav = pages>1 ? `<div class="pg-nav" role="navigation" aria-label="Paginação">${btn(page>1?page-1:0,'<i class="fa-solid fa-chevron-left" aria-hidden="true"></i>','pg-arrow','Página anterior')}${nums}${btn(page<pages?page+1:0,'<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>','pg-arrow','Próxima página')}</div>` : '';
   return `<div class="pager">
-    <span class="pg-info"><span class="pg-range">${start+1}–${start+shown}</span> de ${total}</span>
+    <span class="pg-info"><span class="pg-range">${start+1} a ${start+shown}</span> de ${total}</span>
     ${nav}
   </div>`;
 }
@@ -7926,7 +7926,7 @@ function viewCarteira(){
     return `
     <div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico"><i class="fa-solid fa-wallet"></i></span> Minha Carteira</div></div>
-      ${emptyState('fa-wallet','Sua carteira está vazia', isPro()?'Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.':'Adicione seus aportes para acompanhar a sua carteira de verdade — com sincronização entre aparelhos, proventos, Imposto de Renda e mais. Crie sua conta e teste o Premium 7 dias grátis.', emptyCta)}
+      ${emptyState('fa-wallet','Sua carteira está vazia', isPro()?'Adicione seus aportes (ativo, quantidade, preço e data) para acompanhar patrimônio, proventos, rentabilidade com e sem dividendos e a saúde da carteira.':'Acompanhe a sua carteira de verdade: proventos, Imposto de Renda e sincronização entre aparelhos. Crie sua conta e teste o Premium 7 dias grátis.', emptyCta)}
     </div>`;
   }
 
@@ -7941,7 +7941,7 @@ function viewCarteira(){
   const _provDown = p.provPend && provFetchDown(byT);   // busca falhou → dizer "indisponível", nunca estimar
 
   return `
-  ${demoMode?`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--gold-l);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);border-radius:var(--r);padding:12px 14px;margin-bottom:14px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold);font-size:16px"></i><div style="flex:1;min-width:180px;font-size:12.5px;color:var(--ink-2);line-height:1.5">Você está vendo uma <strong>carteira de demonstração</strong> — ela some ao fechar o app. Crie a sua para acompanhar de verdade, com sincronização na nuvem.</div><button class="btn btn-premium btn-sm" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Desbloquear minha carteira</button></div>`:''}
+  ${demoMode?`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--gold-l);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);border-radius:var(--r);padding:12px 14px;margin-bottom:14px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold);font-size:16px"></i><div style="flex:1;min-width:180px;font-size:12.5px;color:var(--ink-2);line-height:1.5">Você está vendo uma <strong>carteira de demonstração</strong>, que some ao fechar o app. Crie a sua para acompanhar de verdade, com sincronização na nuvem.</div><button class="btn btn-premium btn-sm" onclick="goPricing()"><i class="fa-solid fa-crown"></i> Desbloquear minha carteira</button></div>`:''}
   ${cartTabsHTML('carteira')}
   <div class="cart-sum-head"><div class="sec-title" style="margin:0;font-size:19px">Minha carteira${demoMode?' <span class="chip ilus" style="vertical-align:middle"><i class="fa-solid fa-flask"></i> demonstração</span>':''}</div><button class="priv-eye" onclick="togglePriv()" title="Mostrar/ocultar valores"><i class="fa-solid ${privOn()?'fa-eye-slash':'fa-eye'}"></i></button></div>
   <!-- resumo em bloco único (mesmo componente do hero de Proventos) — antes eram 4 células em 2 linhas -->
@@ -7991,7 +7991,7 @@ function viewWatchlist(){
   if(!items.length){
     return `<div class="card card-pad">
       <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-star"></i></span> Watchlist</div>${cta}</div>
-      ${emptyState('fa-star','Sua watchlist está vazia','Abra qualquer ativo e toque em ★ Watchlist para acompanhá-lo aqui — cotações ao vivo num só lugar.', `<button class="btn btn-primary" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i> Buscar ativo</button>`)}
+      ${emptyState('fa-star','Sua watchlist está vazia','Abra qualquer ativo e toque em ★ Watchlist para acompanhá-lo aqui, com cotação ao vivo.', `<button class="btn btn-primary" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i> Buscar ativo</button>`)}
     </div>`;
   }
   const rows = items.map(({a,k})=>{
@@ -8045,7 +8045,7 @@ function viewPlanos(){
     return `<div class="plan-card prem${p.popular?' featured':''}${isCur?' is-current':''}">${isCur?'<div class="plan-flag plan-flag-current">Seu plano</div>':(p.popular?'<div class="plan-flag">Mais popular</div>':'')}<div class="plan-name">${p.name} <i class="fa-solid fa-crown" style="color:var(--gold)"></i></div>${priceHTML(p)}<div class="plan-desc">${p.desc}</div><ul class="plan-feats">${p.feats.map(feat).join('')}</ul><button class="btn btn-premium" style="width:100%;justify-content:center" ${attr}>${label}</button><div class="plan-trust">${isAuthed()?'Sem fidelidade · cancele quando quiser':'7 dias grátis ao criar conta'}</div></div>`;
   };
   const trialBanner = pro ? '' : (trialActive()
-    ? `<div class="plan-trial-cta is-active"><i class="fa-solid fa-bolt"></i><div><strong>Teste Premium ativo — ${trialDaysLeft()} dia(s) restantes.</strong> <span>Assine para manter o acesso completo após o período.</span></div></div>`
+    ? `<div class="plan-trial-cta is-active"><i class="fa-solid fa-bolt"></i><div><strong>Teste Premium ativo: ${trialDaysLeft()} dia(s) restantes.</strong> <span>Assine para manter o acesso completo após o período.</span></div></div>`
     : (!isAuthed()
       ? `<div class="plan-trial-cta"><i class="fa-solid fa-crown"></i><div><strong>Crie sua conta e teste todos os recursos Premium grátis por 7 dias.</strong> <span>Sem cartão necessário.</span></div><button class="btn btn-premium btn-sm" onclick="openAuth('signup')"><i class="fa-solid fa-crown"></i> Criar conta grátis</button></div>`
       : `<div class="plan-trial-cta"><i class="fa-solid fa-crown"></i><div><strong>Seu teste de 7 dias terminou.</strong> <span>Assine o Premium para retomar o acesso completo.</span></div></div>`));
@@ -8053,7 +8053,7 @@ function viewPlanos(){
   <div class="pricing-hero">
     <span class="chip chip-gold" style="margin-bottom:12px"><i class="fa-solid fa-crown" style="font-size:10px"></i> Lastro Premium</span>
     <h1 class="pricing-title">Escolha o plano ideal para a sua jornada</h1>
-    <p class="pricing-sub">Comece grátis. Ao criar sua conta, você testa <strong>todos os recursos Premium por 7 dias</strong> — sem cartão.</p>
+    <p class="pricing-sub">Comece grátis. Ao criar sua conta, você testa <strong>todos os recursos Premium por 7 dias</strong>, sem cartão.</p>
   </div>
   <div class="bill-toggle"><button class="${annual?'on':''}" onclick="setPlanCycle('anual')">Anual <span class="bt-off">17% OFF</span></button><button class="${!annual?'on':''}" onclick="setPlanCycle('mensal')">Mensal</button></div>
 
@@ -8129,10 +8129,10 @@ function refCode(){ const u=currentUser(); if(!u) return ''; let c=localStorage.
 function refLink(){ const c=refCode(); return c ? 'https://lastro.app/?ref='+c : ''; }
 function copyRefLink(btn){ const l=refLink(); if(!l) return; try{ navigator.clipboard.writeText(l); toast('Link copiado ✓'); if(btn){ const o=btn.innerHTML; btn.innerHTML='<i class="fa-solid fa-check"></i>'; setTimeout(()=>btn.innerHTML=o,1500); } }catch(e){ toast('Não foi possível copiar'); } }
 function shareRef(ch){ const l=refLink(); if(!l) return;
-  const msg='Conheça a Lastro — inteligência completa para investir em FIIs e ações da B3: carteira, proventos, Imposto de Renda e alertas. Comece grátis: '+l;
+  const msg='Conheça a Lastro, inteligência completa para investir em FIIs e ações da B3: carteira, proventos, Imposto de Renda e alertas. Comece grátis: '+l;
   const e=encodeURIComponent(msg), el=encodeURIComponent(l);
-  if(ch==='instagram'){ copyRefLink(); toast('Link copiado — cole no seu story ou na bio do Instagram'); return; }
-  if(ch==='tiktok'){ copyRefLink(); toast('Link copiado — cole na sua bio ou legenda do TikTok'); return; }
+  if(ch==='instagram'){ copyRefLink(); toast('Link copiado. Cole no seu story ou na bio do Instagram'); return; }
+  if(ch==='tiktok'){ copyRefLink(); toast('Link copiado. Cole na sua bio ou legenda do TikTok'); return; }
   const urls={ whatsapp:'https://wa.me/?text='+e, threads:'https://www.threads.net/intent/post?text='+e };
   if(urls[ch]) window.open(urls[ch], '_blank', 'noopener');
 }
@@ -8159,10 +8159,10 @@ function updRefAdv(){
   const delta=rsaCalc(40).y-rsaCalc(20).y, up=document.getElementById('rsaUpsell'); if(!up) return;
   if(_rsa.rate===20){
     up.className='rsa-upsell';
-    up.innerHTML=`<div><i class="fa-solid fa-crown"></i> Como <strong>Investidor Pro</strong> sua comissão dobra para <strong>40%</strong> — você ganharia <strong class="up">+${rsaMoney(delta)} por ano</strong> com os mesmos indicados.</div><button class="btn btn-premium btn-sm" onclick="closeRefSimAdv();goPricing()">Fazer upgrade para Pro</button>`;
+    up.innerHTML=`<div><i class="fa-solid fa-crown"></i> Como <strong>Investidor Pro</strong> sua comissão dobra para <strong>40%</strong>: seriam <strong class="up">+${rsaMoney(delta)} por ano</strong> com os mesmos indicados.</div><button class="btn btn-premium btn-sm" onclick="closeRefSimAdv();goPricing()">Fazer upgrade para Pro</button>`;
   } else {
     up.className='rsa-upsell ok';
-    up.innerHTML=`<div><i class="fa-solid fa-circle-check"></i> Você está na taxa <strong>Investidor Pro (40%)</strong> — o dobro de um assinante comum: <strong class="up">+${rsaMoney(delta)} por ano</strong> vs. 20%.</div>`;
+    up.innerHTML=`<div><i class="fa-solid fa-circle-check"></i> Você está na taxa <strong>Investidor Pro (40%)</strong>, o dobro da comum: <strong class="up">+${rsaMoney(delta)} por ano</strong> vs. 20%.</div>`;
   }
 }
 function closeRefSimAdv(){ const el=document.getElementById('refSimModal'); if(el) el.classList.remove('open'); }
@@ -8230,7 +8230,7 @@ function viewIndicar(){
   </div>`;
   if(!isAuthed()){
     return `${hero}
-    <div class="card card-pad">${emptyState('fa-user-plus','Crie sua conta para participar','Gere seu link exclusivo e ganhe 20% da assinatura de cada amigo que você indicar — recorrente, direto na sua conta via PIX.', `<button class="btn btn-premium" onclick="openAuth('signup')"><i class="fa-solid fa-crown"></i> Criar conta grátis</button>`)}</div>`;
+    <div class="card card-pad">${emptyState('fa-user-plus','Crie sua conta para participar','Gere seu link exclusivo e ganhe 20% da assinatura de cada amigo indicado, todo mês, via PIX.', `<button class="btn btn-premium" onclick="openAuth('signup')"><i class="fa-solid fa-crown"></i> Criar conta grátis</button>`)}</div>`;
   }
   const link=refLink();
   const proRef=isProTier(), rate=proRef?REF_RATE_PRO:REF_RATE, ratePct=Math.round(rate*100);
@@ -8252,7 +8252,7 @@ function viewIndicar(){
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-people-group"></i></span> Como funciona</div></div>
     <div class="ind-steps">
       ${step(1,'Compartilhe seu link único','Use o link de indicação abaixo para enviar a amigos e familiares.')}
-      ${step(2,'Seu indicado assina a Lastro',`Quando alguém usar seu link e se tornar assinante, você é creditado em ${ratePct}% do valor da assinatura${proRef?' — sua taxa dobrada de Investidor Pro':''}.`)}
+      ${step(2,'Seu indicado assina a Lastro',`Quando alguém usar seu link e se tornar assinante, você é creditado em ${ratePct}% do valor da assinatura${proRef?', sua taxa dobrada de Investidor Pro':''}.`)}
       ${step(3,'Receba sua comissão via PIX','Você recebe parte da assinatura todos os meses enquanto seu indicado permanecer ativo, direto na sua conta.')}
     </div>
   </div>
@@ -8279,7 +8279,7 @@ function viewIndicar(){
 
   <div class="card card-pad">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--up-l,var(--brand-l));color:var(--up)"><i class="fa-solid fa-calculator"></i></span> Simule seus ganhos</div></div>
-    <p class="sec-desc" style="margin:6px 0 16px">Arraste para ver quanto você recebe por mês indicando amigos no plano mensal — comissão recorrente enquanto eles ficarem ativos.</p>
+    <p class="sec-desc" style="margin:6px 0 16px">Arraste para ver quanto você recebe por mês indicando amigos no plano mensal. A comissão dura enquanto eles ficarem ativos.</p>
     <div class="ref-sim">
       <div class="rs-out">
         <div class="rs-friends"><i class="fa-solid fa-user-group"></i> <span id="rsN">${simN0}</span> amigos indicados</div>
@@ -8325,14 +8325,14 @@ function viewIndicar(){
     <div class="it-t"><i class="fa-solid fa-circle-info"></i> Informações importantes</div>
     <ul>
       <li>O pagamento é feito mensalmente enquanto o indicado estiver com assinatura ativa.</li>
-      <li>A comissão é de ${ratePct}% sobre o valor da assinatura do indicado${proRef?' — dobrada por você ser Investidor Pro':''}.</li>
+      <li>A comissão é de ${ratePct}% sobre o valor da assinatura do indicado${proRef?', dobrada por você ser Investidor Pro':''}.</li>
       <li>Os pagamentos são feitos via PIX automaticamente.</li>
-      <li>Você pode indicar quantas pessoas quiser — não há limite.</li>
+      <li>Você pode indicar quantas pessoas quiser, sem limite.</li>
       <li>Para dúvidas sobre pagamentos, fale com o nosso suporte.</li>
     </ul>
   </div>
 
-  <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Programa em demonstração — a apuração das indicações e os pagamentos via PIX entram em operação com a integração do backend.</div>
+  <div class="illus-note"><i class="fa-solid fa-circle-info"></i> Programa em demonstração. A apuração das indicações e os pagamentos via PIX entram em operação com a integração do backend.</div>
   </div>`;
 }
 
@@ -8440,7 +8440,7 @@ function adminMetrics(all){
 /* pool de análises adicionais — cada uma calculada a partir dos dados reais */
 const ADMIN_EXTRA=[
   {id:'arpu', gen:m=>({id:'arpu',ic:'fa-receipt',st:'neu',impact:'médio',title:`Elevar o ticket médio (ARPU ${brl0(m.arpu)})`,detail:`Cada cliente paga em média ${brl0(m.arpu)}/mês. Aumentar o ARPU eleva o MRR sem novos cadastros.`,plan:['Empacotar recursos Pro num plano anual com desconto','Add-ons (relatórios, alertas ilimitados)','Revisar preço de entrada vs valor entregue','Medir impacto no churn'],cta:'Plano de aumento de ARPU'})},
-  {id:'arr', gen:m=>({id:'arr',ic:'fa-sack-dollar',st:'pos',impact:'alto',title:`ARR projetado de ${brl0(m.arr)} — plano de crescimento`,detail:`Com o MRR atual (${brl0(m.mrr)}), o ARR projetado é ${brl0(m.arr)}. Defina metas para dobrar em 12 meses.`,plan:['Meta de novos clientes/mês para dobrar o ARR','Reduzir churn em 1–2 p.p.','Campanha de indicação com recompensa','Acompanhar MRR novo vs perdido'],cta:'Plano de crescimento de ARR'})},
+  {id:'arr', gen:m=>({id:'arr',ic:'fa-sack-dollar',st:'pos',impact:'alto',title:`Plano de crescimento para o ARR de ${brl0(m.arr)}`,detail:`Com o MRR atual (${brl0(m.mrr)}), o ARR projetado é ${brl0(m.arr)}. Defina metas para dobrar em 12 meses.`,plan:['Meta de novos clientes/mês para dobrar o ARR','Reduzir churn em 1 a 2 p.p.','Campanha de indicação com recompensa','Acompanhar MRR novo vs perdido'],cta:'Plano de crescimento de ARR'})},
   {id:'churn', gen:m=>({id:'churn',ic:'fa-user-minus',st:'warn',impact:'alto',title:'Monitorar e reduzir o churn mensal',detail:'Sem acompanhar o churn, o crescimento vaza. Estabeleça a medição e uma meta.',plan:['Instrumentar cancelamentos e motivos','Meta de churn < 5% ao mês','Pesquisa de saída em 1 pergunta','Oferta de retenção (pausa/desconto)'],cta:'Programa de retenção'})},
   {id:'nps', gen:m=>({id:'nps',ic:'fa-face-smile',st:'neu',impact:'médio',title:'Implantar NPS trimestral',detail:'Medir satisfação orienta o roadmap e antecipa churn. Comece com um NPS simples.',plan:['Disparar NPS a cada 90 dias','Segmentar detratores/promotores','Agir sobre os 3 principais motivos','Fechar o loop com quem respondeu'],cta:'Programa de NPS'})},
   {id:'indicacoes', gen:m=>({id:'indicacoes',ic:'fa-share-nodes',st:'pos',impact:'médio',title:`Ativar indicações (${m.clientes} elegíveis)`,detail:`${m.clientes} cliente(s) pagante(s) podem indicar amigos e reduzir o CAC.`,plan:['Convidar clientes satisfeitos a indicar','Recompensa recorrente por indicação (PIX)','Kit de compartilhamento pronto','Acompanhar indicados → convertidos'],cta:'Campanha de indicações'})},
@@ -8465,7 +8465,7 @@ function refreshAdminData(){
 /* estado das ações (aprovar/arquivar/excluir) — persistido no perfil/nuvem */
 function adminActionState(){ const p=getProfile(); return (p.adminActions&&typeof p.adminActions==='object')?p.adminActions:{}; }
 function _setAdminAction(id, patch){ const p=getProfile(); const m=Object.assign({}, p.adminActions||{}); m[id]=Object.assign({}, m[id]||{}, patch); p.adminActions=m; saveProfile(p); if(typeof flushCloudState==='function') flushCloudState(); render('admin'); }
-function approveActionId(id,label){ adminOpenAct.add(id); _setAdminAction(id,{approved:true}); toast('Aprovado: '+label+' — execução agendada ✓'); }
+function approveActionId(id,label){ adminOpenAct.add(id); _setAdminAction(id,{approved:true}); toast('Aprovado: '+label+'. Execução agendada ✓'); }
 function unapproveActionId(id,label){ adminOpenAct.add(id); _setAdminAction(id,{approved:false}); toast('Aprovação cancelada: '+label); }
 function archiveAction(id){ _setAdminAction(id,{state:'archived'}); toast('Ação arquivada'); }
 function restoreAction(id){ _setAdminAction(id,{state:'active'}); toast('Ação restaurada'); }
@@ -8533,7 +8533,7 @@ function viewAdmin(){
         </div>
       </div>`; };
     const activeHTML = active.length ? active.map(actionCard).join('')
-      : `<div class="card card-pad">${emptyState('fa-circle-check','Tudo em dia','Nenhuma ação pendente no momento — a base está saudável.','')}</div>`;
+      : `<div class="card card-pad">${emptyState('fa-circle-check','Tudo em dia','Nenhuma ação pendente no momento. A base está saudável.','')}</div>`;
     const archiveHTML = `
       <div class="ad-archive${archived.length?'':' is-empty'}">
         <button class="ad-archive-h" onclick="toggleAction(this)"><span class="ad-arch-ic"><i class="fa-solid fa-box-archive"></i></span> Arquivadas <span class="ad-arch-count">${archived.length}</span><i class="fa-solid fa-chevron-down ad-chev"></i></button>
@@ -8600,7 +8600,7 @@ function viewAdmin(){
     }
     // opções de período personalizado + filtros
     const ufs=[...new Set(all.map(x=>x.uf).filter(u=>u&&u!=='—'))].sort();
-    const periodLabel = adminRep.custom ? `${labels[labels.length-1]} – ${labels[0]}` : `Últimos ${N} ${N===1?'mês':'meses'}`;
+    const periodLabel = adminRep.custom ? `${labels[labels.length-1]} a ${labels[0]}` : `Últimos ${N} ${N===1?'mês':'meses'}`;
     const typeChips = ADMIN_REPORT_TYPES.map(t=>`<button class="arp-type ${t.id===adminRep.type?'on':''}" onclick="setAdminRepType('${t.id}')"><span class="arp-type-ic"><i class="fa-solid ${t.ic}"></i></span><span class="arp-type-tx"><b>${t.nm}</b><small>${t.desc}</small></span></button>`).join('');
     const rangeChips = [[3,'3M'],[6,'6M'],[12,'12M'],[24,'24M'],[36,'36M']].map(([n,l])=>`<button class="adh-chip ${(!adminRep.custom&&adminRep.range===n)?'on':''}" onclick="setAdminRepRange(${n})">${l}</button>`).join('') + `<button class="adh-chip ${adminRep.custom?'on':''}" onclick="setAdminRepCustom(${adminRep.custom?'false':'true'})"><i class="fa-solid fa-sliders" style="font-size:11px"></i> Personalizado</button>`;
     const customUI = adminRep.custom ? `<div class="arp-custom"><label class="arp-field"><span>De</span><div class="sel-wrap"><select class="sel" onchange="setAdminRepField('from',this.value)">${adminMonthOptions(adminRep.from)}</select><i class="fa-solid fa-chevron-down chev"></i></div></label><label class="arp-field"><span>Até</span><div class="sel-wrap"><select class="sel" onchange="setAdminRepField('to',this.value)">${adminMonthOptions(adminRep.to)}</select><i class="fa-solid fa-chevron-down chev"></i></div></label></div>` : '';
@@ -8648,7 +8648,7 @@ function viewAdmin(){
             <button class="btn btn-ghost" onclick="adminRepDownloadCSV()"><i class="fa-solid fa-file-csv"></i> Baixar CSV</button>
             <button class="btn btn-ghost" onclick="adminRepShare()"><i class="fa-solid fa-share-nodes"></i> Compartilhar</button>
           </div>
-          <span class="chip ilus" style="margin-top:12px"><i class="fa-solid fa-flask"></i> série estimada — histórico real quando o backend registrar snapshots mensais</span>
+          <span class="chip ilus" style="margin-top:12px"><i class="fa-solid fa-flask"></i> série estimada. O histórico real vem quando o backend registrar snapshots mensais</span>
         </div>
       </div>`;
   } else {
@@ -8703,7 +8703,7 @@ function adminRepDownloadPDF(){
     const clone=card.cloneNode(true); clone.querySelectorAll('canvas').forEach((c,i)=>{ const im=document.createElement('img'); im.src=imgs.shift()||''; im.style.width='100%'; c.replaceWith(im); }); return clone.innerHTML;
   }).join('<div style="height:14px"></div>');
   const w=window.open('','_blank'); if(!w){ toast('Permita pop-ups para baixar o PDF'); return; }
-  w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Lastro · ${T.nm}</title><style>*{box-sizing:border-box;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0}body{padding:32px;color:#16202B;max-width:820px;margin:auto}h1{font-size:20px;color:#0B2E5E}.sub{color:#64707C;font-size:13px;margin:4px 0 20px}.card{border:1px solid #E5E8EC;border-radius:12px;padding:16px;margin-bottom:14px}.ind-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.ind-card{border:1px solid #EEF0F2;border-radius:10px;padding:12px}.ind-l{font-size:11px;color:#64707C}.ind-v{font-size:18px;font-weight:700;margin-top:4px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 10px;border-bottom:1px solid #EEF0F2;text-align:left}.ar{text-align:right}.up{color:#0E9F6E}.down{color:#E02424}img{max-width:100%}.chip,.ind-tag,.ind-ics,.card-sub,button{display:none!important}.ft{margin-top:20px;font-size:11px;color:#9AA3AD;border-top:1px solid #EEF0F2;padding-top:12px}</style></head><body><h1>Lastro · ${T.nm}</h1><div class="sub">${per}${adminRep.plano?' · plano: '+adminRep.plano:''}${adminRep.uf?' · '+adminRep.uf:''} — série estimada</div>${cards}<div class="ft">Relatório gerado pelo painel administrativo do Lastro · série estimada a partir dos dados atuais.</div><script>setTimeout(()=>{window.print()},350)<\/script></body></html>`);
+  w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Lastro · ${T.nm}</title><style>*{box-sizing:border-box;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0}body{padding:32px;color:#16202B;max-width:820px;margin:auto}h1{font-size:20px;color:#0B2E5E}.sub{color:#64707C;font-size:13px;margin:4px 0 20px}.card{border:1px solid #E5E8EC;border-radius:12px;padding:16px;margin-bottom:14px}.ind-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.ind-card{border:1px solid #EEF0F2;border-radius:10px;padding:12px}.ind-l{font-size:11px;color:#64707C}.ind-v{font-size:18px;font-weight:700;margin-top:4px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 10px;border-bottom:1px solid #EEF0F2;text-align:left}.ar{text-align:right}.up{color:#0E9F6E}.down{color:#E02424}img{max-width:100%}.chip,.ind-tag,.ind-ics,.card-sub,button{display:none!important}.ft{margin-top:20px;font-size:11px;color:#9AA3AD;border-top:1px solid #EEF0F2;padding-top:12px}</style></head><body><h1>Lastro · ${T.nm}</h1><div class="sub">${per}${adminRep.plano?' · plano: '+adminRep.plano:''}${adminRep.uf?' · '+adminRep.uf:''} · série estimada</div>${cards}<div class="ft">Relatório gerado pelo painel administrativo do Lastro · série estimada a partir dos dados atuais.</div><script>setTimeout(()=>{window.print()},350)<\/script></body></html>`);
   w.document.close(); toast('Gerando PDF…');
 }
 async function adminRepShare(){
@@ -8818,7 +8818,7 @@ function viewSimulador(){
 function simRendaHTML(){
   return `
   <div class="sec-title">Quanto você precisa para viver de dividendos?</div>
-  <div class="sec-desc">Ajuste os parâmetros e veja a projeção do efeito bola de neve — reinvestindo proventos até atingir a renda passiva desejada. Cálculo transparente, sem promessas de rentabilidade.</div>
+  <div class="sec-desc">Ajuste os parâmetros e veja a projeção do efeito bola de neve, reinvestindo proventos até atingir a renda passiva desejada. Cálculo transparente, sem promessas de rentabilidade.</div>
 
   <div class="sim-grid">
     <div class="card card-pad">
@@ -8901,8 +8901,8 @@ function proventosData(){
    o texto solto virava flex-item e quebrava em colunas no mobile) */
 function provFootNote(d){
   // avisos que exigem ação do usuário vêm primeiro; a metodologia fica curta no fim
-  const avisos = (d.semData?` Aportes <strong>sem data</strong> contaram como anteriores a todos os pagamentos — informe a data para a conta ficar exata.`:'')
-    + (d.semFonte.length?` Ainda sem fonte de proventos para <strong>${d.semFonte.slice(0,6).join(', ')}</strong> — não entram no total.`:'');
+  const avisos = (d.semData?` Aportes <strong>sem data</strong> contaram como anteriores a todos os pagamentos. Informe a data para a conta ficar exata.`:'')
+    + (d.semFonte.length?` Ainda não há fonte de proventos para <strong>${d.semFonte.slice(0,6).join(', ')}</strong>, que ficam fora do total.`:'');
   return illusNote(`Valor por cota <strong>realmente declarado</strong> × cotas que você tinha na ${termLabel('datacom','data-com')}. Janela de 12 meses, a mesma da <a href="javascript:nav('agenda')" class="prov-link">Agenda</a>.${avisos}`);
 }
 /* esqueleto com a MESMA silhueta da tela pronta (hero + barras) — carregar sem susto visual */
@@ -9118,7 +9118,7 @@ function viewMetaRenda(){
   const yoc = p.invest ? d.total12/p.invest*100 : 0;
   _provMetaCtx={ media:d.media, yoc };          // contexto do slider (não recalcula a cada arrasto)
   return `<div class="sec-title">Meta de Renda</div>
-  <div class="sec-desc">Defina quanto você quer receber por mês em proventos. O progresso usa a sua <strong>média real dos últimos 12 meses</strong> — nada projetado.</div>
+  <div class="sec-desc">Defina quanto você quer receber por mês em proventos. O progresso usa a sua <strong>média real dos últimos 12 meses</strong>, nada projetado.</div>
   ${provMetaHTML(d, yoc)}
   <div class="mt-atalhos">
     <button class="btn btn-ghost" onclick="nav('proventos')"><i class="fa-solid fa-coins"></i> Ver meus proventos</button>
@@ -9226,7 +9226,7 @@ function prcRow(it, first, mesmaData){
       ${first?'<div class="pnext-h">Próximo pagamento</div>':''}
       <div class="pnext-tk">${it.tk}<em>${esc(it.nm)}</em>${it.tipoNome?`<span class="prc-tipo t-${it.tipo}">${it.tipoNome}</span>`:''}</div>
       <div class="pnext-s">${provDaysLabel(dias)} · <span style="white-space:nowrap">${it.cotas} × <span class="priv-blur">${brl(it.perCota)}</span></span></div>
-      ${it.capital?'<div class="prc-cap"><i class="fa-solid fa-rotate-left"></i> devolução de capital — não é renda</div>':''}
+      ${it.capital?'<div class="prc-cap"><i class="fa-solid fa-rotate-left"></i> devolução de capital, não é renda</div>':''}
     </div>
     <div class="pnext-v"><span class="pnext-tag">${tag}</span><b class="priv-blur">${brl(it.liquido)}</b><span class="pnext-lb">${it.conf?'a receber':'estimado'}</span>${bruto}</div>
   </div>`;
@@ -9347,7 +9347,7 @@ function pmBodyHTML(groups){
     <div class="pcal-lg"><span><i class="dot pago"></i>recebido</span><span><i class="dot conf"></i>confirmado</span><span><i class="dot prev"></i>previsto</span>${lst.length?'<span class="pcal-hint"><i class="fa-solid fa-hand-pointer"></i> toque num dia</span>':''}</div>
     ${filtro}
     ${vis.length ? `<div class="pmlist">${rows}</div>${verMais}`
-      : `<div class="pm-empty"><i class="fa-regular fa-calendar"></i> Nenhum pagamento em ${mesNome} — nem recebido, nem anunciado, nem previsto pelo histórico dos seus ativos.</div>`}
+      : `<div class="pm-empty"><i class="fa-regular fa-calendar"></i> Nenhum pagamento em ${mesNome}: nem recebido, nem anunciado, nem previsto pelo histórico dos seus ativos.</div>`}
     ${(_pmDia==null && lst.aVir>0)?`<div class="pm-foot">A receber ainda em ${mesNome}: <b class="priv-blur">${brl(lst.aVir)}</b>${lst.temPrev?' <em>(inclui valor previsto)</em>':''}</div>`:''}
     ${lst.temPrev?illusNote('<strong>Previsto</strong> não é anúncio: usa o dia do último pagamento real e a periodicidade apurada do histórico (mediana dos intervalos), com o último valor por cota declarado. Ativo sem histórico suficiente não aparece como previsto.'):''}`;
 }
@@ -9390,7 +9390,7 @@ function provRankCard(rk){
   return `<div class="card card-pad prov-card prov-in" style="--d:280ms">
     <div class="card-head"><div class="card-h"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-trophy"></i></span> Quem mais paga</div><span class="card-sub">12 meses</span></div>
     <div class="prank">${rows}</div>${mais}
-    <div class="prov-cap"><strong>Tendência</strong> compara os últimos 6 meses com os 6 anteriores — só aparece quando há pagamentos reais nos dois períodos.</div>
+    <div class="prov-cap"><strong>Tendência</strong> compara os últimos 6 meses com os 6 anteriores. Só aparece quando há pagamentos reais nos dois períodos.</div>
   </div>`;
 }
 /* 8) HEATMAP ANUAL — intensidade por valor recebido no mês */
@@ -9458,10 +9458,10 @@ function viewProventos(){
   if(d.pend && !d.ranking.length){
     if(provFetchDown()){
       return `${cartTabsHTML('proventos')}<div class="card card-pad prov-state">${head}
-      ${emptyState('fa-plug-circle-exclamation','Proventos indisponíveis agora','Não conseguimos buscar o histórico <strong>real</strong> de proventos dos seus ativos. Preferimos não mostrar nada a mostrar um número estimado — tente novamente em instantes.',`<button class="btn btn-primary" onclick="ensurePortfolioDividends(true);render('proventos')"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>`)}</div>`;
+      ${emptyState('fa-plug-circle-exclamation','Proventos indisponíveis agora','Não conseguimos buscar o histórico <strong>real</strong> de proventos dos seus ativos. Preferimos não mostrar nada a mostrar um número estimado. Tente novamente em instantes.',`<button class="btn btn-primary" onclick="ensurePortfolioDividends(true);render('proventos')"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>`)}</div>`;
     }
     return `${cartTabsHTML('proventos')}<div class="prov-loading">
-      <div class="prov-loading-h"><span class="spin"></span><span>Apurando os proventos <strong>realmente pagos</strong> dos seus ativos — valor por cota declarado × cotas que você tinha na ${termLabel('datacom','data-com')}.</span></div>
+      <div class="prov-loading-h"><span class="spin"></span><span>Apurando os proventos <strong>realmente pagos</strong> dos seus ativos: valor por cota declarado × cotas que você tinha na ${termLabel('datacom','data-com')}.</span></div>
       ${provSkeleton()}</div>`;
   }
   if(!d.ranking.length){
@@ -9638,7 +9638,7 @@ function simFireHTML(){
   const desp=getDespesa(), ap=getFireAporte();
   return `
   <div class="sec-title">Quanto falta para você viver de renda?</div>
-  <div class="sec-desc">Usa os números reais da sua carteira — patrimônio e renda passiva — para projetar o caminho até a independência financeira, reinvestindo os proventos ao DY médio da carteira.</div>
+  <div class="sec-desc">Projeta o caminho até a independência financeira com o patrimônio e a renda passiva reais da sua carteira, reinvestindo os proventos ao DY médio.</div>
   <div class="sim-grid">
     <div class="card card-pad">
       <div class="sim-control"><div class="lbl"><span class="n">Custo de vida mensal</span><span class="v" id="fireDespV">${brl0(desp)}</span></div><input type="range" id="fireDesp" min="1000" max="40000" step="500" value="${desp}" oninput="runFire()"></div>
@@ -9661,7 +9661,7 @@ function simFireHTML(){
       </div>
     </div>
   </div>
-  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Projeção determinística reinvestindo proventos ao DY médio da carteira (${pc(p.dyMed,1)}% a.a.). Não considera inflação, impostos nem variação de preço — use como referência de planejamento.</div>`;
+  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Projeção determinística reinvestindo proventos ao DY médio da carteira (${pc(p.dyMed,1)}% a.a.). Não considera inflação, impostos nem variação de preço. Use como referência de planejamento.</div>`;
 }
 function runFire(){
   const ds=$('#fireDesp'), as=$('#fireAp'); if(!ds||!as) return;
@@ -9669,12 +9669,12 @@ function runFire(){
   $('#fireDespV').textContent=brl0(desp); $('#fireApV').textContent=brl0(ap);
   const f=fireCalc(desp, ap), cob=Math.min(999,f.cobertura);
   const cobEl=$('#fireCob'); cobEl.textContent=pc(cob,0)+'%'; cobEl.style.color=cob>=100?'var(--brand)':cob>=50?'var(--gold)':'var(--down)';
-  $('#fireCobSub').textContent = cob>=100? `🎉 já vive de renda — sobra ${brl0(f.renda-desp)}/mês` : `faltam ${brl0(desp-f.renda)}/mês`;
+  $('#fireCobSub').textContent = cob>=100? `🎉 já vive de renda, sobram ${brl0(f.renda-desp)}/mês` : `faltam ${brl0(desp-f.renda)}/mês`;
   $('#fireMagic').textContent=brl0(f.magico); $('#fireMagicSub').textContent=`${brl0(Math.max(0,f.magico-f.atual))} a acumular`;
   $('#fireProg').style.width=Math.min(100, f.magico? f.atual/f.magico*100:0)+'%';
   if(f.cobertura>=100) $('#fireEta').textContent='Liberdade atingida ✓';
   else if(f.reached){ const yr=Math.floor(f.months/12), mo=f.months%12, dt=new Date(); dt.setMonth(dt.getMonth()+f.months); $('#fireEta').textContent=`${yr}a ${mo}m · ${dt.toLocaleDateString('pt-BR',{month:'short',year:'numeric'})}`; }
-  else $('#fireEta').textContent='+50 anos — aumente o aporte';
+  else $('#fireEta').textContent='+50 anos, aumente o aporte';
   const ctx=$('#fireChart'); if(!ctx) return;
   if(!HAS_CHART){ chartUnavail(ctx); return; }
   if(charts.fire && charts.fire.canvas!==ctx){ charts.fire.destroy(); charts.fire=null; }
@@ -9691,7 +9691,7 @@ function runFire(){
    ══════════════════════════════════════════════════════════ */
 function irBensDireitos(){
   return portfolioByTicker().filter(g=>g.cotas>0).map(g=>{ const isFii=g.f.k==='fiis';
-    return { tk:g.tk, k:g.f.k, grupo:isFii?'07 – Fundos':'03 – Participações societárias', codigo:isFii?'03 – FII/Fiagro':'01 – Ações',
+    return { tk:g.tk, k:g.f.k, grupo:isFii?'07 - Fundos':'03 - Participações societárias', codigo:isFii?'03 - FII/Fiagro':'01 - Ações',
       qtd:g.cotas, custo:g.custo, pm:g.pm, disc:`${g.cotas} ${isFii?'cotas':'ações'} de ${g.tk} (${g.f.a.nm||''}): custo médio ${brl(g.pm)}, custo total ${brl(g.custo)}.` };
   });
 }
@@ -9807,7 +9807,7 @@ function viewComparador(){
   const pro = isPro();
   return `
   <div class="sec-title">Comparador de ativos</div>
-  <div class="sec-desc">Compare ativos lado a lado pelos principais fundamentos. ${pro?'Até 4 ativos.':'No plano Gratuito você compara 2 — faça upgrade para 4.'}</div>
+  <div class="sec-desc">Compare ativos lado a lado pelos principais fundamentos. ${pro?'Até 4 ativos.':'No plano Gratuito você compara 2. Faça upgrade para comparar 4.'}</div>
   <div class="filters cmp-filters">${[0,1,2,3].map(cmpSlot).join('')}${cmpAddHTML()}</div>
   <div id="cmpBody"></div>`;
 }
@@ -9960,7 +9960,7 @@ function initComparador(){
   const tie = run!=null && wins[lead]===wins[run];
   let verdictHTML;
   if(contests<2 || wins[lead]===0 || tie){
-    verdictHTML = `<div id="cmpVerdict" class="cmp-verdict"><i class="fa-solid fa-scale-balanced cv-logo" style="color:var(--brand)"></i><div><b>Comparação equilibrada</b> — nenhum ativo domina os indicadores. <span class="cv-dis">Não é recomendação de compra.</span></div></div>`;
+    verdictHTML = `<div id="cmpVerdict" class="cmp-verdict"><i class="fa-solid fa-scale-balanced cv-logo" style="color:var(--brand)"></i><div><b>Comparação equilibrada:</b> nenhum ativo domina os indicadores. <span class="cv-dis">Não é recomendação de compra.</span></div></div>`;
   } else {
     const la=items[lead], lk=assetLookup(la.tk);
     verdictHTML = `<div id="cmpVerdict" class="cmp-verdict"><span class="cv-logo">${assetLogo(la.tk, lk?lk.k:'acoes','sm')}</span><div><b>${la.tk}</b> lidera em <b>${wins[lead]}</b> de ${contests} indicadores. <span class="cv-dis">Não é recomendação de compra.</span></div></div>`;
@@ -10110,7 +10110,7 @@ function viewAgenda(){
   return `
   ${cartTabsHTML('agenda')}
   <div class="sec-title">Agenda de Dividendos</div>
-  <div class="sec-desc">Proventos com <strong>data real</strong> — a data-com e a data de pagamento declaradas por cada empresa e fundo. O Lastro não inventa datas: o que é projeção aparece sempre marcado como <strong>estimado</strong>.</div>
+  <div class="sec-desc">Proventos com <strong>data real</strong>: a data-com e a data de pagamento declaradas por cada empresa e fundo. O Lastro não inventa datas: o que é projeção aparece sempre marcado como <strong>estimado</strong>.</div>
   <div id="agBody">${agendaBodyHTML()}</div>`;
 }
 /* re-render assíncrono reescreve o HTML DEPOIS do applyPriv() do afterRender —
@@ -10293,7 +10293,7 @@ function agMarketCard(loading){
       ? `<div class="ag-mlist">${mktRows}</div>
          ${illusNote(`Datas e valores publicados pelo próprio ativo. O <strong>${termLabel('dyMed','DY 12m')}</strong> soma os proventos realmente pagos nos últimos 12 meses sobre a cotação atual. Não existe ainda um calendário oficial de datas futuras: só listamos o que já foi anunciado.`)}`
       : loading ? agendaSkeleton(4)
-      : emptyState('fa-plug-circle-xmark','Calendário indisponível agora','Não conseguimos falar com a fonte de proventos. Nada é preenchido com estimativa aqui — tente novamente em instantes.',`<button class="btn btn-ghost" onclick="initAgenda()"><i class="fa-solid fa-rotate"></i> Tentar de novo</button>`)}
+      : emptyState('fa-plug-circle-xmark','Calendário indisponível agora','Não conseguimos falar com a fonte de proventos. Nada é preenchido com estimativa aqui. Tente novamente em instantes.',`<button class="btn btn-ghost" onclick="initAgenda()"><i class="fa-solid fa-rotate"></i> Tentar de novo</button>`)}
   </div>`;
 }
 
@@ -10913,7 +10913,7 @@ function renderHealthCard(p){
   const c=scoreColor(saude), tier=scoreTier(saude);
   let ins;
   if(conc>30) ins=`Concentração alta: <b>${topTk}</b> é ${pc(conc,0)}% da carteira.`;
-  else if(n<6) ins=`Apenas ${n} ativo${n>1?'s':''} — diversificar reduz o risco.`;
+  else if(n<6) ins=`Apenas ${n} ativo${n>1?'s':''}. Diversificar reduz o risco.`;
   else ins=`Bem diversificada em <b>${n} ativos</b> · maior posição ${pc(conc,0)}%.`;
   return `
   <div class="card card-pad hcard-health" onclick="goView('raiox')">
@@ -11411,7 +11411,7 @@ function metaProgText(media,meta,yoc){
   const capital = y ? falta*12/(y/100) : null;
   return `Você já recebe <b>${pc(media/meta*100,0)}%</b> da meta. Faltam <b class="priv-blur">${brl0(falta)}</b>/mês` +
     (capital!=null
-      ? ` — cerca de <b class="priv-blur">${brl0(capital)}</b> a mais investidos, mantendo o seu Yield on Cost real de ${pc(y,1)}%.`
+      ? `, cerca de <b class="priv-blur">${brl0(capital)}</b> a mais investidos, mantendo o seu Yield on Cost real de ${pc(y,1)}%.`
       : `.`);
 }
 function updateRendaMeta(){
@@ -11570,9 +11570,9 @@ function viewBacktest(){
   </div>
   <div class="card card-pad" style="margin-top:16px">
     <div class="card-h" style="margin-bottom:8px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-lightbulb"></i></span> Leitura</div>
-    <p style="font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0">${venceu? `No período, sua carteira <strong>superou o CDI e o IBOV</strong>, com retorno de ${pc(m.ret,1)}% e maior queda de ${pc(m.mdd,1)}%.` : `No período, sua carteira rendeu <strong>${pc(m.ret,1)}%</strong> — ${vs>=0?'acima':'abaixo'} do CDI (${pc(m.retCdi,1)}%). Volatilidade de ${pc(m.vol,1)}% e maior queda de ${pc(m.mdd,1)}% mostram o risco assumido.`} Resultados passados não garantem retornos futuros.</p>
+    <p style="font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0">${venceu? `No período, sua carteira <strong>superou o CDI e o IBOV</strong>, com retorno de ${pc(m.ret,1)}% e maior queda de ${pc(m.mdd,1)}%.` : `No período, sua carteira rendeu <strong>${pc(m.ret,1)}%</strong>, ${vs>=0?'acima':'abaixo'} do CDI (${pc(m.retCdi,1)}%). Volatilidade de ${pc(m.vol,1)}% e maior queda de ${pc(m.mdd,1)}% mostram o risco assumido.`} Resultados passados não garantem retornos futuros.</p>
   </div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> <span>Reconstrução mês a mês pelos <strong>fechamentos reais</strong> dos seus ativos e do IBOV (BOVA11); o CDI aplica os mesmos aportes pela Selic vigente. Onde ainda falta o fechamento de um ativo, ele entra pelo <strong>custo</strong> — nunca por dado inventado.</span></div>`;
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> <span>Reconstrução mês a mês pelos <strong>fechamentos reais</strong> dos seus ativos e do IBOV (BOVA11); o CDI aplica os mesmos aportes pela Selic vigente. Onde ainda falta o fechamento de um ativo, ele entra pelo <strong>custo</strong>, nunca por dado inventado.</span></div>`;
 }
 function initBacktest(){
   const ctx=$('#backtestChart'); if(!ctx) return;
@@ -11609,10 +11609,10 @@ function diversificationGrade(lots){
   s += classes.length>=4?25:classes.length>=3?20:classes.length>=2?14:5;
   s=Math.round(Math.min(100,s));
   const reasons=[];
-  if(top.w>25) reasons.push({neg:true,t:`<strong>${top.tk}</strong> concentra ${pc(top.w,0)}% da carteira — acima do ideal de 25%.`});
-  if(setores.length<3) reasons.push({neg:true,t:`Apenas ${setores.length} setor${setores.length>1?'es':''} representado${setores.length>1?'s':''} — baixa diversificação setorial.`});
-  if(classes.length===1) reasons.push({neg:true,t:`Carteira 100% em ${classes[0]} — diversificar entre classes reduz a volatilidade.`});
-  if(n<5) reasons.push({neg:true,t:`Só ${n} ativo${n>1?'s':''} — o ideal é 8–15 para diluir o risco específico.`});
+  if(top.w>25) reasons.push({neg:true,t:`<strong>${top.tk}</strong> concentra ${pc(top.w,0)}% da carteira, acima do ideal de 25%.`});
+  if(setores.length<3) reasons.push({neg:true,t:`Só ${setores.length} setor${setores.length>1?'es':''} na carteira: diversificação setorial baixa.`});
+  if(classes.length===1) reasons.push({neg:true,t:`Carteira 100% em ${classes[0]}. Diversificar entre classes reduz a volatilidade.`});
+  if(n<5) reasons.push({neg:true,t:`Só ${n} ativo${n>1?'s':''}. O ideal é de 8 a 15 para diluir o risco específico.`});
   if(n>=8) reasons.push({neg:false,t:`${n} ativos diluem bem o risco específico.`});
   if(top.w<=20) reasons.push({neg:false,t:`Nenhuma posição domina a carteira (máx. ${pc(top.w,0)}%).`});
   if(setores.length>=4) reasons.push({neg:false,t:`${setores.length} setores distintos compõem a carteira.`});
@@ -11694,8 +11694,8 @@ function rxRecommendations(lots){
   const sell=[];
   d.pos.slice().sort((a,b)=>b.w-a.w).forEach(x=>{ const a=x.a||{};
     if(x.w>25) sell.push({tk:x.tk,k:x.k,acao:'Reduzir',cls:'down',reason:`Concentração elevada: ${pc(x.w,0)}% da carteira. Reduzir para ≤25% diminui o risco específico.`});
-    else if((a.dy||0)>13 && (a.consist!=null?a.consist:1)<0.8) sell.push({tk:x.tk,k:x.k,acao:'Atenção',cls:'warn',reason:`DY de ${pc(a.dy,1)}% muito alto com baixa consistência — risco de o dividendo não se sustentar.`});
-    else if((a.score||0)>0 && a.score<55) sell.push({tk:x.tk,k:x.k,acao:'Revisar',cls:'warn',reason:`Qualidade fundamentalista fraca — indicadores abaixo da média puxam o nível da carteira.`});
+    else if((a.dy||0)>13 && (a.consist!=null?a.consist:1)<0.8) sell.push({tk:x.tk,k:x.k,acao:'Atenção',cls:'warn',reason:`DY de ${pc(a.dy,1)}% muito alto com baixa consistência: o dividendo pode não se sustentar.`});
+    else if((a.score||0)>0 && a.score<55) sell.push({tk:x.tk,k:x.k,acao:'Revisar',cls:'warn',reason:`Qualidade fundamentalista fraca: indicadores abaixo da média puxam o nível da carteira.`});
   });
   const pool=[...FIIS.map(a=>({a,k:'fiis',classe:'FIIs'})), ...ACOES.map(a=>({a,k:'acoes',classe:'Ações'}))]
     .filter(o=>typeof o.a.score==='number' && o.a.px>0 && !held.has(o.a.tk));
@@ -11705,7 +11705,7 @@ function rxRecommendations(lots){
     if(o) buy.push({tk:o.a.tk,k:o.k,acao:'Adicionar',cls:'up',reason:`Sua carteira não tem ${c}. ${o.a.tk} entra com bons fundamentos e diversifica a classe.`});
   });
   pool.sort((x,y)=>y.a.score-x.a.score).forEach(o=>{ if(buy.length>=4||buy.some(b=>b.tk===o.a.tk)) return; const a=o.a;
-    const why = (a.dy||0)>=8 ? `DY de ${pc(a.dy,1)}% e bons fundamentos — qualidade com boa renda para fortalecer a carteira.` : `Fundamentos sólidos — ativo de alta qualidade que eleva a média da carteira.`;
+    const why = (a.dy||0)>=8 ? `DY de ${pc(a.dy,1)}% com bons fundamentos: qualidade e renda para fortalecer a carteira.` : `Fundamentos sólidos: ativo de alta qualidade que eleva a média da carteira.`;
     buy.push({tk:a.tk,k:o.k,acao:'Adicionar',cls:'up',reason:why});
   });
   return { buy:buy.slice(0,4), sell:sell.slice(0,4) };
@@ -11724,7 +11724,7 @@ function viewRaioX(){
   const positives = d.reasons.filter(r=>!r.neg);
   const fortes = positives.length
     ? positives.map(r=>`<li class="pos"><i class="fa-solid fa-circle-check"></i> <span>${r.t}</span></li>`).join('')
-    : '<li class="neu"><i class="fa-regular fa-circle"></i> <span>Comece a diversificar — mais ativos, setores e classes — para destravar seus pontos fortes.</span></li>';
+    : '<li class="neu"><i class="fa-regular fa-circle"></i> <span>Comece a diversificar em mais ativos, setores e classes para destravar seus pontos fortes.</span></li>';
   return head + `
   <div class="rx-grade card card-pad" style="margin-top:16px;border-color:${d.color}55">
     <div class="rx-grade-badge" style="background:${d.color}14;color:${d.color};border-color:${d.color}55"><span class="rx-grade-letter">${d.grade}</span></div>
@@ -11788,13 +11788,13 @@ function viewStress(){
   }).join('');
   return `
   <div class="sec-title">Stress test da carteira</div>
-  <div class="sec-desc">Como a sua carteira reagiria a cenários de crise. O impacto é estimado a partir da sensibilidade típica de cada setor e classe — uma referência de risco, não uma previsão.</div>
+  <div class="sec-desc">Como a sua carteira reagiria a cenários de crise. O impacto é estimado pela sensibilidade típica de cada setor e classe. É referência de risco, não previsão.</div>
   <div class="card card-pad st-worst" style="border-color:var(--down)55">
     <div class="card-h" style="margin-bottom:6px"><span class="ico" style="background:color-mix(in srgb,var(--down) 14%,transparent);color:var(--down)"><i class="fa-solid fa-triangle-exclamation"></i></span> Pior cenário para a sua carteira</div>
     <p style="font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0">No cenário <strong>${pior.nome}</strong>, sua carteira recuaria cerca de <strong style="color:var(--down)">${pc(pior.deltaP,1)}%</strong> (${brl0(pior.delta)}), indo de ${brl0(p.atual)} para ${brl0(pior.newVal)}.</p>
   </div>
   <div class="stress-grid" style="margin-top:16px">${cards}</div>
-  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sensibilidades estimadas por setor/classe sobre as posições reais da carteira. Cenários hipotéticos — não são recomendação nem previsão de mercado.</div>`;
+  <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Sensibilidades estimadas por setor e classe sobre as posições reais da carteira. Os cenários são hipotéticos e não são recomendação nem previsão de mercado.</div>`;
 }
 
 /* Simulador */
@@ -11858,7 +11858,7 @@ function runSim(){
 function simJurosHTML(){
   return `
   <div class="sec-title">Juros compostos</div>
-  <div class="sec-desc">Veja o quanto seus aportes podem virar no longo prazo com o efeito dos juros sobre juros. Projeção determinística — não é promessa de rentabilidade.</div>
+  <div class="sec-desc">Veja o quanto seus aportes podem virar no longo prazo com o efeito dos juros sobre juros. É uma projeção determinística, não uma promessa de rentabilidade.</div>
   <div class="sim-grid">
     <div class="card card-pad">
       <div class="sim-control"><div class="lbl"><span class="n">Capital inicial</span><span class="v" id="jCapV">R$ 10.000</span></div><input type="range" id="jCap" min="0" max="500000" step="1000" value="10000" oninput="runSimJuros()"></div>
@@ -11874,7 +11874,7 @@ function simJurosHTML(){
       <div class="card card-pad"><div class="card-head"><div class="card-h"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-line"></i></span> Patrimônio vs total aportado</div></div><div style="position:relative;height:260px"><canvas id="jChart" role="img" aria-label="Projeção de juros compostos"></canvas></div></div>
     </div>
   </div>
-  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Rentabilidade constante e sem impostos/inflação — use como referência de planejamento.</div>`;
+  <div class="illus-note" style="margin-top:16px"><i class="fa-solid fa-circle-info"></i> Rentabilidade constante, sem impostos nem inflação. Use como referência de planejamento.</div>`;
 }
 function runSimJuros(){
   const g=id=>+((document.getElementById(id)||{}).value||0), setT=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
@@ -11904,7 +11904,7 @@ function runSimJuros(){
 function simMetaHTML(){
   return `
   <div class="sec-title">Meta de aposentadoria</div>
-  <div class="sec-desc">Descubra quanto você precisa acumular — e quanto aportar por mês — para se aposentar com a renda que deseja, vivendo dos rendimentos.</div>
+  <div class="sec-desc">Descubra quanto acumular e quanto aportar por mês para se aposentar vivendo dos rendimentos.</div>
   <div class="sim-grid">
     <div class="card card-pad">
       <div class="sim-control"><div class="lbl"><span class="n">Renda mensal desejada</span><span class="v" id="mRendaV">R$ 8.000</span></div><input type="range" id="mRenda" min="1000" max="50000" step="500" value="8000" oninput="runSimMeta()"></div>
@@ -11967,12 +11967,12 @@ function portfolioInsights(lots){
   if(topp.w>30) cons.push(`Concentração alta: <strong>${topp.tk}</strong> é ${pc(topp.w,0)}% da carteira. Reduzir abaixo de 25% diminui o risco.`);
   else pros.push(`Boa distribuição: nenhuma posição passa de ${pc(topp.w,0)}% do total.`);
   // nº de ativos
-  if(n<5) cons.push(`Apenas ${n} ativo${n>1?'s':''} — pouca diversificação. O ideal é 8–15 para diluir risco específico.`);
-  else pros.push(`${n} ativos na carteira — diversificação adequada.`);
+  if(n<5) cons.push(`Apenas ${n} ativo${n>1?'s':''}, pouca diversificação. O ideal é de 8 a 15 para diluir risco específico.`);
+  else pros.push(`${n} ativos na carteira: diversificação adequada.`);
   // mix de classes
   const byK={}; pos.forEach(x=> byK[x.k]=(byK[x.k]||0)+x.w);
   const classes=Object.keys(byK);
-  if(classes.length===1) cons.push(`Carteira 100% em <strong>${ASSET_CLASS[classes[0]].label}s</strong> — diversificar entre classes (ações, FIIs…) reduz a volatilidade.`);
+  if(classes.length===1) cons.push(`Carteira 100% em <strong>${ASSET_CLASS[classes[0]].label}s</strong>. Diversificar entre classes (ações, FIIs…) reduz a volatilidade.`);
   else pros.push(`Exposição a ${classes.length} classes de ativos (${classes.map(k=>ASSET_CLASS[k].label).join(', ')}).`);
   // FIIs: papel x tijolo
   const fiis = pos.filter(x=>x.k==='fiis');
@@ -11980,7 +11980,7 @@ function portfolioInsights(lots){
     const papelW = fiis.filter(x=>/papel/i.test(x.a.seg)).reduce((s,x)=>s+x.w,0);
     const totF = fiis.reduce((s,x)=>s+x.w,0);
     const papelPct = totF? papelW/totF*100 : 0;
-    if(papelPct>70) cons.push(`Seus FIIs são majoritariamente de <strong>papel</strong> (${pc(papelPct,0)}%) — sensíveis à Selic/crédito; equilibre com tijolo.`);
+    if(papelPct>70) cons.push(`Seus FIIs são majoritariamente de <strong>papel</strong> (${pc(papelPct,0)}%), sensíveis à Selic e ao crédito. Equilibre com tijolo.`);
     else if(papelPct<20) pros.push(`Bom equilíbrio entre FIIs de papel e tijolo.`);
   }
   // renda
@@ -11988,16 +11988,16 @@ function portfolioInsights(lots){
   // qualidade média — índice de fundamentos ponderado pelo peso de cada posição
   const scoreMed = pos.reduce((s,x)=> s + (x.a.score||0)*x.w/100, 0);
   if(scoreMed>=70) pros.push(`Qualidade alta: fundamentos médios ponderados de <strong>${Math.round(scoreMed)}/100</strong>.`);
-  else if(scoreMed>0 && scoreMed<55) cons.push(`Qualidade média de fundamentos de ${Math.round(scoreMed)}/100 — há ativos de menor qualidade puxando a carteira.`);
+  else if(scoreMed>0 && scoreMed<55) cons.push(`Qualidade média de fundamentos de ${Math.round(scoreMed)}/100: há ativos de menor qualidade puxando a carteira.`);
   // concentração setorial
   const bySeg={}; pos.forEach(x=>{ const s=(x.a.seg)||'Outros'; bySeg[s]=(bySeg[s]||0)+x.w; });
   const topSeg=Object.entries(bySeg).sort((a,b)=>b[1]-a[1])[0];
-  if(topSeg && topSeg[1]>45 && Object.keys(bySeg).length>1) cons.push(`Setor <strong>${topSeg[0]}</strong> concentra ${pc(topSeg[1],0)}% da carteira — exposição setorial elevada.`);
+  if(topSeg && topSeg[1]>45 && Object.keys(bySeg).length>1) cons.push(`Setor <strong>${topSeg[0]}</strong> concentra ${pc(topSeg[1],0)}% da carteira: exposição setorial elevada.`);
   // sugestões de rebalanceamento
   const rebal=[];
   pos.slice().filter(x=>x.w>25).sort((a,b)=>b.w-a.w).forEach(x=> rebal.push(`Reduzir <strong>${x.tk}</strong> (${pc(x.w,0)}%) para diluir a concentração.`));
   const fraco = pos.slice().sort((a,b)=>(a.a.score||0)-(b.a.score||0))[0];
-  if(fraco && (fraco.a.score||0)>0 && (fraco.a.score||0)<55) rebal.push(`Revisar <strong>${fraco.tk}</strong> — menor qualidade fundamentalista da carteira.`);
+  if(fraco && (fraco.a.score||0)>0 && (fraco.a.score||0)<55) rebal.push(`Revisar <strong>${fraco.tk}</strong>, a menor qualidade fundamentalista da carteira.`);
   if(classes.length>1){ const minK=Object.entries(byK).sort((a,b)=>a[1]-b[1])[0]; if(minK[1]<15) rebal.push(`Aumentar exposição a <strong>${ASSET_CLASS[minK[0]].label}s</strong> (hoje ${pc(minK[1],0)}%) para equilibrar as classes.`); }
   // resultado
   const summary = p.lucro>=0
@@ -12328,7 +12328,7 @@ function openReportConfig(){
       <label class="fld"><span>Período dos proventos</span><select id="repPeriod" class="form-select">${Object.entries(REP_PERIODS).map(([k,v])=>`<option value="${k}"${k==='12m'?' selected':''}>${v}</option>`).join('')}</select></label>
       <div class="fld"><span>Incluir no relatório</span>
         <div class="rep-secs">
-          <label class="rep-chk"><input type="checkbox" id="repResumo" checked> <span>Resumo — patrimônio, resultado, renda, DY</span></label>
+          <label class="rep-chk"><input type="checkbox" id="repResumo" checked> <span>Resumo: patrimônio, resultado, renda, DY</span></label>
           <label class="rep-chk"><input type="checkbox" id="repPos" checked> <span>Posições da carteira</span></label>
           <label class="rep-chk"><input type="checkbox" id="repAloc" checked> <span>Alocação por classe</span></label>
           <label class="rep-chk"><input type="checkbox" id="repProv" checked> <span>Proventos recebidos no período</span></label>
@@ -12368,7 +12368,7 @@ function gerarRelatorioMensal(opts){
   const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório Lastro · ${mes}</title><style>${css}</style></head><body>
     <div class="hd"><div><div class="brand">Lastro<span> · Relatório da Carteira</span></div><div class="sub">${mes}</div></div><div class="sub">Investidor Pro 👑</div></div>
     ${resumo}${posSec}${alocSec}${provSec}
-    <div class="ft">Gerado pela Lastro em ${now.toLocaleDateString('pt-BR')} para o assinante Investidor Pro. Período dos proventos: ${perLabel}. Valores estimados/estimados — este relatório não constitui recomendação de investimento.</div>
+    <div class="ft">Gerado pela Lastro em ${now.toLocaleDateString('pt-BR')} para o assinante Investidor Pro. Período dos proventos: ${perLabel}. Valores estimados. Este relatório não constitui recomendação de investimento.</div>
   </body></html>`;
   // abre num overlay in-app (com Voltar) em vez de nova aba — no mobile dá pra voltar
   let ov=document.getElementById('reportOverlay');
@@ -12409,7 +12409,7 @@ function exportCarteiraCSV(opts){
     const rows=pays.map(x=>[ fmtDateBR(_patDay(x.date)), x.tk, (ASSET_CLASS[x.k]?ASSET_CLASS[x.k].label:x.k), x.k==='fiis'?'Rendimento':'Dividendo', csvNum(x.cotas), csvNum(x.perCota||0), csvNum((x.valorBRL!=null?x.valorBRL:x.valor)||0) ]);
     const lines=[head, ...rows].map(r=>r.map(csvCell).join(';'));
     downloadFile(`lastro-proventos-${stamp}.csv`, '﻿'+lines.join('\r\n'), 'text/csv;charset=utf-8');
-    toast(rows.length? 'Proventos exportados em CSV ✓' : 'Sem proventos no período — planilha vazia gerada'); return;
+    toast(rows.length? 'Proventos exportados em CSV ✓' : 'Sem proventos no período. Planilha vazia gerada'); return;
   }
   const head=['Ativo','Nome','Classe','Quantidade','Preço médio (R$)','Cotação atual','Valor investido','Valor atual','Resultado (R$)','Resultado (%)','Proventos recebidos (R$)'];
   const rows=groups.map(g=>[
@@ -12461,7 +12461,7 @@ function importCarteiraCSV(){
   if(!proGate('carteira')) return;
   const inp=document.createElement('input'); inp.type='file'; inp.accept='.csv,text/csv';
   inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(!f) return; const r=new FileReader();
-    r.onload=()=>{ try{ const res=parseCarteiraCSV(String(r.result||'')); if(res.added>0){ savePortfolio(); toast(`${res.added} aporte${res.added>1?'s':''} importado${res.added>1?'s':''} ✓`); render('carteira'); if(res.blocked>0) setTimeout(()=>{ toast(`${res.blocked} ativo(s) não importados — limite do plano Gratuito (${PLAN_LIMITS.carteira})`); goPricing(); }, 1400); } else if(res.blocked>0){ toast(`Limite do plano Gratuito (${PLAN_LIMITS.carteira} ativos) atingido`); goPricing(); } else toast('Nenhum aporte válido no CSV (colunas: Ativo, Quantidade, Preço, Data)'); }catch(e){ toast('Não foi possível ler o CSV'); } };
+    r.onload=()=>{ try{ const res=parseCarteiraCSV(String(r.result||'')); if(res.added>0){ savePortfolio(); toast(`${res.added} aporte${res.added>1?'s':''} importado${res.added>1?'s':''} ✓`); render('carteira'); if(res.blocked>0) setTimeout(()=>{ toast(`${res.blocked} ativo(s) não importados: limite do plano Gratuito (${PLAN_LIMITS.carteira})`); goPricing(); }, 1400); } else if(res.blocked>0){ toast(`Limite do plano Gratuito (${PLAN_LIMITS.carteira} ativos) atingido`); goPricing(); } else toast('Nenhum aporte válido no CSV (colunas: Ativo, Quantidade, Preço, Data)'); }catch(e){ toast('Não foi possível ler o CSV'); } };
     r.readAsText(f, 'utf-8');
   }; inp.click();
 }
@@ -12513,7 +12513,7 @@ function toggleTestMode(){
     CARTEIRA=genTestCarteira(); savePortfolio();   // dados de teste ficam só localmente (a nuvem está protegida)
     localStorage.setItem('lastro_watch', JSON.stringify(genTestWatch()));
     setAlerts(genTestAlerts());
-    toast('Modo desenvolvedor ON — dados de teste; seus dados reais ficam guardados ✓');
+    toast('Modo desenvolvedor ON: dados de teste. Seus dados reais ficam guardados ✓');
   } else {
     localStorage.removeItem('lastro_testmode');
     let bkp=null; try{ bkp=JSON.parse(localStorage.getItem('lastro_dev_bkp')||'null'); }catch(e){}
@@ -12526,7 +12526,7 @@ function toggleTestMode(){
       try{ MOVS = movsArr(); rebuildCarteira(); }catch(e){ MOVS=[]; }   // livro real volta ao estado guardado
       try{ _stateTs = +localStorage.getItem('lastro_state_ts')||0; }catch(e){}   // relógio de sync volta ao valor real
       if(typeof flushCloudState==='function') flushCloudState(false, true);   // fora do modo dev: re-sincroniza os dados reais (força)
-      toast('Modo desenvolvedor OFF — todos os seus dados reais foram restaurados ✓');
+      toast('Modo desenvolvedor OFF: todos os seus dados reais foram restaurados ✓');
     } else {
       CARTEIRA=[]; savePortfolio();
       localStorage.removeItem('lastro_watch'); setAlerts([]);
@@ -12544,7 +12544,7 @@ function loadDemoCarteira(){
   if(!lots.length){ toast('Não foi possível carregar a demonstração'); return; }
   // efêmero: NÃO persiste (sem savePortfolio) — vive só nesta sessão e some ao reabrir o app
   CARTEIRA=lots; demoMode=true;
-  toast('Carteira de demonstração carregada — ela some ao fechar o app ✓');
+  toast('Carteira de demonstração carregada. Ela some ao fechar o app ✓');
   if(currentView==='carteira') render('carteira'); else nav('carteira');
 }
 
@@ -12566,14 +12566,14 @@ function fRow(label, val, cls, tip){ return `<div class="f-row"${tip?` data-tip=
 function interp(metric, v){
   if(typeof v!=='number') return {};
   switch(metric){
-    case 'pl':  return v<=0?{cls:'down',tip:'Lucro negativo nos últimos 12 meses.'}: v<8?{cls:'up',tip:'Abaixo de 8 — valuation historicamente atrativo.'}: v>25?{cls:'down',tip:'Acima de 25 — caro ou com forte expectativa de crescimento.'}:{tip:'Na faixa considerada justa (8–25).'};
-    case 'pvp': return v<1?{cls:'up',tip:'Abaixo de 1 — negocia abaixo do valor patrimonial.'}: v>4?{cls:'down',tip:'Prêmio elevado sobre o patrimônio.'}:{tip:'Faixa usual de mercado.'};
+    case 'pl':  return v<=0?{cls:'down',tip:'Lucro negativo nos últimos 12 meses.'}: v<8?{cls:'up',tip:'Abaixo de 8: valuation historicamente atrativo.'}: v>25?{cls:'down',tip:'Acima de 25: caro ou com forte expectativa de crescimento.'}:{tip:'Na faixa considerada justa (8 a 25).'};
+    case 'pvp': return v<1?{cls:'up',tip:'Abaixo de 1: negocia abaixo do valor patrimonial.'}: v>4?{cls:'down',tip:'Prêmio elevado sobre o patrimônio.'}:{tip:'Faixa usual de mercado.'};
     case 'dy':  return v>=8?{cls:'up',tip:'Acima da média do mercado (~6%).'}: v>=4?{cls:'up',tip:'Boa faixa de dividendos.'}: v===0?{cls:'',tip:'Não distribui dividendos no momento.'}:{tip:'Dividendos moderados.'};
     case 'roe': return v>=18?{cls:'up',tip:'Rentabilidade alta sobre o capital.'}: v<8?{cls:'down',tip:'Rentabilidade baixa.'}:{tip:'Rentabilidade adequada.'};
-    case 'dleb':return v<=0?{cls:'up',tip:'Caixa líquido — sem dívida líquida.'}: v>3?{cls:'down',tip:'Alavancagem elevada — sensível a juros.'}:{tip:'Endividamento sob controle.'};
+    case 'dleb':return v<=0?{cls:'up',tip:'Caixa líquido, sem dívida líquida.'}: v>3?{cls:'down',tip:'Alavancagem elevada, sensível a juros.'}:{tip:'Endividamento sob controle.'};
     case 'pvpFii': return v<0.95?{cls:'up',tip:'Desconto sobre o valor patrimonial.'}: v>1.1?{cls:'down',tip:'Ágio sobre o patrimônio.'}:{tip:'Próximo do valor patrimonial.'};
     case 'dyFii':  return v>=11?{cls:'up',tip:'Bem acima da média de FIIs.'}: v>=8?{cls:'up',tip:'Rendimento saudável para FIIs.'}:{tip:'Rendimento moderado.'};
-    case 'vac': return v<=3?{cls:'up',tip:'Vacância baixa — imóveis bem ocupados.'}: v>10?{cls:'down',tip:'Vacância elevada — pressiona a renda.'}:{tip:'Vacância sob controle.'};
+    case 'vac': return v<=3?{cls:'up',tip:'Vacância baixa, imóveis bem ocupados.'}: v>10?{cls:'down',tip:'Vacância elevada, pressiona a renda.'}:{tip:'Vacância sob controle.'};
   }
   return {};
 }
@@ -12892,40 +12892,40 @@ function metricsForDetail(a,k){
    ══════════════════════════════════════════════════════════ */
 const INDICATORS = {
   // ── Valuation ──
-  pl:{nome:'P/L',u:'x',descricao:'Preço da ação dividido pelo lucro por ação. Indica quantos anos de lucro o preço atual representa.',formula:'Preço / LPA',interpretacao:'Quanto menor, mais barata tende a estar (paga-se menos por cada R$ 1 de lucro).',faixaIdeal:'8–15 justo · <8 atrativo · >25 caro ou alta expectativa de crescimento.',pontosAtencao:'Lucro pontual ou negativo distorce o índice. Compare sempre com o setor.'},
-  pvp:{nome:'P/VP',u:'x',descricao:'Preço da ação sobre o valor patrimonial por ação.',formula:'Preço / VPA',interpretacao:'Abaixo de 1 = negocia abaixo do patrimônio contábil.',faixaIdeal:'<1 desconto · 1–2 usual · >4 prêmio elevado.',pontosAtencao:'Empresas de alto ROE costumam negociar com P/VP alto justificadamente.'},
-  evebitda:{nome:'EV/EBITDA',u:'x',descricao:'Valor da empresa (incluindo dívida, descontado o caixa) sobre o EBITDA.',formula:'Enterprise Value / EBITDA',interpretacao:'Mostra quanto custaria comprar a empresa inteira em relação à sua geração de caixa operacional. Menor = mais barata.',faixaIdeal:'<6 atrativo · 6–10 razoável · >12 esticado (varia por setor).',pontosAtencao:'Não usar para bancos/seguradoras (não têm EBITDA comparável).'},
+  pl:{nome:'P/L',u:'x',descricao:'Preço da ação dividido pelo lucro por ação. Indica quantos anos de lucro o preço atual representa.',formula:'Preço / LPA',interpretacao:'Quanto menor, mais barata tende a estar (paga-se menos por cada R$ 1 de lucro).',faixaIdeal:'de 8 a 15 justo · <8 atrativo · >25 caro ou alta expectativa de crescimento.',pontosAtencao:'Lucro pontual ou negativo distorce o índice. Compare sempre com o setor.'},
+  pvp:{nome:'P/VP',u:'x',descricao:'Preço da ação sobre o valor patrimonial por ação.',formula:'Preço / VPA',interpretacao:'Abaixo de 1 = negocia abaixo do patrimônio contábil.',faixaIdeal:'<1 desconto · de 1 a 2 usual · >4 prêmio elevado.',pontosAtencao:'Empresas de alto ROE costumam negociar com P/VP alto justificadamente.'},
+  evebitda:{nome:'EV/EBITDA',u:'x',descricao:'Valor da empresa (incluindo dívida, descontado o caixa) sobre o EBITDA.',formula:'Enterprise Value / EBITDA',interpretacao:'Mostra quanto custaria comprar a empresa inteira em relação à sua geração de caixa operacional. Menor = mais barata.',faixaIdeal:'<6 atrativo · de 6 a 10 razoável · >12 esticado (varia por setor).',pontosAtencao:'Não usar para bancos/seguradoras (não têm EBITDA comparável).'},
   evebit:{nome:'EV/EBIT',u:'x',descricao:'Valor da empresa sobre o lucro operacional (EBIT).',formula:'Enterprise Value / EBIT',interpretacao:'Similar ao EV/EBITDA, mas considera a depreciação (mais conservador).',faixaIdeal:'<8 atrativo (depende do setor).',pontosAtencao:'Comparar apenas entre empresas do mesmo setor.'},
   pebit:{nome:'P/EBIT',u:'x',descricao:'Preço sobre o lucro operacional por ação.',formula:'Preço / EBIT por ação',interpretacao:'Valuation pelo resultado operacional, ignorando efeitos financeiros e tributários.',faixaIdeal:'Quanto menor, melhor (compare com pares).',pontosAtencao:'Desconsidera a estrutura de capital.'},
   pativo:{nome:'P/Ativo',u:'x',descricao:'Preço de mercado sobre o ativo total por ação.',formula:'Valor de mercado / Ativos',interpretacao:'Quanto o mercado paga por cada R$ 1 de ativo da empresa.',faixaIdeal:'Varia muito por setor (bancos costumam ser <0,2).',pontosAtencao:'Pouco útil isolado; use junto com rentabilidade.'},
-  psr:{nome:'P/Receita (PSR)',u:'x',descricao:'Preço sobre a receita líquida por ação (Price to Sales Ratio).',formula:'Valor de mercado / Receita Líquida',interpretacao:'Quanto se paga por cada R$ 1 de receita. Útil para empresas sem lucro ainda.',faixaIdeal:'<1 costuma ser barato; >5 exige forte crescimento.',pontosAtencao:'Ignora a rentabilidade — receita alta sem margem vale pouco.'},
+  psr:{nome:'P/Receita (PSR)',u:'x',descricao:'Preço sobre a receita líquida por ação (Price to Sales Ratio).',formula:'Valor de mercado / Receita Líquida',interpretacao:'Quanto se paga por cada R$ 1 de receita. Útil para empresas sem lucro ainda.',faixaIdeal:'<1 costuma ser barato; >5 exige forte crescimento.',pontosAtencao:'Ignora a rentabilidade: receita alta sem margem vale pouco.'},
   pcapgiro:{nome:'P/Capital de Giro',u:'x',descricao:'Preço sobre o capital de giro (ativo circulante − passivo circulante).',formula:'Valor de mercado / Capital de Giro',interpretacao:'Mede quanto se paga pelo capital de curto prazo líquido.',faixaIdeal:'Valores baixos/positivos indicam folga de caixa.',pontosAtencao:'Negativo quando o passivo circulante supera o ativo.'},
   pacliq:{nome:'P/Ativo Circ. Líq.',u:'x',descricao:'Preço sobre o ativo circulante líquido (estilo Graham).',formula:'Valor de mercado / (Ativo Circ. − Passivo Total)',interpretacao:'Quando negativo e pequeno, sugere ações descontadas (net-net de Graham).',faixaIdeal:'Raramente positivo; valores muito baixos chamam atenção.',pontosAtencao:'Indicador de nicho, para situações de profundo desconto.'},
   ev:{nome:'Enterprise Value',u:'',descricao:'Valor total da empresa: capitalização de mercado + dívida líquida.',formula:'Market Cap + Dívida − Caixa',interpretacao:'Representa o "preço de aquisição" da empresa inteira.',faixaIdeal:'—',pontosAtencao:'Use em múltiplos (EV/EBITDA, EV/EBIT), não isolado.'},
   mktcap:{nome:'Valor de Mercado',u:'',descricao:'Capitalização de mercado: total que o mercado atribui à empresa.',formula:'Preço × Nº de ações',interpretacao:'Tamanho da empresa na bolsa.',faixaIdeal:'—',pontosAtencao:'Não confundir com Enterprise Value (que inclui dívida).'},
   // ── Rentabilidade ──
-  roe:{nome:'ROE',u:'%',descricao:'Retorno sobre o patrimônio líquido — lucro gerado sobre o capital dos sócios.',formula:'Lucro Líquido / Patrimônio Líquido',interpretacao:'Mede a eficiência em transformar o capital próprio em lucro.',faixaIdeal:'>15% bom · >20% excelente · <8% fraco.',pontosAtencao:'ROE alto com alavancagem elevada pode embutir risco.'},
+  roe:{nome:'ROE',u:'%',descricao:'Retorno sobre o patrimônio líquido: o lucro gerado sobre o capital dos sócios.',formula:'Lucro Líquido / Patrimônio Líquido',interpretacao:'Mede a eficiência em transformar o capital próprio em lucro.',faixaIdeal:'>15% bom · >20% excelente · <8% fraco.',pontosAtencao:'ROE alto com alavancagem elevada pode embutir risco.'},
   roic:{nome:'ROIC',u:'%',descricao:'Retorno sobre o capital investido (próprio + dívida).',formula:'NOPAT / Capital Investido',interpretacao:'Rentabilidade do negócio independente da estrutura de capital. ROIC > custo de capital cria valor.',faixaIdeal:'>12% costuma ser bom.',pontosAtencao:'Compare com o custo de capital (WACC) da empresa.'},
   roa:{nome:'ROA',u:'%',descricao:'Retorno sobre os ativos totais.',formula:'Lucro Líquido / Ativos',interpretacao:'Eficiência em gerar lucro a partir de toda a base de ativos.',faixaIdeal:'Quanto maior, melhor (varia por setor).',pontosAtencao:'Setores intensivos em ativos têm ROA naturalmente menor.'},
   roi:{nome:'ROI',u:'%',descricao:'Retorno sobre o investimento realizado.',formula:'(Ganho − Custo) / Custo',interpretacao:'Mede o retorno de um investimento específico.',faixaIdeal:'Quanto maior, melhor.',pontosAtencao:'Depende muito da base de cálculo adotada.'},
   mb:{nome:'Margem Bruta',u:'%',descricao:'Quanto sobra da receita após o custo dos produtos/serviços.',formula:'Lucro Bruto / Receita Líquida',interpretacao:'Indica poder de precificação e eficiência produtiva.',faixaIdeal:'Quanto maior, melhor; estabilidade é valiosa.',pontosAtencao:'Margens variam muito entre setores.'},
-  mebitda:{nome:'Margem EBITDA',u:'%',descricao:'EBITDA sobre a receita — geração de caixa operacional percentual.',formula:'EBITDA / Receita Líquida',interpretacao:'Mostra quanto da receita vira caixa operacional, antes de juros, impostos e depreciação.',faixaIdeal:'Quanto maior e mais estável, melhor.',pontosAtencao:'Não reflete necessidades de investimento (capex).'},
+  mebitda:{nome:'Margem EBITDA',u:'%',descricao:'EBITDA sobre a receita, a geração de caixa operacional em percentual.',formula:'EBITDA / Receita Líquida',interpretacao:'Mostra quanto da receita vira caixa operacional, antes de juros, impostos e depreciação.',faixaIdeal:'Quanto maior e mais estável, melhor.',pontosAtencao:'Não reflete necessidades de investimento (capex).'},
   mebit:{nome:'Margem EBIT',u:'%',descricao:'Lucro operacional (EBIT) sobre a receita.',formula:'EBIT / Receita Líquida',interpretacao:'Rentabilidade operacional após depreciação.',faixaIdeal:'Quanto maior, melhor.',pontosAtencao:'Comparar dentro do mesmo setor.'},
-  ml:{nome:'Margem Líquida',u:'%',descricao:'Lucro líquido sobre a receita — quanto sobra no fim para o acionista.',formula:'Lucro Líquido / Receita Líquida',interpretacao:'Eficiência final do negócio após todos os custos e despesas.',faixaIdeal:'Quanto maior, melhor; >20% é forte.',pontosAtencao:'Pode ser inflada por resultados não recorrentes.'},
+  ml:{nome:'Margem Líquida',u:'%',descricao:'Lucro líquido sobre a receita: quanto sobra no fim para o acionista.',formula:'Lucro Líquido / Receita Líquida',interpretacao:'Eficiência final do negócio após todos os custos e despesas.',faixaIdeal:'Quanto maior, melhor; >20% é forte.',pontosAtencao:'Pode ser inflada por resultados não recorrentes.'},
   // ── Crescimento ──
   cagrRec:{nome:'CAGR Receita 5a',u:'%',descricao:'Crescimento anual composto da receita nos últimos 5 anos.',formula:'(Receita final / inicial)^(1/anos) − 1',interpretacao:'Ritmo de expansão das vendas.',faixaIdeal:'>10% a.a. é robusto.',pontosAtencao:'Crescer receita sem margem/lucro pode destruir valor.'},
   cagrLuc:{nome:'CAGR Lucro 5a',u:'%',descricao:'Crescimento anual composto do lucro nos últimos 5 anos.',formula:'(Lucro final / inicial)^(1/anos) − 1',interpretacao:'Consistência e ritmo de crescimento dos resultados.',faixaIdeal:'>10% a.a. é forte.',pontosAtencao:'Base inicial muito baixa distorce o percentual.'},
   cagrEbitda:{nome:'CAGR EBITDA 5a',u:'%',descricao:'Crescimento anual composto do EBITDA.',formula:'(EBITDA final / inicial)^(1/anos) − 1',interpretacao:'Evolução da geração de caixa operacional.',faixaIdeal:'>10% a.a. é positivo.',pontosAtencao:'Avalie junto à margem.'},
   cagrDiv:{nome:'CAGR Dividendos 5a',u:'%',descricao:'Crescimento anual composto dos dividendos.',formula:'(DPA final / inicial)^(1/anos) − 1',interpretacao:'Indica capacidade de aumentar proventos ao longo do tempo.',faixaIdeal:'Crescente e sustentável é o ideal.',pontosAtencao:'Payout muito alto pode limitar o crescimento futuro.'},
   // ── Dividendos ──
-  dy:{nome:'Dividend Yield',u:'%',descricao:'Proventos distribuídos nos últimos 12 meses sobre o preço atual.',formula:'Dividendos 12m / Preço',interpretacao:'Renda anual em dividendos que o preço atual proporciona.',faixaIdeal:'Acima de ~6% a.a. é alto na B3 (FIIs ~8–12%).',pontosAtencao:'DY muito alto pode ser dividendo extraordinário não recorrente.'},
-  payout:{nome:'Payout',u:'%',descricao:'Percentual do lucro distribuído como dividendos.',formula:'Dividendos / Lucro Líquido',interpretacao:'Quanto do lucro vira provento (vs. reinvestimento).',faixaIdeal:'40–70% costuma ser equilibrado.',pontosAtencao:'Payout >100% (paga mais que lucra) raramente é sustentável.'},
+  dy:{nome:'Dividend Yield',u:'%',descricao:'Proventos distribuídos nos últimos 12 meses sobre o preço atual.',formula:'Dividendos 12m / Preço',interpretacao:'Renda anual em dividendos que o preço atual proporciona.',faixaIdeal:'Acima de ~6% a.a. é alto na B3 (FIIs de 8% a 12%).',pontosAtencao:'DY muito alto pode ser dividendo extraordinário não recorrente.'},
+  payout:{nome:'Payout',u:'%',descricao:'Percentual do lucro distribuído como dividendos.',formula:'Dividendos / Lucro Líquido',interpretacao:'Quanto do lucro vira provento (vs. reinvestimento).',faixaIdeal:'De 40% a 70% costuma ser equilibrado.',pontosAtencao:'Payout >100% (paga mais que lucra) raramente é sustentável.'},
   dpa:{nome:'Dividendos por Ação',u:'R$',descricao:'Valor pago em proventos por ação/cota no período.',formula:'Total de proventos / Nº de ações',interpretacao:'Quanto cada ação rendeu em dinheiro.',faixaIdeal:'Crescente e regular é o ideal.',pontosAtencao:'Considere se houve eventos extraordinários.'},
   divGrowth:{nome:'Crescimento dos Dividendos',u:'%',descricao:'Variação dos dividendos ao longo do tempo.',formula:'Δ DPA período a período',interpretacao:'Mede se a empresa aumenta os proventos de forma consistente.',faixaIdeal:'Crescimento estável é valioso para renda.',pontosAtencao:'Crescimento puxado por payout crescente tem limite.'},
   // ── Endividamento ──
-  dleb:{nome:'Dív. Líq./EBITDA',u:'x',descricao:'Quantos anos de geração de caixa seriam necessários para quitar a dívida líquida.',formula:'Dívida Líquida / EBITDA',interpretacao:'Mede o nível de alavancagem.',faixaIdeal:'<1 conservador · 1–3 confortável · >3,5 alto.',pontosAtencao:'Sensível a juros altos; setores estáveis suportam mais dívida.'},
+  dleb:{nome:'Dív. Líq./EBITDA',u:'x',descricao:'Quantos anos de geração de caixa seriam necessários para quitar a dívida líquida.',formula:'Dívida Líquida / EBITDA',interpretacao:'Mede o nível de alavancagem.',faixaIdeal:'<1 conservador · de 1 a 3 confortável · >3,5 alto.',pontosAtencao:'Sensível a juros altos; setores estáveis suportam mais dívida.'},
   dlpl:{nome:'Dív. Líq./Patrim.',u:'x',descricao:'Dívida líquida sobre o patrimônio líquido.',formula:'Dívida Líquida / Patrimônio',interpretacao:'Proporção da dívida frente ao capital próprio.',faixaIdeal:'<0,5 confortável · >1 elevado.',pontosAtencao:'Negativo indica caixa líquido (sem dívida líquida).'},
-  lc:{nome:'Liquidez Corrente',u:'x',descricao:'Capacidade de pagar obrigações de curto prazo.',formula:'Ativo Circulante / Passivo Circulante',interpretacao:'Acima de 1 = ativos de curto prazo cobrem as dívidas de curto prazo.',faixaIdeal:'1,2–2,0 é saudável.',pontosAtencao:'Muito alto pode indicar caixa ocioso.'},
+  lc:{nome:'Liquidez Corrente',u:'x',descricao:'Capacidade de pagar obrigações de curto prazo.',formula:'Ativo Circulante / Passivo Circulante',interpretacao:'Acima de 1 = ativos de curto prazo cobrem as dívidas de curto prazo.',faixaIdeal:'De 1,2 a 2,0 é saudável.',pontosAtencao:'Muito alto pode indicar caixa ocioso.'},
   ls:{nome:'Liquidez Seca',u:'x',descricao:'Liquidez corrente excluindo os estoques (ativos menos líquidos).',formula:'(Ativo Circ. − Estoques) / Passivo Circ.',interpretacao:'Visão mais conservadora da liquidez de curto prazo.',faixaIdeal:'≥1 é confortável.',pontosAtencao:'Relevante em setores com estoque alto (varejo, indústria).'},
   coberturaJuros:{nome:'Cobertura de Juros',u:'x',descricao:'Quantas vezes o lucro operacional cobre as despesas com juros.',formula:'EBIT / Despesas Financeiras',interpretacao:'Mede a folga para honrar os juros da dívida.',faixaIdeal:'>3x é confortável.',pontosAtencao:'Abaixo de 1,5x acende alerta de risco financeiro.'},
   // ── Eficiência ──
@@ -12955,7 +12955,7 @@ const IND_ICON = {
 const indIcon = id => IND_ICON[id] || 'fa-chart-line';
 /* exemplo prático curto por indicador (mostrado no tooltip) */
 const IND_EX = {
-  pl:'Uma ação a R$ 20 com LPA de R$ 2 tem P/L 10 — paga-se 10 anos de lucro atual.',
+  pl:'Uma ação a R$ 20 com LPA de R$ 2 tem P/L 10: paga-se 10 anos de lucro atual.',
   pvp:'P/VP 0,8 significa comprar R$ 1 de patrimônio por R$ 0,80.',
   evebitda:'EV/EBITDA 5 sugere ~5 anos de caixa operacional para "pagar" a empresa.',
   roe:'ROE 20% = a cada R$ 100 dos sócios, a empresa gera R$ 20 de lucro ao ano.',
@@ -13028,16 +13028,16 @@ function indAnalysis(id,a,k,val){ if(typeof val!=='number') return ''; const d=I
 /* termos proprietários/derivados — "?" com explicação (reaproveita o sistema de tooltip data-tip) */
 const TERMS={
   yoc:'Yield on Cost (YoC): o dividend yield calculado sobre o preço que você pagou, não sobre a cotação atual. Mostra o quanto sua renda rende sobre o custo original da posição.',
-  vol:'Volatilidade: o quanto o valor da carteira oscila ao longo do tempo (anualizada). Quanto maior, mais o patrimônio sobe e desce — mais risco.',
+  vol:'Volatilidade: o quanto o valor da carteira oscila ao longo do tempo (anualizada). Quanto maior, mais o patrimônio sobe e desce, ou seja, mais risco.',
   sharpe:'Índice de Sharpe: retorno acima do CDI dividido pelo risco (volatilidade). Acima de 1 já é bom; quanto maior, melhor a relação retorno/risco.',
   mdd:'Maior queda (drawdown): a maior queda do topo ao fundo no período. Representa o pior tombo que a carteira teria enfrentado.',
   cagr:'CAGR (retorno anualizado): a taxa média de crescimento por ano, como se o retorno tivesse sido constante ao longo do período.',
   darf:'DARF: guia de pagamento do imposto sobre o lucro em vendas. Ações têm isenção até R$ 20 mil vendidos no mês; o que passa disso é tributado.',
-  notaLastro:'Nota de Diversificação Lastro™: nota de 0 a 100 que resume o equilíbrio da sua carteira — diversificação entre classes e setores, concentração e qualidade dos ativos.',
+  notaLastro:'Nota de Diversificação Lastro™: nota de 0 a 100 que resume o equilíbrio da sua carteira: diversificação entre classes e setores, concentração e qualidade dos ativos.',
   pmProv:'Preço médio com proventos: seu preço médio descontando os proventos já recebidos. Mostra o custo "líquido" da posição.',
   cdi:'CDI: taxa de referência da renda fixa no Brasil, bem próxima da Selic. Serve de comparação para saber se a carteira rende mais que o básico.',
-  ibov:'IBOV (Ibovespa): principal índice da bolsa brasileira — serve de referência para comparar o desempenho da sua carteira com o mercado.',
-  magico:'Número mágico: o patrimônio que você precisa acumular para que os rendimentos (dividendos/juros) paguem a renda mensal desejada — sem precisar vender os ativos.',
+  ibov:'IBOV (Ibovespa): principal índice da bolsa brasileira. Serve de referência para comparar o desempenho da sua carteira com o mercado.',
+  magico:'Número mágico: o patrimônio que você precisa acumular para que os rendimentos (dividendos/juros) paguem a renda mensal desejada, sem precisar vender os ativos.',
   dyMed:'DY médio da carteira: a média do dividend yield dos seus ativos, ponderada pelo valor de cada um. Estima o quanto a carteira paga de proventos por ano em relação ao patrimônio.',
   selic:'Selic: a taxa básica de juros da economia, definida pelo Banco Central. Serve de referência para a renda fixa e influencia FIIs e ações.',
   ipca:'IPCA: o índice oficial de inflação do Brasil. Investimentos "IPCA+" pagam a inflação mais uma taxa fixa, protegendo o poder de compra.',
@@ -13046,31 +13046,31 @@ const TERMS={
 function hlp(k){ const t=(TERMS&&TERMS[k])||k; return `<span class="hlp" data-tip="${esc(t)}">?</span>`; }
 /* termos com card rico (mesmo modelo dos indicadores dos ativos) — tocar abre a definição */
 const TERM_CARDS={
-  datacom:{ nome:'Data-com', icon:'fa-calendar-check', descricao:'O último dia em que é preciso ter o ativo em carteira para ter direito ao provento anunciado.', formula:'Quem compra depois da data-com (já "ex") não recebe aquele pagamento', interpretacao:'É por isso que só contam as cotas que você já tinha na data-com — comprar às vésperas do pagamento não dá direito ao provento.' },
-  mrr:{ nome:'Receita Mensal', icon:'fa-sack-dollar', descricao:'A receita recorrente que entra todos os meses com as assinaturas ativas.', formula:'Soma das mensalidades de todos os assinantes ativos', interpretacao:'É o principal termômetro do negócio: quanto maior e mais estável, melhor. Cresce com novos assinantes e cai com cancelamentos.', faixaIdeal:'Deve subir mês a mês.', pontosAtencao:'Uma queda indica cancelamentos (churn) — investigue o motivo.' },
-  arr:{ nome:'Receita Anual', icon:'fa-arrow-trend-up', descricao:'A receita recorrente projetada para 12 meses, mantendo os assinantes atuais.', formula:'Receita Mensal × 12', interpretacao:'Mostra o tamanho anual do negócio em regime recorrente — útil para planejar metas.', faixaIdeal:'Cresce junto com a Receita Mensal.' },
+  datacom:{ nome:'Data-com', icon:'fa-calendar-check', descricao:'O último dia em que é preciso ter o ativo em carteira para ter direito ao provento anunciado.', formula:'Quem compra depois da data-com (já "ex") não recebe aquele pagamento', interpretacao:'É por isso que só contam as cotas que você já tinha na data-com. Comprar às vésperas do pagamento não dá direito ao provento.' },
+  mrr:{ nome:'Receita Mensal', icon:'fa-sack-dollar', descricao:'A receita recorrente que entra todos os meses com as assinaturas ativas.', formula:'Soma das mensalidades de todos os assinantes ativos', interpretacao:'É o principal termômetro do negócio: quanto maior e mais estável, melhor. Cresce com novos assinantes e cai com cancelamentos.', faixaIdeal:'Deve subir mês a mês.', pontosAtencao:'Uma queda indica cancelamentos (churn); investigue o motivo.' },
+  arr:{ nome:'Receita Anual', icon:'fa-arrow-trend-up', descricao:'A receita recorrente projetada para 12 meses, mantendo os assinantes atuais.', formula:'Receita Mensal × 12', interpretacao:'Mostra o tamanho anual do negócio em regime recorrente, útil para planejar metas.', faixaIdeal:'Cresce junto com a Receita Mensal.' },
   ticket:{ nome:'Ticket médio', icon:'fa-receipt', descricao:'O valor médio que cada cliente pagante rende por mês.', formula:'Receita Mensal ÷ nº de clientes pagantes', interpretacao:'Sobe quando mais gente assina o plano mais caro (Investidor Pro).', faixaIdeal:'Quanto maior, mais cada cliente contribui.' },
   conv:{ nome:'Conversão', icon:'fa-percent', descricao:'O percentual dos cadastros totais que viraram clientes pagantes.', formula:'Clientes pagantes ÷ cadastros totais × 100', interpretacao:'Mede a eficiência em transformar cadastros e testes em receita.', faixaIdeal:'Quanto maior, melhor.', pontosAtencao:'Foque em ativar quem está no período de teste antes de expirar.' },
   refGanhos:{ nome:'Ganhos', icon:'fa-sack-dollar', descricao:'O total de comissões que você já acumulou com as suas indicações.', formula:'Soma de todas as comissões creditadas', interpretacao:'Cresce a cada mês em que seus indicados mantêm a assinatura ativa.', faixaIdeal:'Quanto mais indicados ativos, maior fica.' },
   refAtivos:{ nome:'Ativos', icon:'fa-user-check', descricao:'Amigos que você indicou e estão com assinatura ativa, gerando comissão recorrente para você.', interpretacao:'Cada indicado ativo paga uma comissão todo mês enquanto continuar assinante.', faixaIdeal:'Quanto mais, melhor.' },
-  refPend:{ nome:'Pendentes', icon:'fa-hourglass-half', descricao:'Pessoas que se cadastraram pelo seu link mas ainda não assinaram um plano pago.', interpretacao:'São oportunidades — um empurrãozinho pode convertê-las em comissão.', pontosAtencao:'Convide-as a testar o Premium para virarem indicados ativos.' },
+  refPend:{ nome:'Pendentes', icon:'fa-hourglass-half', descricao:'Pessoas que se cadastraram pelo seu link mas ainda não assinaram um plano pago.', interpretacao:'São oportunidades: um empurrãozinho pode convertê-las em comissão.', pontosAtencao:'Convide-as a testar o Premium para virarem indicados ativos.' },
   refProx:{ nome:'Próximo PIX', icon:'fa-calendar-check', descricao:'A data do próximo pagamento das suas comissões, feito automaticamente via PIX.', interpretacao:'Os pagamentos são mensais enquanto houver indicados ativos.' },
-  cadastros:{ nome:'Cadastros', icon:'fa-users', descricao:'O total de pessoas que criaram conta na Lastro — clientes pagantes somados aos leads gratuitos.', interpretacao:'Base total de usuários; cresce a cada novo cadastro.' },
+  cadastros:{ nome:'Cadastros', icon:'fa-users', descricao:'O total de pessoas que criaram conta na Lastro, somando clientes pagantes e leads gratuitos.', interpretacao:'Base total de usuários; cresce a cada novo cadastro.' },
   pagantes:{ nome:'Clientes pagantes', icon:'fa-crown', descricao:'Pessoas com assinatura ativa (Premium ou Investidor Pro), gerando receita recorrente.', interpretacao:'Quanto maior a fatia de pagantes sobre o total, mais saudável o negócio.' },
-  leads:{ nome:'Leads', icon:'fa-user-plus', descricao:'Cadastros que ainda estão no plano gratuito — oportunidades de conversão para assinante.', interpretacao:'Ative os que estão em teste antes do prazo acabar para converter.' },
-  yoc:{ nome:'Yield on Cost', icon:'fa-seedling', descricao:'O dividend yield calculado sobre o preço que você pagou, não sobre a cotação atual.', formula:'Proventos anuais ÷ preço médio pago', interpretacao:'Mostra o quanto sua renda rende sobre o custo original — tende a crescer com o tempo.', faixaIdeal:'Quanto maior, melhor.' },
-  vol:{ nome:'Volatilidade', icon:'fa-wave-square', descricao:'O quanto o valor da carteira oscila ao longo do tempo (anualizada).', formula:'Desvio-padrão dos retornos mensais × √12', interpretacao:'Quanto maior, mais o patrimônio sobe e desce — mais risco.', faixaIdeal:'Depende do seu perfil: menor = mais estável.' },
+  leads:{ nome:'Leads', icon:'fa-user-plus', descricao:'Cadastros que ainda estão no plano gratuito, ou seja, oportunidades de conversão.', interpretacao:'Ative os que estão em teste antes do prazo acabar para converter.' },
+  yoc:{ nome:'Yield on Cost', icon:'fa-seedling', descricao:'O dividend yield calculado sobre o preço que você pagou, não sobre a cotação atual.', formula:'Proventos anuais ÷ preço médio pago', interpretacao:'Mostra o quanto sua renda rende sobre o custo original e tende a crescer com o tempo.', faixaIdeal:'Quanto maior, melhor.' },
+  vol:{ nome:'Volatilidade', icon:'fa-wave-square', descricao:'O quanto o valor da carteira oscila ao longo do tempo (anualizada).', formula:'Desvio-padrão dos retornos mensais × √12', interpretacao:'Quanto maior, mais o patrimônio sobe e desce, ou seja, mais risco.', faixaIdeal:'Depende do seu perfil: menor = mais estável.' },
   sharpe:{ nome:'Índice de Sharpe', icon:'fa-scale-balanced', descricao:'Mede o retorno obtido acima do CDI para cada unidade de risco assumida.', formula:'(Retorno − CDI) ÷ Volatilidade', interpretacao:'Acima de 1 já é bom; quanto maior, melhor a relação retorno/risco.', faixaIdeal:'> 1 é considerado saudável.' },
-  mdd:{ nome:'Maior queda (drawdown)', icon:'fa-arrow-trend-down', descricao:'A maior queda do topo ao fundo no período analisado.', formula:'(Vale − Topo) ÷ Topo', interpretacao:'Representa o pior tombo que a carteira teria enfrentado — teste do seu estômago.', pontosAtencao:'Quedas grandes exigem mais tempo para recuperar.' },
+  mdd:{ nome:'Maior queda (drawdown)', icon:'fa-arrow-trend-down', descricao:'A maior queda do topo ao fundo no período analisado.', formula:'(Vale − Topo) ÷ Topo', interpretacao:'Representa o pior tombo que a carteira teria enfrentado. É o teste do seu estômago.', pontosAtencao:'Quedas grandes exigem mais tempo para recuperar.' },
   cagr:{ nome:'Retorno anualizado (CAGR)', icon:'fa-chart-line', descricao:'A taxa média de crescimento por ano, como se o retorno tivesse sido constante.', formula:'(Valor final ÷ inicial)^(1/anos) − 1', interpretacao:'Facilita comparar investimentos de prazos diferentes.', faixaIdeal:'Compare com CDI e IBOV no mesmo período.' },
   magico:{ nome:'Número mágico', icon:'fa-wand-sparkles', descricao:'O patrimônio que você precisa acumular para viver dos rendimentos, sem vender ativos.', formula:'Renda mensal desejada × 12 ÷ rendimento anual (%)', interpretacao:'É a sua meta de liberdade financeira em reais.', faixaIdeal:'Quanto antes atingir, mais cedo a independência.' },
   dyMed:{ nome:'DY médio da carteira', icon:'fa-percent', descricao:'A média do dividend yield dos seus ativos, ponderada pelo valor de cada um.', formula:'Proventos anuais da carteira ÷ patrimônio', interpretacao:'Estima quanto a carteira paga de proventos por ano sobre o patrimônio.', faixaIdeal:'FIIs costumam elevar essa média.' },
-  hhi:{ nome:'Índice HHI (concentração)', icon:'fa-compress', descricao:'Mede o quanto a carteira está concentrada em poucos ativos.', formula:'Soma dos quadrados dos pesos (em %) — de 0 a 10.000', interpretacao:'Abaixo de 1.500 é pulverizada; acima de 2.500, concentrada.', faixaIdeal:'É uma medida descritiva, não um julgamento da carteira.' },
+  hhi:{ nome:'Índice HHI (concentração)', icon:'fa-compress', descricao:'Mede o quanto a carteira está concentrada em poucos ativos.', formula:'Soma dos quadrados dos pesos (em %), de 0 a 10.000', interpretacao:'Abaixo de 1.500 é pulverizada; acima de 2.500, concentrada.', faixaIdeal:'É uma medida descritiva, não um julgamento da carteira.' },
   cobertura:{ nome:'Cobertura da meta', icon:'fa-bullseye', descricao:'Quanto da sua renda-alvo os proventos projetados já cobrem.', formula:'Renda projetada ÷ renda desejada × 100', interpretacao:'100% significa que a carteira paga toda a renda que você quer.', faixaIdeal:'Objetivo: chegar e passar de 100%.' },
   notaLastro:{ nome:'Nota de Diversificação Lastro™', icon:'fa-shield-halved', descricao:'Nota de 0 a 100 que resume o equilíbrio da sua carteira.', formula:'Diversificação entre classes e setores + concentração + qualidade dos ativos', interpretacao:'Quanto maior, mais equilibrada e resiliente a carteira.', faixaIdeal:'Acima de 70 indica boa diversificação.' },
   darf:{ nome:'DARF', icon:'fa-file-invoice-dollar', descricao:'Guia de pagamento do imposto sobre o lucro nas vendas de ativos.', formula:'Lucro tributável × alíquota (15% ações · 20% FIIs/day trade)', interpretacao:'Ações têm isenção até R$ 20 mil vendidos no mês; o que passa é tributado.', pontosAtencao:'Emitir e pagar até o último dia útil do mês seguinte à venda.' },
   pmProv:{ nome:'Preço médio com proventos', icon:'fa-tags', descricao:'Seu preço médio descontando os proventos já recebidos daquele ativo.', formula:'Preço médio − proventos recebidos por cota', interpretacao:'Mostra o custo "líquido" da posição; pode até ficar negativo em ativos muito antigos.', faixaIdeal:'Quanto menor, mais a posição já se pagou.' },
-  'margem-holding':{ nome:'Margem distorcida', icon:'fa-triangle-exclamation', descricao:'Margem acima de 100% costuma vir de lucro por equivalência patrimonial (holdings como a ITSAÚSA) — não é comparável à margem operacional de uma empresa.', interpretacao:'Por isso este valor não entra no ranking do comparador: seria injusto com empresas operacionais.' }
+  'margem-holding':{ nome:'Margem distorcida', icon:'fa-triangle-exclamation', descricao:'Margem acima de 100% costuma vir de lucro por equivalência patrimonial (holdings como a ITSAÚSA) e não é comparável à margem operacional de uma empresa.', interpretacao:'Por isso este valor não entra no ranking do comparador: seria injusto com empresas operacionais.' }
 };
 /* rótulo de termo clicável — abre a mesma ficha dos indicadores (sem "?") */
 function termLabel(key, text){ return `<span class="term" data-term="${key}">${text}</span>`; }
@@ -13126,7 +13126,7 @@ function indInsights(id,a,k,val,h){
   if(peers.length>=4){
     const below=peers.filter(v=>v<val).length, pAbove=Math.round(below/peers.length*100);
     const better = lowerBetter ? (100-pAbove) : pAbove;
-    out.push(`<li><i class="fa-solid fa-ranking-star"></i> O <b>${esc(d.nome)}</b> atual está ${lowerBetter?'abaixo':'acima'} de <b>${(lowerBetter?(100-pAbove):pAbove)}%</b> das empresas do mesmo setor — ${better>=66?'posição favorável':better>=40?'posição mediana':'posição desfavorável'}.</li>`);
+    out.push(`<li><i class="fa-solid fa-ranking-star"></i> O <b>${esc(d.nome)}</b> atual está ${lowerBetter?'abaixo':'acima'} de <b>${(lowerBetter?(100-pAbove):pAbove)}%</b> das empresas do mesmo setor: ${better>=66?'posição favorável':better>=40?'posição mediana':'posição desfavorável'}.</li>`);
   }
   // vs média histórica (série real de proventos, no modal de DY)
   if(isFinite(mean) && mean!==0){
@@ -13391,52 +13391,52 @@ function assetInsights(a,k,f){
   const pros=[], cons=[];
   if(k==='acoes'){
     if(typeof a.dy==='number'){
-      if(a.dy>=8) pros.push(`Dividend Yield de ${pc(a.dy,1)}% — bem acima da média da B3 (~6%): forte gerador de renda.`);
+      if(a.dy>=8) pros.push(`Dividend Yield de ${pc(a.dy,1)}%, bem acima da média da B3 (~6%): forte gerador de renda.`);
       else if(a.dy>=4) pros.push(`Paga dividendos consistentes (DY ${pc(a.dy,1)}%), na faixa de boas pagadoras.`);
-      else if(a.dy>0 && a.dy<2) cons.push(`Dividend Yield baixo (${pc(a.dy,1)}%) — perfil de crescimento, não de renda.`);
-      else if(a.dy===0) cons.push(`Não distribui dividendos no momento — foco em reinvestir o lucro.`);
+      else if(a.dy>0 && a.dy<2) cons.push(`Dividend Yield baixo (${pc(a.dy,1)}%): perfil de crescimento, não de renda.`);
+      else if(a.dy===0) cons.push(`Não distribui dividendos no momento: o foco é reinvestir o lucro.`);
     }
     if(typeof a.pl==='number'){
-      if(a.pl>0 && a.pl<8) pros.push(`P/L de ${pc(a.pl,1)} — valuation atrativo: o preço equivale a ~${Math.round(a.pl)} anos de lucro.`);
-      else if(a.pl>=25) cons.push(`P/L de ${pc(a.pl,1)} — elevado: o preço já embute forte expectativa de crescimento.`);
+      if(a.pl>0 && a.pl<8) pros.push(`P/L de ${pc(a.pl,1)}: valuation atrativo, o preço equivale a ~${Math.round(a.pl)} anos de lucro.`);
+      else if(a.pl>=25) cons.push(`P/L de ${pc(a.pl,1)}, elevado: o preço já embute forte expectativa de crescimento.`);
     }
     if(typeof a.pvp==='number'){
-      if(a.pvp<1) pros.push(`Negocia a ${pc(a.pvp,2)}x o valor patrimonial — abaixo do patrimônio contábil.`);
-      else if(a.pvp>5) cons.push(`P/VP de ${pc(a.pvp,1)}x — prêmio alto sobre o patrimônio (exige crescimento para justificar).`);
+      if(a.pvp<1) pros.push(`Negocia a ${pc(a.pvp,2)}x o valor patrimonial, abaixo do patrimônio contábil.`);
+      else if(a.pvp>5) cons.push(`P/VP de ${pc(a.pvp,1)}x: prêmio alto sobre o patrimônio, exige crescimento para justificar.`);
     }
     if(typeof a.roe==='number'){
-      if(a.roe>=18) pros.push(`ROE de ${pc(a.roe,1)}% — rentabilidade alta sobre o capital dos acionistas.`);
-      else if(a.roe<8) cons.push(`ROE de ${pc(a.roe,1)}% — rentabilidade baixa frente ao mercado.`);
+      if(a.roe>=18) pros.push(`ROE de ${pc(a.roe,1)}%: rentabilidade alta sobre o capital dos acionistas.`);
+      else if(a.roe<8) cons.push(`ROE de ${pc(a.roe,1)}%: rentabilidade baixa frente ao mercado.`);
     }
     if(f){
       if(typeof f.dleb==='number'){
-        if(f.dleb<=0) pros.push(`Caixa líquido (sem dívida líquida) — balanço robusto e resiliente a juros altos.`);
-        else if(f.dleb>3) cons.push(`Dívida líquida/EBITDA de ${pc(f.dleb,1)}x — alavancagem elevada, sensível à Selic.`);
+        if(f.dleb<=0) pros.push(`Caixa líquido (sem dívida líquida): balanço robusto e resiliente a juros altos.`);
+        else if(f.dleb>3) cons.push(`Dívida líquida/EBITDA de ${pc(f.dleb,1)}x: alavancagem elevada, sensível à Selic.`);
       }
       if(typeof f.cagrL==='number' && f.cagrL>=15) pros.push(`Lucros cresceram ~${pc(f.cagrL,0)}% ao ano nos últimos 5 anos.`);
     }
   } else if(k==='fiis'){
     if(typeof a.dy==='number'){
-      if(a.dy>=11) pros.push(`Dividend Yield de ${pc(a.dy,1)}% — bem acima da média de FIIs.`);
+      if(a.dy>=11) pros.push(`Dividend Yield de ${pc(a.dy,1)}%, bem acima da média de FIIs.`);
       else if(a.dy>=8) pros.push(`Rendimento saudável para FIIs (DY ${pc(a.dy,1)}%).`);
     }
     if(typeof a.pvp==='number'){
       if(a.pvp<0.95) pros.push(`Negocia com desconto: P/VP de ${pc(a.pvp,2)} (abaixo do valor patrimonial).`);
-      else if(a.pvp>1.1) cons.push(`P/VP de ${pc(a.pvp,2)} — ágio sobre o patrimônio, margem de segurança menor.`);
+      else if(a.pvp>1.1) cons.push(`P/VP de ${pc(a.pvp,2)}: ágio sobre o patrimônio, margem de segurança menor.`);
     }
     if(typeof a.vac==='number' && !/papel/i.test(a.seg)){
-      if(a.vac>10) cons.push(`Vacância de ${pc(a.vac,1)}% — elevada, pressiona a distribuição de renda.`);
-      else if(a.vac<=3) pros.push(`Vacância baixa (${pc(a.vac,1)}%) — imóveis bem ocupados, renda estável.`);
+      if(a.vac>10) cons.push(`Vacância de ${pc(a.vac,1)}%, elevada: pressiona a distribuição de renda.`);
+      else if(a.vac<=3) pros.push(`Vacância baixa (${pc(a.vac,1)}%): imóveis bem ocupados, renda estável.`);
     }
-    if(typeof a.div==='number') pros.push(`Último rendimento de ${brl(a.div)} por cota — pagamentos mensais.`);
-    if(typeof a.consist==='number' && a.consist<0.78) cons.push(`Histórico de distribuição menos regular — atenção à previsibilidade.`);
+    if(typeof a.div==='number') pros.push(`Último rendimento de ${brl(a.div)} por cota, com pagamentos mensais.`);
+    if(typeof a.consist==='number' && a.consist<0.78) cons.push(`Histórico de distribuição menos regular: atenção à previsibilidade.`);
   }
   let verdict='Fundamentos detalhados em breve para este ativo.', tone='neu';
   if(typeof a.score==='number'){
-    if(a.score>=80){ verdict='Ativo de alta qualidade — fundamentos sólidos em vários pilares.'; tone='pos'; }
+    if(a.score>=80){ verdict='Ativo de alta qualidade, com fundamentos sólidos em vários pilares.'; tone='pos'; }
     else if(a.score>=65){ verdict='Ativo sólido, com bons fundamentos e alguns pontos de atenção a observar.'; tone='pos'; }
-    else if(a.score>=50){ verdict='Qualidade razoável — pese os pontos de atenção antes de investir.'; tone='neu'; }
-    else { verdict='Há fragilidades relevantes nos fundamentos — exige cautela.'; tone='neg'; }
+    else if(a.score>=50){ verdict='Qualidade razoável: pese os pontos de atenção antes de investir.'; tone='neu'; }
+    else { verdict='Há fragilidades relevantes nos fundamentos, o que exige cautela.'; tone='neg'; }
   }
   return { verdict, tone, pros: pros.slice(0,4), cons: cons.slice(0,3) };
 }
@@ -13449,7 +13449,7 @@ function fairValueHTML(a,k){
   }
   if(k==='acoes' && typeof a.pl==='number' && a.pl>0 && typeof a.pvp==='number' && a.pvp>0){
     const lpa=a.px/a.pl, vpa=a.px/a.pvp;
-    if(lpa>0 && vpa>0) items.push({ label:'Preço justo · Graham', val:Math.sqrt(22.5*lpa*vpa), hint:'√(22,5 × LPA × VPA) — referência clássica de valor intrínseco.' });
+    if(lpa>0 && vpa>0) items.push({ label:'Preço justo · Graham', val:Math.sqrt(22.5*lpa*vpa), hint:'√(22,5 × LPA × VPA), referência clássica de valor intrínseco.' });
   }
   if(!items.length) return '';
   const cells = items.map(it=>{
@@ -13458,9 +13458,9 @@ function fairValueHTML(a,k){
   }).join('');
   const best = items.reduce((b,it)=> it.val>b.val?it:b, items[0]);
   const upBest=(best.val-a.px)/a.px*100;
-  const verdict = upBest>=15 ? `<span class="tone-pos">Negocia com boa margem de segurança</span> — abaixo do preço justo estimado.`
+  const verdict = upBest>=15 ? `<span class="tone-pos">Negocia com boa margem de segurança</span>, abaixo do preço justo estimado.`
                : upBest>=0 ? `Próximo do preço justo estimado.`
-               : `<span class="tone-neg">Acima do preço justo estimado</span> — margem de segurança reduzida.`;
+               : `<span class="tone-neg">Acima do preço justo estimado</span>, com margem de segurança reduzida.`;
   return `<div class="fairvalue"><div class="fv-head"><i class="fa-solid fa-scale-balanced faint"></i> <span>Preço atual <strong>${fmtPx(a,k)}</strong> · ${verdict}</span></div><div class="fv-grid">${cells}</div></div>`;
 }
 function decisionCard(a,k,f){
@@ -13490,7 +13490,7 @@ function decisionCard(a,k,f){
       <div class="pc-col"><div class="pc-t pos"><i class="fa-solid fa-thumbs-up"></i> Pontos fortes</div><ul>${pros||'<li class="muted">—</li>'}</ul></div>
       <div class="pc-col"><div class="pc-t neg"><i class="fa-solid fa-circle-exclamation"></i> Pontos de atenção</div><ul>${cons||'<li class="muted">Sem alertas relevantes nos indicadores disponíveis.</li>'}</ul></div>
     </div>
-    <div class="dec-foot"><i class="fa-solid fa-circle-info faint"></i> Resumo automático a partir dos fundamentos — não é recomendação de compra/venda.</div>
+    <div class="dec-foot"><i class="fa-solid fa-circle-info faint"></i> Resumo automático a partir dos fundamentos. Não é recomendação de compra ou venda.</div>
   </div>`;
 }
 
@@ -13655,7 +13655,7 @@ function tabIndicadores(tk,a,k,f){
   return `
   <div class="card card-pad" style="margin-bottom:16px;background:linear-gradient(135deg,var(--gold-l),transparent)">
     <div class="ds-title" style="margin-bottom:6px"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold)"></i> Inteligência de indicadores</div>
-    <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">Toque no <i class="fa-regular fa-circle-question"></i> de cada indicador para a explicação completa (fórmula, faixa e exemplo) e no <i class="fa-solid fa-chart-column"></i> para o histórico com comparação ao setor e insights automáticos — algo que as plataformas tradicionais não entregam.</p>
+    <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">Toque no <i class="fa-regular fa-circle-question"></i> de cada indicador para a explicação completa (fórmula, faixa e exemplo) e no <i class="fa-solid fa-chart-column"></i> para o histórico com comparação ao setor e insights automáticos.</p>
   </div>
   ${valuationHTML(a,k)}
   ${fundamentalsHTML(a,k,f)}`;
@@ -13700,7 +13700,7 @@ function valuationHTML(a,k){
       <div style="font-size:13px;font-weight:600;color:${margem>=0?'var(--brand)':'var(--down)'}">${margem>=0?'+':''}${pc(margem,1)}% de margem · atual ${brl(px)}</div>
     </div>
     <div class="ind-grid">${cards}</div>
-    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Faixas de preço-teto calculadas a partir dos indicadores atuais (DY, LPA, VPA). Não são recomendação de compra ou venda — use-as como referência e ajuste as premissas ao seu perfil.</div>
+    <div class="illus-note" style="margin-top:14px"><i class="fa-solid fa-circle-info"></i> Faixas de preço-teto calculadas a partir dos indicadores atuais (DY, LPA, VPA). Não são recomendação de compra ou venda. Use-as como referência e ajuste as premissas ao seu perfil.</div>
   </div>`;
 }
 
@@ -13902,7 +13902,7 @@ function tabChecklist(tk,a,k,f){
     ${items.map(i=>`<div class="ckl-item" data-st="${i.status}"><span class="ckl-ic" style="background:${ic[i.status].bg};color:${ic[i.status].c}"><i class="fa-solid ${ic[i.status].i}"></i></span><div class="ckl-body"><div class="ckl-q">${esc(i.label)}</div><div class="ckl-d">${esc(i.detail)}</div></div></div>`).join('')}
   </div>
   <div class="card card-pad" style="margin-top:16px;background:var(--surface-2)">
-    <div style="font-size:12.5px;color:var(--ink-2);line-height:1.65"><i class="fa-solid fa-lightbulb" style="color:var(--gold)"></i> O Checklist resume, em linguagem de decisão, se o ativo é <strong>barato, rentável, pouco endividado e bom pagador</strong> — transformando dezenas de indicadores numa leitura rápida de qualidade.</div>
+    <div style="font-size:12.5px;color:var(--ink-2);line-height:1.65"><i class="fa-solid fa-lightbulb" style="color:var(--gold)"></i> O Checklist resume, em linguagem de decisão, se o ativo é <strong>barato, rentável, pouco endividado e bom pagador</strong>, transformando dezenas de indicadores numa leitura rápida.</div>
   </div>`;
 }
 
@@ -13975,7 +13975,7 @@ function tabDocumentos(tk,a,k,f){
   return `
   <div class="card card-pad" style="margin-bottom:16px;background:linear-gradient(135deg,var(--brand-l),transparent)">
     <div class="ds-title" style="margin-bottom:6px"><i class="fa-solid fa-building-columns" style="color:var(--brand)"></i> Documentos oficiais (CVM)</div>
-    <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">Fatos relevantes, comunicados ao mercado, avisos aos acionistas e eventos corporativos entregues à CVM — em tempo real, com o documento oficial para download.</p>
+    <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin:0">Fatos relevantes, comunicados ao mercado, avisos aos acionistas e eventos corporativos entregues à CVM em tempo real, com o documento oficial para download.</p>
   </div>
   <div class="card card-pad"><div id="docsList">${docsSkeleton()}</div></div>`;
 }
@@ -14183,7 +14183,7 @@ function viewAssetDetail(tk){
 }
 
 function openAsset(tk){
-  if(!assetLookup(tk)){ toast(`${tk} — ativo não encontrado`); return; }
+  if(!assetLookup(tk)){ toast(`Ativo ${tk} não encontrado`); return; }
   pushRecent(tk);
   if(currentView!=='asset') prevView=currentView;
   currentView='asset'; currentAssetTk=tk; detailRange='1A'; assetTab='geral';
@@ -14307,7 +14307,7 @@ function viewCarteirasInst(){
   <div class="sec-title">Carteiras de instituições</div>
   <div class="sec-desc">Estas carteiras são publicadas pelas próprias instituições. O Lastro apenas <strong>apresenta a composição divulgada</strong> e calcula indicadores a partir de cotações públicas. Não são recomendações da Lastro.</div>`;
   if(!CARTS) return head + `<div class="card card-pad"><div style="text-align:center;padding:26px 10px;color:var(--ink-3)"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:20px;color:var(--brand)"></i><div style="margin-top:10px;font-size:13px">Carregando as composições publicadas…</div></div></div>`;
-  if(CARTS.erro) return head + `<div class="card card-pad">${emptyState('fa-building-columns','Não foi possível carregar as carteiras agora','Verifique sua conexão e tente de novo — preferimos não mostrar nada a mostrar um dado que não veio da fonte.', `<button class="btn btn-primary" onclick="retryCarteirasIndex()"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>`)}</div>`;
+  if(CARTS.erro) return head + `<div class="card card-pad">${emptyState('fa-building-columns','Não foi possível carregar as carteiras agora','Verifique sua conexão e tente de novo. Preferimos não mostrar nada a mostrar um dado que não veio da fonte.', `<button class="btn btn-primary" onclick="retryCarteirasIndex()"><i class="fa-solid fa-rotate-right"></i> Tentar de novo</button>`)}</div>`;
   const todas = cartList();
   if(!todas.length) return head + `<div class="card card-pad">${emptyState('fa-building-columns','Nenhuma carteira disponível ainda','Assim que novas composições públicas forem publicadas, elas aparecem aqui.')}</div>`;
 
@@ -14368,7 +14368,7 @@ function cartLinhaAtivo(c, it, maxPeso){
   const lk=assetLookup(it.tk);
   if(!lk) return `<div class="cix-row cix-off">
     <span class="logo sm"><span class="logo-mono" style="background:var(--ink-4);color:#fff">${esc(it.tk.slice(0,2))}</span></span>
-    <div class="cix-id"><div class="cix-tk">${esc(it.tk)}</div><div class="cix-nm">Ativo não localizado na base — fora dos cálculos</div></div>
+    <div class="cix-id"><div class="cix-tk">${esc(it.tk)}</div><div class="cix-nm">Ativo não localizado na base, fora dos cálculos</div></div>
     <div class="cix-bar"><i style="width:${Math.min(100,it.peso/maxPeso*100).toFixed(1)}%;background:var(--ink-4)"></i></div>
     <span class="cix-rt"><b>${pc(it.peso,1)}%</b><small>sem cotação</small></span>
   </div>`;
@@ -14414,7 +14414,7 @@ function viewCarteiraInst(id){
     <div class="ci-foot">
       Pesos exatamente como publicados pela fonte. Soma: <strong>${pc(soma,1)}%</strong>.
       ${c.pesoUniforme ? ' A fonte publica <strong>pesos iguais</strong> entre os ativos.' : ''}
-      ${cov.n<cov.m ? `<br>${cov.m-cov.n} ativo${cov.m-cov.n>1?'s não foram localizados':' não foi localizado'} na base do Lastro e fica${cov.m-cov.n>1?'m':''} fora dos cálculos derivados — ${cartCoberturaTxt(cov)}.` : ''}
+      ${cov.n<cov.m ? `<br>${cov.m-cov.n} ativo${cov.m-cov.n>1?'s não foram localizados':' não foi localizado'} na base do Lastro e fica${cov.m-cov.n>1?'m':''} fora dos cálculos derivados. O cálculo ${cartCoberturaTxt(cov)}.` : ''}
     </div>
   </div>`;
 
@@ -14425,7 +14425,7 @@ function viewCarteiraInst(id){
     <div class="card-h" style="margin-bottom:6px"><span class="ico" style="background:var(--brand-l);color:var(--brand)"><i class="fa-solid fa-chart-pie"></i></span> Divisão por setor</div>
     <div class="donut-wrap"><canvas id="cartSetorChart" role="img" aria-label="Divisão da carteira por setor"></canvas></div>
     <div class="donut-leg" id="cartSetorLeg"></div>
-    <div class="ci-foot">Setor de cada ativo pela base do Lastro, com o peso publicado redistribuído entre os ativos localizados — ${cartCoberturaTxt(cov)}.</div>
+    <div class="ci-foot">Setor de cada ativo pela base do Lastro, com o peso publicado redistribuído entre os ativos localizados. O cálculo ${cartCoberturaTxt(cov)}.</div>
   </div>` : '';
 
   /* 4. concentração — descritiva (§2.5): números, nunca nota ou julgamento */
@@ -14448,7 +14448,7 @@ function viewCarteiraInst(id){
   <div class="card card-pad" style="margin-top:var(--gap)">
     <div class="card-h" style="margin-bottom:10px"><span class="ico" style="background:var(--gold-l);color:var(--gold)"><i class="fa-solid fa-scale-balanced"></i></span> Sobre esta carteira</div>
     <p class="ci-disc">A composição acima foi <strong>publicada por ${esc(c.inst)}</strong> em <strong>${fmtDateBR(c.publicadoEm)}</strong>, com referência a <strong>${esc(cartCompLabel(c.competencia))}</strong>, e está disponível publicamente em <strong>${esc(host||cartHost(c.fonteUrl))}</strong>. Os direitos sobre o conteúdo original são da instituição.</p>
-    <p class="ci-disc">O <strong>Lastro não elabora, não endossa e não recomenda</strong> esta carteira: apenas a apresenta e calcula indicadores (setores, peso, DY médio, desempenho) a partir de <strong>cotações e fundamentos públicos</strong>. Nada aqui é recomendação de investimento, análise de valores mobiliários ou consultoria personalizada — não considera seu perfil, seus objetivos nem sua situação financeira. Antes de investir, <strong>consulte o relatório original</strong> e, se precisar, um profissional certificado.</p>
+    <p class="ci-disc">O <strong>Lastro não elabora, não endossa e não recomenda</strong> esta carteira: apenas a apresenta e calcula indicadores (setores, peso, DY médio, desempenho) a partir de <strong>cotações e fundamentos públicos</strong>. Nada aqui é recomendação de investimento, análise de valores mobiliários ou consultoria personalizada: não considera seu perfil, seus objetivos ou sua situação financeira. Antes de investir, <strong>consulte o relatório original</strong> e, se precisar, um profissional certificado.</p>
     ${c.obs ? `<p class="ci-disc faint">${esc(c.obs)}</p>` : ''}
   </div>`;
 
@@ -14649,9 +14649,9 @@ function setDataStatus(state, label){
   el.classList.add(state);
   if(lb) lb.textContent = label;
   if((state==='demo' || state==='stale') && LIVE.lastError){
-    el.title = `Cotações ao vivo indisponíveis — ${LIVE.lastError} (clique para tentar de novo)`;
+    el.title = `Cotações ao vivo indisponíveis: ${LIVE.lastError} (clique para tentar de novo)`;
   } else if(LIVE.ts){
-    el.title = `Última atualização: ${LIVE.ts.toLocaleTimeString('pt-BR')} — clique para atualizar`;
+    el.title = `Última atualização: ${LIVE.ts.toLocaleTimeString('pt-BR')}. Clique para atualizar`;
   } else {
     el.title = 'Clique para atualizar as cotações';
   }
@@ -14700,13 +14700,13 @@ async function refreshQuotes(manual){
       LIVE.lastError = (data && data.note) || 'sem cotações para esta tela';
       console.warn('[Lastro] cotações:', LIVE.lastError);
       setDataStatus(LIVE.on ? 'stale' : 'demo', LIVE.on ? 'Offline · em cache' : 'Demonstração');
-      if(manual===true) toast(LIVE.on ? 'Sem novas cotações — exibindo último valor' : 'Sem conexão — exibindo dados de demonstração');
+      if(manual===true) toast(LIVE.on ? 'Sem novas cotações. Exibindo o último valor' : 'Sem conexão. Exibindo dados de demonstração');
     }
   }catch(e){
     LIVE.fails++; LIVE.lastError = String(e && e.message || e);
     console.warn('[Lastro] falha nas cotações:', LIVE.lastError);
     setDataStatus(LIVE.on ? 'stale' : 'demo', LIVE.on ? 'Offline · em cache' : 'Demonstração');
-    if(manual===true) toast(LIVE.on ? 'Sem conexão — exibindo último valor' : 'Sem conexão — exibindo dados de demonstração');
+    if(manual===true) toast(LIVE.on ? 'Sem conexão. Exibindo o último valor' : 'Sem conexão. Exibindo dados de demonstração');
   }
 }
 
