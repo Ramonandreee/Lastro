@@ -1808,6 +1808,10 @@ input[type=range]::-moz-range-thumb {
 .range-tabs button { font-size:11.5px; font-weight:500; padding:5px 11px; border-radius:6px; color:var(--ink-3); cursor:pointer; transition:all .14s var(--ease); }
 .range-tabs button.on { background:var(--surface); color:var(--ink); box-shadow:var(--sh-sm); }
 .mais-ic-warn { background:var(--down-l) !important; color:var(--down) !important; }
+/* aviso de sincronização pendente: informativo, não interativo (não há botão de sincronizar) */
+.sync-banner { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom,0px) + 92px); z-index:60; max-width:min(560px, calc(100vw - 28px)); display:flex; gap:10px; align-items:flex-start; padding:11px 14px; border-radius:12px; font-size:12.5px; line-height:1.45; background:var(--surface); color:var(--ink-2); border:1px solid color-mix(in srgb,var(--gold) 40%,transparent); box-shadow:var(--sh); }
+.sync-banner i { color:var(--gold); margin-top:2px; }
+@media (min-width:761px){ .sync-banner { bottom:calc(env(safe-area-inset-bottom,0px) + 18px); } }
 .ds-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-3); margin-bottom:14px; }
 /* setor do bloco de pares: o título diz o CRITÉRIO, esta linha diz QUAL setor é */
 .ds-title + .peers-seg { margin:-10px 0 14px; font-size:13px; font-weight:600; color:var(--ink); letter-spacing:-.01em; }
@@ -5896,14 +5900,14 @@ async function saveProfileCadastro(silent){
     }
   }
   updateAuthUI(); refreshProfileAvatar();
-  if(!silent) toast(okSync ? 'Dados cadastrais salvos e sincronizados ✓' : 'Salvo neste aparelho. Não foi possível sincronizar agora; tente novamente com internet.');
+  if(!silent) toast(okSync ? 'Dados cadastrais salvos e sincronizados ✓' : 'Salvo neste aparelho. Sobe para a nuvem sozinho quando a conexão voltar.');
 }
 async function saveProfileInvestidor(silent){
   const p=getProfile(); const risk=currentRiskSel(); if(risk) p.risk=risk; else delete p.risk;
   PROF_INVEST.forEach(k=>{ const el=document.getElementById('prof_'+k); if(el){ const val=(el.value||'').trim(); if(val) p[k]=val; else delete p[k]; } });
   saveProfile(p);
   const okSync = await flushCloudState();
-  if(!silent) toast(okSync ? 'Perfil de investidor salvo e sincronizado ✓' : 'Salvo neste aparelho. Não foi possível sincronizar agora; tente novamente com internet.');
+  if(!silent) toast(okSync ? 'Perfil de investidor salvo e sincronizado ✓' : 'Salvo neste aparelho. Sobe para a nuvem sozinho quando a conexão voltar.');
 }
 /* aviso de alterações não salvas ao fechar o perfil */
 let _profileOpen=false;
@@ -6336,24 +6340,23 @@ function canPushCloud(){ return _cloudLoaded; }
 function clearDirty(){ _dirty=false; try{ localStorage.removeItem('lastro_dirty'); }catch(e){} }
 /* estado de sincronização VISÍVEL (diagnóstico): idle | saving | ok | error (com mensagem do servidor) */
 const SYNC = { state:'idle', at:0, msg:'' };
-function setSync(state, msg){ SYNC.state=state; SYNC.at=Date.now(); SYNC.msg=msg||''; }
-function syncLabel(){
-  if(!isAuthed()) return 'Entre para sincronizar';
-  if(SYNC.state==='saving') return 'Sincronizando…';
-  if(SYNC.state==='error') return 'Falha ao sincronizar' + (SYNC.msg?' · '+SYNC.msg:'');
-  if(SYNC.state==='ok'){ const s=Math.max(0,Math.round((Date.now()-SYNC.at)/1000)); return s<45?'Sincronizado ✓':'Sincronizado há '+(s<90?'1 min':Math.round(s/60)+' min'); }
-  return 'Toque para sincronizar';
+function setSync(state, msg){ SYNC.state=state; SYNC.at=Date.now(); SYNC.msg=msg||''; syncBanner(); }
+/* AVISO, não botão. A sincronização é contínua e se recupera sozinha (o ciclo tenta de novo,
+   e o evento 'online' força a subida do que ficou pendente). Só interrompemos o usuário
+   quando a falha PERSISTE, porque aí o dado dele está mesmo em risco de não estar salvo. */
+let _syncBadSince=0;
+function syncBanner(){
+  const ruim = isAuthed() && SYNC.state==='error';
+  if(ruim && !_syncBadSince) _syncBadSince=Date.now();
+  if(!ruim) _syncBadSince=0;
+  // só aparece depois de ~25s de falha contínua: uma oscilação de rede não vira alarme
+  const mostrar = ruim && (Date.now()-_syncBadSince > 25000);
+  let el=document.getElementById('syncBanner');
+  if(!mostrar){ if(el) el.remove(); return; }
+  if(!el){ el=document.createElement('div'); el.id='syncBanner'; el.className='sync-banner'; document.body.appendChild(el); }
+  el.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span><b>Suas alterações ainda não foram salvas na nuvem.</b> Elas estão guardadas neste aparelho e sobem sozinhas quando a conexão voltar.${SYNC.msg?` <small class="faint">(${esc(SYNC.msg)})</small>`:''}</span>`;
 }
-async function syncNow(){
-  if(!isAuthed()){ openAuth('login'); return; }
-  toast('Sincronizando…');
-  // PUXA primeiro (adota a nuvem/protege dados locais); só SOBE se houver mudança local pendente.
-  // Assim um aparelho com a carteira vazia não empurra vazio por cima de dados reais na nuvem.
-  try{ await loadCloudState(); if(_dirty) await flushCloudState(false, true); }catch(e){}
-  const ok = SYNC.state!=='error';
-  toast(ok ? 'Sincronizado ✓' : ('Falha ao sincronizar' + (SYNC.msg?': '+SYNC.msg:'. Verifique sua conexão')));
-  if(currentView==='painel'||currentView==='carteira') render(currentView);
-}
+setInterval(syncBanner, 5000);   // o aviso surge/some sozinho conforme a falha persiste ou passa
 /* carimbo monotônico: nunca anda pra trás em relação ao que este aparelho já viu (inclui o ts
    adotado da nuvem). Assim, mesmo num aparelho com relógio atrasado, uma edição local feita
    DEPOIS de adotar a nuvem ainda supera o ts da nuvem — evita perder a própria edição. */
@@ -6537,14 +6540,46 @@ function keepTokenFresh(){ if(!isAuthed()) return; const exp=tokenExpMs(); if(ex
 /* Vínculo forte entre aparelhos da MESMA conta: sincroniza sozinho (ao abrir, ao focar a aba e
    periodicamente). loadCloudState só adota se a nuvem for mais nova (reconciliação por ts), então
    isto nunca sobrescreve edição local. NENHUM clique é necessário — é tudo automático. */
+/* ─────────────────────────────────────────────────────────────────────────────
+   SINCRONIZAÇÃO CONTÍNUA — sem botão, sem depender de nenhuma ação do usuário.
+   Antes era um pull COMPLETO a cada 15s. Puxar o estado inteiro é caro, então o
+   intervalo não podia ser curto. Agora a checagem é barata: pede só o
+   `updated_at` da linha e, se ele não mudou, não há nada a fazer. Com isso dá
+   para checar de 3 em 3 segundos logo após atividade, caindo para 20s e depois
+   60s quando o app fica parado — o gasto some junto com o uso.
+   ───────────────────────────────────────────────────────────────────────────── */
+let _cloudSeen=null;          // último updated_at conhecido do servidor
+let _lastActivity=Date.now(); // qualquer interação do usuário reativa o ritmo curto
+['pointerdown','keydown','focus'].forEach(ev=>window.addEventListener(ev, ()=>{ _lastActivity=Date.now(); }, {passive:true, capture:true}));
+function syncInterval(){
+  const idle = Date.now() - _lastActivity;
+  if(idle < 2*60*1000) return 3000;    // usando agora → quase imediato
+  if(idle < 15*60*1000) return 20000;  // parado há pouco
+  return 60000;                        // esquecido aberto
+}
+/* checagem barata: só o carimbo da linha. Puxa o estado inteiro apenas se mudou. */
+async function pollCloud(){
+  const s=getSession(), c=_sb(); if(!s||!c.SUPABASE_URL) return;
+  if(_dirty){ try{ await flushCloudState(false, true); }catch(e){} return; }   // tem coisa a subir: sobe primeiro
+  try{
+    const r=await sbFetch(`${c.SUPABASE_URL}/rest/v1/user_state?select=updated_at&user_id=eq.${s.user.id}`, {});
+    if(!r.ok){ if(r.status===401) setSync('error','sessão expirada'); return; }
+    const rows=await r.json();
+    const at = (rows && rows[0] && rows[0].updated_at) || null;
+    if(!_cloudLoaded){ _cloudSeen=at; try{ await loadCloudState(); }catch(e){} return; }   // 1ª leitura da sessão
+    if(at !== _cloudSeen){ _cloudSeen=at; try{ await loadCloudState(); }catch(e){} }
+  }catch(e){}
+}
+let _pollAt=0;
 setInterval(()=>{ try{
   if(document.visibilityState!=='visible' || !isAuthed()) return;
-  keepTokenFresh();   // mantém o token válido (invisível, não depende de interação)
-  const ae=document.activeElement;
-  if(ae && (ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable)) return;   // não interrompe digitação
-  if(document.querySelector('.modal-scrim.open')) return;                                     // não fecha modal aberto
-  syncOnReturn();
-}catch(e){} }, 15000);
+  keepTokenFresh();          // mantém o token válido (invisível, não depende de interação)
+  if(syncBusy()) return;     // não troca os dados por baixo de uma edição em andamento
+  const now=Date.now(); if(now-_pollAt < syncInterval()) return;
+  _pollAt=now; pollCloud();
+}catch(e){} }, 1000);
+/* voltar para o app não espera o próximo ciclo */
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ _lastActivity=Date.now(); _pollAt=0; } });
 function updateAuthUI(){
   const u=currentUser();
   const av=document.querySelector('.user-chip .avatar'), nm=document.querySelector('.user-chip .nm'), pl=document.querySelector('.user-chip .pl');
@@ -10532,12 +10567,9 @@ function viewMais(){
   const planItem = isPremium()
     ? `<button class="mais-row" onclick="nav('assinatura')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-txt"><span class="mais-lbl">Minha assinatura</span><span class="mais-sub">${_renew||'Gerencie seu plano e cobranças'}</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`
     : `<button class="mais-row" onclick="nav('planos')"><span class="mais-ic mais-ic-gold"><i class="fa-solid fa-crown"></i></span><span class="mais-txt"><span class="mais-lbl">Planos e assinatura</span><span class="mais-sub">Compare os planos e assine</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`;
-  /* SINCRONIZAÇÃO VISÍVEL. syncLabel()/syncNow() existiam mas NUNCA eram chamadas: uma
-     gravação que falhava era 100% invisível e o usuário não tinha como forçar. Agora o
-     estado aparece e dá para tocar para sincronizar na hora. */
-  const syncRow = authed ? `<button class="mais-row" id="maisSyncRow" onclick="syncNow()"><span class="mais-ic ${SYNC.state==='error'?'mais-ic-warn':''}"><i class="fa-solid ${SYNC.state==='error'?'fa-triangle-exclamation':'fa-cloud-arrow-up'}"></i></span><span class="mais-txt"><span class="mais-lbl">Sincronização</span><span class="mais-sub" id="maisSyncLbl">${esc(syncLabel())}</span></span><i class="fa-solid fa-rotate mais-cv"></i></button>` : '';
+  /* A sincronização é CONTÍNUA e automática — não existe botão para ela, de propósito.
+     O usuário só é avisado quando algo FALHA, porque aí o dado dele está em risco. */
   const conta=`<div class="mais-sec-t">Conta</div><div class="mais-grp">
-    ${syncRow}
     ${planItem}
     ${authed?`<button class="mais-row" onclick="nav('indicar')"><span class="mais-ic"><i class="fa-solid fa-gift"></i></span><span class="mais-txt"><span class="mais-lbl">Indique e Ganhe</span><span class="mais-sub">Ganhe 20% de cada amigo, via PIX</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>`:''}
     <button class="mais-row" onclick="nav('ajuda')"><span class="mais-ic"><i class="fa-solid fa-headset"></i></span><span class="mais-txt"><span class="mais-lbl">Ajuda &amp; Suporte</span><span class="mais-sub">Central de ajuda e FAQ</span></span><i class="fa-solid fa-chevron-right mais-cv"></i></button>
