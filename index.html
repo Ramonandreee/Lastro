@@ -24,7 +24,7 @@ window.__booting=true;document.documentElement.classList.add('booting');
 var _tc=document.createElement('meta');_tc.id='tcOverride';_tc.setAttribute('name','theme-color');_tc.setAttribute('content','#082248');document.head.appendChild(_tc);}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap">
 <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
 <script>window.LASTRO_CONFIG = window.LASTRO_CONFIG || {};</script>
 <script src="config.js" onerror="void 0"></script>
@@ -81,6 +81,7 @@ var _tc=document.createElement('meta');_tc.id='tcOverride';_tc.setAttribute('nam
   --sans:  'Inter', system-ui, -apple-system, sans-serif;
   --serif: var(--sans);
   --mono:  'Inter', ui-monospace, monospace;
+  --display: 'Fraunces', 'Source Serif 4', Georgia, serif;   /* serifa de destaque (premium) */
 
   /* Radius */
   --r-sm: 4px;
@@ -3454,6 +3455,14 @@ body.pdf-lock { overflow:hidden; }
 .pat-eyebrow i { color:var(--brand); }
 .pat-val { font-family:var(--serif); font-size:30px; font-weight:500; letter-spacing:-.02em; line-height:1; color:var(--ink); }
 .pat-empty-t { font-size:19px; font-weight:600; letter-spacing:-.01em; color:var(--ink); }
+/* ═══ PILOTO "premium refinado" (skill frontend-desing) — ESCOPADO à Home (body.view-inicio) ═══
+   Serifa Fraunces na saudação, no patrimônio e nos títulos de card + profundidade. Não afeta outras telas. */
+body.view-inicio .home-greet { margin:2px 2px 22px; }
+body.view-inicio .home-greet .hero-greet-t { font-family:var(--display); font-weight:500; font-size:22px; letter-spacing:-.005em; }
+body.view-inicio .whero-val { font-family:var(--display); font-weight:500; letter-spacing:-.02em; }
+body.view-inicio .card-h { font-family:var(--display); font-weight:500; letter-spacing:0; }
+body.view-inicio .whero { box-shadow:var(--sh-lg); }
+body.view-inicio .card { box-shadow:var(--sh); }
 .pat-sub { font-size:12.5px; color:var(--ink-2); margin-top:8px; max-width:560px; line-height:1.5; text-wrap:pretty; }
 .pat-kpis { display:flex; gap:24px; flex-wrap:wrap; margin-top:13px; }
 .pat-kpi { display:flex; flex-direction:column; gap:2px; }
