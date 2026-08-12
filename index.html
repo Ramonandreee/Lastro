@@ -3421,6 +3421,16 @@ body.pdf-lock { overflow:hidden; }
 .hero-greet { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
 /* Home focada na carteira: saudação no topo + IA em largura total */
 .home-greet { display:flex; align-items:baseline; gap:11px; margin:2px 2px 20px; }
+/* ═══ Home — redesenho de LAYOUT (skill frontend-desing) — escopado a body.view-inicio ═══
+   Hero com mais presença (hierarquia) + indicadores macro de 4 caixas soltas para UM painel
+   coeso com divisórias finas. Só CSS/layout — não toca nos gráficos nem em outras telas. */
+body.view-inicio .home-greet { flex-direction:column; align-items:flex-start; gap:2px; margin-bottom:18px; }
+body.view-inicio .home-greet .hero-greet-t { font-size:22px; letter-spacing:-.02em; }
+body.view-inicio .home-greet .hero-greet-d { margin-left:0; padding-left:0; text-align:left; }
+body.view-inicio .whero { box-shadow:var(--sh-lg); border:1px solid color-mix(in srgb, var(--brand) 13%, var(--line)); }
+body.view-inicio .mstrip { gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--r-card); box-shadow:var(--sh-sm); overflow:hidden; }
+body.view-inicio .mstrip .mkt-cell { background:var(--surface); border:0; border-radius:0; box-shadow:none; }
+body.view-inicio .mstrip .mkt-cell:hover { transform:none; box-shadow:none; background:var(--surface-2); }
 .home-greet .hero-greet-t { font-size:20px; font-weight:600; letter-spacing:-.022em; }
 .home-greet .hero-greet-d { font-size:12px; font-weight:500; color:var(--ink-4); margin-left:auto; }
 .insight.insight-full { margin-bottom:18px; }
