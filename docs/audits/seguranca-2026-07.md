@@ -2,7 +2,7 @@
 
 > Passe de segurança nos proxies serverless (`api/*`, `lib/*`), no schema Supabase e no
 > entitlement. Feito no loop principal (subagentes indisponíveis por limite semanal). Onde há
-> ação sua, o item aponta para `docs/PENDENCIAS-MANUAIS.md`.
+> ação sua, o item aponta para `docs/plans/pendencias-manuais.md`.
 
 ## Resumo
 Os proxies estão **bem endurecidos** no básico. O ponto aberto de maior impacto é a **falta de
@@ -29,7 +29,7 @@ RPC provisória ainda é forjável (esperado até haver gateway). Nada de segred
 pelo cache de borda (`s-maxage`) para chaves repetidas, mas não para chaves variadas.
 **Correção recomendada (infra, precisa de você):** rate-limit por IP no Edge (Vercel) ou via
 Upstash/KV. Como estamos em **11/12 funções**, um middleware de Edge (`middleware.ts`, não conta
-no limite de funções) é o caminho — a implementar com review/teste. → anota em PENDENCIAS-MANUAIS.
+no limite de funções) é o caminho — a implementar com review/teste. → anota em `docs/plans/pendencias-manuais.md`.
 
 ### 🟡 Baixa — entitlement provisório é forjável pela RPC
 `grant_entitlement` é `security definer` chamável por qualquer autenticado (checkout **simulado**).

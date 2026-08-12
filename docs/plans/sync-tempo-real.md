@@ -571,6 +571,6 @@ Antes de **cada** push (CLAUDE.md): `CSS chaves: 0 | JS: OK` + `node --test test
 Depois de **cada** fase: atualizar o `HANDOFF.md` (estado real do sync) e, na Fase 1, o
 `README.md` §6 (novo vendor) — a documentação atual **já está errada** sobre o status visível.
 
-**Setup manual obrigatório** (registrar em `docs/PENDENCIAS-MANUAIS.md`): rodar o
+**Setup manual obrigatório** (registrar em `docs/plans/pendencias-manuais.md`): rodar o
 `backend/supabase/schema.sql` atualizado no SQL Editor do Supabase a cada fase — sem isso, o
 cliente cai nos fallbacks e o sync continua no modo antigo (degrada, não quebra).

@@ -124,7 +124,7 @@ Tudo é organizado por convenções simples. Onde procurar:
 - `localStorage` guarda tudo do usuário: `lastro_session`, `lastro_profile`, `lastro_carteira`, `lastro_watch`, `lastro_alerts`, `lastro_plan`, `lastro_sub`, `lastro_theme`, `lastro_priv`…
 - `tableState[kind]` — estado das listagens de mercado (busca, segmento, ordenação, página, filtros fundamentalistas).
 - **Perfil/carteira sincronizam na nuvem** (Supabase tabela `user_state`, coluna `data` jsonb): `saveCloudState()` (debounce), `flushCloudState()` (imediato, usado ao salvar/sair) e `loadCloudState()` (no login).
-  ⚠️ **Modelo atual = blob único com last-write-wins** (o mais novo leva tudo) + poll de 15 s. Isso faz a carteira **divergir entre aparelhos** em edição concorrente. Redesenho (merge por união de `MOVS` com tombstones, CAS por `rev`, Realtime): **`docs/PLANO-sync-tempo-real.md`** — leia antes de mexer em qualquer coisa de sync.
+  ⚠️ **Modelo atual = blob único com last-write-wins** (o mais novo leva tudo) + poll de 15 s. Isso faz a carteira **divergir entre aparelhos** em edição concorrente. Redesenho (merge por união de `MOVS` com tombstones, CAS por `rev`, Realtime): **`docs/plans/sync-tempo-real.md`** — leia antes de mexer em qualquer coisa de sync.
 
 ### Auth
 - Supabase Auth. Sessão salva em `lastro_session`. `currentUser()`, `isAuthed()`, `authLogin/authSignup/authLogout`.

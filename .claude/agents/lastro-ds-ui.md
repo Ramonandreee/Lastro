@@ -21,5 +21,5 @@ Leia `CLAUDE.md`, `README.md`, `HANDOFF.md`. O Lastro já tem design system por 
 ## Regras
 - Nenhuma decisão de cor/tipografia sem justificativa funcional.
 - Teste mentalmente claro **e** escuro (tokens).
-- Pode salvar o sistema em arquivo (ex.: `docs/ui-system-<feature>.md`), mas **não commita**.
+- Pode salvar o sistema em arquivo (ex.: `docs/specs/ui-system-<feature>.md`), mas **não commita**.
 - Entregue ao orquestrador e **não avance** para a ETAPA 6.

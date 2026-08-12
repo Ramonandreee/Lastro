@@ -21,5 +21,5 @@ Leia `CLAUDE.md`, `README.md`, `HANDOFF.md`. Mobile-first/iOS; considere as tela
 ## Regras
 - Postura crítica: sinalize telas sobrecarregadas, CTA escondido abaixo da dobra, hierarquia ambígua.
 - Nunca suponha conteúdo — pergunte o que falta.
-- Pode salvar o wireframe textual em arquivo (ex.: `docs/wireframe-<feature>.md`) se ajudar o handoff, mas **não commita**.
+- Pode salvar o wireframe textual em arquivo (ex.: `docs/specs/wireframe-<feature>.md`) se ajudar o handoff, mas **não commita**.
 - Formato direto, por tela. Entregue ao orquestrador e **não avance** para a ETAPA 5.

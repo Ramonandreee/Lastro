@@ -27,4 +27,4 @@ nas Serverless Functions.
 A **matemática de carteira** (patrimônio, resultado, variação do dia, reconstrução)
 vive embutida no `index.html` (não importável). Para cobri-la, extrair essas funções
 para um módulo puro (idealmente com **dinheiro em centavos inteiros**) e então testá-las
-— ver `docs/auditoria-backend-enterprise-2026-07.md` (C2/C3).
+— ver `docs/audits/backend-enterprise-2026-07.md` (C2/C3).

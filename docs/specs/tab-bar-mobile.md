@@ -2,7 +2,7 @@
 
 > Documento de handoff consolidado do **Estúdio de Design** (6 etapas) para
 > implementação. Aprovado pela Auditoria de QA (Etapa 6). Decisões dos donos
-> travadas. Detalhe visual completo em `docs/UI-SISTEMA-ETAPA5.md`.
+> travadas. Detalhe visual completo em `docs/specs/ui-sistema-tab-bar.md`.
 
 ---
 
@@ -67,7 +67,7 @@ Hub → "vistos recentemente" leva ao detalhe em 1 toque (atalho do caso recorre
 - 4 telas órfãs: Simuladores · Comparador · Carteiras Recomendadas · Planos/Assinatura.
 - Conta (Perfil · Suporte · Sair em `--down`) + Tema (claro/escuro/auto via `setThemePref`).
 
-## 5. Sistema de UI (Etapa 5) — valores-chave (spec completa: `UI-SISTEMA-ETAPA5.md`)
+## 5. Sistema de UI (Etapa 5) — valores-chave (spec completa: `docs/specs/ui-sistema-tab-bar.md`)
 
 - **Fundo da barra:** `--surface` (fallback sólido; `--glass`+blur é acabamento, nunca dependência).
 - **Item ativo:** `--brand` (13.4:1 claro / 5.44:1 escuro sobre `--surface`) + rótulo peso 600 + pill.

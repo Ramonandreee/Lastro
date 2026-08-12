@@ -3,7 +3,7 @@
 > **Status:** especificação pronta para build. Nenhum código de produto foi alterado por este documento.
 > **Autor:** lastro-architect · **Data:** ago/2026
 > **Substitui:** a antiga "Carteiras Recomendadas" (aposentada — ver `HANDOFF.md` e
-> `docs/PENDENCIAS-MANUAIS.md` §"Carteiras Recomendadas").
+> `docs/plans/pendencias-manuais.md` §"Carteiras Recomendadas").
 
 ---
 
@@ -565,7 +565,7 @@ lista. Decidir na Fase 3/4 — não deixar código morto.
 
 **Exige ação do dono (não é engenharia):**
 1. **Direito de uso** — republicar a composição (ativos + pesos) é o miolo do relatório.
-   O caminho defensável descrito em `docs/PENDENCIAS-MANUAIS.md` é *instituição + data +
+   O caminho defensável descrito em `docs/plans/pendencias-manuais.md` é *instituição + data +
    link*. Esta spec vai além (mostra a composição) — **precisa de validação jurídica** ou de
    um programa de parceria/afiliado que autorize. **Não publicar sem isso.**
 2. **Fonte** — indicar 2–3 instituições cujo relatório seja **acessível sem login**.

@@ -1,5 +1,5 @@
 /**
- * Validador de /data/carteiras.json — Fase 1 da SPEC-carteiras-instituicoes (§1.2/§1.3).
+ * Validador de /data/carteiras.json — Fase 1 da docs/specs/carteiras-instituicoes.md (§1.2/§1.3).
  *
  * CONTRATO CENTRAL (o que derrubou a feature anterior): o ÚNICO dado externo
  * permitido no arquivo é a COMPOSIÇÃO PUBLICADA (instituição, nome, competência,
@@ -24,7 +24,7 @@ const IP = require('../vendor/instport.js');
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ARQUIVO = join(ROOT, 'data', 'carteiras.json');
-const SPEC = 'docs/SPEC-carteiras-instituicoes.md §1.2';
+const SPEC = 'docs/specs/carteiras-instituicoes.md §1.2';
 
 /* ─────────────────────────── tabelas da spec ─────────────────────────── */
 
@@ -355,7 +355,7 @@ test('ids distintos na mesma série passam (competências diferentes)', () => {
 
 /* ────────────────── lista negra (qualquer nível de aninhamento) ─────── */
 
-const CITA_SPEC = 'SPEC-carteiras-instituicoes';
+const CITA_SPEC = 'docs/specs/carteiras-instituicoes.md';
 
 for (const campo of PROIBIDOS) {
   test(`lista negra: "${campo}" na carteira falha citando a spec`, () => {

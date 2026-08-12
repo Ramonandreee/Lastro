@@ -6,7 +6,7 @@ abertamente. É a única fonte externa da feature "Carteiras de instituições":
 setor, cotação, DY, concentração e desempenho são **derivados** no app a partir
 de dado real — nunca escritos aqui.
 
-Spec completa: `docs/SPEC-carteiras-instituicoes.md` (§1).
+Spec completa: `docs/specs/carteiras-instituicoes.md` (§1).
 Validador: `test/carteiras.test.mjs` → `node --test test/*.mjs` (roda no CI).
 
 O arquivo nasce com `"carteiras": []`. **Só publique uma carteira depois do

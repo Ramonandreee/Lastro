@@ -66,6 +66,8 @@ Espere `CSS chaves: 0` e `JS: OK`. Se não, corrija antes de publicar.
 - Guia de arquitetura: **`README.md`** (seções 4, 6 e 8).
 - Estado atual / histórico: **`HANDOFF.md`**.
 - Onboarding do colaborador: **`ONBOARDING.md`**.
+- Documentação técnica longa (planos, specs, auditorias): **`docs/README.md`** é a porta de
+  entrada — índice de tudo em `docs/plans/`, `docs/specs/` e `docs/audits/`.
 - Site no ar: **https://lastro-dun.vercel.app/** (publica a cada push na `main`).
 
 ## Convenções

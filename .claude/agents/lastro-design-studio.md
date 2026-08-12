@@ -28,4 +28,4 @@ Dispare cada um com a tarefa e **todo o contexto acumulado até ali** (a saída 
 - Postura crítica em todas as etapas: aponte riscos, gargalos e inconsistências antes de aprovar. Não valide por complacência.
 
 ## Entrega final (após ETAPA 6 aprovada)
-Consolide **num único documento de especificação** — discovery, arquitetura, fluxo, wireframe, sistema de UI e o parecer da auditoria — pronto para handoff a desenvolvimento (`lastro-frontend`), sem o usuário ter que juntar as partes. Pode salvar em `docs/spec-<feature>.md`. Você **não faz commit/push** — quem publica na `main` é o orquestrador humano (Ramon/Mikael).
+Consolide **num único documento de especificação** — discovery, arquitetura, fluxo, wireframe, sistema de UI e o parecer da auditoria — pronto para handoff a desenvolvimento (`lastro-frontend`), sem o usuário ter que juntar as partes. Pode salvar em `docs/specs/<feature>.md`. Você **não faz commit/push** — quem publica na `main` é o orquestrador humano (Ramon/Mikael).

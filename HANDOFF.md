@@ -52,7 +52,7 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 >   (checkout simulado). `ENT` hidratado no login/boot; `getPlan/planTier/isPremium`
 >   derivam do servidor, `localStorage` só cache visual (não forjável). Regra pura testada
 >   em `vendor/entitlement.js` (+ `test/entitlement.mjs`). Auditoria: **seguro na fase
->   provisória**; travas antes de pagamento real em `docs/PENDENCIAS-MANUAIS.md`.
+>   provisória**; travas antes de pagamento real em `docs/plans/pendencias-manuais.md`.
 >   **Setup manual:** rodar o `schema.sql` atualizado no Supabase p/ ativar.
 > - **Perfil virou PÁGINA cheia — FEITO** (view `perfil`, `viewPerfil`). Hero (avatar/nome/
 >   e-mail/plano), Dados pessoais (1 botão Salvar), **Perfil de investidor por QUIZ**
@@ -68,7 +68,7 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 >   quero tudo sincronizado em tempo real"*. **Causa estrutural:** o estado sobe como **blob
 >   único com last-write-wins** — dois aparelhos editando coisas diferentes e o mais novo leva
 >   TUDO (o outro aporte some, em silêncio). **Plano de desenho pronto:**
->   `docs/PLANO-sync-tempo-real.md` — Fase 0 (hoje: tornar o sync visível, fila de pendências
+>   `docs/plans/sync-tempo-real.md` — Fase 0 (hoje: tornar o sync visível, fila de pendências
 >   com backoff, poll barato por `rev`, backup local + exportar JSON), Fase 1 (**merge por união
 >   de MOVS** com tombstones em `vendor/sync.js` puro + `test/sync.test.mjs`, `CARTEIRA` só
 >   derivada, CAS por `rev` na RPC `save_state_v2`), Fase 2 (**Supabase Realtime** como
@@ -82,7 +82,7 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 >   CNPI; (b) os números exibidos (`ret`, `dy`, `vol`) eram **chumbados no código** e apareciam
 >   como "retorno 12m". Retomada possível como **agregador de carteiras públicas de
 >   instituições** (nome + data + LINK para o relatório original, desempenho calculado de
->   cotação real) — ver os pré-requisitos em `docs/PENDENCIAS-MANUAIS.md`.
+>   cotação real) — ver os pré-requisitos em `docs/plans/pendencias-manuais.md`.
 > - **Carteiras de instituições (agregador) — CONSTRUÍDA, SEM DADOS PUBLICADOS (ago/2026).**
 >   **Atenção ao portão:** as Fases 1–4 estão NO AR (telas, loader, validador). O que segura a
 >   feature não é mais "não construir": é o **`data/carteiras.json` estar vazio**. Enquanto o
@@ -91,7 +91,7 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 >   por isso o gate jurídico agora mora no arquivo de dados, não no código. Não preencha antes
 >   da validação de direito de uso. Falta ainda a Fase 5 (desempenho vs IBOV), a 6
 >   (indicadores ponderados) e a 7 (gate Premium). Detalhe da spec abaixo:
->   `docs/SPEC-carteiras-instituicoes.md`. Princípio: o único dado importado é a **composição
+>   `docs/specs/carteiras-instituicoes.md`. Princípio: o único dado importado é a **composição
 >   publicada** (instituição, nome, competência, data, URL da fonte, `{ticker, peso}`) num
 >   arquivo estático **`/data/carteiras.json`** (não conta no limite de 12 funções da Vercel,
 >   validado por `test/carteiras.test.mjs` no CI, com lista negra que **reprova** campos `ret`/`dy`/
@@ -137,7 +137,7 @@ Plataforma web de inteligência para o investidor brasileiro, focada em **renda 
 > `syncLabel()` e `syncNow()` (l. ~6315-6331) existem mas **não têm nenhum ponto de chamada** —
 > `acctMenuHTML()` não renderiza a linha de sync (perdida numa refatoração do menu). Hoje uma
 > gravação que falha é **invisível** para o usuário. Correção planejada na Fase 0 de
-> `docs/PLANO-sync-tempo-real.md`. **Trade-offs conhecidos (by-design):** *(M1)*
+> `docs/plans/sync-tempo-real.md`. **Trade-offs conhecidos (by-design):** *(M1)*
 > não dá para **esvaziar a carteira de forma sincronizada** — a blindagem (2) faz os
 > ativos "voltarem" no outro aparelho; *(M2)* um aparelho `_dirty` vence a nuvem sem
 > comparar `ts`, então edição concorrente do peer pode ser descartada. Ambos erram para
@@ -282,7 +282,7 @@ Estrutura de arquivos e como rodar: ver **README.md** (seções 3 e 4). Configur
 2. **Perfil como página cheia** (hoje é modal).
 3. **Livro de Movimentações** (venda, provento-caixa, saldo em caixa, eventos societários,
    IR realizado) — carteira/patrimônio reais centavo a centavo. **Plano faseado pronto:**
-   `docs/PLANO-livro-movimentacoes.md` (MVP = venda + provento + caixa; `MOVS` como fonte de
+   `docs/plans/livro-movimentacoes.md` (MVP = venda + provento + caixa; `MOVS` como fonte de
    verdade e `CARTEIRA` como projeção derivada; sync reusa o blob `user_state`, sem endpoint novo).
 4. **Import de carteira** (B3/CEI ou nota/extrato da corretora).
 5. **Proventos e IR reais** (data-com, DARF, informe anual); **2FA real** + rodapé
