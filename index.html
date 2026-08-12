@@ -6118,7 +6118,7 @@ function subscribePremium(tier, cycle){
   setPlan('premium');   // cache otimista; a verdade é gravada no SERVIDOR abaixo
   // grava no servidor (fonte da verdade — sobrevive ao logout e à troca de aparelho)
   grantEntitlement(tier==='pro'?'pro':'premium', tier, c==='anual'?366:31).then(ok=>{ if(ok && typeof refreshPlanUI==='function') refreshPlanUI(); });
-  toast(`Bem-vindo ao ${p.name} 👑`);
+  toast(`Bem-vindo ao ${p.name}`);
   openAssinatura();
 }
 function downgradeFree(){ setSub(null); setPlan('free'); grantEntitlement('free', null, 0).then(()=>{ if(typeof refreshPlanUI==='function') refreshPlanUI(); }); toast('Plano alterado para Gratuito'); openAssinatura(); }
@@ -6615,7 +6615,7 @@ function renderAuth(mode){
     body.innerHTML = `<div style="text-align:center;padding:4px 0 6px">
         <div class="avatar" style="width:56px;height:56px;font-size:21px;margin:0 auto 12px">${(u.email[0]||'?').toUpperCase()}</div>
         <div style="font-weight:600">${esc(u.email)}</div>
-        <div style="font-size:12.5px;color:var(--ink-3);margin-top:4px">${isPremium()?'Plano Premium 👑':'Plano Gratuito'} · <i class="fa-solid fa-cloud" style="font-size:11px"></i> carteira sincronizada</div>
+        <div style="font-size:12.5px;color:var(--ink-3);margin-top:4px">${isPremium()?'Plano Premium <i class="fa-solid fa-crown" style="font-size:11px"></i>':'Plano Gratuito'} · <i class="fa-solid fa-cloud" style="font-size:11px"></i> carteira sincronizada</div>
       </div>
       ${isPremium()?'':'<button class="btn btn-premium" style="width:100%;justify-content:center;margin-bottom:9px" onclick="closeAuth();goPricing()"><i class="fa-solid fa-crown"></i> Conhecer o Premium</button>'}
       <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="authLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>`;
@@ -6773,7 +6773,7 @@ function signupVerifyPhone(){
 function signupFinish(){
   _signup={}; _signupStep=1; closeAuth();
   refreshPlanUI(); render(currentView);
-  toast(trialActive()?`Conta criada 🎉 Premium liberado por ${trialDaysLeft()} dias!`:'Conta criada 🎉');
+  toast(trialActive()?`Conta criada · Premium liberado por ${trialDaysLeft()} dias!`:'Conta criada');
 }
 async function authSubmit(mode){
   const email=($('#auEmail').value||'').trim(), pass=$('#auPass').value||'', err=$('#auErr');
@@ -6793,7 +6793,7 @@ async function authSubmit(mode){
   closeAuth();
   if(typeof introVisible==='function' && introVisible()) introDone();   // autenticou → libera o app (portão de acesso)
   if(typeof _bioLockDone==='function') _bioLockDone();                  // desbloqueia se veio da tela de biometria (Entrar com senha)
-  toast(mode==='signup'? (trialActive()?`Conta criada 🎉 Teste Premium liberado por ${trialDaysLeft()} dias!`:'Conta criada 🎉') : 'Bem-vindo de volta!');
+  toast(mode==='signup'? (trialActive()?`Conta criada · Teste Premium liberado por ${trialDaysLeft()} dias!`:'Conta criada') : 'Bem-vindo de volta!');
   refreshPlanUI();
   render(currentView);   // re-renderiza a tela atual para destravar recursos Premium liberados pelo teste
   maybeBioPrompt();      // primeiro acesso: oferece ativar o Face ID
@@ -9828,7 +9828,7 @@ function runFire(){
   $('#fireDespV').textContent=brl0(desp); $('#fireApV').textContent=brl0(ap);
   const f=fireCalc(desp, ap), cob=Math.min(999,f.cobertura);
   const cobEl=$('#fireCob'); cobEl.textContent=pc(cob,0)+'%'; cobEl.style.color=cob>=100?'var(--brand)':cob>=50?'var(--gold)':'var(--down)';
-  $('#fireCobSub').textContent = cob>=100? `🎉 já vive de renda, sobram ${brl0(f.renda-desp)}/mês` : `faltam ${brl0(desp-f.renda)}/mês`;
+  $('#fireCobSub').textContent = cob>=100? `já vive de renda, sobram ${brl0(f.renda-desp)}/mês` : `faltam ${brl0(desp-f.renda)}/mês`;
   $('#fireMagic').textContent=brl0(f.magico); $('#fireMagicSub').textContent=`${brl0(Math.max(0,f.magico-f.atual))} a acumular`;
   $('#fireProg').style.width=Math.min(100, f.magico? f.atual/f.magico*100:0)+'%';
   if(f.cobertura>=100) $('#fireEta').textContent='Liberdade atingida ✓';
@@ -11833,7 +11833,7 @@ function lastroScores(lots){
   const intlScore = d.classes.includes('Exterior')?100:60;
   const equilibrio = Math.round(Math.max(0,Math.min(100, d.score*0.30 + qual*0.24 + consist*0.16 + divScore*0.10 + concScore*0.12 + intlScore*0.08)));
   const sonoVal = Math.round(Math.max(0,Math.min(100, consist*0.34 + d.score*0.26 + concScore*0.22 + qual*0.18)));
-  const sono = sonoVal>=72?{e:'😴',l:'Excelente',sub:'Pode dormir tranquilo',c:'#1E56A6'} : sonoVal>=52?{e:'⚠️',l:'Moderado',sub:'Alguns pontos de atenção',c:'#E2761B'} : {e:'🚨',l:'Arriscado',sub:'A carteira pede ajustes',c:'#DC2626'};
+  const sono = sonoVal>=72?{e:'<i class="fa-solid fa-shield-halved"></i>',l:'Excelente',sub:'Pode dormir tranquilo',c:'#1E56A6'} : sonoVal>=52?{e:'<i class="fa-solid fa-triangle-exclamation"></i>',l:'Moderado',sub:'Alguns pontos de atenção',c:'#E2761B'} : {e:'<i class="fa-solid fa-circle-exclamation"></i>',l:'Arriscado',sub:'A carteira pede ajustes',c:'#DC2626'};
   const divSeg = pos.filter(x=>x.a&&(x.a.dy||0)>0).map(x=>{
     const dy=x.a.dy||0, cons=x.a.consist!=null?x.a.consist:0.6;
     let sc=cons*10; if(dy>15) sc-=3.5; else if(dy>12) sc-=2; else if(dy>10) sc-=1; if((x.a.score||0)>=75) sc+=0.8;
@@ -12434,7 +12434,7 @@ function saveAlert(){
   }
   list.push({ id:uid(), tk:_alertCtx.tk, k:_alertCtx.k, dir:_alertDir, price:px, created:Date.now(), status:'ativo' });
   setAlerts(list);
-  toast(`Alerta criado · ${_alertCtx.tk} ${_alertDir} ${alertFmt(_alertCtx.tk,px)} 🔔`);
+  toast(`Alerta criado · ${_alertCtx.tk} ${_alertDir} ${alertFmt(_alertCtx.tk,px)}`);
   closeAlertModal();
   if(currentView==='acompanhar'||currentView==='alertas') render('acompanhar', true);
 }
@@ -12462,7 +12462,7 @@ function alertCopy(al, px){
   const r = assetLookup(al.tk);
   const nome = (r && r.a.nm) ? r.a.nm : al.tk;
   return {
-    title: `${up?'📈':'📉'} ${al.tk} ${up?'subiu para':'caiu para'} ${alertFmt(al.tk, px)}`,
+    title: `${al.tk} ${up?'subiu para':'caiu para'} ${alertFmt(al.tk, px)}`,
     body:  `${nome} atingiu o seu alerta de ${up?'alta':'baixa'}.`
   };
 }
@@ -12584,7 +12584,7 @@ function gerarRelatorioMensal(opts){
     provSec = `<h2>Proventos · ${perLabel} · total ${brl(tot)}</h2>` + (pays.length? `<table><thead><tr><th>Data</th><th>Ativo</th><th>Tipo</th><th class="r">Cotas</th><th class="r">Valor</th></tr></thead><tbody>${prows}</tbody></table>` : `<p style="font-size:13px;color:#64707C;margin-top:4px">Nenhum provento recebido no período selecionado.</p>`); }
   const css=`*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif}body{padding:40px;color:#16202B;max-width:820px;margin:auto}.hd{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #1A4F94;padding-bottom:16px;margin-bottom:24px}.brand{font-size:22px;font-weight:800;color:#0B2E5E}.brand span{color:#16202B}.sub{color:#64707C;font-size:13px;text-transform:capitalize}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px}.kpi{border:1px solid #E5E8EC;border-radius:10px;padding:14px}.kpi .l{font-size:11px;color:#64707C;text-transform:uppercase;letter-spacing:.04em}.kpi .v{font-size:18px;font-weight:700;margin-top:4px}h2{font-size:14px;margin:26px 0 10px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 10px;border-bottom:1px solid #EEF0F2;text-align:left}th{font-size:11px;color:#64707C;text-transform:uppercase;letter-spacing:.03em}.r{text-align:right}.ft{margin-top:28px;font-size:11px;color:#9AA3AD;border-top:1px solid #EEF0F2;padding-top:12px;line-height:1.5}@media print{body{padding:0}}`;
   const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório Lastro · ${mes}</title><style>${css}</style></head><body>
-    <div class="hd"><div><div class="brand">Lastro<span> · Relatório da Carteira</span></div><div class="sub">${mes}</div></div><div class="sub">Investidor Pro 👑</div></div>
+    <div class="hd"><div><div class="brand">Lastro<span> · Relatório da Carteira</span></div><div class="sub">${mes}</div></div><div class="sub">Investidor Pro</div></div>
     ${resumo}${posSec}${alocSec}${provSec}
     <div class="ft">Gerado pela Lastro em ${now.toLocaleDateString('pt-BR')} para o assinante Investidor Pro. Período dos proventos: ${perLabel}. Valores estimados. Este relatório não constitui recomendação de investimento.</div>
   </body></html>`;
@@ -13228,13 +13228,13 @@ const TERM_CARDS={
 function termLabel(key, text){ return `<span class="term" data-term="${key}">${text}</span>`; }
 function termTipHTML(key){ const d=TERM_CARDS[key]; if(!d) return '';
   const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
-  return `<div class="tipcard"><div class="tc-h"><span class="tc-ico"><i class="fa-solid ${d.icon||'fa-circle-info'}"></i></span>${esc(d.nome)}</div><p>${esc(d.descricao)}</p>${row('Como é calculado', d.formula?`<b>${esc(d.formula)}</b>`:'')}${row('Como interpretar', esc(d.interpretacao||''))}${row('Referência', esc(d.faixaIdeal||''))}${d.pontosAtencao?row('⚠ Atenção', esc(d.pontosAtencao)):''}<div class="tc-close" onclick="hideTip()">Entendi</div></div>`;
+  return `<div class="tipcard"><div class="tc-h"><span class="tc-ico"><i class="fa-solid ${d.icon||'fa-circle-info'}"></i></span>${esc(d.nome)}</div><p>${esc(d.descricao)}</p>${row('Como é calculado', d.formula?`<b>${esc(d.formula)}</b>`:'')}${row('Como interpretar', esc(d.interpretacao||''))}${row('Referência', esc(d.faixaIdeal||''))}${d.pontosAtencao?row('<i class="fa-solid fa-triangle-exclamation"></i> Atenção', esc(d.pontosAtencao)):''}<div class="tc-close" onclick="hideTip()">Entendi</div></div>`;
 }
 /* popover rico (definição do indicador) */
 function indTipHTML(id){ const d=INDICATORS[id]; if(!d) return '';
   const row=(lbl,val)=> val?`<div class="tc-row"><span>${lbl}</span><div>${val}</div></div>`:'';
   const ex = IND_EX[id];
-  return `<div class="tipcard"><div class="tc-h"><span class="tc-ico"><i class="fa-solid ${indIcon(id)}"></i></span>${esc(d.nome)}</div><p>${esc(d.descricao)}</p>${row('Fórmula', d.formula?`<b>${esc(d.formula)}</b>`:'')}${row('Como interpretar', esc(d.interpretacao||''))}${row('Faixa de referência', esc(d.faixaIdeal||''))}${ex?row('Exemplo', esc(ex)):''}${row('⚠ Atenção', esc(d.pontosAtencao||''))}<div class="tc-close" onclick="hideTip()">Entendi</div></div>`;
+  return `<div class="tipcard"><div class="tc-h"><span class="tc-ico"><i class="fa-solid ${indIcon(id)}"></i></span>${esc(d.nome)}</div><p>${esc(d.descricao)}</p>${row('Fórmula', d.formula?`<b>${esc(d.formula)}</b>`:'')}${row('Como interpretar', esc(d.interpretacao||''))}${row('Faixa de referência', esc(d.faixaIdeal||''))}${ex?row('Exemplo', esc(ex)):''}${row('<i class="fa-solid fa-triangle-exclamation"></i> Atenção', esc(d.pontosAtencao||''))}<div class="tc-close" onclick="hideTip()">Entendi</div></div>`;
 }
 /* card de indicador premium (ícone · ? · histórico · valor animado · estado) */
 function indCard(id, value, cls){
