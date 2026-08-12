@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "frontend-desing": {
+      "source": "kintsukuro1/aplicacion_colegio",
+      "sourceType": "github",
+      "skillPath": "Aplicacion_Colegio/.github/skills/frontend-desing/SKILL.md",
+      "computedHash": "2f7bf0956b5a36afa55efe82c585871e4642d46c636278d0183394782b060e6c"
+    }
+  }
+}
